@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.dao.platform.FndPortalUserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.model.FndPortalUser">
+        <id column="USER_ID" property="userId" />
+        <result column="FULL_NAME" property="fullName" />
+        <result column="PASSWORD" property="password" />
+        <result column="MOBILE_PHONE" property="mobilePhone" />
+        <result column="EMAIL" property="email" />
+        <result column="IMAGE" property="image" />
+        <result column="USER_STATUS_ENUM_VAL" property="userStatusEnumVal" />
+        <result column="ACTIVE_FLAG" property="activeFlag" />
+        <result column="START_DATE_ACTIVE" property="startDateActive" />
+        <result column="END_DATE_ACTIVE" property="endDateActive" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="PHONE_CODE" property="phoneCode" />
+        <result column="EMPLOYEE_ID" property="employeeId" />
+        <result column="PASSWORD_FLAG" property="passwordFlag" />
+        <result column="PHONE_CODE_ID" property="phoneCodeId" />
+    </resultMap>
+
+</mapper>
