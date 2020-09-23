@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.integration.impl;
 
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.redis.RedisClusterUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.NifiEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
@@ -40,7 +39,6 @@ public abstract class AbstractNifiProcess implements NifiProcessService {
         String token = this.getToken();
         Map<String, Object> reqHeader = Maps.newHashMap();
         reqHeader.put("Authorization", "Bearer " + token);
-        System.out.println(JsonUtil.obj2String(reqHeader));
         return reqHeader;
     }
 

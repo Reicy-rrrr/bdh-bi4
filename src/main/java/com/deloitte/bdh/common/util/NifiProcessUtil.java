@@ -1,8 +1,10 @@
 package com.deloitte.bdh.common.util;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
 
+import java.util.List;
 import java.util.Map;
 
 public class NifiProcessUtil {
@@ -88,12 +90,14 @@ public class NifiProcessUtil {
     }
 
     /**
-     * 组装 post 请求参数(用于变更)
+     * 组装 请求参数(用于变更)
      */
     public static Map<String, Object> postParam(Map<String, Object> req, Map<String, Object> revision) {
-        //todo revision 待处理
         //统一设置请求参数
         Map<String, Object> postParam = Maps.newHashMap();
+
+        // revision 里的 version 必须一样,移除 clientId
+        revision.remove("clientId");
         postParam.put("revision", revision);
         postParam.put("disconnectedNodeAcknowledged", false);
         postParam.put("component", req);
@@ -112,8 +116,64 @@ public class NifiProcessUtil {
         }
         for (String arge : args) {
             if (StringUtil.isEmpty(MapUtils.getString(map, arge))) {
-                throw new RuntimeException(String.format("参数校验失败,参数{}不能为空", arge));
+                throw new RuntimeException(String.format("参数校验失败,参数%s不能为空", arge));
             }
         }
+    }
+
+
+    /**
+     * 校验processor
+     */
+    public static Boolean validateProcessor(Map<String, Object> map) {
+        if (MapUtils.isEmpty(map)) {
+            throw new RuntimeException("参数校验失败:参数异常");
+        }
+
+        //validationStatus：VALID&INVALID ,state:STOPPED
+        if (MapUtils.getString(map, "validationStatus").equalsIgnoreCase("INVALID")) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 获取processor relationship列表（创建connections时使用 ）
+     */
+    public static List<String> getRela(Map<String, Object> map) {
+        if (MapUtils.isEmpty(map)) {
+            throw new RuntimeException("获取relationship失败:参数异常");
+        }
+        Object rela = MapUtils.getObject(map, "relationships");
+        List<String> relas = Lists.newArrayList();
+        if (null != rela) {
+            List<Map<String, Object>> list = (List<Map<String, Object>>) rela;
+            for (Map<String, Object> args0 : list) {
+                relas.add(MapUtils.getString(args0, "autoTerminate"));
+            }
+        }
+        return relas;
+    }
+
+    /**
+     * 设置 processor relationship状态(一般最后一个节点用)
+     */
+    public void setRelaAutoTerminateTrue(Map<String, Object> map) {
+        if (MapUtils.isEmpty(map)) {
+            throw new RuntimeException("获取relationship失败:参数异常");
+        }
+        Object rela = MapUtils.getObject(map, "relationships");
+        if (null == rela) {
+            throw new RuntimeException(String.format("设置relationship 失败，未找到相关数据:%s", JsonUtil.obj2String(map)));
+        }
+        List<Map<String, Object>> list = (List<Map<String, Object>>) rela;
+        for (Map<String, Object> args0 : list) {
+            args0.put("autoTerminate", true);
+        }
+        map.put("relationships", list);
+    }
+
+
+    public static void main(String[] args) {
     }
 }

@@ -5,9 +5,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.NifiEnum;
-import com.deloitte.bdh.data.enums.ProcessorEnum;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ObjectArrays;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,15 +20,15 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
 
     @Override
     public Map<String, Object> cluster() throws Exception {
-        logger.info("NifiProcessServiceImpl.cluster, URL:{} ", URL + NifiEnum.ACCESS_TOKEN.getKey());
-        String response = HttpClientUtil.httpGetRequest(URL + NifiEnum.NIFI_CLUSTER.getKey(), super.setHeaderAuthorization(), null);
+        logger.info("NifiProcessServiceImpl.cluster, URL:{}", URL + NifiEnum.ACCESS_TOKEN.getKey());
+        String response = HttpClientUtil.get(URL + NifiEnum.NIFI_CLUSTER.getKey(), super.setHeaderAuthorization(), null);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
     @Override
     public Map<String, Object> getRootGroupInfo() throws Exception {
-        logger.info("NifiProcessServiceImpl.getRootGroupInfo, URL:{} ", URL + NifiEnum.ACCESS_TOKEN.getKey());
-        String response = HttpClientUtil.httpGetRequest(NifiProcessUtil.assemblyUrl(URL, NifiEnum.ROOT_GROUP_INFO.getKey()), super.setHeaderAuthorization(), null);
+        logger.info("NifiProcessServiceImpl.getRootGroupInfo, URL:%s ", URL + NifiEnum.ACCESS_TOKEN.getKey());
+        String response = HttpClientUtil.get(NifiProcessUtil.assemblyUrl(URL, NifiEnum.ROOT_GROUP_INFO.getKey()), super.setHeaderAuthorization(), null);
         if (StringUtil.isEmpty(response)) {
             throw new RuntimeException("未获取到NIFI的RootGroup相关信息");
         }
@@ -38,10 +36,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
-    public Map<String, Object> createProcessGroup(Map<String, Object> map) throws Exception {
-        NifiProcessUtil.validateRequestMap(map, "name", "x", "y");
-
-        String id = MapUtils.getString(map, "id");
+    public Map<String, Object> createProcessGroup(Map<String, Object> map, String id) throws Exception {
+        //id为空取rootGroup
         if (StringUtil.isEmpty(id)) {
             Map<String, Object> rootGroupInfos = this.getRootGroupInfo();
             // 校验权限
@@ -50,14 +46,11 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             id = MapUtils.getString(processGroupFlowMap, "id");
         }
 
-        Map<String, Object> param = Maps.newHashMap();
-        param.put("name", MapUtils.getString(map, "name"));
         //请求参数设置
-        param = NifiProcessUtil.position(param, map);
-        Map<String, Object> req = NifiProcessUtil.postParam(param);
+        Map<String, Object> req = NifiProcessUtil.postParam(map);
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_PROCSS_GROUP.getKey(), id);
         logger.info("NifiProcessServiceImpl.createProcessGroup, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
-        String response = HttpClientUtil.httpPostRequestByJson(url, super.setHeaderAuthorization(), req);
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
@@ -66,9 +59,34 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("查询单个ProcessGroup 失败:id不能为空");
         }
-        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.GET_PROCSS_GROUP.getKey(), id);
-        logger.info("NifiProcessServiceImpl.getProcessGroup, URL:{} ", url);
-        String response = HttpClientUtil.httpGetRequest(url, super.setHeaderAuthorization(), null);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCSS_GROUPS.getKey(), id);
+        logger.info("NifiProcessServiceImpl.getProcessGroup, URL:{}", url);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> runState(String id, String state, boolean group) throws Exception {
+        if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
+            throw new RuntimeException("switchProcessGroup 失败:参数不能为空");
+        }
+        Map<String, Object> prcessorMap = null;
+        if (group) {
+            prcessorMap = this.getProcessGroup(id);
+        } else {
+            prcessorMap = this.getProcessor(id);
+        }
+
+        // 校验权限
+        NifiProcessUtil.checkPermissions(prcessorMap);
+
+        //请求参数设置
+        Map<String, Object> req = NifiProcessUtil.postParam(null, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
+        req.put("state", state);
+        req.remove("component");
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_STATUS.getKey(), id);
+        logger.info("NifiProcessServiceImpl.switchProcessGroup, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
+        String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
@@ -102,7 +120,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         Map<String, Object> req = NifiProcessUtil.postParam(param);
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.createControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
-        String response = HttpClientUtil.httpPostRequestByJson(url, super.setHeaderAuthorization(), req);
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
@@ -113,31 +131,24 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.GET_CONTROLLER_SERVICE.getKey(), id);
-        logger.info("NifiProcessServiceImpl.getControllerService 信息, URL:{} ", url);
-        String response = HttpClientUtil.httpGetRequest(url, super.setHeaderAuthorization(), null);
+        logger.info("NifiProcessServiceImpl.getControllerService 信息, URL:{}", url);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
     @Override
-    public Map<String, Object> createProcessor(Map<String, Object> map) throws Exception {
-        NifiProcessUtil.validateRequestMap(map, "id", "name", "x", "y", "type");
-
-        //processGroup id
-        String id = MapUtils.getString(map, "id");
-
+    public Map<String, Object> createProcessor(Map<String, Object> map, String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("createProcessor error: id不能为空");
+        }
+        //todo 待删除
+        map.remove("id");
         // 校验权限
         NifiProcessUtil.checkPermissions(this.getProcessGroup(id));
-
-        Map<String, Object> param = Maps.newHashMap();
-        param.put("name", MapUtils.getString(map, "name"));
-        param.put("type", ProcessorEnum.getValue(MapUtils.getString(map, "type")));
-
-        //请求参数设置
-        param = NifiProcessUtil.position(param, map);
-        Map<String, Object> req = NifiProcessUtil.postParam(param);
+        Map<String, Object> req = NifiProcessUtil.postParam(map);
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_PROCESSOR.getKey(), id);
         logger.info("NifiProcessServiceImpl.createProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
-        String response = HttpClientUtil.httpPostRequestByJson(url, super.setHeaderAuthorization(), req);
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
@@ -149,7 +160,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
         logger.info("NifiProcessServiceImpl.getProcessor 信息, URL:{} ", url);
-        String response = HttpClientUtil.httpGetRequest(url, super.setHeaderAuthorization(), null);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
@@ -159,7 +170,6 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
 
         //processor id
         String id = MapUtils.getString(map, "id");
-
         Map<String, Object> prcessorMap = this.getProcessor(id);
         // 校验权限
         NifiProcessUtil.checkPermissions(prcessorMap);
@@ -167,7 +177,68 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         Map<String, Object> req = NifiProcessUtil.postParam(map, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
         logger.info("NifiProcessServiceImpl.updateProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
-        String response = HttpClientUtil.httpPutRequestByJson(url, super.setHeaderAuthorization(), req);
+        String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
+        //todo 判断是否可用
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> createConnections(Map<String, Object> map, String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("createConnections error: id不能为空");
+        }
+        //todo removed id
+        map.remove("id");
+        Map<String, Object> prcessorGroupMap = this.getProcessGroup(id);
+        // 校验权限
+        NifiProcessUtil.checkPermissions(prcessorGroupMap);
+        //请求参数设置
+        Map<String, Object> req = NifiProcessUtil.postParam(map);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_CONNECTIONS.getKey(), id);
+        logger.info("NifiProcessServiceImpl.createConnections, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> getConnections(String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("getConnections失败:id不能为空");
+        }
+
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONNECTIONS.getKey(), id);
+        logger.info("NifiProcessServiceImpl.getConnections 信息, URL:{} ", url);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> dropConnections(String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("dropConnections失败:id不能为空");
+        }
+
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.DROP_CONNECTIONS.getKey(), id);
+        logger.info("NifiProcessServiceImpl.dropConnections 信息, URL:{} ", url);
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> delConnections(String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("delConnections:id不能为空");
+        }
+        Map<String, Object> connectMap = this.getConnections(id);
+        // 校验权限
+        NifiProcessUtil.checkPermissions(connectMap);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONNECTIONS.getKey(), id);
+
+        Map<String, Object> headers = super.setHeaderAuthorization();
+        url = url + "?version=" + MapUtils.getMap(connectMap, "revision").get("version");
+        logger.info("NifiProcessServiceImpl.delConnections 信息, URL:{} ", url);
+
+        String response = HttpClientUtil.delete(url, headers);
         return JsonUtil.string2Obj(response, Map.class);
     }
 

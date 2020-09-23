@@ -2,8 +2,8 @@ package com.deloitte.bdh.common.http;
 
 
 import com.deloitte.bdh.common.json.JsonUtil;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.http.*;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
@@ -38,31 +38,6 @@ public class HttpClientUtil {
 
     }
 
-    /**
-     * function:发送get请求
-     *
-     * @param url 请求地址
-     * @return String
-     */
-    public static String httpGetRequest(String url) throws IOException {
-        HttpGet httpGet = new HttpGet(url);
-        return getResult(httpGet);
-    }
-
-    /**
-     * function:发送get请求
-     *
-     * @param url     请求地址
-     * @param headers 头信息
-     * @return String
-     */
-    public static String httpGetRequestWithHeaders(String url, Map<String, Object> headers) throws IOException {
-        HttpGet httpGet = new HttpGet(url);
-        for (Map.Entry<String, Object> param : headers.entrySet()) {
-            httpGet.addHeader(param.getKey(), String.valueOf(param.getValue()));
-        }
-        return getResult(httpGet);
-    }
 
     /**
      * function:发送get请求
@@ -72,9 +47,7 @@ public class HttpClientUtil {
      * @param params  参数
      * @return String
      */
-    public static String httpGetRequest(String url, Map<String, Object> headers,
-                                        Map<String, Object> params) throws IOException {
-        String result = EMPTY_STR;
+    public static String get(String url, Map<String, Object> headers, Map<String, Object> params) throws IOException {
         HttpGet httpGet = new HttpGet(createParamUrl(url, params));
         for (Map.Entry<String, Object> param : headers.entrySet()) {
             httpGet.addHeader(param.getKey(), String.valueOf(param.getValue()));
@@ -83,16 +56,6 @@ public class HttpClientUtil {
         return getResult(httpGet);
     }
 
-    /**
-     * function:发送get请求
-     *
-     * @param url 请求地址
-     * @return String
-     */
-    public static String httpGetRequestWithParams(String url, Map<String, Object> params) throws IOException {
-        HttpGet httpGet = new HttpGet(createParamUrl(url, params));
-        return getResult(httpGet);
-    }
 
     /**
      * function:创建带参数的URL
@@ -126,17 +89,6 @@ public class HttpClientUtil {
     /**
      * function:post请求访问
      *
-     * @param url 请求地址
-     * @return String
-     */
-    public static String httpPostRequest(String url) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        return getResult(httpPost);
-    }
-
-    /**
-     * function:post请求访问
-     *
      * @param url    地址
      * @param params 参数
      * @return String
@@ -153,29 +105,6 @@ public class HttpClientUtil {
         return getResult(httpPost);
     }
 
-    /**
-     * function:post请求访问
-     *
-     * @param url     地址
-     * @param headers 头信息
-     * @param params  参数
-     * @return String
-     */
-    public static String httpPostRequest(String url, Map<String, Object> headers,
-                                         Map<String, Object> params) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
-            httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
-        }
-        ArrayList<NameValuePair> pairs = covertParams2NVPS(params);
-        try {
-            httpPost.setEntity(new UrlEncodedFormEntity(pairs, UTF_8));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return getResult(httpPost);
-    }
 
 
     /**
@@ -186,12 +115,14 @@ public class HttpClientUtil {
      * @param params  参数
      * @return String
      */
-    public static String httpPostRequestByJson(String url, Map<String, Object> headers,
-                                               Map<String, Object> params) throws IOException {
+    public static String post(String url, Map<String, Object> headers, Map<String, Object> params) throws IOException {
         HttpPost httpPost = new HttpPost(url);
-        for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
-            httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
+        if (MapUtils.isNotEmpty(headers)) {
+            for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
+                httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
+            }
         }
+
         try {
             String json = JsonUtil.readMapToJson(params);
             httpPost.setEntity(new StringEntity(json, "UTF-8"));
@@ -211,8 +142,8 @@ public class HttpClientUtil {
      * @param params  参数
      * @return String
      */
-    public static String httpPutRequestByJson(String url, Map<String, Object> headers,
-                                               Map<String, Object> params) throws IOException {
+    public static String put(String url, Map<String, Object> headers,
+                             Map<String, Object> params) throws IOException {
         HttpPut httpPut = new HttpPut(url);
         for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
             httpPut.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
@@ -229,46 +160,22 @@ public class HttpClientUtil {
     }
 
     /**
-     * function:post以JSON格式发送
+     * function:DELETE以JSON格式发送
      *
-     * @param url       地址
-     * @param jsonParam 参数
+     * @param url     地址
+     * @param headers 头信息
+     * @param params  参数
      * @return String
      */
-    public static String httpPostRequestByJson(String url, String jsonParam) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader("Content-type", "application/json; charset=utf-8");
-        try {
-            httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
-        } catch (UnsupportedCharsetException e) {
-            e.printStackTrace();
-            throw e;
+    public static String delete(String url, Map<String, Object> headers) throws IOException {
+        HttpDelete httpDelete = new HttpDelete(url);
+        for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
+            httpDelete.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
         }
-        return getResult(httpPost);
+        httpDelete.setHeader("Content-Type", "application/json; charset=UTF-8");
+        return getResult(httpDelete);
     }
 
-    /**
-     * function:post以JSON格式发送
-     *
-     * @param url       地址
-     * @param headers   头信息
-     * @param jsonParam 参数
-     * @return String
-     */
-    public static String httpPostRequestByJson(String url, Map<String, Object> headers,
-                                               String jsonParam) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
-            httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
-        }
-        try {
-            httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
-        } catch (UnsupportedCharsetException e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return getResult(httpPost);
-    }
 
     /**
      * post以JSON格式发送,返回 HTTPResponse
@@ -362,13 +269,18 @@ public class HttpClientUtil {
 
         try {
             CloseableHttpResponse response = httpClient.execute(request);
-            if (isRedirected(response)) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            result = getEntityData(response);
+
+
+            if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
                 result = getRedirectedUrl(response);
+            } else if (statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED) {
+//                result = getEntityData(response);
             } else {
-                result = getEntityData(response);
+                throw new RuntimeException(String.format("调用外部接口报错,错误码:%s,描述:%s", statusCode, result));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
         return result;

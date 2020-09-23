@@ -86,7 +86,8 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(value = Exception.class)
 	public ResponseEntity<Object> exceptionHandler(Exception e) {
 		RetResult<Object> result = this.initResult();
-		result.fail(RetCode.INTERNAL_SERVER_ERROR.code, "服务器错误，请稍后再试~");
+//		result.fail(RetCode.INTERNAL_SERVER_ERROR.code, "服务器错误，请稍后再试~");
+		result.fail(RetCode.INTERNAL_SERVER_ERROR.code, e.getMessage());
 		logger.error(e.getMessage(), e);
 		return this.buildResponseEntity(result);
 	}

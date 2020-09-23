@@ -42,7 +42,7 @@ public class NifiController {
     @ApiOperation(value = "createProcessGroup", notes = "createProcessGroup")
     @PostMapping("/createProcessGroup")
     public RetResult<Object> createProcessGroup(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
-        return RetResponse.makeOKRsp(nifiProcessService.createProcessGroup(request.getData()));
+        return RetResponse.makeOKRsp(nifiProcessService.createProcessGroup(request.getData(), (String) request.getData().get("id")));
     }
 
     @ApiOperation(value = "getProcessGroup", notes = "getProcessGroup")
@@ -66,7 +66,7 @@ public class NifiController {
     @ApiOperation(value = "createProcessor", notes = "createProcessor")
     @PostMapping("/createProcessor")
     public RetResult<Object> createProcessor(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
-        return RetResponse.makeOKRsp(nifiProcessService.createProcessor(request.getData()));
+        return RetResponse.makeOKRsp(nifiProcessService.createProcessor(request.getData(), (String) request.getData().get("id")));
     }
 
     @ApiOperation(value = "getProcessor", notes = "getProcessor")
@@ -79,5 +79,30 @@ public class NifiController {
     @PostMapping("/updateProcessor")
     public RetResult<Object> updateProcessor(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
         return RetResponse.makeOKRsp(nifiProcessService.updateProcessor(request.getData()));
+    }
+
+    @ApiOperation(value = "createConnections", notes = "createConnections")
+    @PostMapping("/createConnections")
+    public RetResult<Object> createConnections(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.createConnections(request.getData(), (String) request.getData().get("id")));
+    }
+
+    @ApiOperation(value = "dropConnections", notes = "dropConnections")
+    @PostMapping("/dropConnections")
+    public RetResult<Object> dropConnections(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.dropConnections(request.getData()));
+    }
+
+    @ApiOperation(value = "delConnections", notes = "delConnections")
+    @PostMapping("/delConnections")
+    public RetResult<Object> delConnectionsa(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.delConnections(request.getData()));
+    }
+
+    @ApiOperation(value = "runState", notes = "runState")
+    @PostMapping("/runState")
+    public RetResult<Object> runState(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.runState((String) request.getData().get("id"),
+                (String) request.getData().get("state"),(Boolean) request.getData().get("group")));
     }
 }

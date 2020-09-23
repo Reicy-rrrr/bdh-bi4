@@ -35,9 +35,9 @@ public enum NifiEnum {
     CREATE_PROCSS_GROUP("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/process-groups", "创建 ProcessGroup"),
 
     /**
-     * 查询单个 ProcessGroup
+     * 查看、修改 ProcessGroup
      */
-    GET_PROCSS_GROUP("/nifi-api/process-groups/" + NifiProcessUtil.TEMP , "查询单个 ProcessGroup"),
+    PROCSS_GROUPS("/nifi-api/process-groups/" + NifiProcessUtil.TEMP, "查看、修改 ProcessGroup"),
 
     /**
      * 创建 ControllerService
@@ -47,7 +47,7 @@ public enum NifiEnum {
     /**
      * 查询 ControllerService
      */
-    GET_CONTROLLER_SERVICE("/nifi-api/controller-services/" + NifiProcessUtil.TEMP , "查询 ControllerService"),
+    GET_CONTROLLER_SERVICE("/nifi-api/controller-services/" + NifiProcessUtil.TEMP, "查询 ControllerService"),
 
     /**
      * 创建 processor
@@ -57,11 +57,27 @@ public enum NifiEnum {
     /**
      * 查询/修改 PROCESSOR
      */
-    PROCESSORS("/nifi-api/processors/" + NifiProcessUtil.TEMP , "查询 PROCESSOR"),
+    PROCESSORS("/nifi-api/processors/" + NifiProcessUtil.TEMP, "查询 PROCESSOR"),
 
+    /**
+     * 创建 connections
+     */
+    CREATE_CONNECTIONS("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/connections", "创建 connections"),
 
+    /**
+     * 清空 connections
+     */
+    DROP_CONNECTIONS("/nifi-api/flowfile-queues/" + NifiProcessUtil.TEMP + "/drop-requests", "清空 connections"),
 
+    /**
+     * 查看/删除 connections
+     */
+    CONNECTIONS("/nifi-api/connections/" + NifiProcessUtil.TEMP, "查看/删除 connections"),
 
+    /**
+     * run-status
+     */
+    RUN_STATUS("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
     ;
 
     private String key;
