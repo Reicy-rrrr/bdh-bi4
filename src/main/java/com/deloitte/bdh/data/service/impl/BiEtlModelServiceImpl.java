@@ -187,7 +187,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         //初始化 为未运行状态 对应nifi stopped RUNNIG
         inf.setStatus(RunStatusEnum.STOP.getKey());
         inf.setCreateDate(LocalDateTime.now());
-        //todo 设置 validate
+        // 设置 validate
+        inf.setValidate(YesOrNoEnum.NO.getKey());
         inf.setIp("");
 
         //调用NIFI 创建模板

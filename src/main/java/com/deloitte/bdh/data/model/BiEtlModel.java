@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-24
+ * @since 2020-09-25
  */
 @TableName("BI_ETL_MODEL")
 public class BiEtlModel implements Serializable {
@@ -82,6 +82,12 @@ public class BiEtlModel implements Serializable {
      */
     @TableField("STATUS")
     private String status;
+
+    /**
+     * 校验状态
+     */
+    @TableField("VALIDATE")
+    private String validate;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -184,6 +190,13 @@ public class BiEtlModel implements Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
+    public String getValidate() {
+        return validate;
+    }
+
+    public void setValidate(String validate) {
+        this.validate = validate;
+    }
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -248,6 +261,7 @@ public class BiEtlModel implements Serializable {
         ", isFile=" + isFile +
         ", effect=" + effect +
         ", status=" + status +
+        ", validate=" + validate +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

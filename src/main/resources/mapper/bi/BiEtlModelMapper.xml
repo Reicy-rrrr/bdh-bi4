@@ -15,6 +15,7 @@
         <result column="IS_FILE" property="isFile" />
         <result column="EFFECT" property="effect" />
         <result column="STATUS" property="status" />
+        <result column="VALIDATE" property="validate" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

@@ -9,7 +9,7 @@ import com.deloitte.bdh.common.base.Mapper;
  * </p>
  *
  * @author lw
- * @since 2020-09-24
+ * @since 2020-09-25
  */
 public interface BiEtlModelMapper extends Mapper<BiEtlModel> {
 
