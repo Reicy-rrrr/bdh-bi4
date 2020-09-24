@@ -116,14 +116,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行中的 model 不允许修改");
         }
-        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
-            throw new RuntimeException("启用中的 model 不允许修改");
-        }
+//        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
+//            throw new RuntimeException("启用中的 model 不允许修改");
+//        }
 
-        if (StringUtil.isEmpty(dto.getName())) {
+        if (!StringUtil.isEmpty(dto.getName())) {
             inf.setName(dto.getName());
         }
-        if (StringUtil.isEmpty(dto.getComments())) {
+        if (!StringUtil.isEmpty(dto.getComments())) {
             inf.setComments(dto.getComments());
         }
 //        if (StringUtil.isEmpty(dto.getEffect())) {
@@ -135,6 +135,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         reqNifi.put("id", inf.getProcessGroupId());
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
+//        reqNifi.put("stat", inf.getComments());
 
         Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
         inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
