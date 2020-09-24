@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.model.request.GetResourcesDto;
 import com.deloitte.bdh.data.model.request.RunResourcesDto;
+import com.deloitte.bdh.data.model.request.UpdateResourcesDto;
 
 import java.util.List;
 
@@ -50,4 +51,12 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @return
      */
     void delResource(String id) throws Exception;
+
+    /**
+     * 修改数据源
+     *
+     * @param dto
+     * @return
+     */
+    BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception;
 }

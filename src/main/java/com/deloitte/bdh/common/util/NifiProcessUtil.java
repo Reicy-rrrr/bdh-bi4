@@ -179,7 +179,7 @@ public class NifiProcessUtil {
      * 组装DbURL
      */
     public static String getDbUrl(String type, String ip, String port, String dbName) {
-        String url = SourceTypeEnum.getDriverNameByType(type);
+        String url = SourceTypeEnum.getUrlByType(type);
         return url.replace("IP", ip).replace("PORT", port).replace("DBNAME", dbName);
     }
 

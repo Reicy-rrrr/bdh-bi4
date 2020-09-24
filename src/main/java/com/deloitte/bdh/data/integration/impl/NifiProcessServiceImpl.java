@@ -175,6 +175,21 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
+    public Map<String, Object> updControllerService(Map<String, Object> map) throws Exception {
+        NifiProcessUtil.validateRequestMap(map, "id");
+        Map<String, Object> prcessorMap = this.getControllerService(MapUtils.getString(map,"id"));
+        // 校验权限
+        NifiProcessUtil.checkPermissions(prcessorMap);
+
+        //请求参数设置
+        Map<String, Object> req = NifiProcessUtil.postParam(map, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), MapUtils.getString(map,"id"));
+        logger.info("NifiProcessServiceImpl.updControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
+        String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
     public Map<String, Object> createProcessor(Map<String, Object> map, String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("createProcessor error: id不能为空");

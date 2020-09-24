@@ -17,6 +17,6 @@ public class RunResourcesDto {
     @ApiModelProperty(value = "启用/禁用", example = "0",required = true)
     private String effect;
 
-    @ApiModelProperty(value = "启用/禁用", example = "0",required = true)
+    @ApiModelProperty(value = "modifiedUser", example = "0",required = true)
     private String modifiedUser;
 }

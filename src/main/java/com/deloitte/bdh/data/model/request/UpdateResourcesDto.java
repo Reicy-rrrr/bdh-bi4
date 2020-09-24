@@ -7,22 +7,25 @@ import lombok.Setter;
 import lombok.ToString;
 
 
-@ApiModel(description = "新增数据源")
+@ApiModel(description = "修改数据源")
 @Setter
 @Getter
 @ToString
-public class CreateResourcesDto {
+public class UpdateResourcesDto {
 
-    @ApiModelProperty(value = "tenantId", example = "123", required = true)
-    private String tenantId;
+    @ApiModelProperty(value = "id", example = "123", required = true)
+    private String id;
+
+    @ApiModelProperty(value = "modifiedUser", example = "1", required = true)
+    private String modifiedUser;
 
     @ApiModelProperty(value = "数据源名称", example = "数据源名称", required = true)
     private String name;
 
-    @ApiModelProperty(value = "描述", example = "描述")
+    @ApiModelProperty(value = "描述", example = "描述", required = true)
     private String comments;
 
-    @ApiModelProperty(value = "数据源类型（1:mysql8.*;2:msql7.*;3:oracle）", example = "1")
+    @ApiModelProperty(value = "数据源类型（1:mysql8.*;2:msql7.*;3:oracle）", required = true)
     private String type;
 
     @ApiModelProperty(value = "数据库名称", example = "1", required = true)
@@ -40,7 +43,5 @@ public class CreateResourcesDto {
     @ApiModelProperty(value = "端口", example = "1", required = true)
     private String port;
 
-    @ApiModelProperty(value = "createUser", example = "1")
-    private String createUser;
 
 }

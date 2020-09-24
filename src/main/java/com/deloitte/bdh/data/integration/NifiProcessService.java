@@ -76,6 +76,13 @@ public interface NifiProcessService {
     Map<String, Object> delControllerService(String id) throws Exception;
 
     /**
+     * function:修改 单个ControllerService
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> updControllerService(Map<String, Object> map) throws Exception;
+
+    /**
      * function:创建 createProcessor
      *
      * @return Map<String, Object>

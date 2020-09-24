@@ -20,6 +20,7 @@ import com.deloitte.bdh.data.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.model.request.GetResourcesDto;
 import com.deloitte.bdh.data.model.request.RunResourcesDto;
+import com.deloitte.bdh.data.model.request.UpdateResourcesDto;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.github.pagehelper.PageHelper;
@@ -135,5 +136,41 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         Map<String, Object> sourceMap = nifiProcessService.delControllerService(controllerServiceId);
         biEtlDatabaseInfMapper.deleteById(id);
         logger.info("删除数据成功:{}", JsonUtil.obj2String(sourceMap));
+    }
+
+    @Override
+    public BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception {
+        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
+        //todo  被 process 引入的数据源是否不能修改
+        if (EffectEnum.YES.getKey().equals(inf.getEffect())) {
+            throw new RuntimeException("启用中的数据源不允许修改");
+        }
+
+        BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
+        BeanUtils.copyProperties(dto, biEtlDatabaseInf);
+        biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
+        biEtlDatabaseInf.setEffect(EffectEnum.NO.getKey());
+        biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
+
+        //调用nifi
+        Map<String, Object> properties = Maps.newHashMap();
+        properties.put("Database User", biEtlDatabaseInf.getDbUser());
+        properties.put("Password", biEtlDatabaseInf.getDbPassword());
+        properties.put("Database Connection URL", NifiProcessUtil.getDbUrl(biEtlDatabaseInf.getType(),
+                biEtlDatabaseInf.getAddress(), biEtlDatabaseInf.getPort(), biEtlDatabaseInf.getDbName()));
+        properties.put("Database Driver Class Name", inf.getDriverName());
+        properties.put("database-driver-locations", inf.getDriverLocations());
+
+        Map<String, Object> request = Maps.newHashMap();
+        request.put("id", inf.getControllerServiceId());
+        request.put("name", biEtlDatabaseInf.getName());
+        request.put("comments", biEtlDatabaseInf.getComments());
+        request.put("properties", properties);
+
+        Map<String, Object> sourceMap = nifiProcessService.updControllerService(request);
+        biEtlDatabaseInf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+        biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
+        return biEtlDatabaseInf;
+
     }
 }
