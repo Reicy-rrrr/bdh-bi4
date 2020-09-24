@@ -27,7 +27,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
 
     @Override
     public Map<String, Object> getRootGroupInfo() throws Exception {
-        logger.info("NifiProcessServiceImpl.getRootGroupInfo, URL:%s ", URL + NifiEnum.ACCESS_TOKEN.getKey());
+        logger.info("NifiProcessServiceImpl.getRootGroupInfo, URL:{} ", URL + NifiEnum.ACCESS_TOKEN.getKey());
         String response = HttpClientUtil.get(NifiProcessUtil.assemblyUrl(URL, NifiEnum.ROOT_GROUP_INFO.getKey()), super.setHeaderAuthorization(), null);
         if (StringUtil.isEmpty(response)) {
             throw new RuntimeException("未获取到NIFI的RootGroup相关信息");
@@ -68,7 +68,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> runState(String id, String state, boolean group) throws Exception {
         if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
-            throw new RuntimeException("switchProcessGroup 失败:参数不能为空");
+            throw new RuntimeException("runState 失败:参数不能为空");
         }
         Map<String, Object> prcessorMap = null;
         if (group) {
@@ -85,14 +85,14 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         req.put("state", state);
         req.remove("component");
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_STATUS.getKey(), id);
-        logger.info("NifiProcessServiceImpl.switchProcessGroup, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
+        logger.info("NifiProcessServiceImpl.runState, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, Map.class);
     }
 
     @Override
     public Map<String, Object> createControllerService(Map<String, Object> map) throws Exception {
-        NifiProcessUtil.validateRequestMap(map, "name", "dbUser", "passWord", "dbUrl", "driverName");
+        NifiProcessUtil.validateRequestMap(map, "type", "name", "dbUser", "passWord", "dbUrl", "driverName", "driverLocations");
 
         String id = MapUtils.getString(map, "id");
         //数据源创建默认scope为rootGroup的Id
@@ -105,7 +105,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         }
 
         Map<String, Object> param = Maps.newHashMap();
-        param.put("type", "org.apache.nifi.dbcp.DBCPConnectionPool");
+        //连接池类型
+        param.put("type", MapUtils.getString(map, "type"));
         param.put("name", MapUtils.getString(map, "name"));
         param.put("comments", MapUtils.getString(map, "comments"));
 

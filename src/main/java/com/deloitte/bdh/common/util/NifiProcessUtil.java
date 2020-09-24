@@ -1,5 +1,6 @@
 package com.deloitte.bdh.common.util;
 
+import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
@@ -173,6 +174,26 @@ public class NifiProcessUtil {
         map.put("relationships", list);
     }
 
+
+    /**
+     * 组装DbURL
+     */
+    public static String getDbUrl(String type, String ip, String port, String dbName) {
+        String url = SourceTypeEnum.getDriverNameByType(type);
+        return url.replace("IP", ip).replace("PORT", port).replace("DBNAME", dbName);
+    }
+
+
+    /**
+     * 获取version 字符串
+     */
+    public static String getVersion(Map<String, Object> sourceMap) {
+        Map map = MapUtils.getMap(sourceMap, "revision");
+        if (MapUtils.isEmpty(map)) {
+            return null;
+        }
+        return MapUtils.getString(map, "version");
+    }
 
     public static void main(String[] args) {
     }

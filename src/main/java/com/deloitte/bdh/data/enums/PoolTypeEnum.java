@@ -2,9 +2,9 @@ package com.deloitte.bdh.data.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-public enum ProcessorEnum {
+public enum PoolTypeEnum {
 
-    ExecuteSQL("ExecuteSQL", "org.apache.nifi.processors.standard.ExecuteSQL")
+    DBCPConnectionPool("org.apache.nifi.dbcp.DBCPConnectionPool", "DBCPConnectionPool连接池"),
 
 
     ;
@@ -13,7 +13,7 @@ public enum ProcessorEnum {
 
     private String value;
 
-    ProcessorEnum(String key, String value) {
+    PoolTypeEnum(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -25,7 +25,7 @@ public enum ProcessorEnum {
      * @return String
      */
     public static String getValue(String key) {
-        ProcessorEnum[] enums = ProcessorEnum.values();
+        PoolTypeEnum[] enums = PoolTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (StringUtils.equals(key, enums[i].getKey())) {
                 return enums[i].getvalue();
