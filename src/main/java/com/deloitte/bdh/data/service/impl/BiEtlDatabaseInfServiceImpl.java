@@ -79,7 +79,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setCreateDate(LocalDateTime.now());
         inf.setModifiedDate(LocalDateTime.now());
         //todo
-        inf.setIp("");
+//        inf.setIp("");
 
         //调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();
