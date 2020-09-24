@@ -195,7 +195,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         Map<String, Object> reqNifi = Maps.newHashMap();
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
-        reqNifi.put("position", inf.getPosition());
+        reqNifi.put("position", JsonUtil.string2Obj(inf.getPosition(), Map.class));
         Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
 
         //nifi 返回后设置补充dto
