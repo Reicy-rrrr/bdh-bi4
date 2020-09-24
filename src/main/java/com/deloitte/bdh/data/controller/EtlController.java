@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.model.request.GetResourcesDto;
+import com.deloitte.bdh.data.model.request.RunResourcesDto;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
@@ -43,6 +44,19 @@ public class EtlController {
     @PostMapping("/createResource")
     public RetResult<BiEtlDatabaseInf> createResource(@RequestBody @Validated RetRequest<CreateResourcesDto> request) throws Exception {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.createResource(request.getData()));
+    }
+
+    @ApiOperation(value = "启用/禁用数据源", notes = "启用/禁用数据源")
+    @PostMapping("/runResource")
+    public RetResult<BiEtlDatabaseInf> runResource(@RequestBody @Validated RetRequest<RunResourcesDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.runResource(request.getData()));
+    }
+
+    @ApiOperation(value = "删除数据源", notes = "删除数据源")
+    @PostMapping("/delResource")
+    public RetResult<Void> delResource(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        biEtlDatabaseInfService.delResource(request.getData());
+        return RetResponse.makeOKRsp();
     }
 
 }

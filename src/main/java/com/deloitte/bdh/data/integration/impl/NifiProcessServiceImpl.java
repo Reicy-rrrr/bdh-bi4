@@ -126,14 +126,51 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
+    public Map<String, Object> runControllerService(String id, String state) throws Exception {
+        if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
+            throw new RuntimeException("runControllerService 失败:参数不能为空");
+        }
+        Map<String, Object> prcessorMap = this.getControllerService(id);
+
+        // 校验权限
+        NifiProcessUtil.checkPermissions(prcessorMap);
+        //请求参数设置
+        Map<String, Object> req = NifiProcessUtil.postParam(null, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
+        req.put("state", state);
+        req.remove("component");
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_CONTROLLER_SERVICE.getKey(), id);
+        logger.info("NifiProcessServiceImpl.runControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
+        String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
     public Map<String, Object> getControllerService(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("查询单个数据源失败:id不能为空");
         }
 
-        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.GET_CONTROLLER_SERVICE.getKey(), id);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.getControllerService 信息, URL:{}", url);
         String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> delControllerService(String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("delControllerService:id不能为空");
+        }
+        Map<String, Object> connectMap = this.getControllerService(id);
+        // 校验权限
+        NifiProcessUtil.checkPermissions(connectMap);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), id);
+
+        Map<String, Object> headers = super.setHeaderAuthorization();
+        url = url + "?version=" + MapUtils.getMap(connectMap, "revision").get("version");
+        logger.info("NifiProcessServiceImpl.delControllerService 信息, URL:{} ", url);
+
+        String response = HttpClientUtil.delete(url, headers);
         return JsonUtil.string2Obj(response, Map.class);
     }
 

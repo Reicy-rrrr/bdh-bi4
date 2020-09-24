@@ -45,9 +45,13 @@ public enum NifiEnum {
     CREATE_CONTROLLER_SERVICE("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/controller-services", "创建 ControllerService"),
 
     /**
+     * 运行 ControllerService
+     */
+    RUN_CONTROLLER_SERVICE("/nifi-api/controller-services/" + NifiProcessUtil.TEMP + "/run-status", "运行 ControllerService"),
+    /**
      * 查询 ControllerService
      */
-    GET_CONTROLLER_SERVICE("/nifi-api/controller-services/" + NifiProcessUtil.TEMP, "查询 ControllerService"),
+    CONTROLLER_SERVICE("/nifi-api/controller-services/" + NifiProcessUtil.TEMP, "查询 ControllerService"),
 
     /**
      * 创建 processor

@@ -55,11 +55,25 @@ public interface NifiProcessService {
     Map<String, Object> createControllerService(Map<String, Object> map) throws Exception;
 
     /**
+     * function:  启动与停止
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> runControllerService(String id, String state) throws Exception;
+
+    /**
      * function:查询 单个ControllerService
      *
      * @return Map<String, Object>
      */
     Map<String, Object> getControllerService(String id) throws Exception;
+
+    /**
+     * function:删除 单个ControllerService
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> delControllerService(String id) throws Exception;
 
     /**
      * function:创建 createProcessor
