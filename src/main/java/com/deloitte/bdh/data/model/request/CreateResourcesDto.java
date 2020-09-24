@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 
+
 @ApiModel(description = "新增数据源")
 @Setter
 @Getter
@@ -22,7 +23,7 @@ public class CreateResourcesDto {
     @ApiModelProperty(value = "描述", example = "描述")
     private String comments;
 
-    @ApiModelProperty(value = "数据源类型（1:mysql8.*;2:msql7.*;3:oracle）", example = "1")
+    @ApiModelProperty(value = "数据源类型（1:mysql8.*;2:msql7.*;3:oracle）", example = "1",required = true)
     private String type;
 
     @ApiModelProperty(value = "数据库名称", example = "1", required = true)
