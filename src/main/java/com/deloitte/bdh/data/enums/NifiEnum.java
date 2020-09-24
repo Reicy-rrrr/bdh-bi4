@@ -35,7 +35,7 @@ public enum NifiEnum {
     CREATE_PROCSS_GROUP("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/process-groups", "创建 ProcessGroup"),
 
     /**
-     * 查看、修改 ProcessGroup
+     * 查看、修改 、删除ProcessGroup
      */
     PROCSS_GROUPS("/nifi-api/process-groups/" + NifiProcessUtil.TEMP, "查看、修改 ProcessGroup"),
 
@@ -48,6 +48,7 @@ public enum NifiEnum {
      * 运行 ControllerService
      */
     RUN_CONTROLLER_SERVICE("/nifi-api/controller-services/" + NifiProcessUtil.TEMP + "/run-status", "运行 ControllerService"),
+
     /**
      * 查询 ControllerService
      */

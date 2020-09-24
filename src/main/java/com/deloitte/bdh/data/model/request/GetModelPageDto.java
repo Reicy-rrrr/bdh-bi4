@@ -8,11 +8,11 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
-@ApiModel(description = "基于租户获取数据源列表请求参数")
+@ApiModel(description = "基于租户获取Model列表请求参数")
 @Setter
 @Getter
 @ToString
-public class GetResourcesDto extends PageDto {
+public class GetModelPageDto extends PageDto {
 
     @ApiModelProperty(value = "tenantId", example = "0", required = true)
     @NotNull(message = "租户id不能为空")

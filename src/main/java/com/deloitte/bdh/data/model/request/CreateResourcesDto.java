@@ -50,7 +50,7 @@ public class CreateResourcesDto {
     @NotNull(message = "端口 不能为空")
     private String port;
 
-    @ApiModelProperty(value = "createUser", example = "1")
+    @ApiModelProperty(value = "createUser", example = "1", required = true)
     @NotNull(message = "createUser 不能为空")
     private String createUser;
 

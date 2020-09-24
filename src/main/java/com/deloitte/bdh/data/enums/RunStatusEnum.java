@@ -2,16 +2,20 @@ package com.deloitte.bdh.data.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-public enum ControllerServieStateEnum {
+/**
+ * @author liuwei
+ * @date 2020/09/22
+ */
+public enum RunStatusEnum {
 
-    ENABLED("ENABLED", "有效"),
-    DISABLED("DISABLED", "失效");
+    RUNNING("RUNNING", "运行中"),
+    STOP("STOP", "已停止");
 
     private String key;
 
     private String value;
 
-    ControllerServieStateEnum(String key, String value) {
+    RunStatusEnum(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -23,7 +27,7 @@ public enum ControllerServieStateEnum {
      * @return String
      */
     public static String getValue(String key) {
-        ControllerServieStateEnum[] enums = ControllerServieStateEnum.values();
+        RunStatusEnum[] enums = RunStatusEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (StringUtils.equals(key, enums[i].getKey())) {
                 return enums[i].getvalue();

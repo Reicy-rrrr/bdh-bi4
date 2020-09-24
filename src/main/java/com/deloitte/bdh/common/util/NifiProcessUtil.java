@@ -7,6 +7,7 @@ import org.apache.commons.collections4.MapUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class NifiProcessUtil {
     public static final String TEMP = "TEMP";
@@ -195,6 +196,20 @@ public class NifiProcessUtil {
         return MapUtils.getString(map, "version");
     }
 
+    /**
+     * 随机获取positions json
+     */
+    public static String randPosition() {
+        Random r = new Random();
+        Map<String, Object> position = Maps.newHashMap();
+        position.put("x", r.nextInt(3000));
+        position.put("y", -1 * r.nextInt(1000));
+        return JsonUtil.obj2String(position);
+    }
+
     public static void main(String[] args) {
+        System.out.println(randPosition());
+        System.out.println(randPosition());
+
     }
 }

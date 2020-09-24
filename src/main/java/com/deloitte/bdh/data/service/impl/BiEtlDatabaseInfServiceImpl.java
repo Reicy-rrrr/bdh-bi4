@@ -9,7 +9,6 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.enums.ControllerServieStateEnum;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.PoolTypeEnum;
 import com.deloitte.bdh.data.enums.SourceTypeEnum;
@@ -59,10 +58,18 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (!StringUtil.isEmpty(dto.getTenantId())) {
             fUOLamQW.eq(BiEtlDatabaseInf::getTenantId, dto.getTenantId());
         }
-
+        fUOLamQW.orderByDesc(BiEtlDatabaseInf::getCreateDate);
         PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo(this.list(fUOLamQW));
         PageResult pageResult = new PageResult(pageInfo);
         return pageResult;
+    }
+
+    @Override
+    public BiEtlDatabaseInf getResource(String id) {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("查看单个resource 失败:id 不能为空");
+        }
+        return this.getById(id);
     }
 
 
@@ -75,7 +82,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
         //todo 应该读取配置
         inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
-        inf.setEffect(EffectEnum.NO.getKey());
+        inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
         inf.setModifiedDate(LocalDateTime.now());
         //todo
@@ -108,10 +115,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setEffect(dto.getEffect());
 
         String controllerServiceId = inf.getControllerServiceId();
-        String state = EffectEnum.YES.getKey().equals(inf.getEffect())
-                ? ControllerServieStateEnum.ENABLED.getKey() : ControllerServieStateEnum.DISABLED.getKey();
-
-        Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, state);
+        Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, inf.getEffect());
 
         inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
         inf.setModifiedUser(dto.getModifiedUser());
@@ -123,7 +127,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public void delResource(String id) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
-        if (EffectEnum.YES.getKey().equals(inf.getEffect())) {
+        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
             throw new RuntimeException("启用状态下,不允许删除");
         }
         String controllerServiceId = inf.getControllerServiceId();
@@ -138,14 +142,14 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     public BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
         //todo  被 process 引入的数据源是否不能修改
-        if (EffectEnum.YES.getKey().equals(inf.getEffect())) {
+        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
             throw new RuntimeException("启用中的数据源不允许修改");
         }
 
         BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, biEtlDatabaseInf);
         biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
-        biEtlDatabaseInf.setEffect(EffectEnum.NO.getKey());
+        biEtlDatabaseInf.setEffect(EffectEnum.DISABLE.getKey());
         biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
 
         //调用nifi
@@ -167,6 +171,5 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         biEtlDatabaseInf.setVersion(NifiProcessUtil.getVersion(sourceMap));
         biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
         return biEtlDatabaseInf;
-
     }
 }

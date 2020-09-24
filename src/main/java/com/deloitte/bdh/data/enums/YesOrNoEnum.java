@@ -2,20 +2,17 @@ package com.deloitte.bdh.data.enums;
 
 import org.apache.commons.lang3.StringUtils;
 
-/**
- * @author liuwei
- * @date 2020/09/22
- */
-public enum EffectEnum {
+public enum YesOrNoEnum {
 
-    ENABLE("ENABLE", "有效"),
-    DISABLE("DISABLE", "失效");
+    YES("1", "是"),
+
+    NO("0", "否");
 
     private String key;
 
     private String value;
 
-    EffectEnum(String key, String value) {
+    YesOrNoEnum(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -27,7 +24,7 @@ public enum EffectEnum {
      * @return String
      */
     public static String getValue(String key) {
-        EffectEnum[] enums = EffectEnum.values();
+        YesOrNoEnum[] enums = YesOrNoEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (StringUtils.equals(key, enums[i].getKey())) {
                 return enums[i].getvalue();

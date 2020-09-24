@@ -8,11 +8,11 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
-@ApiModel(description = "启用/禁用数据源")
+@ApiModel(description = "启用/停止MODEL")
 @Setter
 @Getter
 @ToString
-public class RunResourcesDto {
+public class RunModelDto {
     @ApiModelProperty(value = "数据源id", example = "123", required = true)
     @NotNull(message = "数据源id 不能为空")
     private String id;

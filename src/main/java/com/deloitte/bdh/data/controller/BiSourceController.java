@@ -31,9 +31,15 @@ public class BiSourceController {
 
     @ApiOperation(value = "基于租户获取数据源列表", notes = "基于租户获取数据源列表")
     @PostMapping("/getResources")
-    public RetResult<PageResult> getResources(@RequestBody @Validated PageRequest<GetResourcesDto> request) {
-        PageHelper.startPage(request.getPage(), request.getSize());
+    public RetResult<PageResult> getResources(@RequestBody @Validated RetRequest<GetResourcesDto> request) {
+        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getResources(request.getData()));
+    }
+
+    @ApiOperation(value = "查看单个数据源详情", notes = "查看单个数据源详情")
+    @PostMapping("/getResource")
+    public RetResult<BiEtlDatabaseInf> getResource(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getResource(request.getData()));
     }
 
     @ApiOperation(value = "新增数据源", notes = "新增数据源")
