@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.model.request;
 
-import com.deloitte.bdh.data.model.PageDto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -11,7 +10,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class GetResourcesDto extends PageDto {
+public class GetResourcesDto {
 
     @ApiModelProperty(value = "tenantId", example = "0", required = true)
     private String tenantId;

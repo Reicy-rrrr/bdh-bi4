@@ -1,10 +1,7 @@
 package com.deloitte.bdh.data.controller;
 
 
-import com.deloitte.bdh.common.base.PageResult;
-import com.deloitte.bdh.common.base.RetRequest;
-import com.deloitte.bdh.common.base.RetResponse;
-import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.common.base.*;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.model.request.GetResourcesDto;
@@ -34,8 +31,8 @@ public class BiSourceController {
 
     @ApiOperation(value = "基于租户获取数据源列表", notes = "基于租户获取数据源列表")
     @PostMapping("/getResources")
-    public RetResult<PageResult> getResources(@RequestBody @Validated RetRequest<GetResourcesDto> request) {
-        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
+    public RetResult<PageResult> getResources(@RequestBody @Validated PageRequest<GetResourcesDto> request) {
+        PageHelper.startPage(request.getPage(), request.getSize());
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getResources(request.getData()));
     }
 

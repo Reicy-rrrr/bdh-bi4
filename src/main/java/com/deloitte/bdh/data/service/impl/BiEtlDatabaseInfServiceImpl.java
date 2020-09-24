@@ -14,7 +14,6 @@ import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.PoolTypeEnum;
 import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
-import com.deloitte.bdh.data.integration.impl.NifiProcessServiceImpl;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.model.request.CreateResourcesDto;
@@ -23,7 +22,6 @@ import com.deloitte.bdh.data.model.request.RunResourcesDto;
 import com.deloitte.bdh.data.model.request.UpdateResourcesDto;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
@@ -57,8 +55,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Override
     public PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto) {
-        PageHelper.startPage(dto.getPage(), dto.getSize());
-
         LambdaQueryWrapper<BiEtlDatabaseInf> fUOLamQW = new LambdaQueryWrapper();
         if (!StringUtil.isEmpty(dto.getTenantId())) {
             fUOLamQW.eq(BiEtlDatabaseInf::getTenantId, dto.getTenantId());
