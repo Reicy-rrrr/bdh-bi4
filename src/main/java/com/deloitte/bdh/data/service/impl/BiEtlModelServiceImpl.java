@@ -9,16 +9,11 @@ import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.RunStatusEnum;
-import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
-import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.dao.bi.BiEtlModelMapper;
-import com.deloitte.bdh.data.model.request.CreateModelDto;
-import com.deloitte.bdh.data.model.request.GetModelPageDto;
-import com.deloitte.bdh.data.model.request.RunModelDto;
-import com.deloitte.bdh.data.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.model.request.*;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.github.pagehelper.PageInfo;
@@ -52,7 +47,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Resource
     private BiEtlModelMapper biEtlModelMapper;
     @Autowired
-    NifiProcessService nifiProcessService;
+    private NifiProcessService nifiProcessService;
 
     @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {

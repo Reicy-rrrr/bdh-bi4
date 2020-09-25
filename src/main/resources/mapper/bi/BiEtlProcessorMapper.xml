@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.dao.bi.BiEtlProcessorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.model.BiEtlProcessor">
+        <id column="ID" property="id" />
+        <result column="CODE" property="code" />
+        <result column="NAME" property="name" />
+        <result column="TYPE" property="type" />
+        <result column="TYPE_DESC" property="typeDesc" />
+        <result column="POSITION" property="position" />
+        <result column="STATUS" property="status" />
+        <result column="EFFECT" property="effect" />
+        <result column="VALIDATE" property="validate" />
+        <result column="VALIDATE_MESSAGE" property="validateMessage" />
+        <result column="PROCESS_ID" property="processId" />
+        <result column="PROCESS_GROUP_ID" property="processGroupId" />
+        <result column="VERSION" property="version" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
+    </resultMap>
+
+</mapper>

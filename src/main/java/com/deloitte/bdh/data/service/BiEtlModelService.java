@@ -42,7 +42,7 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
     BiEtlModel createModel(CreateModelDto dto) throws Exception;
 
     /**
-     * 启用/禁用数据源
+     * 启用/禁用Model
      *
      * @param dto
      * @return
@@ -50,15 +50,15 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
     BiEtlModel runProcesGroup(RunModelDto dto) throws Exception;
 
     /**
-     * del数据源
+     * delModel
      *
-     * @param dto
+     * @param id
      * @return
      */
     void delModel(String id) throws Exception;
 
     /**
-     * 修改数据源
+     * 修改Model
      *
      * @param dto
      * @return
