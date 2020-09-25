@@ -167,6 +167,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             inf.setComments(dto.getComments());
             inf.setCreateUser(dto.getCreateUser());
             inf.setCreateDate(LocalDateTime.now());
+            inf.setTenantId(dto.getTenantId());
+            inf.setVersion("0");
+            inf.setEffect(EffectEnum.ENABLE.getKey());
             biEtlModelMapper.insert(inf);
         }
         return inf;

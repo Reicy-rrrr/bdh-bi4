@@ -73,7 +73,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         Map<String, Object> sourceMap = this.getProcessGroup(id);
         // 校验权限
         NifiProcessUtil.checkPermissions(sourceMap);
-        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), id);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCSS_GROUPS.getKey(), id);
 
         Map<String, Object> headers = super.setHeaderAuthorization();
         url = url + "?version=" + MapUtils.getMap(sourceMap, "revision").get("version");
