@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-24
+ * @since 2020-09-25
  */
 @TableName("BI_ETL_DATABASE_INF")
 public class BiEtlDatabaseInf implements Serializable {
@@ -42,7 +42,13 @@ public class BiEtlDatabaseInf implements Serializable {
     private String type;
 
     /**
-     * 类型描述
+     * 类型名称
+     */
+    @TableField("TYPE_NAME")
+    private String typeName;
+
+    /**
+     * 类型描述（对应NIFI的连接池类型）
      */
     @TableField("TYPE_DESC")
     private String typeDesc;
@@ -158,6 +164,13 @@ public class BiEtlDatabaseInf implements Serializable {
 
     public void setType(String type) {
         this.type = type;
+    }
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
     public String getTypeDesc() {
         return typeDesc;
@@ -293,6 +306,7 @@ public class BiEtlDatabaseInf implements Serializable {
         ", name=" + name +
         ", comments=" + comments +
         ", type=" + type +
+        ", typeName=" + typeName +
         ", typeDesc=" + typeDesc +
         ", dbName=" + dbName +
         ", dbUser=" + dbUser +

@@ -80,6 +80,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeDesc(PoolTypeEnum.DBCPConnectionPool.getKey());
         inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
+        inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
+
         //todo 应该读取配置
         inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
         inf.setEffect(EffectEnum.DISABLE.getKey());
@@ -148,7 +150,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, biEtlDatabaseInf);
+        //根据type 变更
         biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
+        biEtlDatabaseInf.setTypeName(SourceTypeEnum.getNameByType(biEtlDatabaseInf.getType()));
         biEtlDatabaseInf.setEffect(EffectEnum.DISABLE.getKey());
         biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
 
