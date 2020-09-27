@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 /**
  * <p>
@@ -36,6 +38,12 @@ public class BiProcessorsController {
     @PostMapping("/getProcessors")
     public RetResult<Processors> getProcessors(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(processorsService.getProcessors(request.getData()));
+    }
+
+    @ApiOperation(value = "查看模板下面已引用的 PROCESSORS 集合", notes = "查看模板下面已引用的 PROCESSORS 集合")
+    @PostMapping("/getProcessorsList")
+    public RetResult<List<Processors>> getProcessorsList(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(processorsService.getProcessorsList(request.getData()));
     }
 
 }

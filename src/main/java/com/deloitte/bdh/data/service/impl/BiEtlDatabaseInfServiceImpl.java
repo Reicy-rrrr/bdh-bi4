@@ -92,6 +92,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 inf = createResourceFromMysql(dto);
                 break;
             default:
+                logger.error("未找到对应的数据模型的类型!");
 
         }
         return inf;
@@ -127,6 +128,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             nifiProcessService.delControllerService(controllerServiceId);
         } else {
             //todo 文件型需要删除 ,查询被哪些processor引用了,且是否运行中，先停止再删掉
+//            inf.getControllerServiceId()
         }
         biEtlDatabaseInfMapper.deleteById(id);
     }

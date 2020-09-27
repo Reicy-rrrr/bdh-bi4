@@ -1,7 +1,10 @@
 package com.deloitte.bdh.data.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.model.resp.Processor;
+import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.google.common.collect.Lists;
 
 
@@ -40,16 +43,18 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     private static final Logger logger = LoggerFactory.getLogger(BiProcessorsServiceImpl.class);
 
     @Autowired
+    private BiEtlModelService modelService;
+    @Autowired
     private BiEtlProcessorService etlProcessorService;
     @Resource
     private BiProcessorsMapper processorsMapper;
 
     @Override
-    public Processors getProcessors(String id) {
-        if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error:id 不嫩为空");
+    public Processors getProcessors(String processorsId) {
+        if (StringUtil.isEmpty(processorsId)) {
+            throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error:processorsId 不嫩为空");
         }
-        BiProcessors processors = processorsMapper.selectById(id);
+        BiProcessors processors = processorsMapper.selectById(processorsId);
         Processors result = new Processors();
         BeanUtils.copyProperties(processors, result);
 
@@ -66,6 +71,26 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
             processorList.add(processor);
         }
         result.setList(processorList);
+        return result;
+    }
+
+    @Override
+    public List<Processors> getProcessorsList(String modelId) {
+        if (StringUtil.isEmpty(modelId)) {
+            throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error:modelId 不嫩为空");
+        }
+        BiEtlModel model = modelService.getModel(modelId);
+        List<BiProcessors> processorList = processorsMapper.selectList(
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getRelModelId, model.getCode()));
+
+        List<Processors> result = Lists.newArrayList();
+        if (!CollectionUtils.isEmpty(processorList)) {
+            for (BiProcessors biProcessors : processorList) {
+                Processors processors = new Processors();
+                BeanUtils.copyProperties(biProcessors, processors);
+                result.add(processors);
+            }
+        }
         return result;
     }
 }
