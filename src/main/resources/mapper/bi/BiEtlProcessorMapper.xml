@@ -16,6 +16,7 @@
         <result column="VALIDATE_MESSAGE" property="validateMessage" />
         <result column="PROCESS_ID" property="processId" />
         <result column="PROCESS_GROUP_ID" property="processGroupId" />
+        <result column="REL_PROCESSORS_CODE" property="relProcessorsCode" />
         <result column="VERSION" property="version" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

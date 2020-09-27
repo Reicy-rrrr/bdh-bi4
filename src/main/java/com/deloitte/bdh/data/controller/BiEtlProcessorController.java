@@ -8,7 +8,7 @@ import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.model.resp.Processors;
+import com.deloitte.bdh.data.model.resp.Processor;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import io.swagger.annotations.ApiOperation;
 import javafx.util.Pair;
@@ -39,8 +39,8 @@ public class BiEtlProcessorController {
 
     @ApiOperation(value = "查看单个 PROCESSOR", notes = "查看单个 PROCESSOR 详情")
     @PostMapping("/getProcessor")
-    public RetResult<Processors> getProcessor(@RequestBody @Validated RetRequest<String> request) {
-        Processors processors = new Processors();
+    public RetResult<Processor> getProcessor(@RequestBody @Validated RetRequest<String> request) {
+        Processor processors = new Processor();
         Pair<BiEtlProcessor, List<BiEtlParams>> result = biEtlProcessorService.getProcessor(request.getData());
         BeanUtils.copyProperties(result.getKey(), processors);
         processors.setList(result.getValue());

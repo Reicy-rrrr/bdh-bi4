@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-25
+ * @since 2020-09-27
  */
 @TableName("BI_ETL_PROCESSOR")
 public class BiEtlProcessor implements Serializable {
@@ -88,6 +88,12 @@ public class BiEtlProcessor implements Serializable {
      */
     @TableField("PROCESS_GROUP_ID")
     private String processGroupId;
+
+    /**
+     * 关联的processors 编码
+     */
+    @TableField("REL_PROCESSORS_CODE")
+    private String relProcessorsCode;
 
     /**
      * 版本号
@@ -197,6 +203,13 @@ public class BiEtlProcessor implements Serializable {
     public void setProcessGroupId(String processGroupId) {
         this.processGroupId = processGroupId;
     }
+    public String getRelProcessorsCode() {
+        return relProcessorsCode;
+    }
+
+    public void setRelProcessorsCode(String relProcessorsCode) {
+        this.relProcessorsCode = relProcessorsCode;
+    }
     public String getVersion() {
         return version;
     }
@@ -262,6 +275,7 @@ public class BiEtlProcessor implements Serializable {
         ", validateMessage=" + validateMessage +
         ", processId=" + processId +
         ", processGroupId=" + processGroupId +
+        ", relProcessorsCode=" + relProcessorsCode +
         ", version=" + version +
         ", createDate=" + createDate +
         ", createUser=" + createUser +

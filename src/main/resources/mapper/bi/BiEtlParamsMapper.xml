@@ -11,7 +11,8 @@
         <result column="VALUE" property="value" />
         <result column="PARAMS_GROUP" property="paramsGroup" />
         <result column="PARAMS_COMPONENT" property="paramsComponent" />
-        <result column="RELATE_CODE" property="relateCode" />
+        <result column="REL_CODE" property="relCode" />
+        <result column="REL_PROCESSORS_CODE" property="relProcessorsCode" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

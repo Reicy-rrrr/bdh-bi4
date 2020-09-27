@@ -22,6 +22,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javafx.util.Pair;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,19 +53,52 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     @Override
     public Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id) {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("getProcessor error:processorId 不嫩为空");
+            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:processorId 不嫩为空");
         }
         BiEtlProcessor processor = processorMapper.selectById(id);
         if (null == processor) {
-            throw new RuntimeException("getProcessor error:未找到对应的对象");
+            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:未找到对应的对象");
         }
-
         //获取对应processor 参数集合
         List<BiEtlParams> paramsList = paramsService.list(
                 new LambdaQueryWrapper<BiEtlParams>()
-                        .eq(BiEtlParams::getRelateCode, processor.getCode())
+                        .eq(BiEtlParams::getRelCode, processor.getCode())
         );
         return new Pair(processor, paramsList);
+    }
+
+    @Override
+    public List<Pair<BiEtlProcessor, List<BiEtlParams>>> getProcessorList(String relProcessorCode) {
+        if (StringUtil.isEmpty(relProcessorCode)) {
+            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessorList error : relProcessorCode 不嫩为空");
+        }
+        List<Pair<BiEtlProcessor, List<BiEtlParams>>> pairs = Lists.newArrayList();
+        List<BiEtlProcessor> etlProcessorList = processorMapper.selectList(
+                new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, relProcessorCode));
+
+        List<BiEtlParams> paramsList = paramsService.list(
+                new LambdaQueryWrapper<BiEtlParams>()
+                        .eq(BiEtlParams::getRelProcessorsCode, relProcessorCode)
+        );
+        if (CollectionUtils.isNotEmpty(etlProcessorList)) {
+            for (BiEtlProcessor processor : etlProcessorList) {
+                if (CollectionUtils.isEmpty(paramsList)) {
+                    Pair<BiEtlProcessor, List<BiEtlParams>> pair = new Pair<>(processor, null);
+                    pairs.add(pair);
+                    continue;
+                }
+
+                List<BiEtlParams> etlParamsList = Lists.newArrayList();
+                for (BiEtlParams params : paramsList) {
+                    if (processor.getCode().equals(params.getRelCode())) {
+                        etlParamsList.add(params);
+                    }
+                }
+                Pair<BiEtlProcessor, List<BiEtlParams>> pair = new Pair<>(processor, etlParamsList);
+                pairs.add(pair);
+            }
+        }
+        return pairs;
     }
 
     @Override
@@ -152,7 +186,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         dcps.setValue(controllerServiceId);
         dcps.setParamsGroup(ParamsGroupEnum.PROPERTIES.getKey());
         dcps.setParamsComponent(ParamsComponentEnum.PROCESSOR.getKey());
-        dcps.setRelateCode(processor.getCode());
+        dcps.setRelCode(processor.getCode());
         dcps.setCreateDate(LocalDateTime.now());
         dcps.setCreateUser(userId);
         dcps.setTenantId(processor.getTenantId());
@@ -164,7 +198,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         ssq.setValue(querySql.replace("#", tableName));
         ssq.setParamsGroup(ParamsGroupEnum.PROPERTIES.getKey());
         ssq.setParamsComponent(ParamsComponentEnum.PROCESSOR.getKey());
-        ssq.setRelateCode(processor.getCode());
+        ssq.setRelCode(processor.getCode());
         ssq.setCreateDate(LocalDateTime.now());
         ssq.setCreateUser(userId);
         ssq.setTenantId(processor.getTenantId());

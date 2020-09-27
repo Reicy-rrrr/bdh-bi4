@@ -4,9 +4,13 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum ProcessorTypeEnum {
 
-    ExecuteSQL("1", "数据源", "org.apache.nifi.processors.standard.ExecuteSQL"),
-    FetchFTP("2", "数据源", "org.apache.nifi.processors.standard.FetchFTP"),
-    FetchSFTP("3", "数据源", "org.apache.nifi.processors.standard.FetchSFTP"),
+    ExecuteSQL("ExecuteSQL", "数据源获取信息", "org.apache.nifi.processors.standard.ExecuteSQL"),
+    FetchFTP("FetchFTP", "FTP获取文件", "org.apache.nifi.processors.standard.FetchFTP"),
+    FetchSFTP("FetchSFTP", "SFTP数据源", "org.apache.nifi.processors.standard.FetchSFTP"),
+    SelectHiveQL("SelectHiveQL", "HIVE获取信息", "org.apache.nifi.processors.standard.SelectHiveQL"),
+    PutDatabaseRecord("PutDatabaseRecord", "存入数据", "org.apache.nifi.processors.standard.PutDatabaseRecord"),
+
+
     ;
 
 
@@ -55,4 +59,4 @@ public enum ProcessorTypeEnum {
     public String getvalue() {
         return value;
     }
-    }
+}

@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-25
+ * @since 2020-09-27
  */
 @TableName("BI_ETL_PARAMS")
 public class BiEtlParams implements Serializable {
@@ -62,8 +62,14 @@ public class BiEtlParams implements Serializable {
     /**
      * 关联的编码（processor、connecttion等等）
      */
-    @TableField("RELATE_CODE")
-    private String relateCode;
+    @TableField("REL_CODE")
+    private String relCode;
+
+    /**
+     * 关联的processors 编码
+     */
+    @TableField("REL_PROCESSORS_CODE")
+    private String relProcessorsCode;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -132,12 +138,19 @@ public class BiEtlParams implements Serializable {
     public void setParamsComponent(String paramsComponent) {
         this.paramsComponent = paramsComponent;
     }
-    public String getRelateCode() {
-        return relateCode;
+    public String getRelCode() {
+        return relCode;
     }
 
-    public void setRelateCode(String relateCode) {
-        this.relateCode = relateCode;
+    public void setRelCode(String relCode) {
+        this.relCode = relCode;
+    }
+    public String getRelProcessorsCode() {
+        return relProcessorsCode;
+    }
+
+    public void setRelProcessorsCode(String relProcessorsCode) {
+        this.relProcessorsCode = relProcessorsCode;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -192,7 +205,8 @@ public class BiEtlParams implements Serializable {
         ", value=" + value +
         ", paramsGroup=" + paramsGroup +
         ", paramsComponent=" + paramsComponent +
-        ", relateCode=" + relateCode +
+        ", relCode=" + relCode +
+        ", relProcessorsCode=" + relProcessorsCode +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +
