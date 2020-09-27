@@ -83,12 +83,14 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
 
         //todo 应该读取配置
-        inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
+        if (SourceTypeEnum.Mysql_8.getType().equals(dto.getType())) {
+            inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
+        } else {
+            inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
+        }
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
         inf.setModifiedDate(LocalDateTime.now());
-        //todo
-//        inf.setIp("");
 
         //调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();
@@ -114,15 +116,17 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public BiEtlDatabaseInf runResource(RunResourcesDto dto) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
-        inf.setEffect(dto.getEffect());
+        if (!dto.getEffect().equals(inf.getEffect())) {
+            inf.setEffect(dto.getEffect());
 
-        String controllerServiceId = inf.getControllerServiceId();
-        Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, inf.getEffect());
+            String controllerServiceId = inf.getControllerServiceId();
+            Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, inf.getEffect());
 
-        inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
-        inf.setModifiedUser(dto.getModifiedUser());
-        inf.setModifiedDate(LocalDateTime.now());
-        biEtlDatabaseInfMapper.updateById(inf);
+            inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+            inf.setModifiedUser(dto.getModifiedUser());
+            inf.setModifiedDate(LocalDateTime.now());
+            biEtlDatabaseInfMapper.updateById(inf);
+        }
         return inf;
     }
 
