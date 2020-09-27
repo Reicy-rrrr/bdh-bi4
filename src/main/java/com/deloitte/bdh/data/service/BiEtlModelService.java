@@ -47,7 +47,7 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @param dto
      * @return
      */
-    BiEtlModel runProcesGroup(RunModelDto dto) throws Exception;
+    BiEtlModel effectModel(EffectModelDto dto) throws Exception;
 
     /**
      * delModel

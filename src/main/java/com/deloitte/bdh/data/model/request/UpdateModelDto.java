@@ -29,8 +29,6 @@ public class UpdateModelDto {
     @ApiModelProperty(value = "描述", example = "描述")
     private String comments;
 
-//    @ApiModelProperty(value = "启用/禁用", example = "ENABLE/DISABLE")
-//    private String effect;
 
 
 

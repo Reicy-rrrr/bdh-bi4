@@ -4,7 +4,7 @@ import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
-import com.deloitte.bdh.data.model.request.RunModelDto;
+import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
 import javafx.util.Pair;
 
@@ -51,7 +51,7 @@ public interface BiEtlProcessorService extends Service<BiEtlProcessor> {
      * @param dto
      * @return
      */
-    BiEtlProcessor runProcessor(RunModelDto dto) throws Exception;
+    BiEtlProcessor runProcessor(EffectModelDto dto) throws Exception;
 
     /**
      * delProcessor

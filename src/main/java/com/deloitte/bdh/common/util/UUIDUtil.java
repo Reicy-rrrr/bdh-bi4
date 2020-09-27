@@ -98,4 +98,9 @@ private final static int toInt(byte[] bytes) {
     }
     return result;
     }
+
+
+    public static void main(String[] args) {
+        System.out.println(UUIDUtil.getLoTime());
+    }
 }

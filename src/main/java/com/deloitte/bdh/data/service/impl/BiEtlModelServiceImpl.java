@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
@@ -71,7 +72,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public BiEtlModel createModel(CreateModelDto dto) throws Exception {
-        String modelCode = "ETL" + System.currentTimeMillis();
+        String modelCode = GenerateCodeUtil.genModel();
         //处理文件夹
         BiEtlModel inf = doFile(modelCode, dto);
         if (!StringUtil.isEmpty(inf.getCode())) {
@@ -84,15 +85,21 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public BiEtlModel runProcesGroup(RunModelDto dto) throws Exception {
-        //todo
-        return null;
+    public BiEtlModel effectModel(EffectModelDto dto) throws Exception {
+        //此次启用、停用 不调用nifi，只是bi来空则，但操作状态前提是未运行状态
+        BiEtlModel biEtlModel = biEtlModelMapper.selectById(dto.getId());
+        if (RunStatusEnum.RUNNING.getKey().equals(biEtlModel.getStatus())) {
+            throw new RuntimeException("运行中的模板，不允许启、停操作");
+        }
+        biEtlModel.setEffect(dto.getEffect());
+        biEtlModel.setModifiedUser(dto.getModifiedUser());
+        biEtlModel.setModifiedDate(LocalDateTime.now());
+        return biEtlModel;
     }
 
     @Override
     public void delModel(String id) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(id);
-
         //todo 模板删除判断下面是否有process
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行状态下,不允许删除");
@@ -111,9 +118,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行中的 model 不允许修改");
         }
-//        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
-//            throw new RuntimeException("启用中的 model 不允许修改");
-//        }
 
         if (!StringUtil.isEmpty(dto.getName())) {
             inf.setName(dto.getName());
@@ -121,16 +125,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (!StringUtil.isEmpty(dto.getComments())) {
             inf.setComments(dto.getComments());
         }
-//        if (StringUtil.isEmpty(dto.getEffect())) {
-//            inf.setEffect(dto.getEffect());
-//        }
 
         //调用nifi
         Map<String, Object> reqNifi = Maps.newHashMap();
         reqNifi.put("id", inf.getProcessGroupId());
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
-//        reqNifi.put("stat", inf.getComments());
 
         Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
         inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
@@ -188,7 +188,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         inf.setCreateDate(LocalDateTime.now());
         // 设置 validate
         inf.setValidate(YesOrNoEnum.NO.getKey());
-        inf.setIp("");
 
         //调用NIFI 创建模板
         Map<String, Object> reqNifi = Maps.newHashMap();

@@ -53,10 +53,10 @@ public class BiEtlModelController {
         return RetResponse.makeOKRsp(biEtlModelService.createModel(request.getData()));
     }
 
-    @ApiOperation(value = "启用/停用 Model", notes = "启用/停用 Model")
-    @PostMapping("/runProcesGroup")
-    public RetResult<BiEtlModel> runProcesGroup(@RequestBody @Validated RetRequest<RunModelDto> request) throws Exception {
-        return RetResponse.makeOKRsp(biEtlModelService.runProcesGroup(request.getData()));
+    @ApiOperation(value = "启用/停用 Model的状态", notes = "启用/停用 Model")
+    @PostMapping("/effectModel")
+    public RetResult<BiEtlModel> effectModel(@RequestBody @Validated RetRequest<EffectModelDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlModelService.effectProcesGroup(request.getData()));
     }
 
     @ApiOperation(value = "删除 Model", notes = "删除 Model")

@@ -14,7 +14,7 @@ import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.dao.bi.BiEtlProcessorMapper;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
-import com.deloitte.bdh.data.model.request.RunModelDto;
+import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
@@ -102,7 +102,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     }
 
     @Override
-    public BiEtlProcessor runProcessor(RunModelDto dto) throws Exception {
+    public BiEtlProcessor runProcessor(EffectModelDto dto) throws Exception {
         return null;
     }
 
@@ -155,7 +155,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         dcps.setRelateCode(processor.getCode());
         dcps.setCreateDate(LocalDateTime.now());
         dcps.setCreateUser(userId);
-        dcps.setIp("");
         dcps.setTenantId(processor.getTenantId());
 
         BiEtlParams ssq = new BiEtlParams();
@@ -168,7 +167,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         ssq.setRelateCode(processor.getCode());
         ssq.setCreateDate(LocalDateTime.now());
         ssq.setCreateUser(userId);
-        ssq.setIp("");
         ssq.setTenantId(processor.getTenantId());
 
         List<BiEtlParams> paramsList = Lists.newArrayList();

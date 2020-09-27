@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.model.request;
 
+import com.deloitte.bdh.data.enums.EffectEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class RunResourcesDto {
 
     @ApiModelProperty(value = "启用/禁用", example = "ENABLE/DISABLE", required = true)
     @NotNull(message = "状态 不能为空")
-    private String effect;
+    private String effect = EffectEnum.DISABLE.getKey();
 
     @ApiModelProperty(value = "modifiedUser", example = "0", required = true)
     @NotNull(message = "modifiedUser 不能为空")

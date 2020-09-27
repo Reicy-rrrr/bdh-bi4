@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.model.request;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -29,7 +30,7 @@ public class CreateModelDto {
 
     @ApiModelProperty(value = "是否是文件夹（0/1）", example = "0")
     @NotNull(message = "是否是文件夹 不能为空")
-    private String isFile = "0";
+    private String isFile = YesOrNoEnum.NO.getKey();
 
     @ApiModelProperty(value = "坐标Json", example = "0")
     private String position = NifiProcessUtil.randPosition();

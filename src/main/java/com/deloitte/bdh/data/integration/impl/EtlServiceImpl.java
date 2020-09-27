@@ -71,7 +71,6 @@ public class EtlServiceImpl implements EtlService {
         groupDbRef.setTargetId(dto.getSourceId());
         groupDbRef.setCreateDate(LocalDateTime.now());
         groupDbRef.setCreateUser(dto.getCreateUser());
-        groupDbRef.setIp("");
         groupDbRef.setTenantId(dto.getTenantId());
         groupDbRefService.save(groupDbRef);
     }

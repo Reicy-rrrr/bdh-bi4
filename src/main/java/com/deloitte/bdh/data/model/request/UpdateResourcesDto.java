@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.model.request;
 
+import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class UpdateResourcesDto {
 
     @ApiModelProperty(value = "数据源类型（1:mysql8.*;2:msql7.*;3:oracle）", required = true)
     @NotNull(message = "数据源类型 不能为空")
-    private String type;
+    private String type = SourceTypeEnum.Mysql_8.getType();
 
     @ApiModelProperty(value = "数据库名称", example = "1", required = true)
     @NotNull(message = "数据库名称 不能为空")
