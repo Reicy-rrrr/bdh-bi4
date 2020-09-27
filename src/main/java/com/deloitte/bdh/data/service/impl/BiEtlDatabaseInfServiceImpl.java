@@ -78,7 +78,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         //组装dto
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
-        inf.setTypeDesc(PoolTypeEnum.DBCPConnectionPool.getKey());
+        inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
         inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
 
@@ -95,7 +95,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         //调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();
         //连接池类型
-        createParams.put("type", inf.getTypeDesc());
+        createParams.put("type", inf.getPoolType());
         createParams.put("name", inf.getName());
         createParams.put("dbUser", inf.getDbUser());
         createParams.put("passWord", inf.getDbPassword());

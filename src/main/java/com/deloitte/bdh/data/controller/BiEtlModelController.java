@@ -56,7 +56,7 @@ public class BiEtlModelController {
     @ApiOperation(value = "启用/停用 Model的状态", notes = "启用/停用 Model")
     @PostMapping("/effectModel")
     public RetResult<BiEtlModel> effectModel(@RequestBody @Validated RetRequest<EffectModelDto> request) throws Exception {
-        return RetResponse.makeOKRsp(biEtlModelService.effectProcesGroup(request.getData()));
+        return RetResponse.makeOKRsp(biEtlModelService.effectModel(request.getData()));
     }
 
     @ApiOperation(value = "删除 Model", notes = "删除 Model")

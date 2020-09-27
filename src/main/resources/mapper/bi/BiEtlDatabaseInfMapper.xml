@@ -9,7 +9,7 @@
         <result column="COMMENTS" property="comments" />
         <result column="TYPE" property="type" />
         <result column="TYPE_NAME" property="typeName" />
-        <result column="TYPE_DESC" property="typeDesc" />
+        <result column="POOL_TYPE" property="poolType" />
         <result column="DB_NAME" property="dbName" />
         <result column="DB_USER" property="dbUser" />
         <result column="DB_PASSWORD" property="dbPassword" />
