@@ -24,6 +24,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -75,7 +76,152 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Override
     public BiEtlDatabaseInf createResource(CreateResourcesDto dto) throws Exception {
-        //组装dto
+        BiEtlDatabaseInf inf = null;
+        SourceTypeEnum typeEnum = SourceTypeEnum.values(dto.getType());
+        switch (typeEnum) {
+            case File_Csv:
+                inf = createResourceFromFile(dto);
+                break;
+            case File_Excel:
+                inf = createResourceFromFile(dto);
+                break;
+            case Mysql_8:
+                inf = createResourceFromMysql(dto);
+                break;
+            case Mysql_7:
+                inf = createResourceFromMysql(dto);
+                break;
+            default:
+
+        }
+        return inf;
+    }
+
+    @Override
+    public BiEtlDatabaseInf runResource(RunResourcesDto dto) throws Exception {
+        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
+        if (!dto.getEffect().equals(inf.getEffect())) {
+            if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
+                String controllerServiceId = inf.getControllerServiceId();
+                Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, inf.getEffect());
+                inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+            }
+            inf.setEffect(dto.getEffect());
+            inf.setModifiedUser(dto.getModifiedUser());
+            inf.setModifiedDate(LocalDateTime.now());
+            biEtlDatabaseInfMapper.updateById(inf);
+        }
+        return inf;
+    }
+
+    @Override
+    public void delResource(String id) throws Exception {
+        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
+        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
+            throw new RuntimeException("启用状态下,不允许删除");
+        }
+
+        if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
+            String controllerServiceId = inf.getControllerServiceId();
+            //todo 需要校验 该数据源是否已经被引用 以及nifi 是否允许删除特定状态的数据源
+            nifiProcessService.delControllerService(controllerServiceId);
+        } else {
+            //todo 文件型需要删除 ,查询被哪些processor引用了,且是否运行中，先停止再删掉
+        }
+        biEtlDatabaseInfMapper.deleteById(id);
+    }
+
+    @Override
+    public BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception {
+        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
+
+        //todo  被 process 引入的数据源是否不能修改
+        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
+            throw new RuntimeException("启用中的数据源不允许修改");
+        }
+
+        if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
+            return updateResourceFromMysql(dto);
+        } else {
+            return updateResourceFromFile(dto);
+
+        }
+    }
+
+
+    private BiEtlDatabaseInf updateResourceFromMysql(UpdateResourcesDto dto) throws Exception {
+        if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
+            throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
+        }
+
+        BiEtlDatabaseInf source = biEtlDatabaseInfMapper.selectById(dto.getId());
+        BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
+        BeanUtils.copyProperties(dto, biEtlDatabaseInf);
+        //根据type 变更
+        biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
+        biEtlDatabaseInf.setTypeName(SourceTypeEnum.getNameByType(biEtlDatabaseInf.getType()));
+        biEtlDatabaseInf.setEffect(EffectEnum.DISABLE.getKey());
+        biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
+
+        //调用nifi
+        Map<String, Object> properties = Maps.newHashMap();
+        properties.put("Database User", biEtlDatabaseInf.getDbUser());
+        properties.put("Password", biEtlDatabaseInf.getDbPassword());
+        properties.put("Database Connection URL", NifiProcessUtil.getDbUrl(biEtlDatabaseInf.getType(),
+                biEtlDatabaseInf.getAddress(), biEtlDatabaseInf.getPort(), biEtlDatabaseInf.getDbName()));
+        properties.put("Database Driver Class Name", source.getDriverName());
+        properties.put("database-driver-locations", source.getDriverLocations());
+
+        Map<String, Object> request = Maps.newHashMap();
+        request.put("id", source.getControllerServiceId());
+        request.put("name", biEtlDatabaseInf.getName());
+        request.put("comments", biEtlDatabaseInf.getComments());
+        request.put("properties", properties);
+
+        Map<String, Object> sourceMap = nifiProcessService.updControllerService(request);
+        biEtlDatabaseInf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+        biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
+        return biEtlDatabaseInf;
+    }
+
+    private BiEtlDatabaseInf updateResourceFromFile(UpdateResourcesDto dto) throws Exception {
+        BiEtlDatabaseInf source = biEtlDatabaseInfMapper.selectById(dto.getId());
+        if (!source.getAddress().equals(dto.getAddress())) {
+            //todo 若修改文件型数据源的地址， 该数据源已经有processor，需停止processor 后，再修改
+
+        }
+        BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
+        BeanUtils.copyProperties(dto, biEtlDatabaseInf);
+        biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
+        biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
+        return biEtlDatabaseInf;
+    }
+
+
+    private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) throws Exception {
+        BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
+        BeanUtils.copyProperties(dto, inf);
+        inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
+        inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
+        inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
+        inf.setEffect(EffectEnum.DISABLE.getKey());
+        inf.setCreateDate(LocalDateTime.now());
+        inf.setModifiedDate(LocalDateTime.now());
+
+        //调用nifi 创建 获取rootgroupid
+        Map<String, Object> sourceMap = nifiProcessService.getRootGroupInfo();
+        inf.setVersion("1");
+        inf.setControllerServiceId(null);
+        inf.setRootGroupId(MapUtils.getString(sourceMap, "parentGroupId"));
+        biEtlDatabaseInfMapper.insert(inf);
+        return inf;
+    }
+
+    private BiEtlDatabaseInf createResourceFromMysql(CreateResourcesDto dto) throws Exception {
+        if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
+            throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
+        }
+
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
         inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
@@ -113,71 +259,4 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return inf;
     }
 
-    @Override
-    public BiEtlDatabaseInf runResource(RunResourcesDto dto) throws Exception {
-        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
-        if (!dto.getEffect().equals(inf.getEffect())) {
-            inf.setEffect(dto.getEffect());
-
-            String controllerServiceId = inf.getControllerServiceId();
-            Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, inf.getEffect());
-
-            inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
-            inf.setModifiedUser(dto.getModifiedUser());
-            inf.setModifiedDate(LocalDateTime.now());
-            biEtlDatabaseInfMapper.updateById(inf);
-        }
-        return inf;
-    }
-
-    @Override
-    public void delResource(String id) throws Exception {
-        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
-        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
-            throw new RuntimeException("启用状态下,不允许删除");
-        }
-        String controllerServiceId = inf.getControllerServiceId();
-
-        //todo 需要校验 该数据源是否已经被引用 以及nifi 是否允许删除特定状态的数据源
-        Map<String, Object> sourceMap = nifiProcessService.delControllerService(controllerServiceId);
-        biEtlDatabaseInfMapper.deleteById(id);
-        logger.info("删除数据成功:{}", JsonUtil.obj2String(sourceMap));
-    }
-
-    @Override
-    public BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception {
-        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
-        //todo  被 process 引入的数据源是否不能修改
-        if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
-            throw new RuntimeException("启用中的数据源不允许修改");
-        }
-
-        BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
-        BeanUtils.copyProperties(dto, biEtlDatabaseInf);
-        //根据type 变更
-        biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
-        biEtlDatabaseInf.setTypeName(SourceTypeEnum.getNameByType(biEtlDatabaseInf.getType()));
-        biEtlDatabaseInf.setEffect(EffectEnum.DISABLE.getKey());
-        biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
-
-        //调用nifi
-        Map<String, Object> properties = Maps.newHashMap();
-        properties.put("Database User", biEtlDatabaseInf.getDbUser());
-        properties.put("Password", biEtlDatabaseInf.getDbPassword());
-        properties.put("Database Connection URL", NifiProcessUtil.getDbUrl(biEtlDatabaseInf.getType(),
-                biEtlDatabaseInf.getAddress(), biEtlDatabaseInf.getPort(), biEtlDatabaseInf.getDbName()));
-        properties.put("Database Driver Class Name", inf.getDriverName());
-        properties.put("database-driver-locations", inf.getDriverLocations());
-
-        Map<String, Object> request = Maps.newHashMap();
-        request.put("id", inf.getControllerServiceId());
-        request.put("name", biEtlDatabaseInf.getName());
-        request.put("comments", biEtlDatabaseInf.getComments());
-        request.put("properties", properties);
-
-        Map<String, Object> sourceMap = nifiProcessService.updControllerService(request);
-        biEtlDatabaseInf.setVersion(NifiProcessUtil.getVersion(sourceMap));
-        biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
-        return biEtlDatabaseInf;
-    }
 }

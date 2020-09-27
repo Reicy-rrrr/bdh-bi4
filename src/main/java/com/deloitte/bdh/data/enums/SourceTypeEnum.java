@@ -6,7 +6,10 @@ public enum SourceTypeEnum {
 
     Mysql_8("1", "mysql8+", "com.mysql.cj.jdbc.Driver", "jdbc:mysql://IP:PORT/DBNAME"),
     Mysql_7("2", "mysql7", "com.mysql.jdbc.Driver", "jdbc:mysql://IP:PORT/DBNAME"),
-    Oracle("3", "oracel", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@IP:PORT:DBNAME");
+    Oracle("3", "oracel", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@IP:PORT:DBNAME"),
+    File_Excel("7", "Excel", "Excel", null),
+    File_Csv("8", "Csv", "Csv", null),
+    ;
 
     private String type;
 
@@ -20,10 +23,8 @@ public enum SourceTypeEnum {
     SourceTypeEnum(String type, String typeName, String driverName, String url) {
         this.type = type;
         this.typeName = typeName;
-
         this.driverName = driverName;
         this.url = url;
-
     }
 
     /**
@@ -72,6 +73,16 @@ public enum SourceTypeEnum {
             }
         }
         throw new RuntimeException("未找到对应的 typeName");
+    }
+
+    public static SourceTypeEnum values(String type) {
+        SourceTypeEnum[] enums = SourceTypeEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(type, enums[i].getType())) {
+                return enums[i];
+            }
+        }
+        throw new RuntimeException("未找到对应的 SourceTypeEnum");
     }
 
     public String getType() {

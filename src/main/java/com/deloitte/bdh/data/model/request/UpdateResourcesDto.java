@@ -37,15 +37,12 @@ public class UpdateResourcesDto {
     private String type = SourceTypeEnum.Mysql_8.getType();
 
     @ApiModelProperty(value = "数据库名称", example = "1", required = true)
-    @NotNull(message = "数据库名称 不能为空")
     private String dbName;
 
     @ApiModelProperty(value = "用户名", example = "1", required = true)
-    @NotNull(message = "用户名 不能为空")
     private String dbUser;
 
     @ApiModelProperty(value = "密码", example = "1", required = true)
-    @NotNull(message = "密码 不能为空")
     private String dbPassword;
 
     @ApiModelProperty(value = "ip地址", example = "1", required = true)
@@ -53,7 +50,6 @@ public class UpdateResourcesDto {
     private String address;
 
     @ApiModelProperty(value = "端口", example = "1", required = true)
-    @NotNull(message = "端口 不能为空")
     private String port;
 
 

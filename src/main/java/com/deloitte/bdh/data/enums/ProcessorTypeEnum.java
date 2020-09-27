@@ -4,7 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum ProcessorTypeEnum {
 
-    ExecuteSQL("1", "数据源", "org.apache.nifi.processors.standard.ExecuteSQL");
+    ExecuteSQL("1", "数据源", "org.apache.nifi.processors.standard.ExecuteSQL"),
+    FetchFTP("2", "数据源", "org.apache.nifi.processors.standard.FetchFTP"),
+    FetchSFTP("3", "数据源", "org.apache.nifi.processors.standard.FetchSFTP"),
+    ;
+
 
     private String type;
 
@@ -27,7 +31,7 @@ public enum ProcessorTypeEnum {
                 return enums[i].getvalue();
             }
         }
-        throw new RuntimeException("未找到对应的数据类型");
+        throw new RuntimeException("未找到对应的目标");
     }
 
     public static String getTypeDesc(String type) {
@@ -37,7 +41,7 @@ public enum ProcessorTypeEnum {
                 return enums[i].getTypeDesc();
             }
         }
-        throw new RuntimeException("未找到对应的数据类型");
+        throw new RuntimeException("未找到对应的目标");
     }
 
     public String getType() {
@@ -51,4 +55,4 @@ public enum ProcessorTypeEnum {
     public String getvalue() {
         return value;
     }
-}
+    }
