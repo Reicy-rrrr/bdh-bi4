@@ -1,28 +1,26 @@
 package com.deloitte.bdh.data.service.impl;
 
-import java.time.LocalDateTime;
-
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.data.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.PoolTypeEnum;
 import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.dao.bi.BiEtlDatabaseInfMapper;
-import com.deloitte.bdh.data.model.request.CreateResourcesDto;
-import com.deloitte.bdh.data.model.request.GetResourcesDto;
-import com.deloitte.bdh.data.model.request.RunResourcesDto;
-import com.deloitte.bdh.data.model.request.UpdateResourcesDto;
+import com.deloitte.bdh.data.model.request.*;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
-import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.data.service.FtpService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
+import javafx.util.Pair;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -30,8 +28,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -52,6 +52,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiEtlDatabaseInfMapper biEtlDatabaseInfMapper;
     @Autowired
     NifiProcessService nifiProcessService;
+
+    @Autowired
+    private FtpService ftpService;
 
     @Override
     public PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto) {
@@ -95,6 +98,30 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 logger.error("未找到对应的数据模型的类型!");
 
         }
+        return inf;
+    }
+
+    @Override
+    public BiEtlDatabaseInf uploadResource(UploadResourcesDto dto) throws Exception {
+        MultipartFile file = dto.getFile();
+        // 租户id
+        String tenantId = dto.getTenantId();
+        if (StringUtils.isBlank(tenantId)) {
+            throw new BizException("租户id不能为空");
+        }
+        // TODO 校验租户正确性，级租户与当前用户的管理关系
+        Pair<String, String> ftpPath = ftpService.uploadExcelFile(file, tenantId);
+        String remotePath = ftpPath.getKey();
+        String fileName = ftpPath.getValue();
+        logger.info(remotePath + fileName);
+
+        CreateResourcesDto createDto = new CreateResourcesDto();
+        BeanUtils.copyProperties(dto, createDto);
+        // 暂时将文件地址存放到地址字段，文件名称存放到数据库名称字段
+        createDto.setAddress(remotePath);
+        createDto.setDbName(fileName);
+        createDto.setType(SourceTypeEnum.File_Csv.getType());
+        BiEtlDatabaseInf inf = createResource(createDto);
         return inf;
     }
 

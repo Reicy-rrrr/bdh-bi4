@@ -1,12 +1,12 @@
 package com.deloitte.bdh.data.controller;
 
 
-import com.deloitte.bdh.common.base.*;
+import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.base.RetResponse;
+import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.model.request.CreateResourcesDto;
-import com.deloitte.bdh.data.model.request.GetResourcesDto;
-import com.deloitte.bdh.data.model.request.RunResourcesDto;
-import com.deloitte.bdh.data.model.request.UpdateResourcesDto;
+import com.deloitte.bdh.data.model.request.*;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
@@ -46,6 +46,12 @@ public class BiSourceController {
     @PostMapping("/createResource")
     public RetResult<BiEtlDatabaseInf> createResource(@RequestBody @Validated RetRequest<CreateResourcesDto> request) throws Exception {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.createResource(request.getData()));
+    }
+
+    @ApiOperation(value = "上传数据源", notes = "上传数据源")
+    @PostMapping("/uploadResource")
+    public RetResult<BiEtlDatabaseInf> uploadResource(@ModelAttribute UploadResourcesDto uploadResourcesDto) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.uploadResource(uploadResourcesDto));
     }
 
     @ApiOperation(value = "启用/禁用数据源", notes = "启用/禁用数据源")
