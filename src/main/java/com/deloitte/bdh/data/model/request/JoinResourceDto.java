@@ -24,8 +24,7 @@ public class JoinResourceDto {
     @NotNull(message = "数据源id 不能为空")
     private String sourceId;
 
-    @ApiModelProperty(value = "tableName", example = "0", required = true)
-    @NotNull(message = "tableName 不能为空")
+    @ApiModelProperty(value = "tableName", example = "0")
     private String tableName;
 
     @ApiModelProperty(value = "tenantId", example = "0", required = true)

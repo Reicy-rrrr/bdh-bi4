@@ -10,13 +10,15 @@ public enum BiProcessorsTypeEnum {
     JOIN_SOURCE("JOIN_SOURCE", "引入数据源的组件") {
         @Override
         public List<ProcessorTypeEnum> includeProcessor(String str) {
-            List<ProcessorTypeEnum> list = Lists.newArrayList();
+            List<ProcessorTypeEnum> list = Lists.newLinkedList();
             SourceTypeEnum typeEnum = SourceTypeEnum.values(str);
             switch (typeEnum) {
                 case Mysql_8:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
                     break;
                 case Mysql_7:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     break;
                 case File_Csv:

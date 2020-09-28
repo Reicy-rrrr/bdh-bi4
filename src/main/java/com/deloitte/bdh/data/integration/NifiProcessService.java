@@ -101,7 +101,7 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> createProcessor(Map<String, Object> map, String id) throws Exception;
+    Map<String, Object> createProcessor(Map<String, Object> map) throws Exception;
 
     /**
      * function:查询 getProcessor
@@ -116,6 +116,13 @@ public interface NifiProcessService {
      * @return Map<String, Object>
      */
     Map<String, Object> updateProcessor(Map<String, Object> map) throws Exception;
+
+    /**
+     * function:删除 delProcessor
+     *
+     * @return id
+     */
+    Map<String, Object> delProcessor(String id) throws Exception;
 
     /**
      * function:创建 createConnections

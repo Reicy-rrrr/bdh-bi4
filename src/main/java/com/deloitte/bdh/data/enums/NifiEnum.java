@@ -60,7 +60,7 @@ public enum NifiEnum {
     CREATE_PROCESSOR("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/processors", "创建 processor"),
 
     /**
-     * 查询/修改 PROCESSOR
+     * 查询/修改/删除 PROCESSOR
      */
     PROCESSORS("/nifi-api/processors/" + NifiProcessUtil.TEMP, "查询 PROCESSOR"),
 

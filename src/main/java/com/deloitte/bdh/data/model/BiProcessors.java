@@ -72,10 +72,10 @@ public class BiProcessors implements Serializable {
     private String validateMessage;
 
     /**
-     * 所属模板id
+     * 所属模板code
      */
-    @TableField("REL_MODEL_ID")
-    private String relModelId;
+    @TableField("REL_MODEL_CODE")
+    private String relModelCode;
 
     /**
      * 版本号
@@ -164,12 +164,12 @@ public class BiProcessors implements Serializable {
     public void setValidateMessage(String validateMessage) {
         this.validateMessage = validateMessage;
     }
-    public String getRelModelId() {
-        return relModelId;
+    public String getRelModelCode() {
+        return relModelCode;
     }
 
-    public void setRelModelId(String relModelId) {
-        this.relModelId = relModelId;
+    public void setRelModelCode(String relModelCode) {
+        this.relModelCode = relModelCode;
     }
     public String getVersion() {
         return version;
@@ -233,7 +233,7 @@ public class BiProcessors implements Serializable {
         ", effect=" + effect +
         ", validate=" + validate +
         ", validateMessage=" + validateMessage +
-        ", relModelId=" + relModelId +
+        ", relModelCode=" + relModelCode +
         ", version=" + version +
         ", createDate=" + createDate +
         ", createUser=" + createUser +

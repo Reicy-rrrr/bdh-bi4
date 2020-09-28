@@ -13,7 +13,7 @@
         <result column="EFFECT" property="effect" />
         <result column="VALIDATE" property="validate" />
         <result column="VALIDATE_MESSAGE" property="validateMessage" />
-        <result column="REL_MODEL_ID" property="relModelId" />
+        <result column="REL_MODEL_CODE" property="relModelCode" />
         <result column="VERSION" property="version" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

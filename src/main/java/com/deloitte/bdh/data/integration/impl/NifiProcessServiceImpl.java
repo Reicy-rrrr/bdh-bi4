@@ -223,14 +223,13 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
-    public Map<String, Object> createProcessor(Map<String, Object> map, String id) throws Exception {
-        if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("createProcessor error: id不能为空");
-        }
-        //todo 待删除
-        map.remove("id");
+    public Map<String, Object> createProcessor(Map<String, Object> map) throws Exception {
+        NifiProcessUtil.validateRequestMap(map, "id", "type");
+        String id = MapUtils.getString(map, "id");
         // 校验权限
         NifiProcessUtil.checkPermissions(this.getProcessGroup(id));
+        //删除id
+        map.remove("id");
         Map<String, Object> req = NifiProcessUtil.postParam(map);
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_PROCESSOR.getKey(), id);
         logger.info("NifiProcessServiceImpl.createProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
@@ -264,7 +263,24 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
         logger.info("NifiProcessServiceImpl.updateProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
-        //todo 判断是否可用
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
+    public Map<String, Object> delProcessor(String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new RuntimeException("NifiProcessServiceImpl.delProcessor:id不能为空");
+        }
+        Map<String, Object> processor = this.getProcessor(id);
+        // 校验权限
+        NifiProcessUtil.checkPermissions(processor);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
+
+        Map<String, Object> headers = super.setHeaderAuthorization();
+        url = url + "?version=" + MapUtils.getMap(processor, "revision").get("version");
+        logger.info("NifiProcessServiceImpl.delProcessor 信息, URL:{} ", url);
+
+        String response = HttpClientUtil.delete(url, headers);
         return JsonUtil.string2Obj(response, Map.class);
     }
 

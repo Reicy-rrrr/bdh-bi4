@@ -5,20 +5,25 @@ import java.time.LocalDateTime;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.*;
 import com.deloitte.bdh.data.integration.NifiProcessService;
+import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.dao.bi.BiEtlProcessorMapper;
+import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import javafx.util.Pair;
@@ -46,9 +51,13 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     @Resource
     private BiEtlProcessorMapper processorMapper;
     @Autowired
-    NifiProcessService nifiProcessService;
+    private NifiProcessService nifiProcessService;
     @Autowired
-    BiEtlParamsService paramsService;
+    private BiEtlParamsService paramsService;
+    @Autowired
+    private BiProcessorsService processorsService;
+    @Autowired
+    private BiEtlModelService modelService;
 
     @Override
     public Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id) {
@@ -103,27 +112,37 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
 
     @Override
     public BiEtlProcessor createProcessor(CreateProcessorDto dto) throws Exception {
+        BiProcessors processors = processorsService.list(
+                new LambdaQueryWrapper<BiProcessors>()
+                        .eq(BiProcessors::getCode, dto.getProcessorsCode())).get(0);
+
+        BiEtlModel model = modelService.list(
+                new LambdaQueryWrapper<BiEtlModel>()
+                        .eq(BiEtlModel::getCode, processors.getRelModelCode())).get(0);
+
         BiEtlProcessor processor = new BiEtlProcessor();
         BeanUtils.copyProperties(dto, processor);
-        processor.setCode("Pro" + System.currentTimeMillis());
+        processor.setCode(GenerateCodeUtil.genProcessor());
         processor.setTypeDesc(ProcessorTypeEnum.getTypeDesc(dto.getType()));
         processor.setStatus(RunStatusEnum.STOP.getKey());
         processor.setEffect(EffectEnum.DISABLE.getKey());
         processor.setValidate(YesOrNoEnum.NO.getKey());
         processor.setValidateMessage(YesOrNoEnum.NO.getvalue());
         processor.setCreateDate(LocalDateTime.now());
-
+        processor.setRelProcessorsCode(dto.getProcessorsCode());
+        processor.setProcessGroupId(model.getProcessGroupId());
         //nifi 创建 processor
-        Map<String, Object> reqNifi = Maps.newHashMap();
+        Map<String, Object> reqNifi = dto.getParams();
         reqNifi.put("name", dto.getName());
+        reqNifi.put("id", model.getProcessGroupId());
+
         //此处去nifi value
         reqNifi.put("type", ProcessorTypeEnum.getNifiValue(dto.getType()));
         reqNifi.put("position", JsonUtil.string2Obj(dto.getPosition(), Map.class));
-        Map<String, Object> source = nifiProcessService.createProcessor(reqNifi, dto.getProcessGroupId());
+        Map<String, Object> source = nifiProcessService.createProcessor(reqNifi);
 
         processor.setProcessId(MapUtils.getString(source, "id"));
         processor.setVersion(NifiProcessUtil.getVersion(source));
-
         processorMapper.insert(processor);
         return processor;
     }

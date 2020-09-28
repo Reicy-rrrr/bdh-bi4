@@ -81,7 +81,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         }
         BiEtlModel model = modelService.getModel(modelId);
         List<BiProcessors> processorList = processorsMapper.selectList(
-                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getRelModelId, model.getCode()));
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getRelModelCode, model.getCode()));
 
         List<Processors> result = Lists.newArrayList();
         if (!CollectionUtils.isEmpty(processorList)) {

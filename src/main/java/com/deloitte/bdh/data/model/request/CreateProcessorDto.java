@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Map;
 
 
 @ApiModel(description = "新增 Processor")
@@ -51,9 +52,13 @@ public class CreateProcessorDto implements Serializable {
 
 
     /**
-     * PROCESS_GROUP_ID
+     * modelCode
      */
-    @ApiModelProperty(value = "模板id", example = "1", required = true)
-    @NotNull(message = "模板id 不能为空")
-    private String processGroupId;
+    @ApiModelProperty(value = "processorsCode", example = "1", required = true)
+    @NotNull(message = "processorsCode 不能为空")
+    private String processorsCode;
+
+
+    @ApiModelProperty(value = "params", example = "1")
+    private Map<String, Object> params;
 }

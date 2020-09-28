@@ -66,7 +66,7 @@ public class NifiController {
     @ApiOperation(value = "createProcessor", notes = "createProcessor")
     @PostMapping("/createProcessor")
     public RetResult<Object> createProcessor(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
-        return RetResponse.makeOKRsp(nifiProcessService.createProcessor(request.getData(), (String) request.getData().get("id")));
+        return RetResponse.makeOKRsp(nifiProcessService.createProcessor(request.getData()));
     }
 
     @ApiOperation(value = "getProcessor", notes = "getProcessor")
@@ -103,6 +103,6 @@ public class NifiController {
     @PostMapping("/runState")
     public RetResult<Object> runState(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
         return RetResponse.makeOKRsp(nifiProcessService.runState((String) request.getData().get("id"),
-                (String) request.getData().get("state"),(Boolean) request.getData().get("group")));
+                (String) request.getData().get("state"), (Boolean) request.getData().get("group")));
     }
 }
