@@ -7,8 +7,8 @@
         <id column="ID" property="id" />
         <result column="CODE" property="code" />
         <result column="NAME" property="name" />
-        <result column="KEY" property="key" />
-        <result column="VALUE" property="value" />
+        <result column="PARAM_KEY" property="paramKey" />
+        <result column="PARAM_VALUE" property="paramValue" />
         <result column="PARAMS_GROUP" property="paramsGroup" />
         <result column="PARAMS_COMPONENT" property="paramsComponent" />
         <result column="REL_CODE" property="relCode" />

@@ -21,7 +21,10 @@ public class ProcessorContext {
     private BiEtlModel model = new BiEtlModel();
     private BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
     private BiProcessors processors = new BiProcessors();
+
     private List<Processor> processorList = Lists.newArrayList();
+    private Processor tempProcessor = null;
+
 
     private List<Map<String, Object>> successProcessMap = Lists.newArrayList();
     private Boolean processComplete = false;
@@ -30,4 +33,19 @@ public class ProcessorContext {
     private Boolean connectionComplete = false;
 
 
+
+
+
+    public ProcessorContext addTemp(Processor processor) {
+        if (null != this.tempProcessor) {
+            throw new RuntimeException("未移除上个处理的临时temp");
+        }
+        this.tempProcessor = processor;
+        return this;
+    }
+
+    public ProcessorContext removeTemp() {
+        this.tempProcessor = null;
+        return this;
+    }
 }
