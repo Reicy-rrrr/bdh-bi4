@@ -16,11 +16,11 @@ import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.request.*;
+import com.deloitte.bdh.data.model.resp.FtpUploadResult;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.service.FtpService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
-import javafx.util.Pair;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -110,16 +110,21 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new BizException("租户id不能为空");
         }
         // TODO 校验租户正确性，级租户与当前用户的管理关系
-        Pair<String, String> ftpPath = ftpService.uploadExcelFile(file, tenantId);
-        String remotePath = ftpPath.getKey();
-        String fileName = ftpPath.getValue();
-        logger.info(remotePath + fileName);
+        FtpUploadResult uploadResult = ftpService.uploadExcelFile(file, tenantId);
+        if (uploadResult == null) {
+            throw new BizException("文件上传ftp失败！");
+        }
 
+        // 初始化创建dto，调用创建数据源接口
         CreateResourcesDto createDto = new CreateResourcesDto();
         BeanUtils.copyProperties(dto, createDto);
-        // 暂时将文件地址存放到地址字段，文件名称存放到数据库名称字段
-        createDto.setAddress(remotePath);
-        createDto.setDbName(fileName);
+        createDto.setAddress(uploadResult.getHost());
+        createDto.setPort(uploadResult.getPort());
+        createDto.setDbUser(uploadResult.getUsername());
+        createDto.setDbPassword(uploadResult.getPassword());
+
+        // 暂时将文件名称存放到数据库名称字段，文件路径？uploadResult.getFilePath();
+        createDto.setDbName(uploadResult.getFileName());
         createDto.setType(SourceTypeEnum.File_Csv.getType());
         BiEtlDatabaseInf inf = createResource(createDto);
         return inf;

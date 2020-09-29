@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.FtpUtil;
 import com.deloitte.bdh.common.util.UUIDUtil;
+import com.deloitte.bdh.data.model.resp.FtpUploadResult;
 import com.deloitte.bdh.data.service.FtpService;
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,8 @@ import java.util.Date;
 public class FtpServiceImpl implements FtpService {
 
     private static final Logger logger = LoggerFactory.getLogger(FtpServiceImpl.class);
+
+    private static final String FILE_SEPARATOR = "/";
 
     /**
      * ftp地址
@@ -53,7 +56,7 @@ public class FtpServiceImpl implements FtpService {
     private String path;
 
     @Override
-    public Pair<String, String> uploadExcelFile(MultipartFile file, String tenantId) {
+    public FtpUploadResult uploadExcelFile(MultipartFile file, String tenantId) {
         // 校验文件基本格式
         if (file == null || file.isEmpty()) {
             logger.warn("上传文件不能为空！");
@@ -72,15 +75,15 @@ public class FtpServiceImpl implements FtpService {
 
         // 文件上传地址：根路径 + 租户id + 日期（yyyyMMdd）
         StringBuilder pathBuilder = new StringBuilder(path);
-        if (path.endsWith("/")) {
+        if (path.endsWith(FILE_SEPARATOR)) {
             pathBuilder.append(tenantId);
         } else {
-            pathBuilder.append("/");
+            pathBuilder.append(FILE_SEPARATOR);
             pathBuilder.append(tenantId);
         }
-        pathBuilder.append("/");
+        pathBuilder.append(FILE_SEPARATOR);
         pathBuilder.append(DateUtils.formatShortDate(new Date()));
-        pathBuilder.append("/");
+        pathBuilder.append(FILE_SEPARATOR);
         String remotePath = pathBuilder.toString();
 
         // 文件使用uuid重新命名
@@ -99,7 +102,7 @@ public class FtpServiceImpl implements FtpService {
             logger.error("文件上传到ftp服务器失败", e);
             throw new BizException("文件上传到ftp服务器失败");
         }
-        return new Pair(remotePath, finalName);
+        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, fileName);
     }
 
     /**
