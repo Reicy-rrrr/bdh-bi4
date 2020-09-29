@@ -1,7 +1,9 @@
 package com.deloitte.bdh.data.nifi.connection;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.data.model.BiEtlConnection;
+import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.request.CreateConnectionDto;
 import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
@@ -48,15 +50,41 @@ public class ConnectionImp extends AbstractConnection {
         return null;
     }
 
-
     @Override
-    public Map<String, Object> delete(ProcessorContext context) throws Exception {
+    public Map<String, Object> rSave(ProcessorContext context) throws Exception {
         List<BiEtlConnection> connectionList = context.getConnectionListList();
         for (BiEtlConnection connection : connectionList) {
             etlConnectionService.dropConnection(connection.getCode());
             etlConnectionService.delConnection(connection.getCode());
             context.addConnection(connection);
         }
+        return null;
+    }
+
+
+    @Override
+    public Map<String, Object> delete(ProcessorContext context) throws Exception {
+
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> rDelete(ProcessorContext context) throws Exception {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> update(ProcessorContext context) throws Exception {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> rUpdate(ProcessorContext context) throws Exception {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> validate(ProcessorContext context) throws Exception {
         return null;
     }
 }

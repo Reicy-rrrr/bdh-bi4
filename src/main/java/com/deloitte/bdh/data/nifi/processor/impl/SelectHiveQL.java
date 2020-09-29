@@ -82,16 +82,41 @@ public class SelectHiveQL extends AbstractProcessor {
     }
 
     @Override
-    protected Map<String, Object> delete(ProcessorContext context) throws Exception {
-        super.delete(context);
+    protected Map<String, Object> rSave(ProcessorContext context) throws Exception {
+        Processor processor = context.getTempProcessor();
+        processorService.delProcessor(processor.getId());
+        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
+        if (CollectionUtils.isNotEmpty(paramsList)) {
+            List<String> list = paramsList
+                    .stream()
+                    .map(BiEtlParams::getId)
+                    .collect(Collectors.toList());
+            paramsService.removeByIds(list);
+        }
         //删除该组件有关联表的信息
         etlDbRefService.removeById(context.getTempProcessor().getDbRef().getId());
+        return null;
+    }
+
+    @Override
+    protected Map<String, Object> delete(ProcessorContext context) throws Exception {
+
+        return null;
+    }
+
+    @Override
+    protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
         return null;
     }
 
 
     @Override
     public Map<String, Object> update(ProcessorContext context) throws Exception {
+        return null;
+    }
+
+    @Override
+    protected Map<String, Object> rUpdate(ProcessorContext context) throws Exception {
         return null;
     }
 
@@ -105,8 +130,4 @@ public class SelectHiveQL extends AbstractProcessor {
         return ProcessorTypeEnum.SelectHiveQL;
     }
 
-    @Autowired
-    public void setEtlDbRefService(BiEtlDbRefService etlDbRefService) {
-        this.etlDbRefService = etlDbRefService;
-    }
 }

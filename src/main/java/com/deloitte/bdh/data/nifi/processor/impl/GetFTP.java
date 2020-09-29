@@ -1,17 +1,18 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
-import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
 import com.deloitte.bdh.data.service.BiEtlDbRefService;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service("GetFTP")
 public class GetFTP extends AbstractProcessor {
@@ -108,15 +110,40 @@ public class GetFTP extends AbstractProcessor {
     }
 
     @Override
-    protected Map<String, Object> delete(ProcessorContext context) throws Exception {
-        super.delete(context);
+    protected Map<String, Object> rSave(ProcessorContext context) throws Exception {
+        Processor processor = context.getTempProcessor();
+        processorService.delProcessor(processor.getId());
+        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
+        if (CollectionUtils.isNotEmpty(paramsList)) {
+            List<String> list = paramsList
+                    .stream()
+                    .map(BiEtlParams::getId)
+                    .collect(Collectors.toList());
+            paramsService.removeByIds(list);
+        }
         //删除该组件有关联表的信息
         etlDbRefService.removeById(context.getTempProcessor().getDbRef().getId());
         return null;
     }
 
     @Override
+    protected Map<String, Object> delete(ProcessorContext context) throws Exception {
+
+        return null;
+    }
+
+    @Override
+    protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
+        return null;
+    }
+
+    @Override
     public Map<String, Object> update(ProcessorContext context) throws Exception {
+        return null;
+    }
+
+    @Override
+    protected Map<String, Object> rUpdate(ProcessorContext context) throws Exception {
         return null;
     }
 
@@ -131,8 +158,4 @@ public class GetFTP extends AbstractProcessor {
         return ProcessorTypeEnum.GetFTP;
     }
 
-    @Autowired
-    public void setEtlDbRefService(BiEtlDbRefService etlDbRefService) {
-        this.etlDbRefService = etlDbRefService;
-    }
 }

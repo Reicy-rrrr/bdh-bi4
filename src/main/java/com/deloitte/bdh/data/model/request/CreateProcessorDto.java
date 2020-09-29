@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.model.request;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.google.common.collect.Maps;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -60,5 +61,5 @@ public class CreateProcessorDto implements Serializable {
 
 
     @ApiModelProperty(value = "params", example = "1")
-    private Map<String, Object> params;
+    private Map<String, Object> params = Maps.newHashMap();
 }

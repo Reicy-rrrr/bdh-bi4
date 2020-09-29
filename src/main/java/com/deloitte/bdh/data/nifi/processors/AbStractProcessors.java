@@ -19,11 +19,11 @@ public abstract class AbStractProcessors implements Processors {
         try {
             validateContext(context);
             positive(context);
-//            int i=1/0;
+//            int i = 1 / 0;
         } catch (Exception e) {
             e.printStackTrace();
             reverse(context);
-            throw new RuntimeException(e);
+            throw new Exception(e);
         }
         return context;
     }

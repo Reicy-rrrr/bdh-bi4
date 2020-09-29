@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.nifi.processor;
 
 import java.time.LocalDateTime;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
@@ -14,7 +13,6 @@ import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public abstract class AbstractProcessor implements Processor {
+public abstract class AbstractProcessor extends AbstractCurdProcessor implements Processor {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
 
     @Autowired
@@ -59,13 +57,13 @@ public abstract class AbstractProcessor implements Processor {
         Map<String, Object> result = Maps.newHashMap();
         switch (context.getMethod()) {
             case SAVE:
-                delete(context);
+                rSave(context);
                 break;
             case DELETE:
-                save(context);
+                rDelete(context);
                 break;
             case UPDATE:
-                update(context);
+                rUpdate(context);
                 break;
             case VALIDATE:
                 validate(context);
@@ -75,26 +73,6 @@ public abstract class AbstractProcessor implements Processor {
         }
         return result;
     }
-
-    protected abstract Map<String, Object> save(ProcessorContext context) throws Exception;
-
-    protected Map<String, Object> delete(ProcessorContext context) throws Exception {
-        com.deloitte.bdh.data.nifi.Processor processor = context.getTempProcessor();
-        processorService.delProcessor(processor.getId());
-        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
-        if (CollectionUtils.isNotEmpty(paramsList)) {
-            List<String> list = paramsList
-                    .stream()
-                    .map(BiEtlParams::getId)
-                    .collect(Collectors.toList());
-            paramsService.removeByIds(list);
-        }
-        return null;
-    }
-
-    protected abstract Map<String, Object> update(ProcessorContext context) throws Exception;
-
-    protected abstract Map<String, Object> validate(ProcessorContext context) throws Exception;
 
     final protected BiEtlProcessor createProcessor(ProcessorContext context, Map<String, Object> component) throws Exception {
         CreateProcessorDto createProcessorDto = new CreateProcessorDto();

@@ -131,9 +131,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         processor.setProcessGroupId(model.getProcessGroupId());
         //nifi 创建 processor
         Map<String, Object> reqNifi = dto.getParams();
-        if (reqNifi == null || reqNifi.isEmpty()) {
-            reqNifi = Maps.newHashMap();
-        }
         reqNifi.put("name", dto.getName());
         reqNifi.put("id", model.getProcessGroupId());
 

@@ -1,13 +1,14 @@
 package com.deloitte.bdh.data.nifi.connection;
 
 import com.deloitte.bdh.data.nifi.ProcessorContext;
+import com.deloitte.bdh.data.nifi.processor.AbstractCurdProcessor;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public abstract class AbstractConnection implements Connection {
+public abstract class AbstractConnection extends AbstractCurdProcessor implements Connection {
     private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
     @Override
@@ -31,10 +32,10 @@ public abstract class AbstractConnection implements Connection {
         Map<String, Object> result = Maps.newHashMap();
         switch (context.getMethod()) {
             case SAVE:
-                delete(context);
+                rSave(context);
                 break;
             case DELETE:
-                save(context);
+                rDelete(context);
                 break;
             default:
                 logger.error("未找到正确的 Connection 处理器");
@@ -42,7 +43,4 @@ public abstract class AbstractConnection implements Connection {
         return result;
     }
 
-    abstract Map<String, Object> save(ProcessorContext context) throws Exception;
-
-    abstract Map<String, Object> delete(ProcessorContext context) throws Exception;
 }
