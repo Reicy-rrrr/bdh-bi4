@@ -1,8 +1,8 @@
 package com.deloitte.bdh.data.integration;
 
-import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
-import com.deloitte.bdh.data.model.resp.ProcessorsResp;
+import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 
 public interface EtlService {
 
@@ -12,13 +12,22 @@ public interface EtlService {
      * @param
      * @return
      */
-    void joinResource(JoinResourceDto dto) throws Exception;
+    BiProcessors joinResource(JoinResourceDto dto) throws Exception;
+
 
     /**
-     * 查看组件详情
+     * 移除数据源
      *
      * @param
      * @return
      */
-    ProcessorsResp getProcessors(String processorsCode);
+    void removeResource(String processorsCode) throws Exception;
+
+    /**
+     * 查看组件详情（包含数据源与bi这面的自定义的组件）
+     *
+     * @param
+     * @return
+     */
+    EtlProcessorsResp getProcessors(String processorsCode);
 }
