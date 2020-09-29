@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.nifi.processors;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
+import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.nifi.ProcessorContext;

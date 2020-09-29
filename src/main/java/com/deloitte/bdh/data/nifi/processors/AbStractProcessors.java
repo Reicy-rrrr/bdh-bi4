@@ -1,18 +1,10 @@
 package com.deloitte.bdh.data.nifi.processors;
 
-import java.time.LocalDateTime;
 
-import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.data.enums.BiProcessorsTypeEnum;
-import com.deloitte.bdh.data.enums.EffectEnum;
-import com.deloitte.bdh.data.enums.YesOrNoEnum;
-import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.service.BiProcessorsService;
-import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +18,7 @@ public abstract class AbStractProcessors implements Processors {
 
 
     @Override
-//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.SUPPORTS)
     public ProcessorContext etl(ProcessorContext context) throws Exception {
         try {
             validateContext(context);

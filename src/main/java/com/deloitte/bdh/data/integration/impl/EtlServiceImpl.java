@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.integration.impl;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
+import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.enums.EffectEnum;
@@ -10,27 +12,22 @@ import com.google.common.collect.Lists;
 import com.deloitte.bdh.data.nifi.MethodEnum;
 import com.google.common.collect.Maps;
 
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.integration.NifiProcessService;
-import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processors.BiEtlProcess;
-import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 
 @Service
+@DS(DSConstant.BI_DB)
 public class EtlServiceImpl implements EtlService {
     private static final Logger logger = LoggerFactory.getLogger(EtlServiceImpl.class);
 
@@ -51,7 +48,7 @@ public class EtlServiceImpl implements EtlService {
 
 
     @Override
-//    @Transactional
+    @Transactional
     public void joinResource(JoinResourceDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(dto.getSourceId());
         if (null == biEtlDatabaseInf) {

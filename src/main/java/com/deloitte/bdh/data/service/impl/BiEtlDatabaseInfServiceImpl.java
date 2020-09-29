@@ -73,7 +73,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("查看单个resource 失败:id 不能为空");
         }
-        return this.getById(id);
+        return biEtlDatabaseInfMapper.selectById(id);
     }
 
 
