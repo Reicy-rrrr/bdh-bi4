@@ -19,7 +19,6 @@ import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.model.resp.Processor;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
@@ -159,7 +158,8 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     }
 
     @Override
-    public void delProcessor(Processor processor) throws Exception {
+    public void delProcessor(String id) throws Exception {
+        BiEtlProcessor processor = etlProcessorMapper.selectById(id);
         nifiProcessService.delProcessor(processor.getProcessId());
         etlProcessorMapper.deleteById(processor.getId());
     }

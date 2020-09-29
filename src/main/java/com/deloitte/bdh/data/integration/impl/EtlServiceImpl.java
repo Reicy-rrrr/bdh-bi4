@@ -1,19 +1,20 @@
 package com.deloitte.bdh.data.integration.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
+import com.deloitte.bdh.data.model.resp.ProcessorsResp;
 import com.deloitte.bdh.data.service.*;
-import com.google.common.collect.Lists;
 import com.deloitte.bdh.data.nifi.MethodEnum;
 import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
-import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processors.BiEtlProcess;
@@ -32,8 +33,6 @@ public class EtlServiceImpl implements EtlService {
     private static final Logger logger = LoggerFactory.getLogger(EtlServiceImpl.class);
 
     @Autowired
-    private NifiProcessService nifiProcessService;
-    @Autowired
     private BiEtlDatabaseInfService databaseInfService;
     @Autowired
     private BiEtlGroupDbRefService groupDbRefService;
@@ -45,22 +44,23 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlProcess biEtlProcess;
     @Autowired
     private BiProcessorsService processorsService;
-
+    @Autowired
+    private BiEtlParamsService biEtlParamsService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void joinResource(JoinResourceDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
-            throw new RuntimeException("EtlServiceImpl.joinResource.error:未找到目标 数据源");
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
         }
         BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
         if (null == biEtlModel) {
-            throw new RuntimeException("EtlServiceImpl.joinResource.error:未找到目标 模型");
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 模型");
         }
 
         if (EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
-            throw new RuntimeException("EtlServiceImpl.joinResource.error:数据源状态不合法");
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 数据源状态不合法");
         }
 
         //新建processors
@@ -102,5 +102,17 @@ public class EtlServiceImpl implements EtlService {
 //        groupDbRef.setCreateUser(dto.getCreateUser());
 //        groupDbRef.setTenantId(dto.getTenantId());
 //        groupDbRefService.save(groupDbRef);
+    }
+
+    @Override
+    public ProcessorsResp getProcessors(String processorsCode) {
+        if (StringUtil.isEmpty(processorsCode)) {
+            throw new RuntimeException("EtlServiceImpl.getProcessors.error : processorsCode 不能为空");
+        }
+        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, processorsCode));
+
+//        biEtlParamsService
+        return null;
     }
 }

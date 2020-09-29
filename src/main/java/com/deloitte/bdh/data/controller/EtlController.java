@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
+import com.deloitte.bdh.data.model.resp.ProcessorsResp;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +39,21 @@ public class EtlController {
         return RetResponse.makeOKRsp();
     }
 
+
+    @ApiOperation(value = "移除数据源", notes = "移除数据源")
+    @PostMapping("/removeResource")
+    public RetResult<Void> removeResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
+        etlService.joinResource(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+
+    @ApiOperation(value = "查看组件详情", notes = "查看组件详情")
+    @PostMapping("/getProcessors")
+    public RetResult<ProcessorsResp> getProcessors(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(etlService.getProcessors(request.getData()));
+    }
+
 //    @ApiOperation(value = "配置、修改已引入的数据源", notes = "配置、修改已引入的数据源")
 //    @PostMapping("/Resource")
 //    public RetResult<Void> updJoinedResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
@@ -45,11 +61,6 @@ public class EtlController {
 //        return RetResponse.makeOKRsp();
 //    }
 
-//    @ApiOperation(value = "操作", notes = "操作")
-//    @PostMapping("/getProcessor")
-//    public RetResult<BiEtlProcessor> getProcessor(@RequestBody @Validated RetRequest<String> request) {
-//        return RetResponse.makeOKRsp(biEtlProcessorService.getProcessor(request.getData()));
-//    }
 //
 //    @ApiOperation(value = "启动", notes = "操作")
 //    @PostMapping("/getProcessor")

@@ -5,7 +5,6 @@ import com.deloitte.bdh.data.model.BiEtlConnection;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.model.BiProcessors;
-import com.deloitte.bdh.data.model.resp.Processor;
 import com.google.common.collect.Lists;
 import lombok.*;
 

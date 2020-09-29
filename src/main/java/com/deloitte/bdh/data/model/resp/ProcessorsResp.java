@@ -1,8 +1,7 @@
 package com.deloitte.bdh.data.model.resp;
 
 
-import com.deloitte.bdh.data.model.BiEtlParams;
-import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.model.BiProcessors;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +22,7 @@ import java.util.List;
 @Setter
 @Getter
 @ToString
-public class Processor extends BiEtlProcessor {
+public class ProcessorsResp extends BiProcessors {
 
-    List<BiEtlParams> list;
+    List<ProcessorResp> list;
 }

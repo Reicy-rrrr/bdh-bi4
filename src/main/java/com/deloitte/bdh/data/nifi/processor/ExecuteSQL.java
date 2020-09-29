@@ -2,8 +2,6 @@ package com.deloitte.bdh.data.nifi.processor;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlParams;
@@ -16,7 +14,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import com.deloitte.bdh.data.model.resp.Processor;
+import com.deloitte.bdh.data.nifi.Processor;
 
 import java.util.List;
 import java.util.Map;
@@ -73,7 +71,7 @@ public class ExecuteSQL extends AbstractProcessor {
     @Override
     protected Map<String, Object> delete(ProcessorContext context) throws Exception {
         Processor processor = context.getTempProcessor();
-        processorService.delProcessor(processor);
+        processorService.delProcessor(processor.getId());
 
         List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
         if (CollectionUtils.isNotEmpty(paramsList)) {

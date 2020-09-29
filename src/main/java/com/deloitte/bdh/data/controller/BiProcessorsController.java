@@ -1,10 +1,11 @@
 package com.deloitte.bdh.data.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.data.model.resp.Processors;
+import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.service.BiProcessorsService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +35,19 @@ public class BiProcessorsController {
     private BiProcessorsService processorsService;
 
 
-    @ApiOperation(value = "查看单个 PROCESSORS", notes = "查看单个 PROCESSORS 详情")
+    @ApiOperation(value = "查看单个 PROCESSORS", notes = "根据编码 查看单个PROCESSORS")
     @PostMapping("/getProcessors")
-    public RetResult<Processors> getProcessors(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(processorsService.getProcessors(request.getData()));
+    public RetResult<BiProcessors> getProcessors(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, request.getData())));
     }
 
     @ApiOperation(value = "查看模板下面已引用的 PROCESSORS 集合", notes = "查看模板下面已引用的 PROCESSORS 集合")
     @PostMapping("/getProcessorsList")
-    public RetResult<List<Processors>> getProcessorsList(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(processorsService.getProcessorsList(request.getData()));
+    public RetResult<List<BiProcessors>> getProcessorsList(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(processorsService.list(
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getRelModelCode, request.getData()))
+        );
     }
 
 }

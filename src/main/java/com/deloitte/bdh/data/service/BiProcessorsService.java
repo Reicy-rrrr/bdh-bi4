@@ -2,7 +2,7 @@ package com.deloitte.bdh.data.service;
 
 import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.model.resp.Processors;
+import com.deloitte.bdh.data.model.resp.ProcessorsResp;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public interface BiProcessorsService extends Service<BiProcessors> {
      * @param processorsId
      * @return
      */
-    Processors getProcessors(String processorsId);
+    ProcessorsResp getProcessors(String processorsId);
 
     /**
      * 查看模板下面已引用的 PROCESSORS 集合
@@ -29,6 +29,6 @@ public interface BiProcessorsService extends Service<BiProcessors> {
      * @param modelId
      * @return
      */
-    List<Processors> getProcessorsList(String modelId);
+    List<ProcessorsResp> getProcessorsList(String modelId);
 
 }

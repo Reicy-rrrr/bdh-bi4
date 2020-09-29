@@ -3,7 +3,7 @@ package com.deloitte.bdh.data.nifi.connection;
 
 import com.deloitte.bdh.data.model.BiEtlConnection;
 import com.deloitte.bdh.data.model.request.CreateConnectionDto;
-import com.deloitte.bdh.data.model.resp.Processor;
+import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.service.BiEtlConnectionService;
 import org.apache.commons.collections4.MapUtils;

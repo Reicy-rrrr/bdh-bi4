@@ -3,7 +3,8 @@ package com.deloitte.bdh.data.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.model.BiEtlModel;
-import com.deloitte.bdh.data.model.resp.Processor;
+import com.deloitte.bdh.data.model.resp.ProcessorResp;
+import com.deloitte.bdh.data.model.resp.ProcessorsResp;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.google.common.collect.Lists;
 
@@ -14,7 +15,6 @@ import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.dao.bi.BiProcessorsMapper;
-import com.deloitte.bdh.data.model.resp.Processors;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -50,12 +50,12 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     private BiProcessorsMapper processorsMapper;
 
     @Override
-    public Processors getProcessors(String processorsId) {
+    public ProcessorsResp getProcessors(String processorsId) {
         if (StringUtil.isEmpty(processorsId)) {
             throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error:processorsId 不嫩为空");
         }
         BiProcessors processors = processorsMapper.selectById(processorsId);
-        Processors result = new Processors();
+        ProcessorsResp result = new ProcessorsResp();
         BeanUtils.copyProperties(processors, result);
 
         List<Pair<BiEtlProcessor, List<BiEtlParams>>> pairs = etlProcessorService.getProcessorList(processors.getCode());
@@ -63,9 +63,9 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
             throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error : 未找到目标对象 processor");
         }
 
-        List<Processor> processorList = Lists.newArrayList();
+        List<ProcessorResp> processorList = Lists.newArrayList();
         for (Pair<BiEtlProcessor, List<BiEtlParams>> pair : pairs) {
-            Processor processor = new Processor();
+            ProcessorResp processor = new ProcessorResp();
             BeanUtils.copyProperties(pair.getKey(), processor);
             processor.setList(pair.getValue());
             processorList.add(processor);
@@ -75,7 +75,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     }
 
     @Override
-    public List<Processors> getProcessorsList(String modelId) {
+    public List<ProcessorsResp> getProcessorsList(String modelId) {
         if (StringUtil.isEmpty(modelId)) {
             throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error:modelId 不嫩为空");
         }
@@ -83,10 +83,10 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         List<BiProcessors> processorList = processorsMapper.selectList(
                 new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getRelModelCode, model.getCode()));
 
-        List<Processors> result = Lists.newArrayList();
+        List<ProcessorsResp> result = Lists.newArrayList();
         if (!CollectionUtils.isEmpty(processorList)) {
             for (BiProcessors biProcessors : processorList) {
-                Processors processors = new Processors();
+                ProcessorsResp processors = new ProcessorsResp();
                 BeanUtils.copyProperties(biProcessors, processors);
                 result.add(processors);
             }
