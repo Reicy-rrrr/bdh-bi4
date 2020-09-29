@@ -1,18 +1,23 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
+import java.time.LocalDateTime;
+
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
+import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
-import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
+import com.deloitte.bdh.data.service.BiEtlDbRefService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.deloitte.bdh.data.nifi.Processor;
@@ -23,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Service("ExecuteSQL")
 public class ExecuteSQL extends AbstractProcessor {
+    @Autowired
+    private BiEtlDbRefService etlDbRefService;
 
     private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
 
@@ -45,15 +52,7 @@ public class ExecuteSQL extends AbstractProcessor {
         component.put("config", config);
 
         //新建 processor
-        CreateProcessorDto createProcessorDto = new CreateProcessorDto();
-        createProcessorDto.setName(ProcessorTypeEnum.ExecuteSQL.getTypeDesc() + System.currentTimeMillis());
-        createProcessorDto.setType(ProcessorTypeEnum.ExecuteSQL.getType());
-        createProcessorDto.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        createProcessorDto.setTenantId(context.getModel().getTenantId());
-        createProcessorDto.setProcessorsCode(context.getProcessors().getCode());
-        createProcessorDto.setParams(component);
-        BiEtlProcessor biEtlProcessor = processorService.createProcessor(createProcessorDto);
-
+        BiEtlProcessor biEtlProcessor = createProcessor(context, component);
 
         Processor processor = new Processor();
         BeanUtils.copyProperties(biEtlProcessor, processor);
@@ -64,24 +63,30 @@ public class ExecuteSQL extends AbstractProcessor {
             paramsService.saveBatch(paramsList);
             processor.setList(paramsList);
         }
-        context.addProcessor(processor);
 
+        //该组件有关联表的信息
+        BiEtlDbRef dbRef = new BiEtlDbRef();
+        dbRef.setCode(GenerateCodeUtil.genDbRef());
+        dbRef.setSourceId(context.getBiEtlDatabaseInf().getId());
+        dbRef.setProcessorCode(processor.getCode());
+        dbRef.setProcessorsCode(context.getProcessors().getCode());
+        dbRef.setModelCode(context.getModel().getCode());
+        dbRef.setCreateDate(LocalDateTime.now());
+        dbRef.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
+        dbRef.setTenantId(context.getModel().getTenantId());
+        etlDbRefService.save(dbRef);
+
+        //反显
+        processor.setDbRef(dbRef);
+        context.addProcessor(processor);
         return null;
     }
 
     @Override
     protected Map<String, Object> delete(ProcessorContext context) throws Exception {
-        Processor processor = context.getTempProcessor();
-        processorService.delProcessor(processor.getId());
-
-        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
-        if (CollectionUtils.isNotEmpty(paramsList)) {
-            List<String> list = paramsList
-                    .stream()
-                    .map(BiEtlParams::getId)
-                    .collect(Collectors.toList());
-            paramsService.removeByIds(list);
-        }
+        super.delete(context);
+        //删除该组件有关联表的信息
+        etlDbRefService.removeById(context.getTempProcessor().getDbRef().getId());
         return null;
     }
 
@@ -95,6 +100,11 @@ public class ExecuteSQL extends AbstractProcessor {
     public Map<String, Object> validate(ProcessorContext context) throws Exception {
         return null;
 
+    }
+
+    @Override
+    protected ProcessorTypeEnum processorType() {
+        return ProcessorTypeEnum.ExecuteSQL;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.nifi;
 
 
+import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import io.swagger.annotations.ApiModel;
@@ -25,5 +26,7 @@ import java.util.List;
 @ToString
 public class Processor extends BiEtlProcessor {
 
-    List<BiEtlParams> list;
+    private List<BiEtlParams> list;
+
+    private BiEtlDbRef dbRef;
 }

@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-27
+ * @since 2020-09-29
  */
 @TableName("BI_PROCESSORS")
 public class BiProcessors implements Serializable {
@@ -36,7 +36,7 @@ public class BiProcessors implements Serializable {
     private String name;
 
     /**
-     * nifi的类型
+     * BI的processors类型
      */
     @TableField("TYPE")
     private String type;
@@ -100,6 +100,12 @@ public class BiProcessors implements Serializable {
 
     @TableField("TENANT_ID")
     private String tenantId;
+
+    /**
+     * 依赖的BiporcessorId
+     */
+    @TableField("REL_SOURCE_ID")
+    private String relSourceId;
 
     public String getId() {
         return id;
@@ -220,6 +226,13 @@ public class BiProcessors implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+    public String getRelSourceId() {
+        return relSourceId;
+    }
+
+    public void setRelSourceId(String relSourceId) {
+        this.relSourceId = relSourceId;
+    }
 
     @Override
     public String toString() {
@@ -241,6 +254,7 @@ public class BiProcessors implements Serializable {
         ", modifiedUser=" + modifiedUser +
         ", ip=" + ip +
         ", tenantId=" + tenantId +
+        ", relSourceId=" + relSourceId +
         "}";
     }
 }

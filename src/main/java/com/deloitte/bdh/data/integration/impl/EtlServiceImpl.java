@@ -77,6 +77,7 @@ public class EtlServiceImpl implements EtlService {
         processors.setCreateDate(LocalDateTime.now());
         processors.setCreateUser(dto.getCreateUser());
         processors.setTenantId(dto.getTenantId());
+        processors.setRelSourceId(biEtlDatabaseInf.getId());
         processorsService.save(processors);
 
         // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
