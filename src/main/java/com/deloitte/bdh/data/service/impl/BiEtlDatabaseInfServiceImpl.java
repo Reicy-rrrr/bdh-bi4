@@ -232,8 +232,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
-        inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
-        inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
@@ -243,7 +241,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         Map<String, Object> sourceMap = nifiProcessService.getRootGroupInfo();
         inf.setVersion("1");
         inf.setControllerServiceId(null);
-        inf.setRootGroupId(MapUtils.getString(sourceMap, "parentGroupId"));
+        Map groupFlow = MapUtils.getMap(sourceMap, "processGroupFlow");
+        inf.setRootGroupId(MapUtils.getString(groupFlow, "id"));
         biEtlDatabaseInfMapper.insert(inf);
         return inf;
     }

@@ -101,7 +101,7 @@ public class FtpServiceImpl implements FtpService {
             logger.error("文件上传到ftp服务器失败", e);
             throw new BizException("文件上传到ftp服务器失败");
         }
-        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, fileName);
+        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, finalName);
     }
 
     /**
