@@ -82,8 +82,7 @@ public class EtlServiceImpl implements EtlService {
         Map<String, Object> req = Maps.newHashMap();
         req.put("name", "引入数据:" + System.currentTimeMillis());
         req.put("createUser", dto.getCreateUser());
-        req.put("SQL select query", dto.getTableName());
-        req.put("Database Connection Pooling Service", biEtlDatabaseInf.getControllerServiceId());
+        req.put("tableName", dto.getTableName());
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.JOIN_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
         context.setReq(req);

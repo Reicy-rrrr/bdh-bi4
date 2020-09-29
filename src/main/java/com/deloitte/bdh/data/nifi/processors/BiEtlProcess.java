@@ -29,10 +29,7 @@ public class BiEtlProcess extends AbStractProcessors {
         context.setProcessComplete(true);
 
         // 处理connection
-        for (ProcessorTypeEnum typeEnum : enumList) {
-            Map<String, Object> respConnect = connection.pConnect(context);
-            context.getSuccessConnectionMap().add(respConnect);
-        }
+        connection.pConnect(context);
 
 //        // 处理 db
 //        db(context);
@@ -52,11 +49,13 @@ public class BiEtlProcess extends AbStractProcessors {
             connection.rConnect(context);
         }
         // 处理processor
-        List enumList = context.getProcessorList();
-        if(CollectionUtils.isEmpty(enumList)){
-//            for (ProcessorTypeEnum typeEnum : enumList) {
-//                SpringUtil.getBean(typeEnum.getType(), Processor.class).rProcess(context);
-//            }
+        if (!CollectionUtils.isEmpty(context.getProcessorList())) {
+            for (int i = 0; i < context.getProcessorList().size(); i++) {
+                context.addTemp(context.getProcessorList().get(i));
+                SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
+                context.removeTemp();
+
+            }
         }
 
     }

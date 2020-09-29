@@ -19,6 +19,7 @@ import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.model.resp.Processor;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
@@ -112,13 +113,11 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
 
     @Override
     public BiEtlProcessor createProcessor(CreateProcessorDto dto) throws Exception {
-        BiProcessors processors = processorsService.list(
-                new LambdaQueryWrapper<BiProcessors>()
-                        .eq(BiProcessors::getCode, dto.getProcessorsCode())).get(0);
+        BiProcessors processors = processorsService
+                .getOne(new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, dto.getProcessorsCode()));
 
-        BiEtlModel model = modelService.list(
-                new LambdaQueryWrapper<BiEtlModel>()
-                        .eq(BiEtlModel::getCode, processors.getRelModelCode())).get(0);
+        BiEtlModel model = modelService
+                .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
 
         BiEtlProcessor processor = new BiEtlProcessor();
         BeanUtils.copyProperties(dto, processor);
@@ -143,6 +142,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
 
         processor.setProcessId(MapUtils.getString(source, "id"));
         processor.setVersion(NifiProcessUtil.getVersion(source));
+        processor.setRelationships(JsonUtil.obj2String(NifiProcessUtil.getRelationShip(source)));
         processorMapper.insert(processor);
         return processor;
     }
@@ -160,8 +160,9 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     }
 
     @Override
-    public void delProcessor(String id) throws Exception {
-
+    public void delProcessor(Processor processor) throws Exception {
+        nifiProcessService.delProcessor(processor.getProcessId());
+        processorMapper.deleteById(processor.getId());
     }
 
     @Override
@@ -201,8 +202,8 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         BiEtlParams dcps = new BiEtlParams();
         dcps.setCode("Pr" + System.currentTimeMillis());
         dcps.setName("数据库连接池");
-        dcps.setKey("Database Connection Pooling Service");
-        dcps.setValue(controllerServiceId);
+        dcps.setParamKey("Database Connection Pooling Service");
+        dcps.setParamValue(controllerServiceId);
         dcps.setParamsGroup(ParamsGroupEnum.PROPERTIES.getKey());
         dcps.setParamsComponent(ParamsComponentEnum.PROCESSOR.getKey());
         dcps.setRelCode(processor.getCode());
@@ -213,8 +214,8 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         BiEtlParams ssq = new BiEtlParams();
         ssq.setCode("Pr" + System.currentTimeMillis());
         ssq.setName("查询语句");
-        ssq.setKey("SQL select query");
-        ssq.setValue(querySql.replace("#", tableName));
+        ssq.setParamKey("SQL select query");
+        ssq.setParamValue(querySql.replace("#", tableName));
         ssq.setParamsGroup(ParamsGroupEnum.PROPERTIES.getKey());
         ssq.setParamsComponent(ParamsComponentEnum.PROCESSOR.getKey());
         ssq.setRelCode(processor.getCode());

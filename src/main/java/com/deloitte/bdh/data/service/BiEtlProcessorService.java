@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.model.resp.Processor;
 import javafx.util.Pair;
 
 import java.util.List;
@@ -68,7 +69,7 @@ public interface BiEtlProcessorService extends Service<BiEtlProcessor> {
      * @param
      * @return
      */
-    void delProcessor(String id) throws Exception;
+    void delProcessor(Processor processor) throws Exception;
 
     /**
      * 关联数据源

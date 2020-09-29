@@ -142,16 +142,17 @@ public class NifiProcessUtil {
     /**
      * 获取processor relationship列表（创建connections时使用 ）
      */
-    public static List<String> getRela(Map<String, Object> map) {
+    public static List<String> getRelationShip(Map<String, Object> map) {
         if (MapUtils.isEmpty(map)) {
             throw new RuntimeException("获取relationship失败:参数异常");
         }
-        Object rela = MapUtils.getObject(map, "relationships");
+        Map<String, Object> component = (Map<String, Object>) MapUtils.getObject(map, "component");
+        List<Map<String, Object>> relationships = (List<Map<String, Object>>) MapUtils.getObject(component, "relationships");
+
         List<String> relas = Lists.newArrayList();
-        if (null != rela) {
-            List<Map<String, Object>> list = (List<Map<String, Object>>) rela;
-            for (Map<String, Object> args0 : list) {
-                relas.add(MapUtils.getString(args0, "autoTerminate"));
+        if (null != relationships) {
+            for (Map<String, Object> args0 : relationships) {
+                relas.add(MapUtils.getString(args0, "name"));
             }
         }
         return relas;

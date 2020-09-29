@@ -9,9 +9,14 @@ package com.deloitte.bdh.common.util;
  */
 public class GenerateCodeUtil {
 
-    private static final String PREFIX_MODEL_ = "Model";
-    private static final String PREFIX_PROCESSORS_ = "PROS";
-    private static final String PREFIX_PROCESSOR_ = "PRO";
+    private static SnowFlakeUtil util = new SnowFlakeUtil(0, 0);
+    private static final String PREFIX_MODEL_ = "Model_";
+    private static final String PREFIX_PROCESSORS_ = "PROS_";
+    private static final String PREFIX_PROCESSOR_ = "PRO_";
+    private static final String PREFIX_PARAMS_ = "PARAM_";
+
+    private GenerateCodeUtil() {
+    }
 
     public static String genModel() {
         return generate(PREFIX_MODEL_);
@@ -25,8 +30,17 @@ public class GenerateCodeUtil {
         return generate(PREFIX_PROCESSOR_);
     }
 
-    public static String generate(String prefix) {
-        return prefix + System.currentTimeMillis();
+    public static String genParam() {
+        return generate(PREFIX_PARAMS_);
     }
 
+    public static String generate(String prefix) {
+        return prefix + util.nextId();
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(GenerateCodeUtil.genModel());
+        }
+    }
 }

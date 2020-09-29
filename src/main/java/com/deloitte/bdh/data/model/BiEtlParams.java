@@ -38,14 +38,14 @@ public class BiEtlParams implements Serializable {
     /**
      * 参数KEY
      */
-    @TableField("KEY")
-    private String key;
+    @TableField("PARAM_KEY")
+    private String paramKey;
 
     /**
      * 参数value
      */
-    @TableField("VALUE")
-    private String value;
+    @TableField("PARAM_VALUE")
+    private String paramValue;
 
     /**
      * 参数所属组类型（properties、setting等）
@@ -110,19 +110,19 @@ public class BiEtlParams implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    public String getKey() {
-        return key;
+    public String getParamKey() {
+        return paramKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setParamKey(String paramKey) {
+        this.paramKey = paramKey;
     }
-    public String getValue() {
-        return value;
+    public String getParamValue() {
+        return paramValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setParamValue(String paramValue) {
+        this.paramValue = paramValue;
     }
     public String getParamsGroup() {
         return paramsGroup;
@@ -201,8 +201,8 @@ public class BiEtlParams implements Serializable {
         "id=" + id +
         ", code=" + code +
         ", name=" + name +
-        ", key=" + key +
-        ", value=" + value +
+        ", paramKey=" + paramKey +
+        ", paramValue=" + paramValue +
         ", paramsGroup=" + paramsGroup +
         ", paramsComponent=" + paramsComponent +
         ", relCode=" + relCode +
