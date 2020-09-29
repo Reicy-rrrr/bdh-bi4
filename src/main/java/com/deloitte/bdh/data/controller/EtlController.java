@@ -5,8 +5,9 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.integration.EtlService;
+import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
-import com.deloitte.bdh.data.model.resp.ProcessorsResp;
+import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -34,23 +35,22 @@ public class EtlController {
 
     @ApiOperation(value = "引入数据源", notes = "引入数据源")
     @PostMapping("/joinResource")
-    public RetResult<Void> joinResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
-        etlService.joinResource(request.getData());
-        return RetResponse.makeOKRsp();
+    public RetResult<BiProcessors> joinResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
     }
 
 
     @ApiOperation(value = "移除数据源", notes = "移除数据源")
     @PostMapping("/removeResource")
-    public RetResult<Void> removeResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
-        etlService.joinResource(request.getData());
+    public RetResult<Void> removeResource(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        etlService.removeResource(request.getData());
         return RetResponse.makeOKRsp();
     }
 
 
-    @ApiOperation(value = "查看组件详情", notes = "查看组件详情")
+    @ApiOperation(value = "查看组件详情", notes = "查看组件详情(包含参数集合)")
     @PostMapping("/getProcessors")
-    public RetResult<ProcessorsResp> getProcessors(@RequestBody @Validated RetRequest<String> request) {
+    public RetResult<EtlProcessorsResp> getProcessors(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(etlService.getProcessors(request.getData()));
     }
 

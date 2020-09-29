@@ -21,6 +21,7 @@
         <result column="MODIFIED_USER" property="modifiedUser" />
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
+        <result column="REL_SOURCE_ID" property="relSourceId" />
     </resultMap>
 
 </mapper>

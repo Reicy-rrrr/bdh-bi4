@@ -1,9 +1,9 @@
-package com.deloitte.bdh.data.nifi;
+package com.deloitte.bdh.data.model.resp;
 
 
-import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
-import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.model.BiProcessors;
+import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,9 +24,7 @@ import java.util.List;
 @Setter
 @Getter
 @ToString
-public class Processor extends BiEtlProcessor {
+public class EtlProcessorsResp extends BiProcessors {
 
-    private List<BiEtlParams> list;
-
-    private BiEtlDbRef dbRef;
+    List<BiEtlParams> list = Lists.newArrayList();
 }

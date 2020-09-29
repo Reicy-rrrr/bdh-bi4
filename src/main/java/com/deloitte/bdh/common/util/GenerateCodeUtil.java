@@ -15,6 +15,7 @@ public class GenerateCodeUtil {
     private static final String PREFIX_PROCESSOR_ = "PRO_";
     private static final String PREFIX_PARAMS_ = "PARAM_";
     private static final String PREFIX_CONNECT_ = "CON_";
+    private static final String PREFIX_REF_ = "REF_";
 
     private GenerateCodeUtil() {
     }
@@ -37,6 +38,10 @@ public class GenerateCodeUtil {
 
     public static String genConnect() {
         return generate(PREFIX_CONNECT_);
+    }
+
+    public static String genDbRef() {
+        return generate(PREFIX_REF_);
     }
 
     private static String generate(String prefix) {

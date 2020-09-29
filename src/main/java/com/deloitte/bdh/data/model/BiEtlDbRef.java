@@ -13,10 +13,10 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-25
+ * @since 2020-09-29
  */
-@TableName("BI_ETL_GROUP_DB_REF")
-public class BiEtlGroupDbRef implements Serializable {
+@TableName("BI_ETL_DB_REF")
+public class BiEtlDbRef implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,16 +30,28 @@ public class BiEtlGroupDbRef implements Serializable {
     private String code;
 
     /**
-     * 源
+     * 源id
      */
     @TableField("SOURCE_ID")
     private String sourceId;
 
     /**
-     * 目标
+     * 处理器编码
      */
-    @TableField("TARGET_ID")
-    private String targetId;
+    @TableField("PROCESSOR_CODE")
+    private String processorCode;
+
+    /**
+     * 处理器集合编码
+     */
+    @TableField("PROCESSORS_CODE")
+    private String processorsCode;
+
+    /**
+     * 模板编码
+     */
+    @TableField("MODEL_CODE")
+    private String modelCode;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -80,12 +92,26 @@ public class BiEtlGroupDbRef implements Serializable {
     public void setSourceId(String sourceId) {
         this.sourceId = sourceId;
     }
-    public String getTargetId() {
-        return targetId;
+    public String getProcessorCode() {
+        return processorCode;
     }
 
-    public void setTargetId(String targetId) {
-        this.targetId = targetId;
+    public void setProcessorCode(String processorCode) {
+        this.processorCode = processorCode;
+    }
+    public String getProcessorsCode() {
+        return processorsCode;
+    }
+
+    public void setProcessorsCode(String processorsCode) {
+        this.processorsCode = processorsCode;
+    }
+    public String getModelCode() {
+        return modelCode;
+    }
+
+    public void setModelCode(String modelCode) {
+        this.modelCode = modelCode;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -132,11 +158,13 @@ public class BiEtlGroupDbRef implements Serializable {
 
     @Override
     public String toString() {
-        return "BiEtlGroupDbRef{" +
+        return "BiEtlDbRef{" +
         "id=" + id +
         ", code=" + code +
         ", sourceId=" + sourceId +
-        ", targetId=" + targetId +
+        ", processorCode=" + processorCode +
+        ", processorsCode=" + processorsCode +
+        ", modelCode=" + modelCode +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +
