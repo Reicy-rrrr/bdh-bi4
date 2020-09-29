@@ -6,7 +6,6 @@ import com.deloitte.bdh.common.util.FtpUtil;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.model.resp.FtpUploadResult;
 import com.deloitte.bdh.data.service.FtpService;
-import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -118,12 +118,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 初始化创建dto，调用创建数据源接口
         CreateResourcesDto createDto = new CreateResourcesDto();
         BeanUtils.copyProperties(dto, createDto);
-        createDto.setAddress(uploadResult.getHost());
-        createDto.setPort(uploadResult.getPort());
-        createDto.setDbUser(uploadResult.getUsername());
-        createDto.setDbPassword(uploadResult.getPassword());
 
-        // 暂时将文件名称存放到数据库名称字段，文件路径？uploadResult.getFilePath();
+        // 暂时将文件名称存放到数据库名称字段，文件路径存放到地址
+        createDto.setAddress(uploadResult.getFilePath());
         createDto.setDbName(uploadResult.getFileName());
         createDto.setType(SourceTypeEnum.File_Csv.getType());
         BiEtlDatabaseInf inf = createResource(createDto);
