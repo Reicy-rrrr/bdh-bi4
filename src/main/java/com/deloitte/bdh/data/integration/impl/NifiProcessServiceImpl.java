@@ -289,8 +289,6 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("createConnections error: id不能为空");
         }
-        //todo removed id
-        map.remove("id");
         Map<String, Object> prcessorGroupMap = this.getProcessGroup(id);
         // 校验权限
         NifiProcessUtil.checkPermissions(prcessorGroupMap);

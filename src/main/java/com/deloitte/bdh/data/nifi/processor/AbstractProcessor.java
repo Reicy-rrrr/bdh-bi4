@@ -100,7 +100,7 @@ public abstract class AbstractProcessor implements Processor {
                 params.setName(key);
                 params.setParamKey(key);
                 params.setParamValue(JsonUtil.obj2String(value));
-                params.setParamsComponent("processor");
+                params.setParamsComponent("PROCESSOR");
                 params.setRelCode(biEtlProcessor.getCode());
                 params.setRelProcessorsCode(context.getProcessors().getCode());
                 params.setCreateDate(LocalDateTime.now());

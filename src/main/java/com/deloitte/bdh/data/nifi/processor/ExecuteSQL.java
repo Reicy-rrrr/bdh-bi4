@@ -8,10 +8,8 @@ import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
-import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -67,7 +65,7 @@ public class ExecuteSQL extends AbstractProcessor {
             paramsService.saveBatch(paramsList);
             processor.setList(paramsList);
         }
-        context.getProcessorList().add(processor);
+        context.addProcessor(processor);
 
         return null;
     }

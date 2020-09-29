@@ -26,7 +26,6 @@ import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -50,27 +49,27 @@ import java.util.Map;
 @DS(DSConstant.BI_DB)
 public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMapper, BiEtlProcessor> implements BiEtlProcessorService {
     @Resource
-    private BiEtlProcessorMapper processorMapper;
+    private BiEtlProcessorMapper etlProcessorMapper;
     @Autowired
     private NifiProcessService nifiProcessService;
     @Autowired
-    private BiEtlParamsService paramsService;
+    private BiEtlParamsService etlParamsService;
     @Autowired
     private BiProcessorsService processorsService;
     @Autowired
-    private BiEtlModelService modelService;
+    private BiEtlModelService etlModelService;
 
     @Override
     public Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id) {
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:processorId 不嫩为空");
         }
-        BiEtlProcessor processor = processorMapper.selectById(id);
+        BiEtlProcessor processor = etlProcessorMapper.selectById(id);
         if (null == processor) {
             throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:未找到对应的对象");
         }
         //获取对应processor 参数集合
-        List<BiEtlParams> paramsList = paramsService.list(
+        List<BiEtlParams> paramsList = etlParamsService.list(
                 new LambdaQueryWrapper<BiEtlParams>()
                         .eq(BiEtlParams::getRelCode, processor.getCode())
         );
@@ -83,10 +82,10 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
             throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessorList error : relProcessorCode 不嫩为空");
         }
         List<Pair<BiEtlProcessor, List<BiEtlParams>>> pairs = Lists.newArrayList();
-        List<BiEtlProcessor> etlProcessorList = processorMapper.selectList(
+        List<BiEtlProcessor> etlProcessorList = etlProcessorMapper.selectList(
                 new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, relProcessorCode));
 
-        List<BiEtlParams> paramsList = paramsService.list(
+        List<BiEtlParams> paramsList = etlParamsService.list(
                 new LambdaQueryWrapper<BiEtlParams>()
                         .eq(BiEtlParams::getRelProcessorsCode, relProcessorCode)
         );
@@ -116,7 +115,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         BiProcessors processors = processorsService
                 .getOne(new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, dto.getProcessorsCode()));
 
-        BiEtlModel model = modelService
+        BiEtlModel model = etlModelService
                 .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
 
         BiEtlProcessor processor = new BiEtlProcessor();
@@ -143,7 +142,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         processor.setProcessId(MapUtils.getString(source, "id"));
         processor.setVersion(NifiProcessUtil.getVersion(source));
         processor.setRelationships(JsonUtil.obj2String(NifiProcessUtil.getRelationShip(source)));
-        processorMapper.insert(processor);
+        etlProcessorMapper.insert(processor);
         return processor;
     }
 
@@ -162,73 +161,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     @Override
     public void delProcessor(Processor processor) throws Exception {
         nifiProcessService.delProcessor(processor.getProcessId());
-        processorMapper.deleteById(processor.getId());
+        etlProcessorMapper.deleteById(processor.getId());
     }
-
-    @Override
-    public Map<String, Object> joinResource(String processorId, String controllerServiceId, String userId, String tableName) throws Exception {
-        String querySql = "select * from #";
-        BiEtlProcessor processor = processorMapper.selectById(processorId);
-        if (null == processor) {
-            throw new RuntimeException("BiEtlProcessorServiceImpl.joinResource error:未找到目标");
-        }
-
-        Map<String, Object> properties = Maps.newHashMap();
-        properties.put("Database Connection Pooling Service", controllerServiceId);
-        properties.put("SQL select query", querySql.replace("#", tableName));
-
-        Map<String, Object> config = Maps.newHashMap();
-        config.put("concurrentlySchedulableTaskCount", "1");
-        config.put("schedulingPeriod", "0 sec");
-        config.put("executionNode", "ALL");
-        config.put("penaltyDuration", "30 sec");
-        config.put("yieldDuration", "1 sec");
-        config.put("bulletinLevel", "WARN");
-        config.put("schedulingStrategy", "TIMER_DRIVEN");
-        config.put("properties", "properties");
-
-        Map<String, Object> reqNifi = Maps.newHashMap();
-        reqNifi.put("id", processorId);
-        reqNifi.put("config", config);
-        reqNifi.put("state", "STOPPED");
-
-        Map<String, Object> source = nifiProcessService.updateProcessor(reqNifi);
-        processor.setModifiedDate(LocalDateTime.now());
-        processor.setModifiedUser(userId);
-        processor.setVersion(NifiProcessUtil.getVersion(source));
-        processorMapper.updateById(processor);
-
-        //保存processor 的 配置信息，此处只有 properties
-        BiEtlParams dcps = new BiEtlParams();
-        dcps.setCode("Pr" + System.currentTimeMillis());
-        dcps.setName("数据库连接池");
-        dcps.setParamKey("Database Connection Pooling Service");
-        dcps.setParamValue(controllerServiceId);
-        dcps.setParamsGroup(ParamsGroupEnum.PROPERTIES.getKey());
-        dcps.setParamsComponent(ParamsComponentEnum.PROCESSOR.getKey());
-        dcps.setRelCode(processor.getCode());
-        dcps.setCreateDate(LocalDateTime.now());
-        dcps.setCreateUser(userId);
-        dcps.setTenantId(processor.getTenantId());
-
-        BiEtlParams ssq = new BiEtlParams();
-        ssq.setCode("Pr" + System.currentTimeMillis());
-        ssq.setName("查询语句");
-        ssq.setParamKey("SQL select query");
-        ssq.setParamValue(querySql.replace("#", tableName));
-        ssq.setParamsGroup(ParamsGroupEnum.PROPERTIES.getKey());
-        ssq.setParamsComponent(ParamsComponentEnum.PROCESSOR.getKey());
-        ssq.setRelCode(processor.getCode());
-        ssq.setCreateDate(LocalDateTime.now());
-        ssq.setCreateUser(userId);
-        ssq.setTenantId(processor.getTenantId());
-
-        List<BiEtlParams> paramsList = Lists.newArrayList();
-        paramsList.add(dcps);
-        paramsList.add(ssq);
-        paramsService.saveBatch(paramsList);
-        return source;
-    }
-
 
 }

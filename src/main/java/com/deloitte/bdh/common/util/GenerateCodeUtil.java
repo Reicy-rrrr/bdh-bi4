@@ -14,6 +14,7 @@ public class GenerateCodeUtil {
     private static final String PREFIX_PROCESSORS_ = "PROS_";
     private static final String PREFIX_PROCESSOR_ = "PRO_";
     private static final String PREFIX_PARAMS_ = "PARAM_";
+    private static final String PREFIX_CONNECT_ = "CON_";
 
     private GenerateCodeUtil() {
     }
@@ -34,7 +35,11 @@ public class GenerateCodeUtil {
         return generate(PREFIX_PARAMS_);
     }
 
-    public static String generate(String prefix) {
+    public static String genConnect() {
+        return generate(PREFIX_CONNECT_);
+    }
+
+    private static String generate(String prefix) {
         return prefix + util.nextId();
     }
 

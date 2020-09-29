@@ -48,7 +48,7 @@ public class EtlServiceImpl implements EtlService {
 
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void joinResource(JoinResourceDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
@@ -57,6 +57,10 @@ public class EtlServiceImpl implements EtlService {
         BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error:未找到目标 模型");
+        }
+
+        if (EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.joinResource.error:数据源状态不合法");
         }
 
         //新建processors
@@ -75,7 +79,7 @@ public class EtlServiceImpl implements EtlService {
         processors.setTenantId(dto.getTenantId());
         processorsService.save(processors);
 
-        //todo 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
+        // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
         Map<String, Object> req = Maps.newHashMap();
         req.put("name", "引入数据:" + System.currentTimeMillis());
         req.put("createUser", dto.getCreateUser());

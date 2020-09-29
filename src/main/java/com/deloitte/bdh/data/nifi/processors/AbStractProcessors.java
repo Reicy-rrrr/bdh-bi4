@@ -2,19 +2,15 @@ package com.deloitte.bdh.data.nifi.processors;
 
 
 import com.deloitte.bdh.data.nifi.ProcessorContext;
-import com.deloitte.bdh.data.service.BiProcessorsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
 public abstract class AbStractProcessors implements Processors {
-    private static final Logger logger = LoggerFactory.getLogger(AbStractProcessors.class);
-    @Autowired
-    private BiProcessorsService processorsService;
+    protected static final Logger logger = LoggerFactory.getLogger(AbStractProcessors.class);
 
 
     @Override
@@ -33,8 +29,6 @@ public abstract class AbStractProcessors implements Processors {
     }
 
     protected abstract ProcessorContext positive(ProcessorContext context) throws Exception;
-
-    protected abstract void db(ProcessorContext context) throws Exception;
 
     protected abstract void reverse(ProcessorContext context) throws Exception;
 

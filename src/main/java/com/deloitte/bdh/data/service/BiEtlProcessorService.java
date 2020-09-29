@@ -71,13 +71,5 @@ public interface BiEtlProcessorService extends Service<BiEtlProcessor> {
      */
     void delProcessor(Processor processor) throws Exception;
 
-    /**
-     * 关联数据源
-     *
-     * @param
-     * @return
-     */
-    Map<String, Object> joinResource(String processorId, String controllerServiceId, String userId, String tableName) throws Exception;
-
 
 }
