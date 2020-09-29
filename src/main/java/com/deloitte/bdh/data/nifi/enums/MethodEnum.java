@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.nifi;
+package com.deloitte.bdh.data.nifi.enums;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import org.apache.commons.lang3.StringUtils;

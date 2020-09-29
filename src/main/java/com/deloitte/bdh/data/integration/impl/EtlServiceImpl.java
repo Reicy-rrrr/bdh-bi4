@@ -11,7 +11,7 @@ import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.model.resp.ProcessorsResp;
 import com.deloitte.bdh.data.service.*;
-import com.deloitte.bdh.data.nifi.MethodEnum;
+import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
