@@ -22,10 +22,12 @@ public enum BiProcessorsTypeEnum {
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     break;
                 case File_Csv:
-                    list.add(ProcessorTypeEnum.FetchSFTP);
+                    list.add(ProcessorTypeEnum.GetFTP);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
+                    list.add(ProcessorTypeEnum.ConvertRecord);
                     break;
                 case File_Excel:
-                    list.add(ProcessorTypeEnum.FetchSFTP);
+                    list.add(ProcessorTypeEnum.GetFTP);
                     break;
                 default:
                     list.add(ProcessorTypeEnum.SelectHiveQL);

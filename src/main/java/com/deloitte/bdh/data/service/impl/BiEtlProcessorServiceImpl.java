@@ -25,6 +25,7 @@ import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -130,6 +131,9 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         processor.setProcessGroupId(model.getProcessGroupId());
         //nifi 创建 processor
         Map<String, Object> reqNifi = dto.getParams();
+        if (reqNifi == null || reqNifi.isEmpty()) {
+            reqNifi = Maps.newHashMap();
+        }
         reqNifi.put("name", dto.getName());
         reqNifi.put("id", model.getProcessGroupId());
 
