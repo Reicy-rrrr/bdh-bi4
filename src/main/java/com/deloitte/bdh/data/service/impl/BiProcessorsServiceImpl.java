@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.model.BiEtlModel;
-import com.deloitte.bdh.data.model.resp.ProcessorResp;
 import com.deloitte.bdh.data.model.resp.ProcessorsResp;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.google.common.collect.Lists;
@@ -11,14 +10,10 @@ import com.google.common.collect.Lists;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.data.model.BiEtlParams;
-import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.dao.bi.BiProcessorsMapper;
-import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.deloitte.bdh.common.base.AbstractService;
-import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -44,35 +39,9 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
 
     @Autowired
     private BiEtlModelService modelService;
-    @Autowired
-    private BiEtlProcessorService etlProcessorService;
     @Resource
     private BiProcessorsMapper processorsMapper;
 
-    @Override
-    public ProcessorsResp getProcessors(String processorsId) {
-        if (StringUtil.isEmpty(processorsId)) {
-            throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error:processorsId 不嫩为空");
-        }
-        BiProcessors processors = processorsMapper.selectById(processorsId);
-        ProcessorsResp result = new ProcessorsResp();
-        BeanUtils.copyProperties(processors, result);
-
-        List<Pair<BiEtlProcessor, List<BiEtlParams>>> pairs = etlProcessorService.getProcessorList(processors.getCode());
-        if (CollectionUtils.isEmpty(pairs)) {
-            throw new RuntimeException("BiProcessorsServiceImpl.getProcessors error : 未找到目标对象 processor");
-        }
-
-        List<ProcessorResp> processorList = Lists.newArrayList();
-        for (Pair<BiEtlProcessor, List<BiEtlParams>> pair : pairs) {
-            ProcessorResp processor = new ProcessorResp();
-            BeanUtils.copyProperties(pair.getKey(), processor);
-            processor.setList(pair.getValue());
-            processorList.add(processor);
-        }
-        result.setList(processorList);
-        return result;
-    }
 
     @Override
     public List<ProcessorsResp> getProcessorsList(String modelId) {

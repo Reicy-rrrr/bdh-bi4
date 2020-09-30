@@ -4,14 +4,10 @@ package com.deloitte.bdh.data.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.model.resp.ProcessorResp;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import io.swagger.annotations.ApiOperation;
-import javafx.util.Pair;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,15 +32,6 @@ public class BiEtlProcessorController {
     @Autowired
     private BiEtlProcessorService biEtlProcessorService;
 
-    @ApiOperation(value = "查看单个 PROCESSOR", notes = "查看单个 PROCESSOR 详情")
-    @PostMapping("/getProcessor")
-    public RetResult<ProcessorResp> getProcessor(@RequestBody @Validated RetRequest<String> request) {
-        ProcessorResp processors = new ProcessorResp();
-        Pair<BiEtlProcessor, List<BiEtlParams>> result = biEtlProcessorService.getProcessor(request.getData());
-        BeanUtils.copyProperties(result.getKey(), processors);
-        processors.setList(result.getValue());
-        return RetResponse.makeOKRsp();
-    }
 
 //
 //    @ApiOperation(value = "启用/停用 单个Processor", notes = "启用/停用 Processor")

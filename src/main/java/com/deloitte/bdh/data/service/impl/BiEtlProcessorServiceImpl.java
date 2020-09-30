@@ -11,21 +11,18 @@ import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.*;
 import com.deloitte.bdh.data.integration.NifiProcessService;
-import com.deloitte.bdh.data.model.BiEtlModel;
-import com.deloitte.bdh.data.model.BiEtlParams;
-import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.dao.bi.BiEtlProcessorMapper;
-import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.nifi.Processor;
+import com.deloitte.bdh.data.service.BiEtlDbRefService;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -34,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -55,14 +53,15 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     @Autowired
     private BiEtlParamsService etlParamsService;
     @Autowired
-    private BiProcessorsService processorsService;
-    @Autowired
     private BiEtlModelService etlModelService;
+    @Autowired
+    private BiEtlDbRefService etlDbRefService;
+
 
     @Override
     public Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id) {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:processorId 不嫩为空");
+            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:id 不能为空");
         }
         BiEtlProcessor processor = etlProcessorMapper.selectById(id);
         if (null == processor) {
@@ -77,37 +76,46 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     }
 
     @Override
-    public List<Pair<BiEtlProcessor, List<BiEtlParams>>> getProcessorList(String relProcessorCode) {
-        if (StringUtil.isEmpty(relProcessorCode)) {
-            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessorList error : relProcessorCode 不嫩为空");
+    public List<Processor> invokeProcessorList(String relProcessorsCode) {
+        if (StringUtil.isEmpty(relProcessorsCode)) {
+            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessorList error : relProcessorsCode 不能为空");
         }
-        List<Pair<BiEtlProcessor, List<BiEtlParams>>> pairs = Lists.newArrayList();
+
         List<BiEtlProcessor> etlProcessorList = etlProcessorMapper.selectList(
-                new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, relProcessorCode));
+                new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, relProcessorsCode)
+                        .orderByAsc(BiEtlProcessor::getCode));
 
         List<BiEtlParams> paramsList = etlParamsService.list(
                 new LambdaQueryWrapper<BiEtlParams>()
-                        .eq(BiEtlParams::getRelProcessorsCode, relProcessorCode)
+                        .eq(BiEtlParams::getRelProcessorsCode, relProcessorsCode)
         );
-        if (CollectionUtils.isNotEmpty(etlProcessorList)) {
-            for (BiEtlProcessor processor : etlProcessorList) {
-                if (CollectionUtils.isEmpty(paramsList)) {
-                    Pair<BiEtlProcessor, List<BiEtlParams>> pair = new Pair<>(processor, null);
-                    pairs.add(pair);
-                    continue;
-                }
 
-                List<BiEtlParams> etlParamsList = Lists.newArrayList();
-                for (BiEtlParams params : paramsList) {
-                    if (processor.getCode().equals(params.getRelCode())) {
-                        etlParamsList.add(params);
+        List<BiEtlDbRef> dbRefList = etlDbRefService.list(
+                new LambdaQueryWrapper<BiEtlDbRef>()
+                        .eq(BiEtlDbRef::getProcessorsCode, relProcessorsCode)
+        );
+
+        List<Processor> processorList = Lists.newLinkedList();
+        if (CollectionUtils.isNotEmpty(etlProcessorList)) {
+            etlProcessorList.stream().sorted(Comparator.comparing(BiEtlProcessor::getCode)).forEach(varEtlProcessorList -> {
+                Processor processor = new Processor();
+                List<BiEtlParams> biEtlParamsList = Lists.newArrayList();
+                paramsList.forEach(varParamsList -> {
+                    if (varParamsList.getRelProcessorsCode().equals(varEtlProcessorList.getCode())) {
+                        biEtlParamsList.add(varParamsList);
                     }
-                }
-                Pair<BiEtlProcessor, List<BiEtlParams>> pair = new Pair<>(processor, etlParamsList);
-                pairs.add(pair);
-            }
+                });
+                processor.setList(biEtlParamsList);
+
+                dbRefList.forEach(varDbRefList -> {
+                    if (varDbRefList.getProcessorCode().equals(varEtlProcessorList.getCode())) {
+                        processor.setDbRef(varDbRefList);
+                    }
+                });
+                processorList.add(processor);
+            });
         }
-        return pairs;
+        return processorList;
     }
 
     @Override

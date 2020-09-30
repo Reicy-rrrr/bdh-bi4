@@ -3,13 +3,10 @@ package com.deloitte.bdh.data.nifi.processor.impl;
 import java.time.LocalDateTime;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
-import com.deloitte.bdh.data.model.BiEtlDbRef;
-import com.deloitte.bdh.data.model.BiEtlParams;
-import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
 import com.deloitte.bdh.data.service.BiEtlDbRefService;
@@ -87,7 +84,7 @@ public class ExecuteSQL extends AbstractProcessor {
         Processor processor = context.getTempProcessor();
         processorService.delProcessor(processor.getId());
 
-        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
+        List<BiEtlParams> paramsList = processor.getList();
         if (CollectionUtils.isNotEmpty(paramsList)) {
             List<String> list = paramsList
                     .stream()
@@ -97,13 +94,25 @@ public class ExecuteSQL extends AbstractProcessor {
         }
 
         //删除该组件有关联表的信息
-        etlDbRefService.removeById(context.getTempProcessor().getDbRef().getId());
+        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
     @Override
     protected Map<String, Object> delete(ProcessorContext context) throws Exception {
+        Processor processor = context.getTempProcessor();
+        processorService.delProcessor(processor.getId());
+        List<BiEtlParams> paramsList = processor.getList();
+        if (CollectionUtils.isNotEmpty(paramsList)) {
+            List<String> list = paramsList
+                    .stream()
+                    .map(BiEtlParams::getId)
+                    .collect(Collectors.toList());
+            paramsService.removeByIds(list);
+        }
 
+        //删除该组件有关联表的信息
+        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 

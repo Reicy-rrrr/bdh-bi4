@@ -15,13 +15,6 @@ import java.util.List;
  * @since 2020-09-27
  */
 public interface BiProcessorsService extends Service<BiProcessors> {
-    /**
-     * 查看单个 Processor
-     *
-     * @param processorsId
-     * @return
-     */
-    ProcessorsResp getProcessors(String processorsId);
 
     /**
      * 查看模板下面已引用的 PROCESSORS 集合

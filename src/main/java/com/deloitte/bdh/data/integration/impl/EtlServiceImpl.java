@@ -10,8 +10,10 @@ import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
+import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @DS(DSConstant.BI_DB)
@@ -46,6 +49,8 @@ public class EtlServiceImpl implements EtlService {
     private BiProcessorsService processorsService;
     @Autowired
     private BiEtlParamsService biEtlParamsService;
+    @Autowired
+    private BiEtlConnectionService biEtlConnectionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -103,10 +108,10 @@ public class EtlServiceImpl implements EtlService {
     public void removeResource(String processorsCode) throws Exception {
         BiProcessors processors = processorsService.getOne(
                 new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, processorsCode));
-
         if (null == processors) {
             throw new RuntimeException("EtlServiceImpl.removeResource.error : 未找到目标 processors");
         }
+
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(processors.getRelSourceId());
         if (null == biEtlDatabaseInf) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
@@ -114,10 +119,14 @@ public class EtlServiceImpl implements EtlService {
 
         BiEtlModel biEtlModel = biEtlModelService.getOne(
                 new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
-
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 模型");
         }
+
+        List<Processor> processorList = processorService.invokeProcessorList(processorsCode);
+
+        List<BiEtlConnection> connectionList = biEtlConnectionService.list(new LambdaQueryWrapper<BiEtlConnection>()
+                .eq(BiEtlConnection::getRelProcessorsCode, processorsCode));
 
         // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
         ProcessorContext context = new ProcessorContext();
@@ -126,6 +135,8 @@ public class EtlServiceImpl implements EtlService {
         context.setModel(biEtlModel);
         context.setBiEtlDatabaseInf(biEtlDatabaseInf);
         context.setProcessors(processors);
+        context.addProcessor(processorList);
+        context.addConnection(connectionList);
         biEtlProcess.etl(context);
     }
 

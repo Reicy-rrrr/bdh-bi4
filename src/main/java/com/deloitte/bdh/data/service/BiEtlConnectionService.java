@@ -28,7 +28,7 @@ public interface BiEtlConnectionService extends Service<BiEtlConnection> {
      * @param dto
      * @return
      */
-    void dropConnection(String connectCode) throws Exception;
+    void dropConnection(BiEtlConnection connection) throws Exception;
 
 
     /**
@@ -37,6 +37,6 @@ public interface BiEtlConnectionService extends Service<BiEtlConnection> {
      * @param dto
      * @return
      */
-    void delConnection(String connectCode) throws Exception;
+    void delConnection(BiEtlConnection connection) throws Exception;
 
 }

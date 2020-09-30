@@ -1,14 +1,13 @@
 package com.deloitte.bdh.data.nifi;
 
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
-import com.deloitte.bdh.data.model.BiEtlConnection;
-import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.model.BiEtlModel;
-import com.deloitte.bdh.data.model.BiProcessors;
+import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class ProcessorContext {
     private BiEtlConnection tempConnection = null;
 
 
-    private Boolean processComplete = false;
+    private Boolean processorComplete = false;
     private Boolean connectionComplete = false;
 
 
@@ -57,11 +56,29 @@ public class ProcessorContext {
         return this;
     }
 
+    public ProcessorContext addProcessor(List<Processor> processorList) {
+        if (null == this.processorList) {
+            this.processorList = processorList;
+            return this;
+        }
+        this.processorList.addAll(processorList);
+        return null;
+    }
+
     public ProcessorContext addConnection(BiEtlConnection connection) {
         if (null == this.connectionList) {
             this.connectionList = Lists.newLinkedList();
         }
         this.connectionList.add(connection);
+        return this;
+    }
+
+    public ProcessorContext addConnection(List<BiEtlConnection> connectionList) {
+        if (null == this.connectionList) {
+            this.connectionList = connectionList;
+            return this;
+        }
+        this.connectionList.addAll(connectionList);
         return this;
     }
 }

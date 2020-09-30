@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public abstract class AbstractProcessor extends AbstractCurdProcessor implements Processor {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);

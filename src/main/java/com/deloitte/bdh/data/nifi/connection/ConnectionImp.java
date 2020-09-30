@@ -1,13 +1,12 @@
 package com.deloitte.bdh.data.nifi.connection;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.data.model.BiEtlConnection;
-import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.request.CreateConnectionDto;
 import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.service.BiEtlConnectionService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +53,8 @@ public class ConnectionImp extends AbstractConnection {
     public Map<String, Object> rSave(ProcessorContext context) throws Exception {
         List<BiEtlConnection> connectionList = context.getConnectionList();
         for (BiEtlConnection connection : connectionList) {
-            etlConnectionService.dropConnection(connection.getCode());
-            etlConnectionService.delConnection(connection.getCode());
+            etlConnectionService.dropConnection(connection);
+            etlConnectionService.delConnection(connection);
         }
         return null;
     }
@@ -63,7 +62,13 @@ public class ConnectionImp extends AbstractConnection {
 
     @Override
     public Map<String, Object> delete(ProcessorContext context) throws Exception {
-
+        List<BiEtlConnection> connectionList = context.getConnectionList();
+        if (CollectionUtils.isNotEmpty(connectionList)) {
+            for (BiEtlConnection connection : connectionList) {
+                etlConnectionService.dropConnection(connection);
+                etlConnectionService.delConnection(connection);
+            }
+        }
         return null;
     }
 
