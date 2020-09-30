@@ -57,8 +57,7 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         BiEtlProcessor toProcessors = etlProcessorService
                 .getOne(new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getCode, dto.getToProcessorCode()));
 
-        BiProcessors processors = processorsService
-                .getOne(new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, fromProcessor.getRelProcessorsCode()));
+        BiProcessors processors = dto.getProcessors();
 
         BiEtlModel model = etlModelService
                 .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));

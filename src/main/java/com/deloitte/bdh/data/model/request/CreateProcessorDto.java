@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.model.request;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.deloitte.bdh.data.model.BiProcessors;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -53,11 +54,11 @@ public class CreateProcessorDto implements Serializable {
 
 
     /**
-     * modelCode
+     * processors
      */
-    @ApiModelProperty(value = "processorsCode", example = "1", required = true)
-    @NotNull(message = "processorsCode 不能为空")
-    private String processorsCode;
+    @ApiModelProperty(value = "processors", example = "1", required = true)
+    @NotNull(message = "processors")
+    private BiProcessors processors;
 
 
     @ApiModelProperty(value = "params", example = "1")

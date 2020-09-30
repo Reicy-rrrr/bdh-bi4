@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.model.request;
 
+import com.deloitte.bdh.data.model.BiProcessors;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -40,5 +41,12 @@ public class CreateConnectionDto implements Serializable {
     @ApiModelProperty(value = "被关联Processor编码", example = "1", required = true)
     @NotNull(message = "被关联Processor编码 不能为空")
     private String toProcessorCode;
+
+    /**
+     * 被关联Processor编码
+     */
+    @ApiModelProperty(value = "processors", example = "1", required = true)
+    @NotNull(message = "processors")
+    private BiProcessors processors;
 
 }

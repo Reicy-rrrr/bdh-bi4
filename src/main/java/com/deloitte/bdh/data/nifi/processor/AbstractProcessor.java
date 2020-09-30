@@ -80,7 +80,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor implements
         createProcessorDto.setType(processorType().getType());
         createProcessorDto.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
         createProcessorDto.setTenantId(context.getModel().getTenantId());
-        createProcessorDto.setProcessorsCode(context.getProcessors().getCode());
+        createProcessorDto.setProcessors(context.getProcessors());
         createProcessorDto.setParams(component);
         BiEtlProcessor biEtlProcessor = processorService.createProcessor(createProcessorDto);
         return biEtlProcessor;

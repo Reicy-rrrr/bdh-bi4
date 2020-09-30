@@ -112,8 +112,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
 
     @Override
     public BiEtlProcessor createProcessor(CreateProcessorDto dto) throws Exception {
-        BiProcessors processors = processorsService
-                .getOne(new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, dto.getProcessorsCode()));
+        BiProcessors processors = dto.getProcessors();
 
         BiEtlModel model = etlModelService
                 .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
@@ -127,7 +126,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         processor.setValidate(YesOrNoEnum.NO.getKey());
         processor.setValidateMessage(YesOrNoEnum.NO.getvalue());
         processor.setCreateDate(LocalDateTime.now());
-        processor.setRelProcessorsCode(dto.getProcessorsCode());
+        processor.setRelProcessorsCode(processors.getCode());
         processor.setProcessGroupId(model.getProcessGroupId());
         //nifi 创建 processor
         Map<String, Object> reqNifi = dto.getParams();

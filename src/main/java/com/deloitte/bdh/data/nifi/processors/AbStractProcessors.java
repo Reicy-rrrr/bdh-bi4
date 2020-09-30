@@ -14,7 +14,7 @@ public abstract class AbStractProcessors implements Processors {
 
 
     @Override
-    @Transactional(propagation = Propagation.SUPPORTS)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ProcessorContext etl(ProcessorContext context) throws Exception {
         try {
             validateContext(context);

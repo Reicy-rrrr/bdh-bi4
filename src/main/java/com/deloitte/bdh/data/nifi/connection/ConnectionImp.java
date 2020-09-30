@@ -43,7 +43,7 @@ public class ConnectionImp extends AbstractConnection {
             createConnectionDto.setTenantId(context.getModel().getTenantId());
             createConnectionDto.setFromProcessorCode(pre.getCode());
             createConnectionDto.setToProcessorCode(next.getCode());
-
+            createConnectionDto.setProcessors(context.getProcessors());
             BiEtlConnection connection = etlConnectionService.createConnection(createConnectionDto);
             context.addConnection(connection);
         }
@@ -52,11 +52,10 @@ public class ConnectionImp extends AbstractConnection {
 
     @Override
     public Map<String, Object> rSave(ProcessorContext context) throws Exception {
-        List<BiEtlConnection> connectionList = context.getConnectionListList();
+        List<BiEtlConnection> connectionList = context.getConnectionList();
         for (BiEtlConnection connection : connectionList) {
             etlConnectionService.dropConnection(connection.getCode());
             etlConnectionService.delConnection(connection.getCode());
-            context.addConnection(connection);
         }
         return null;
     }

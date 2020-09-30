@@ -66,7 +66,7 @@ public class BiEtlProcess extends AbStractProcessors {
         switch (context.getMethod()) {
             case SAVE:
                 //先处理connection，后处理processor
-                List<BiEtlConnection> connectionList = context.getConnectionListList();
+                List<BiEtlConnection> connectionList = context.getConnectionList();
                 if (!CollectionUtils.isEmpty(connectionList)) {
                     connection.rConnect(context);
                 }
@@ -93,7 +93,7 @@ public class BiEtlProcess extends AbStractProcessors {
                     }
                 }
                 //先处理connection，后处理processor
-                if (!CollectionUtils.isEmpty(context.getConnectionListList())) {
+                if (!CollectionUtils.isEmpty(context.getConnectionList())) {
                     connection.rConnect(context);
                 }
                 break;

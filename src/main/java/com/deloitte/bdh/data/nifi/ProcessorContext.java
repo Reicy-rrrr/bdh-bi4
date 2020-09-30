@@ -27,14 +27,11 @@ public class ProcessorContext {
     private List<Processor> processorList = null;
     private Processor tempProcessor = null;
 
-    private List<BiEtlConnection> connectionListList = null;
-    private Processor tempConnection = null;
+    private List<BiEtlConnection> connectionList = null;
+    private BiEtlConnection tempConnection = null;
 
 
-    private List<Map<String, Object>> successProcessMap = Lists.newArrayList();
     private Boolean processComplete = false;
-
-    private List<Map<String, Object>> successConnectionMap;
     private Boolean connectionComplete = false;
 
 
@@ -61,10 +58,10 @@ public class ProcessorContext {
     }
 
     public ProcessorContext addConnection(BiEtlConnection connection) {
-        if (null == this.connectionListList) {
-            this.connectionListList = Lists.newLinkedList();
+        if (null == this.connectionList) {
+            this.connectionList = Lists.newLinkedList();
         }
-        this.connectionListList.add(connection);
+        this.connectionList.add(connection);
         return this;
     }
 }

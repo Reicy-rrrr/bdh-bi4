@@ -6,7 +6,6 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
-import com.deloitte.bdh.data.model.request.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.model.resp.ProcessorResp;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
@@ -47,11 +46,6 @@ public class BiEtlProcessorController {
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "新增 Processor", notes = "新增 Processor")
-    @PostMapping("/createProcessor")
-    public RetResult<BiEtlProcessor> createProcessor(@RequestBody @Validated RetRequest<CreateProcessorDto> request) throws Exception {
-        return RetResponse.makeOKRsp(biEtlProcessorService.createProcessor(request.getData()));
-    }
 //
 //    @ApiOperation(value = "启用/停用 单个Processor", notes = "启用/停用 Processor")
 //    @PostMapping("/runProcessor")
