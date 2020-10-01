@@ -18,13 +18,14 @@
         <result column="PROCESS_GROUP_ID" property="processGroupId" />
         <result column="REL_PROCESSORS_CODE" property="relProcessorsCode" />
         <result column="VERSION" property="version" />
+        <result column="RELATIONSHIPS" property="relationships" />
+        <result column="SEQUENCE" property="sequence" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />
         <result column="MODIFIED_USER" property="modifiedUser" />
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
-        <result column="RELATIONSHIPS" property="relationships" />
     </resultMap>
 
 </mapper>

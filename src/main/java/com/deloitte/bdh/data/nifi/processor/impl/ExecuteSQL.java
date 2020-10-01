@@ -88,15 +88,16 @@ public class ExecuteSQL extends AbstractProcessor {
             paramsService.removeByIds(list);
         }
 
-        //删除该组件有关联表的信息
+        //若有关联表的信息，该组件有则删除
         etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
     @Override
     protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
+        List<BiEtlParams> sourceParamList = context.getTempProcessor().getList();
         //获取删除前的参数 map
-        Map<String, Object> sourceParam = super.rDelete(context);
+        Map<String, Object> sourceParam = transferToMap(sourceParamList);
         //新建 删除的 processor
         BiEtlProcessor biEtlProcessor = createProcessor(context, sourceParam);
         //新建 processor param
@@ -105,7 +106,7 @@ public class ExecuteSQL extends AbstractProcessor {
         createDbRef(biEtlProcessor, context);
 
         //补偿删除必须要调用该方法
-        setTempForRdelete(biEtlProcessor,context);
+        setTempForRdelete(biEtlProcessor, context);
         return null;
     }
 

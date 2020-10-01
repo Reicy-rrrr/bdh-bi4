@@ -27,6 +27,7 @@ public class ProcessorContext {
     private List<BiEtlConnection> connectionList = null;
     private BiEtlConnection tempConnection = null;
 
+    private Integer processorSqe = null;
 
     private Boolean processorComplete = false;
     private Boolean connectionComplete = false;
@@ -35,6 +36,7 @@ public class ProcessorContext {
     private List<Processor> hasDelProcessorList = Lists.newLinkedList();
     private List<Processor> newProcessorList = Lists.newLinkedList();
     private List<BiEtlConnection> hasDelConnectionList = Lists.newLinkedList();
+
 
 
     public ProcessorContext addProcessorTemp(Processor processor) {

@@ -17,6 +17,7 @@ import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,14 +83,6 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor implements
         return result;
     }
 
-    @Override
-    protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
-        List<BiEtlParams> sourceParamList = context.getTempProcessor().getList();
-        Map<String, Object> sourceParam = transferToMap(sourceParamList);
-        return sourceParam;
-    }
-
-
     final protected BiEtlProcessor createProcessor(ProcessorContext context, Map<String, Object> component) throws Exception {
         CreateProcessorDto createProcessorDto = new CreateProcessorDto();
         createProcessorDto.setName(processorType().getTypeDesc() + System.currentTimeMillis());
@@ -98,9 +91,11 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor implements
         createProcessorDto.setTenantId(context.getModel().getTenantId());
         createProcessorDto.setProcessors(context.getProcessors());
         createProcessorDto.setParams(component);
+        createProcessorDto.setSequence(context.getProcessorSqe().toString());
         BiEtlProcessor biEtlProcessor = processorService.createProcessor(createProcessorDto);
         return biEtlProcessor;
     }
+
 
     final protected List<BiEtlParams> createParams(BiEtlProcessor etlProcessor, ProcessorContext context, Map<String, Object> component) {
         List<BiEtlParams> paramsList = null;

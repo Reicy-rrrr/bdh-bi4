@@ -26,8 +26,9 @@ public class BiEtlProcess extends AbStractProcessors {
         switch (context.getMethod()) {
             case SAVE:
                 // 处理processor
-                for (ProcessorTypeEnum typeEnum : context.getEnumList()) {
-                    SpringUtil.getBean(typeEnum.getType(), Processor.class).pProcess(context);
+                for (int i = 0; i < context.getEnumList().size(); i++) {
+                    context.setProcessorSqe(i);
+                    SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                 }
                 context.setProcessorComplete(true);
                 // 处理connection
@@ -43,9 +44,9 @@ public class BiEtlProcess extends AbStractProcessors {
                 for (int i = 0; i < context.getProcessorList().size(); i++) {
                     context.addProcessorTemp(context.getProcessorList().get(i));
                     //模拟报错
-//                    if (i == 1) {
-//                        int ti = 1 / 0;
-//                    }
+                    if (i == 1) {
+                        int ti = 1 / 0;
+                    }
                     SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                     context.getHasDelProcessorList().add(context.getTempProcessor());
                     context.removeProcessorTemp();
@@ -95,6 +96,7 @@ public class BiEtlProcess extends AbStractProcessors {
                     // 说明删除connection成功，先处理processor
                     for (int i = 0; i < context.getHasDelProcessorList().size(); i++) {
                         context.addProcessorTemp(context.getHasDelProcessorList().get(i));
+                        context.setProcessorSqe(i);
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
                         context.getNewProcessorList().add(context.getTempProcessor());
                         context.removeProcessorTemp();

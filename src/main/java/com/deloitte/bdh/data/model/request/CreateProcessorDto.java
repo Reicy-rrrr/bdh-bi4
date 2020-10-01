@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.model.BiProcessors;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -59,6 +60,12 @@ public class CreateProcessorDto implements Serializable {
     @ApiModelProperty(value = "processors", example = "1", required = true)
     @NotNull(message = "processors")
     private BiProcessors processors;
+
+    /**
+     * sequence
+     */
+    @ApiModelProperty(value = "sequence", example = "1")
+    private String sequence = "0";
 
 
     @ApiModelProperty(value = "params", example = "1")
