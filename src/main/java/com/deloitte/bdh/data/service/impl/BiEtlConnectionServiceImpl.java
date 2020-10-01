@@ -99,12 +99,12 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
 
     @Override
     public void dropConnection(BiEtlConnection connection) throws Exception {
-//        nifiProcessService.dropConnections(connection.getConnectionId());
+        nifiProcessService.dropConnections(connection.getConnectionId());
     }
 
     @Override
     public void delConnection(BiEtlConnection connection) throws Exception {
-//        nifiProcessService.delConnections(connection.getConnectionId());
+        nifiProcessService.delConnections(connection.getConnectionId());
         etlConnectionMapper.delete(new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getCode, connection.getCode()));
 
 

@@ -44,9 +44,9 @@ public class BiEtlProcess extends AbStractProcessors {
                 for (int i = 0; i < context.getProcessorList().size(); i++) {
                     context.addProcessorTemp(context.getProcessorList().get(i));
                     //模拟报错
-                    if (i == 1) {
-                        int ti = 1 / 0;
-                    }
+//                    if (i == 1) {
+//                        int ti = 1 / 0;
+//                    }
                     SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                     context.getHasDelProcessorList().add(context.getTempProcessor());
                     context.removeProcessorTemp();
