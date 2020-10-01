@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 @Service("PutHiveQL")
 public class PutHiveQL extends AbstractProcessor {
 
-    private BiEtlDbRefService etlDbRefService;
-
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
         // 配置数据源的
@@ -49,30 +47,14 @@ public class PutHiveQL extends AbstractProcessor {
 
         //新建 processor
         BiEtlProcessor biEtlProcessor = createProcessor(context, component);
+        // 新建 processor param
+        List<BiEtlParams> paramsList = createParams(biEtlProcessor, context, component);
+        //该组件有关联表的信息
+        BiEtlDbRef dbRef = createDbRef(biEtlProcessor, context);
 
         Processor processor = new Processor();
         BeanUtils.copyProperties(biEtlProcessor, processor);
-
-        // 新建 processor param
-        if (MapUtils.isNotEmpty(component)) {
-            List<BiEtlParams> paramsList = transferToParams(context, component, biEtlProcessor);
-            paramsService.saveBatch(paramsList);
-            processor.setList(paramsList);
-        }
-
-        // 该组件有关联表的信息
-        BiEtlDbRef dbRef = new BiEtlDbRef();
-        dbRef.setCode(GenerateCodeUtil.genDbRef());
-        dbRef.setSourceId(context.getBiEtlDatabaseInf().getId());
-        dbRef.setProcessorCode(processor.getCode());
-        dbRef.setProcessorsCode(context.getProcessors().getCode());
-        dbRef.setModelCode(context.getModel().getCode());
-        dbRef.setCreateDate(LocalDateTime.now());
-        dbRef.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        dbRef.setTenantId(context.getModel().getTenantId());
-        etlDbRefService.save(dbRef);
-
-        // 反显
+        processor.setList(paramsList);
         processor.setDbRef(dbRef);
         context.addProcessor(processor);
         return null;

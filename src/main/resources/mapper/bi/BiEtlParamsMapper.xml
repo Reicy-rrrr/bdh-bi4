@@ -19,6 +19,7 @@
         <result column="MODIFIED_USER" property="modifiedUser" />
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
+        <result column="PARENT_CODE" property="parentCode" />
     </resultMap>
 
 </mapper>

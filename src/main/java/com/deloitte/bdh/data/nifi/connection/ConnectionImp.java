@@ -67,6 +67,7 @@ public class ConnectionImp extends AbstractConnection {
             for (BiEtlConnection connection : connectionList) {
                 etlConnectionService.dropConnection(connection);
                 etlConnectionService.delConnection(connection);
+                context.getHasDelConnectionList().add(connection);
             }
         }
         return null;

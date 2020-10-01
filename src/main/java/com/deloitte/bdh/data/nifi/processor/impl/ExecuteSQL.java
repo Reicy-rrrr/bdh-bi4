@@ -1,20 +1,16 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
-import java.time.LocalDateTime;
 
 
-import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
-import com.deloitte.bdh.data.service.BiEtlDbRefService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.deloitte.bdh.data.nifi.Processor;
@@ -25,8 +21,6 @@ import java.util.stream.Collectors;
 
 @Service("ExecuteSQL")
 public class ExecuteSQL extends AbstractProcessor {
-    @Autowired
-    private BiEtlDbRefService etlDbRefService;
 
     private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
 
@@ -50,30 +44,14 @@ public class ExecuteSQL extends AbstractProcessor {
 
         //新建 processor
         BiEtlProcessor biEtlProcessor = createProcessor(context, component);
+        // 新建 processor param
+        List<BiEtlParams> paramsList = createParams(biEtlProcessor, context, component);
+        //该组件有关联表的信息
+        BiEtlDbRef dbRef = createDbRef(biEtlProcessor, context);
 
         Processor processor = new Processor();
         BeanUtils.copyProperties(biEtlProcessor, processor);
-
-        // 新建 processor param
-        if (MapUtils.isNotEmpty(component)) {
-            List<BiEtlParams> paramsList = transferToParams(context, component, biEtlProcessor);
-            paramsService.saveBatch(paramsList);
-            processor.setList(paramsList);
-        }
-
-        //该组件有关联表的信息
-        BiEtlDbRef dbRef = new BiEtlDbRef();
-        dbRef.setCode(GenerateCodeUtil.genDbRef());
-        dbRef.setSourceId(context.getBiEtlDatabaseInf().getId());
-        dbRef.setProcessorCode(processor.getCode());
-        dbRef.setProcessorsCode(context.getProcessors().getCode());
-        dbRef.setModelCode(context.getModel().getCode());
-        dbRef.setCreateDate(LocalDateTime.now());
-        dbRef.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        dbRef.setTenantId(context.getModel().getTenantId());
-        etlDbRefService.save(dbRef);
-
-        //反显
+        processor.setList(paramsList);
         processor.setDbRef(dbRef);
         context.addProcessor(processor);
         return null;
@@ -118,6 +96,9 @@ public class ExecuteSQL extends AbstractProcessor {
 
     @Override
     protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
+        Processor processor = context.getTempProcessor();
+//        processor.getList()
+
         return null;
     }
 

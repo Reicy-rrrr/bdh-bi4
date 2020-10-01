@@ -31,7 +31,7 @@ public interface BiEtlProcessorService extends Service<BiEtlProcessor> {
     /**
      * 根据 relProcessorCode 获取所有 processor
      *
-     * @param relProcessorCode
+     * @param relProcessorsCode
      * @return
      */
     List<Processor>  invokeProcessorList(String relProcessorsCode);

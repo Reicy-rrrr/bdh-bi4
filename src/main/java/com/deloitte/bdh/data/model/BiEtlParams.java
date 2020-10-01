@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-27
+ * @since 2020-10-01
  */
 @TableName("BI_ETL_PARAMS")
 public class BiEtlParams implements Serializable {
@@ -88,6 +88,12 @@ public class BiEtlParams implements Serializable {
 
     @TableField("TENANT_ID")
     private String tenantId;
+
+    /**
+     * 上级编码
+     */
+    @TableField("PARENT_CODE")
+    private String parentCode;
 
     public String getId() {
         return id;
@@ -194,6 +200,13 @@ public class BiEtlParams implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+    public String getParentCode() {
+        return parentCode;
+    }
+
+    public void setParentCode(String parentCode) {
+        this.parentCode = parentCode;
+    }
 
     @Override
     public String toString() {
@@ -213,6 +226,7 @@ public class BiEtlParams implements Serializable {
         ", modifiedUser=" + modifiedUser +
         ", ip=" + ip +
         ", tenantId=" + tenantId +
+        ", parentCode=" + parentCode +
         "}";
     }
 }

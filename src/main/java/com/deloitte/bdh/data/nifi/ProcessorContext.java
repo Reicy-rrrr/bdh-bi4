@@ -6,8 +6,6 @@ import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -16,8 +14,8 @@ import java.util.Map;
 @Data
 public class ProcessorContext {
     private List<ProcessorTypeEnum> enumList;
-    private Map<String, Object> req = Maps.newHashMap();
     private MethodEnum method;
+    private Map<String, Object> req = Maps.newHashMap();
 
     private BiEtlModel model = new BiEtlModel();
     private BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
@@ -33,6 +31,10 @@ public class ProcessorContext {
     private Boolean processorComplete = false;
     private Boolean connectionComplete = false;
 
+    //删除才有
+    private List<Processor> hasDelProcessorList = Lists.newLinkedList();
+    private List<BiEtlConnection> hasDelConnectionList = Lists.newLinkedList();
+
 
     public ProcessorContext addTemp(Processor processor) {
         if (null != this.tempProcessor) {
@@ -42,9 +44,8 @@ public class ProcessorContext {
         return this;
     }
 
-    public ProcessorContext removeTemp() {
+    public ProcessorContext removeProcessorTemp() {
         this.tempProcessor = null;
-        this.tempConnection = null;
         return this;
     }
 

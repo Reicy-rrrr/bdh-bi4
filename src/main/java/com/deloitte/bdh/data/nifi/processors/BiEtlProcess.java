@@ -40,12 +40,11 @@ public class BiEtlProcess extends AbStractProcessors {
                 connection.pConnect(context);
                 context.setConnectionComplete(true);
                 // 处理processor
-                if (!CollectionUtils.isEmpty(context.getProcessorList())) {
-                    for (int i = 0; i < context.getProcessorList().size(); i++) {
-                        context.addTemp(context.getProcessorList().get(i));
-                        SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
-                        context.removeTemp();
-                    }
+                for (int i = 0; i < context.getProcessorList().size(); i++) {
+                    context.addTemp(context.getProcessorList().get(i));
+                    SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
+                    context.getHasDelProcessorList().add(context.getTempProcessor());
+                    context.removeProcessorTemp();
                 }
                 context.setProcessorComplete(true);
                 return context;
@@ -79,7 +78,7 @@ public class BiEtlProcess extends AbStractProcessors {
                     for (int i = 0; i < context.getProcessorList().size(); i++) {
                         context.addTemp(context.getProcessorList().get(i));
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
-                        context.removeTemp();
+                        context.removeProcessorTemp();
                     }
                 }
                 break;
@@ -89,15 +88,15 @@ public class BiEtlProcess extends AbStractProcessors {
 
             case DELETE:
                 // 处理processor
-                if (!CollectionUtils.isEmpty(context.getProcessorList())) {
-                    for (int i = 0; i < context.getProcessorList().size(); i++) {
-                        context.addTemp(context.getProcessorList().get(i));
+                if (!CollectionUtils.isEmpty(context.getHasDelProcessorList())) {
+                    for (int i = 0; i < context.getHasDelProcessorList().size(); i++) {
+                        context.addTemp(context.getHasDelProcessorList().get(i));
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
-                        context.removeTemp();
+                        context.removeProcessorTemp();
                     }
                 }
                 //先处理connection，后处理processor
-                if (!CollectionUtils.isEmpty(context.getConnectionList())) {
+                if (!CollectionUtils.isEmpty(context.getHasDelConnectionList())) {
                     connection.rConnect(context);
                 }
                 break;
