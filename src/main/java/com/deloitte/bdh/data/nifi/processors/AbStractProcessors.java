@@ -22,6 +22,7 @@ public abstract class AbStractProcessors implements Processors {
 //            int i = 1 / 0;
         } catch (Exception e) {
             e.printStackTrace();
+            context.removeProcessorTemp();
             reverse(context);
             throw new Exception(e);
         }

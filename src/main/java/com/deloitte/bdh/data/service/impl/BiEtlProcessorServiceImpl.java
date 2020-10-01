@@ -99,9 +99,10 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         if (CollectionUtils.isNotEmpty(etlProcessorList)) {
             etlProcessorList.stream().sorted(Comparator.comparing(BiEtlProcessor::getCode)).forEach(varEtlProcessorList -> {
                 Processor processor = new Processor();
+                BeanUtils.copyProperties(varEtlProcessorList, processor);
                 List<BiEtlParams> biEtlParamsList = Lists.newArrayList();
                 paramsList.forEach(varParamsList -> {
-                    if (varParamsList.getRelProcessorsCode().equals(varEtlProcessorList.getCode())) {
+                    if (varParamsList.getRelCode().equals(varEtlProcessorList.getCode())) {
                         biEtlParamsList.add(varParamsList);
                     }
                 });

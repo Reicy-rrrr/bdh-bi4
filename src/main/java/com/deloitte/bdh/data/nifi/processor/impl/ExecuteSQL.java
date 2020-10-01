@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
 
-
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.*;
@@ -43,11 +42,11 @@ public class ExecuteSQL extends AbstractProcessor {
         component.put("config", config);
 
         //新建 processor
-        BiEtlProcessor biEtlProcessor = createProcessor(context, component);
+        BiEtlProcessor biEtlProcessor = super.createProcessor(context, component);
         // 新建 processor param
-        List<BiEtlParams> paramsList = createParams(biEtlProcessor, context, component);
+        List<BiEtlParams> paramsList = super.createParams(biEtlProcessor, context, component);
         //该组件有关联表的信息
-        BiEtlDbRef dbRef = createDbRef(biEtlProcessor, context);
+        BiEtlDbRef dbRef = super.createDbRef(biEtlProcessor, context);
 
         Processor processor = new Processor();
         BeanUtils.copyProperties(biEtlProcessor, processor);
@@ -96,9 +95,17 @@ public class ExecuteSQL extends AbstractProcessor {
 
     @Override
     protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
-        Processor processor = context.getTempProcessor();
-//        processor.getList()
+        //获取删除前的参数 map
+        Map<String, Object> sourceParam = super.rDelete(context);
+        //新建 删除的 processor
+        BiEtlProcessor biEtlProcessor = createProcessor(context, sourceParam);
+        //新建 processor param
+        createParams(biEtlProcessor, context, sourceParam);
+        //该组件有关联表的信息
+        createDbRef(biEtlProcessor, context);
 
+        //补偿删除必须要调用该方法
+        setTempForRdelete(biEtlProcessor,context);
         return null;
     }
 

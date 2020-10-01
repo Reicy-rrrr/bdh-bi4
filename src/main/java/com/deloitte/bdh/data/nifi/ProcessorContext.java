@@ -33,10 +33,11 @@ public class ProcessorContext {
 
     //删除才有
     private List<Processor> hasDelProcessorList = Lists.newLinkedList();
+    private List<Processor> newProcessorList = Lists.newLinkedList();
     private List<BiEtlConnection> hasDelConnectionList = Lists.newLinkedList();
 
 
-    public ProcessorContext addTemp(Processor processor) {
+    public ProcessorContext addProcessorTemp(Processor processor) {
         if (null != this.tempProcessor) {
             throw new RuntimeException("未移除上个处理的临时temp");
         }

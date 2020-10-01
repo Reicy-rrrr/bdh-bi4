@@ -13,7 +13,6 @@ import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
@@ -30,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @DS(DSConstant.BI_DB)
@@ -128,7 +126,9 @@ public class EtlServiceImpl implements EtlService {
         List<BiEtlConnection> connectionList = biEtlConnectionService.list(new LambdaQueryWrapper<BiEtlConnection>()
                 .eq(BiEtlConnection::getRelProcessorsCode, processorsCode));
 
-        // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("createUser", "lw");
+
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.JOIN_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
         context.setMethod(MethodEnum.DELETE);
@@ -137,7 +137,10 @@ public class EtlServiceImpl implements EtlService {
         context.setProcessors(processors);
         context.addProcessor(processorList);
         context.addConnection(connectionList);
+        context.setReq(req);
         biEtlProcess.etl(context);
+        processorsService.removeById(processors.getId());
+
     }
 
     @Override

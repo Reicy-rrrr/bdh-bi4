@@ -41,7 +41,11 @@ public class BiEtlProcess extends AbStractProcessors {
                 context.setConnectionComplete(true);
                 // 处理processor
                 for (int i = 0; i < context.getProcessorList().size(); i++) {
-                    context.addTemp(context.getProcessorList().get(i));
+                    context.addProcessorTemp(context.getProcessorList().get(i));
+                    //模拟报错
+//                    if (i == 1) {
+//                        int ti = 1 / 0;
+//                    }
                     SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                     context.getHasDelProcessorList().add(context.getTempProcessor());
                     context.removeProcessorTemp();
@@ -76,7 +80,7 @@ public class BiEtlProcess extends AbStractProcessors {
                 // 处理processor
                 if (!CollectionUtils.isEmpty(context.getProcessorList())) {
                     for (int i = 0; i < context.getProcessorList().size(); i++) {
-                        context.addTemp(context.getProcessorList().get(i));
+                        context.addProcessorTemp(context.getProcessorList().get(i));
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
                         context.removeProcessorTemp();
                     }
@@ -87,18 +91,16 @@ public class BiEtlProcess extends AbStractProcessors {
                 break;
 
             case DELETE:
-                // 处理processor
                 if (!CollectionUtils.isEmpty(context.getHasDelProcessorList())) {
+                    // 说明删除connection成功，先处理processor
                     for (int i = 0; i < context.getHasDelProcessorList().size(); i++) {
-                        context.addTemp(context.getHasDelProcessorList().get(i));
+                        context.addProcessorTemp(context.getHasDelProcessorList().get(i));
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
+                        context.getNewProcessorList().add(context.getTempProcessor());
                         context.removeProcessorTemp();
                     }
                 }
-                //先处理connection，后处理processor
-                if (!CollectionUtils.isEmpty(context.getHasDelConnectionList())) {
-                    connection.rConnect(context);
-                }
+                connection.rConnect(context);
                 break;
             case VALIDATE:
             default:
