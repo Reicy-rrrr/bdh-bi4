@@ -52,7 +52,7 @@ public class ProcessorContext {
         return this;
     }
 
-    public ProcessorContext addProcessor(Processor processor) {
+    public ProcessorContext addProcessorList(Processor processor) {
         if (null == this.processorList) {
             this.processorList = Lists.newLinkedList();
         }
@@ -60,7 +60,7 @@ public class ProcessorContext {
         return this;
     }
 
-    public ProcessorContext addProcessor(List<Processor> processorList) {
+    public ProcessorContext addProcessorList(List<Processor> processorList) {
         if (null == this.processorList) {
             this.processorList = processorList;
             return this;
@@ -69,7 +69,7 @@ public class ProcessorContext {
         return null;
     }
 
-    public ProcessorContext addConnection(BiEtlConnection connection) {
+    public ProcessorContext addConnectionList(BiEtlConnection connection) {
         if (null == this.connectionList) {
             this.connectionList = Lists.newLinkedList();
         }
@@ -77,7 +77,7 @@ public class ProcessorContext {
         return this;
     }
 
-    public ProcessorContext addConnection(List<BiEtlConnection> connectionList) {
+    public ProcessorContext addConnectionList(List<BiEtlConnection> connectionList) {
         if (null == this.connectionList) {
             this.connectionList = connectionList;
             return this;

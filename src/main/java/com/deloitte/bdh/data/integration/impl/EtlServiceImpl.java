@@ -135,8 +135,8 @@ public class EtlServiceImpl implements EtlService {
         context.setModel(biEtlModel);
         context.setBiEtlDatabaseInf(biEtlDatabaseInf);
         context.setProcessors(processors);
-        context.addProcessor(processorList);
-        context.addConnection(connectionList);
+        context.addProcessorList(processorList);
+        context.addConnectionList(connectionList);
         context.setReq(req);
         biEtlProcess.etl(context);
         processorsService.removeById(processors.getId());

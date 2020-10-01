@@ -31,7 +31,7 @@ public class ConnectionImp extends AbstractConnection {
             Processor pre = processorList.get(i);
             Processor next = processorList.get(i + 1);
             BiEtlConnection connection = super.createConnection(context, pre.getCode(), next.getCode());
-            context.addConnection(connection);
+            context.addConnectionList(connection);
         }
         return null;
     }

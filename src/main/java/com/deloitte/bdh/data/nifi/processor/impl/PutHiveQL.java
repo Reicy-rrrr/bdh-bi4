@@ -56,7 +56,7 @@ public class PutHiveQL extends AbstractProcessor {
         BeanUtils.copyProperties(biEtlProcessor, processor);
         processor.setList(paramsList);
         processor.setDbRef(dbRef);
-        context.addProcessor(processor);
+        context.addProcessorList(processor);
         return null;
     }
 
