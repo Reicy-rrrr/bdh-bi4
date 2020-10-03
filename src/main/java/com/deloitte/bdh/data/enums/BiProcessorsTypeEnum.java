@@ -16,7 +16,7 @@ public enum BiProcessorsTypeEnum {
                 case Mysql_8:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     list.add(ProcessorTypeEnum.ExecuteSQL);
-                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.PutDatabaseRecord);
                     break;
                 case Mysql_7:
                     list.add(ProcessorTypeEnum.ExecuteSQL);

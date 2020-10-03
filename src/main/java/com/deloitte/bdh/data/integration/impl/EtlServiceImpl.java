@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import com.deloitte.bdh.data.nifi.Processor;
+import com.deloitte.bdh.data.nifi.processors.Processors;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Maps;
@@ -18,7 +19,6 @@ import com.google.common.collect.Maps;
 import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
-import com.deloitte.bdh.data.nifi.processors.BiEtlProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +42,8 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlModelService biEtlModelService;
     @Autowired
     private BiEtlProcessorService processorService;
-    @Autowired
-    private BiEtlProcess biEtlProcess;
+    @Resource
+    private Processors biEtlProcess;
     @Autowired
     private BiProcessorsService processorsService;
     @Autowired

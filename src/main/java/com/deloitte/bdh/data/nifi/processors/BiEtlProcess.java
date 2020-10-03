@@ -27,7 +27,7 @@ public class BiEtlProcess extends AbStractProcessors {
             case SAVE:
                 // 处理processor
                 for (int i = 0; i < context.getEnumList().size(); i++) {
-                    context.setProcessorSqe(i);
+                    context.setProcessorSequ(i);
                     SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                 }
                 context.setProcessorComplete(true);
@@ -69,7 +69,7 @@ public class BiEtlProcess extends AbStractProcessors {
     }
 
     @Override
-    protected void reverse(ProcessorContext context) throws Exception {
+    public void reverse(ProcessorContext context) throws Exception {
         logger.info("开始执行创建冲正方法，参数:{}", JsonUtil.obj2String(context));
         switch (context.getMethod()) {
             case SAVE:
@@ -96,7 +96,7 @@ public class BiEtlProcess extends AbStractProcessors {
                     // 说明删除connection成功，先处理processor
                     for (int i = 0; i < context.getHasDelProcessorList().size(); i++) {
                         context.addProcessorTemp(context.getHasDelProcessorList().get(i));
-                        context.setProcessorSqe(i);
+                        context.setProcessorSequ(i);
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
                         context.getNewProcessorList().add(context.getTempProcessor());
                         context.removeProcessorTemp();

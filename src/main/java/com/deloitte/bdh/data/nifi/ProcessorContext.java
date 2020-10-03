@@ -27,7 +27,7 @@ public class ProcessorContext {
     private List<BiEtlConnection> connectionList = null;
     private BiEtlConnection tempConnection = null;
 
-    private Integer processorSqe = null;
+    private Integer processorSequ = null;
 
     private Boolean processorComplete = false;
     private Boolean connectionComplete = false;

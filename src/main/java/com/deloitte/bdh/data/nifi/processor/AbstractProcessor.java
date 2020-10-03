@@ -91,7 +91,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor implements
         createProcessorDto.setTenantId(context.getModel().getTenantId());
         createProcessorDto.setProcessors(context.getProcessors());
         createProcessorDto.setParams(component);
-        createProcessorDto.setSequence(context.getProcessorSqe().toString());
+        createProcessorDto.setSequence(context.getProcessorSequ().toString());
         BiEtlProcessor biEtlProcessor = processorService.createProcessor(createProcessorDto);
         return biEtlProcessor;
     }
