@@ -8,15 +8,18 @@ import javax.annotation.Resource;
 @Service
 public class EtlProcessSelector implements EtlProcess {
     @Resource(name = "biEtlProcess")
-    private Processors biEtlProcess;
-    @Resource(name = "biProcess")
-    private Processors biProcess;
+    private Processors<ProcessorContext> biEtlProcess;
+    @Resource(name = "biEtlConnections")
+    private Processors<ConnectionsContext> biProcess;
 
 
     @Override
-    public Object process(Nifi var) throws Exception {
+    public Nifi process(Nifi var) throws Exception {
         if (var instanceof ProcessorContext) {
             biEtlProcess.etl((ProcessorContext) var);
+        }
+        if (var instanceof ConnectionsContext) {
+            biProcess.etl((ConnectionsContext) var);
         }
         return var;
     }

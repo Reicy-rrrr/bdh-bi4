@@ -1,8 +1,9 @@
 package com.deloitte.bdh.data.nifi.processors;
 
-import com.deloitte.bdh.data.nifi.ProcessorContext;
 
-public interface Processors {
+import com.deloitte.bdh.data.nifi.Nifi;
 
-    ProcessorContext etl(ProcessorContext context) throws Exception;
+public interface Processors<T extends Nifi> {
+
+    T etl(T context) throws Exception;
 }

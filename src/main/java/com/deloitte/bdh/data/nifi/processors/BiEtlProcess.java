@@ -15,14 +15,14 @@ import java.util.List;
 
 
 @Service
-public class BiEtlProcess extends AbStractProcessors {
+public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
 
-    @Resource
-    private Connection connection;
+    @Resource(name = "connectionImp")
+    private Connection<ProcessorContext> connection;
 
     @Override
     public ProcessorContext positive(ProcessorContext context) throws Exception {
-        logger.info("开始执行创建 nifi processor，参数:{}", JsonUtil.obj2String(context));
+        logger.info("开始执行创建 BiEtlProcess.positive，参数:{}", JsonUtil.obj2String(context));
         switch (context.getMethod()) {
             case SAVE:
                 // 处理processor
@@ -70,7 +70,7 @@ public class BiEtlProcess extends AbStractProcessors {
 
     @Override
     public void reverse(ProcessorContext context) throws Exception {
-        logger.info("开始执行创建冲正方法，参数:{}", JsonUtil.obj2String(context));
+        logger.info("开始执行 BiEtlProcess.reverse，参数:{}", JsonUtil.obj2String(context));
         switch (context.getMethod()) {
             case SAVE:
                 //先处理connection，后处理processor
@@ -95,11 +95,12 @@ public class BiEtlProcess extends AbStractProcessors {
                 if (!CollectionUtils.isEmpty(context.getHasDelProcessorList())) {
                     // 说明删除connection成功，先处理processor
                     for (int i = 0; i < context.getHasDelProcessorList().size(); i++) {
+                        //删除临时processor 原因是因为冲正前已有临时 processor
+                        context.removeProcessorTemp();
                         context.addProcessorTemp(context.getHasDelProcessorList().get(i));
                         context.setProcessorSequ(i);
                         SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).rProcess(context);
                         context.getNewProcessorList().add(context.getTempProcessor());
-                        context.removeProcessorTemp();
                     }
                 }
                 connection.rConnect(context);

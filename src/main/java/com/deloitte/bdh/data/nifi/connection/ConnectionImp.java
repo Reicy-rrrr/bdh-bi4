@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class ConnectionImp extends AbstractConnection {
+public class ConnectionImp extends AbstractConnection<ProcessorContext> {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionImp.class);
 
 

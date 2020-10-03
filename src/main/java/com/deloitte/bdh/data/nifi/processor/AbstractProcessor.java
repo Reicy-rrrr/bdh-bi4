@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractProcessor extends AbstractCurdProcessor implements Processor {
+public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorContext> implements Processor {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractProcessor.class);
 
     @Autowired

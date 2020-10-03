@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.nifi.connection;
 
 import com.deloitte.bdh.data.model.BiEtlConnection;
+import com.deloitte.bdh.data.nifi.Nifi;
 import com.deloitte.bdh.data.nifi.dto.CreateConnectionDto;
 import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.nifi.ProcessorContext;
@@ -16,13 +17,13 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractConnection extends AbstractCurdProcessor implements Connection {
+public abstract class AbstractConnection<T extends Nifi> extends AbstractCurdProcessor<T> implements Connection<T> {
     private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
     @Resource
     protected BiEtlConnectionService etlConnectionService;
 
     @Override
-    public final Map<String, Object> pConnect(ProcessorContext context) throws Exception {
+    public final Map<String, Object> pConnect(T context) throws Exception {
         Map<String, Object> result = Maps.newHashMap();
         switch (context.getMethod()) {
             case SAVE:
@@ -38,7 +39,7 @@ public abstract class AbstractConnection extends AbstractCurdProcessor implement
     }
 
     @Override
-    public final Map<String, Object> rConnect(ProcessorContext context) throws Exception {
+    public final Map<String, Object> rConnect(T context) throws Exception {
         Map<String, Object> result = Maps.newHashMap();
         switch (context.getMethod()) {
             case SAVE:

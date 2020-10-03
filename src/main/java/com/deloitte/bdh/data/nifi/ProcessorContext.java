@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.nifi;
 
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.*;
-import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.*;
@@ -14,7 +13,6 @@ import java.util.Map;
 @Data
 public class ProcessorContext extends Nifi {
     private List<ProcessorTypeEnum> enumList;
-    private MethodEnum method;
     private Map<String, Object> req = Maps.newHashMap();
 
     private BiEtlModel model = new BiEtlModel();
