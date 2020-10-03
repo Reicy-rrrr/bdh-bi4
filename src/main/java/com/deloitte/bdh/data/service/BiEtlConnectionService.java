@@ -2,7 +2,7 @@ package com.deloitte.bdh.data.service;
 
 import com.deloitte.bdh.data.model.BiEtlConnection;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.model.request.CreateConnectionDto;
+import com.deloitte.bdh.data.nifi.dto.CreateConnectionDto;
 
 /**
  * <p>

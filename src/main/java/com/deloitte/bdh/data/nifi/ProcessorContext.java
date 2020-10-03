@@ -12,7 +12,7 @@ import java.util.Map;
 
 
 @Data
-public class ProcessorContext {
+public class ProcessorContext extends Nifi {
     private List<ProcessorTypeEnum> enumList;
     private MethodEnum method;
     private Map<String, Object> req = Maps.newHashMap();
@@ -36,7 +36,6 @@ public class ProcessorContext {
     private List<Processor> hasDelProcessorList = Lists.newLinkedList();
     private List<Processor> newProcessorList = Lists.newLinkedList();
     private List<BiEtlConnection> hasDelConnectionList = Lists.newLinkedList();
-
 
 
     public ProcessorContext addProcessorTemp(Processor processor) {

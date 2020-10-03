@@ -23,18 +23,18 @@ public class ConnectionImp extends AbstractConnection {
         //能进来这里肯定是全部processor 创建成功
         List<Processor> processorList = context.getProcessorList();
         for (int i = 0; i < processorList.size(); i++) {
-            String preCode, nextCode;
+            String fromCode, toCode;
             if (i == processorList.size() - 1) {
                 if (!toConnection(processorList.get(i))) {
                     continue;
                 }
-                preCode = processorList.get(i).getCode();
-                nextCode = preCode;
+                fromCode = processorList.get(i).getCode();
+                toCode = fromCode;
             } else {
-                preCode = processorList.get(i).getCode();
-                nextCode = processorList.get(i + 1).getCode();
+                fromCode = processorList.get(i).getCode();
+                toCode = processorList.get(i + 1).getCode();
             }
-            BiEtlConnection connection = super.createConnection(context, preCode, nextCode);
+            BiEtlConnection connection = super.createConnection(context, fromCode, toCode);
             context.addConnectionList(connection);
         }
         return null;
@@ -70,18 +70,18 @@ public class ConnectionImp extends AbstractConnection {
             List<Processor> newProcessorList = assemblyNewProcessorList(context);
             // 说明删除connection成功，先处理processor
             for (int i = 0; i < newProcessorList.size(); i++) {
-                String preCode, nextCode;
+                String fromCode, toCode;
                 if (i == newProcessorList.size() - 1) {
                     if (!toConnection(newProcessorList.get(i))) {
                         continue;
                     }
-                    preCode = newProcessorList.get(i).getCode();
-                    nextCode = preCode;
+                    fromCode = newProcessorList.get(i).getCode();
+                    toCode = fromCode;
                 } else {
-                    preCode = newProcessorList.get(i).getCode();
-                    nextCode = newProcessorList.get(i + 1).getCode();
+                    fromCode = newProcessorList.get(i).getCode();
+                    toCode = newProcessorList.get(i + 1).getCode();
                 }
-                BiEtlConnection connection = super.createConnection(context, preCode, nextCode);
+                BiEtlConnection connection = super.createConnection(context, fromCode, toCode);
                 context.addConnectionList(connection);
             }
         } else {

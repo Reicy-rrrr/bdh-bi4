@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.model.request;
+package com.deloitte.bdh.data.nifi.dto;
 
 import com.deloitte.bdh.data.model.BiProcessors;
 import io.swagger.annotations.ApiModel;

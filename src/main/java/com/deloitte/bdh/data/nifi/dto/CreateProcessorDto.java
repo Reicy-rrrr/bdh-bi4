@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.model.request;
+package com.deloitte.bdh.data.nifi.dto;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.model.BiProcessors;

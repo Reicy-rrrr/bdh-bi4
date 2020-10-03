@@ -5,7 +5,9 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.integration.EtlService;
+import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiProcessors;
+import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import io.swagger.annotations.ApiOperation;
@@ -40,13 +42,18 @@ public class EtlController {
     }
 
 
-    @ApiOperation(value = "移除数据源", notes = "移除数据源")
-    @PostMapping("/removeResource")
-    public RetResult<Void> removeResource(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        etlService.removeResource(request.getData());
+    @ApiOperation(value = "移除组件", notes = "移除组件")
+    @PostMapping("/removeProcessors")
+    public RetResult<Void> removeProcessors(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        etlService.removeProcessors(request.getData());
         return RetResponse.makeOKRsp();
     }
 
+    @ApiOperation(value = "关联组件", notes = "关联组件")
+    @PostMapping("/connectProcessors")
+    public RetResult<BiConnections> connectProcessors(@RequestBody @Validated RetRequest<CreateConnectionsDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.connectProcessors(request.getData()));
+    }
 
     @ApiOperation(value = "查看组件详情", notes = "查看组件详情(包含参数集合)")
     @PostMapping("/getProcessors")
@@ -54,12 +61,6 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.getProcessors(request.getData()));
     }
 
-//    @ApiOperation(value = "配置、修改已引入的数据源", notes = "配置、修改已引入的数据源")
-//    @PostMapping("/Resource")
-//    public RetResult<Void> updJoinedResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
-//        etlService.joinResource(request.getData());
-//        return RetResponse.makeOKRsp();
-//    }
 
 //
 //    @ApiOperation(value = "启动", notes = "操作")
@@ -67,6 +68,5 @@ public class EtlController {
 //    public RetResult<BiEtlProcessor> getProcessor(@RequestBody @Validated RetRequest<String> request) {
 //        return RetResponse.makeOKRsp(biEtlProcessorService.getProcessor(request.getData()));
 //    }
-
 
 }

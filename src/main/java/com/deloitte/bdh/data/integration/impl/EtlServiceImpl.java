@@ -9,9 +9,10 @@ import com.deloitte.bdh.data.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
+import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
+import com.deloitte.bdh.data.nifi.EtlProcess;
 import com.deloitte.bdh.data.nifi.Processor;
-import com.deloitte.bdh.data.nifi.processors.Processors;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Maps;
@@ -43,7 +44,7 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiEtlProcessorService processorService;
     @Resource
-    private Processors biEtlProcess;
+    private EtlProcess process;
     @Autowired
     private BiProcessorsService processorsService;
     @Autowired
@@ -96,7 +97,7 @@ public class EtlServiceImpl implements EtlService {
         context.setModel(biEtlModel);
         context.setBiEtlDatabaseInf(biEtlDatabaseInf);
         context.setProcessors(processors);
-        biEtlProcess.etl(context);
+        process.process(context);
 
         //关联数据源
         return context.getProcessors();
@@ -104,7 +105,7 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void removeResource(String processorsCode) throws Exception {
+    public void removeProcessors(String processorsCode) throws Exception {
         BiProcessors processors = processorsService.getOne(
                 new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, processorsCode));
         if (null == processors) {
@@ -139,9 +140,14 @@ public class EtlServiceImpl implements EtlService {
         context.addProcessorList(processorList);
         context.addConnectionList(connectionList);
         context.setReq(req);
-        biEtlProcess.etl(context);
+        process.process(context);
         processorsService.removeById(processors.getId());
 
+    }
+
+    @Override
+    public BiConnections connectProcessors(CreateConnectionsDto dto) throws Exception {
+        return null;
     }
 
     @Override

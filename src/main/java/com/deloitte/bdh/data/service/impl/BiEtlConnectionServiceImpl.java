@@ -12,7 +12,7 @@ import com.deloitte.bdh.data.dao.bi.BiEtlConnectionMapper;
 import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.model.BiProcessors;
-import com.deloitte.bdh.data.model.request.CreateConnectionDto;
+import com.deloitte.bdh.data.nifi.dto.CreateConnectionDto;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Maps;

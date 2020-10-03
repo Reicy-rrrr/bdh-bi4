@@ -15,7 +15,7 @@ import java.util.List;
 
 
 @Service
-public class BiEtlProcess extends AbStractProcessors {
+public class BiProcess extends AbStractProcessors {
 
     @Resource
     private Connection connection;
@@ -114,9 +114,6 @@ public class BiEtlProcess extends AbStractProcessors {
     @Override
     protected void validateContext(ProcessorContext context) throws Exception {
         super.validateContext(context);
-        if (null == context.getMethod() || CollectionUtils.isEmpty(context.getEnumList())) {
-            throw new RuntimeException("参数缺失");
-        }
         //todo
     }
 }

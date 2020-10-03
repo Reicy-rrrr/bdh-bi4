@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 
 public abstract class AbStractProcessors implements Processors {
@@ -34,9 +33,7 @@ public abstract class AbStractProcessors implements Processors {
     protected abstract void reverse(ProcessorContext context) throws Exception;
 
     protected void validateContext(ProcessorContext context) throws Exception {
-        if (null == context.getMethod() || CollectionUtils.isEmpty(context.getEnumList())) {
-            throw new RuntimeException("参数缺失");
-        }
+
     }
 
 }

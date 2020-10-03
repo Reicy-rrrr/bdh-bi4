@@ -3,7 +3,7 @@ package com.deloitte.bdh.data.service;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.model.request.CreateProcessorDto;
+import com.deloitte.bdh.data.nifi.dto.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.nifi.Processor;

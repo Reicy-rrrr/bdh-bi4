@@ -13,7 +13,7 @@ import com.deloitte.bdh.data.enums.*;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.dao.bi.BiEtlProcessorMapper;
-import com.deloitte.bdh.data.model.request.CreateProcessorDto;
+import com.deloitte.bdh.data.nifi.dto.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.nifi.Processor;
