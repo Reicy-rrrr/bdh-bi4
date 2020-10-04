@@ -12,7 +12,6 @@ import javax.annotation.Resource;
 @Service
 public class BiEtlConnections extends AbStractProcessors<ConnectionsContext> {
 
-
     @Resource(name = "connectionsImp")
     private Connection<ConnectionsContext> connection;
 

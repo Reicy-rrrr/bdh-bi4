@@ -7,11 +7,8 @@ import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.integration.NifiProcessService;
-import com.deloitte.bdh.data.model.BiEtlConnection;
+import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.dao.bi.BiEtlConnectionMapper;
-import com.deloitte.bdh.data.model.BiEtlModel;
-import com.deloitte.bdh.data.model.BiEtlProcessor;
-import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.nifi.dto.CreateConnectionDto;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -57,16 +54,14 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         BiEtlProcessor toProcessors = etlProcessorService
                 .getOne(new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getCode, dto.getToProcessorCode()));
 
-        BiProcessors processors = dto.getProcessors();
-
         BiEtlModel model = etlModelService
-                .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
+                .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dto.getModelCode()));
 
         BiEtlConnection connection = new BiEtlConnection();
         BeanUtils.copyProperties(dto, connection);
         connection.setCode(GenerateCodeUtil.genConnect());
-        connection.setRelProcessorsCode(processors.getCode());
-        connection.setRelModelCode(processors.getRelModelCode());
+        connection.setRelProcessorsCode(dto.getRelCode());
+        connection.setRelModelCode(model.getCode());
         connection.setCreateDate(LocalDateTime.now());
         connection.setModifiedDate(LocalDateTime.now());
 

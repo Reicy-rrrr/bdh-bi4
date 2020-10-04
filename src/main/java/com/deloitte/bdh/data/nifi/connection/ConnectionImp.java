@@ -34,7 +34,8 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
                 fromCode = processorList.get(i).getCode();
                 toCode = processorList.get(i + 1).getCode();
             }
-            BiEtlConnection connection = super.createConnection(context, fromCode, toCode);
+            BiEtlConnection connection = super.createConnection(context, context.getProcessors().getRelModelCode(),
+                    context.getProcessors().getCode(), fromCode, toCode);
             context.addConnectionList(connection);
         }
         return null;
@@ -81,14 +82,16 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
                     fromCode = newProcessorList.get(i).getCode();
                     toCode = newProcessorList.get(i + 1).getCode();
                 }
-                BiEtlConnection connection = super.createConnection(context, fromCode, toCode);
+                BiEtlConnection connection = super.createConnection(context, context.getProcessors().getRelModelCode(),
+                        context.getProcessors().getCode(), fromCode, toCode);
                 context.addConnectionList(connection);
             }
         } else {
             //说明删除connection 就发生部分失败,找到已删除的connecion
             List<BiEtlConnection> connectionList = context.getHasDelConnectionList();
             for (BiEtlConnection connection : connectionList) {
-                super.createConnection(context, connection.getFromProcessorCode(), connection.getToProcessorCode());
+                super.createConnection(context, context.getProcessors().getRelModelCode(),
+                        context.getProcessors().getCode(), connection.getFromProcessorCode(), connection.getToProcessorCode());
             }
         }
         return null;

@@ -55,13 +55,14 @@ public abstract class AbstractConnection<T extends Nifi> extends AbstractCurdPro
     }
 
 
-    final protected BiEtlConnection createConnection(ProcessorContext context, String fromCode, String toCode) throws Exception {
+    final protected BiEtlConnection createConnection(T context, String modelCode, String relCode, String fromCode, String toCode) throws Exception {
         CreateConnectionDto createConnectionDto = new CreateConnectionDto();
         createConnectionDto.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
         createConnectionDto.setTenantId(context.getModel().getTenantId());
         createConnectionDto.setFromProcessorCode(fromCode);
         createConnectionDto.setToProcessorCode(toCode);
-        createConnectionDto.setProcessors(context.getProcessors());
+        createConnectionDto.setRelCode(relCode);
+        createConnectionDto.setModelCode(modelCode);
         return etlConnectionService.createConnection(createConnectionDto);
     }
 

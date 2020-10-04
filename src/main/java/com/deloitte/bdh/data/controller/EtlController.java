@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * <p>
  * 前端控制器
@@ -50,9 +52,16 @@ public class EtlController {
     }
 
     @ApiOperation(value = "关联组件", notes = "关联组件")
-    @PostMapping("/connectProcessors")
-    public RetResult<BiConnections> connectProcessors(@RequestBody @Validated RetRequest<CreateConnectionsDto> request) throws Exception {
+    @PostMapping("/connect")
+    public RetResult<List<BiConnections>> connect(@RequestBody @Validated RetRequest<CreateConnectionsDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.connectProcessors(request.getData()));
+    }
+
+    @ApiOperation(value = "取消关联组件", notes = "取消关联组件")
+    @PostMapping("/cancelConnect")
+    public RetResult<List<BiConnections>> cancelConnect(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        etlService.cancelConnectProcessors(request.getData());
+        return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "查看组件详情", notes = "查看组件详情(包含参数集合)")

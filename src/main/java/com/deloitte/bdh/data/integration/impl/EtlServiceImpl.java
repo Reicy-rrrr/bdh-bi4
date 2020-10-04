@@ -1,5 +1,8 @@
 package com.deloitte.bdh.data.integration.impl;
 
+import com.deloitte.bdh.data.model.BiEtlModel;
+import com.google.common.collect.Lists;
+
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
@@ -11,6 +14,7 @@ import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
+import com.deloitte.bdh.data.nifi.ConnectionsContext;
 import com.deloitte.bdh.data.nifi.EtlProcess;
 import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.service.*;
@@ -51,6 +55,8 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlParamsService biEtlParamsService;
     @Autowired
     private BiEtlConnectionService biEtlConnectionService;
+    @Autowired
+    private BiConnectionsService connectionsService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -146,8 +152,64 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
-    public BiConnections connectProcessors(CreateConnectionsDto dto) throws Exception {
-        return null;
+    public List<BiConnections> connectProcessors(CreateConnectionsDto dto) throws Exception {
+        BiProcessors fromProcessors = processorsService.getOne(
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, dto.getFromProcessorsCode()));
+        if (null == fromProcessors) {
+            throw new RuntimeException("EtlServiceImpl.removeResource.error : 未找到目标 fromProcessors");
+        }
+
+        BiProcessors toProcessors = processorsService.getOne(
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, dto.getToProcessorsCode()));
+        if (null == toProcessors) {
+            throw new RuntimeException("EtlServiceImpl.removeResource.error : 未找到目标 toProcessors");
+        }
+
+        BiEtlModel biEtlModel = biEtlModelService.getOne(
+                new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, fromProcessors.getRelModelCode()));
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 模型");
+        }
+
+
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("createUser", "lw");
+
+        List<BiProcessors> from = Lists.newLinkedList();
+        from.add(fromProcessors);
+        List<BiProcessors> to = Lists.newLinkedList();
+        to.add(toProcessors);
+        ConnectionsContext context = new ConnectionsContext();
+        context.setFromProcessorsList(from);
+        context.setToProcessorsList(to);
+        context.setMethod(MethodEnum.SAVE);
+        context.setModel(biEtlModel);
+        context.setReq(req);
+        return ((ConnectionsContext) process.process(context)).getConnectionsList();
+    }
+
+    @Override
+    public void cancelConnectProcessors(String connectionsCode) throws Exception {
+        BiConnections connections = connectionsService.getOne(
+                new LambdaQueryWrapper<BiConnections>().eq(BiConnections::getCode, connectionsCode));
+
+        BiEtlConnection biEtlConnection = biEtlConnectionService.getOne(
+                new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, connections.getCode()));
+
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("createUser", "lw");
+
+        List<BiConnections> connectionsList = Lists.newLinkedList();
+        connectionsList.add(connections);
+        List<BiEtlConnection> connectionList = Lists.newLinkedList();
+        connectionList.add(biEtlConnection);
+
+        ConnectionsContext context = new ConnectionsContext();
+        context.setConnectionsList(connectionsList);
+        context.setConnectionList(connectionList);
+        context.setMethod(MethodEnum.DELETE);
+        context.setReq(Maps.newHashMap());
+        process.process(context);
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 
+import java.util.List;
+
 public interface EtlService {
 
     /**
@@ -30,7 +32,15 @@ public interface EtlService {
      * @param
      * @return
      */
-    BiConnections connectProcessors(CreateConnectionsDto dto) throws Exception;
+    List<BiConnections> connectProcessors(CreateConnectionsDto dto) throws Exception;
+
+    /**
+     * 取消关联组件
+     *
+     * @param
+     * @return
+     */
+    void cancelConnectProcessors(String connectionsCode) throws Exception;
 
     /**
      * 查看组件详情（包含数据源与bi这面的自定义的组件）

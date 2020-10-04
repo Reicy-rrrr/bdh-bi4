@@ -3,21 +3,17 @@ package com.deloitte.bdh.data.nifi;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.*;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.*;
 
 import java.util.List;
-import java.util.Map;
 
 
 @Data
 public class ProcessorContext extends Nifi {
     private List<ProcessorTypeEnum> enumList;
-    private Map<String, Object> req = Maps.newHashMap();
 
-    private BiEtlModel model = new BiEtlModel();
-    private BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
-    private BiProcessors processors = new BiProcessors();
+    private BiEtlDatabaseInf biEtlDatabaseInf = null;
+    private BiProcessors processors = null;
 
     private List<Processor> processorList = null;
     private Processor tempProcessor = null;
