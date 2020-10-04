@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
 @Service
-public class EtlProcessSelector implements EtlProcess {
+public class EtlProcessSelector<T extends Nifi> implements EtlProcess<T> {
     @Resource(name = "biEtlProcess")
     private Processors<ProcessorContext> biEtlProcess;
     @Resource(name = "biEtlConnections")
@@ -14,7 +14,7 @@ public class EtlProcessSelector implements EtlProcess {
 
 
     @Override
-    public Nifi process(Nifi var) throws Exception {
+    public T process(T var) throws Exception {
         if (var instanceof ProcessorContext) {
             biEtlProcess.etl((ProcessorContext) var);
         }

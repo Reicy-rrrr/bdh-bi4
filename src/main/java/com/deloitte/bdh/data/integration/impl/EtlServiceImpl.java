@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.integration.impl;
 
 import com.deloitte.bdh.data.model.BiEtlModel;
+import com.deloitte.bdh.data.nifi.*;
 import com.google.common.collect.Lists;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
@@ -14,16 +15,12 @@ import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
-import com.deloitte.bdh.data.nifi.ConnectionsContext;
-import com.deloitte.bdh.data.nifi.EtlProcess;
-import com.deloitte.bdh.data.nifi.Processor;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
-import com.deloitte.bdh.data.nifi.ProcessorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -48,7 +45,7 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiEtlProcessorService processorService;
     @Resource
-    private EtlProcess process;
+    private EtlProcess<Nifi> etlProcess;
     @Autowired
     private BiProcessorsService processorsService;
     @Autowired
@@ -103,7 +100,7 @@ public class EtlServiceImpl implements EtlService {
         context.setModel(biEtlModel);
         context.setBiEtlDatabaseInf(biEtlDatabaseInf);
         context.setProcessors(processors);
-        process.process(context);
+        etlProcess.process(context);
 
         //关联数据源
         return context.getProcessors();
@@ -146,7 +143,7 @@ public class EtlServiceImpl implements EtlService {
         context.addProcessorList(processorList);
         context.addConnectionList(connectionList);
         context.setReq(req);
-        process.process(context);
+        etlProcess.process(context);
         processorsService.removeById(processors.getId());
 
     }
@@ -185,7 +182,8 @@ public class EtlServiceImpl implements EtlService {
         context.setMethod(MethodEnum.SAVE);
         context.setModel(biEtlModel);
         context.setReq(req);
-        return ((ConnectionsContext) process.process(context)).getConnectionsList();
+        etlProcess.process(context);
+        return context.getConnectionsList();
     }
 
     @Override
@@ -208,8 +206,8 @@ public class EtlServiceImpl implements EtlService {
         context.setConnectionsList(connectionsList);
         context.setConnectionList(connectionList);
         context.setMethod(MethodEnum.DELETE);
-        context.setReq(Maps.newHashMap());
-        process.process(context);
+        context.setReq(req);
+        etlProcess.process(context);
     }
 
     @Override

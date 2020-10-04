@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.nifi;
 
-public interface EtlProcess {
+public interface EtlProcess<T> {
 
-    Nifi process(Nifi var) throws Exception;
+    T process(T var) throws Exception;
 
 }
