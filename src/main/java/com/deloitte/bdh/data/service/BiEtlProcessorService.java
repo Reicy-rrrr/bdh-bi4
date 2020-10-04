@@ -6,7 +6,7 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.nifi.dto.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.nifi.Processor;
+import com.deloitte.bdh.data.nifi.dto.Processor;
 import javafx.util.Pair;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.nifi;
+package com.deloitte.bdh.data.nifi.dto;
 
 import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiEtlConnection;

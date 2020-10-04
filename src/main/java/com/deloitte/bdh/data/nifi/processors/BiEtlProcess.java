@@ -4,7 +4,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlConnection;
-import com.deloitte.bdh.data.nifi.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.connection.Connection;
 import com.deloitte.bdh.data.nifi.processor.Processor;
 import org.springframework.stereotype.Service;

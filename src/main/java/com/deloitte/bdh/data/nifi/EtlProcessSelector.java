@@ -1,5 +1,8 @@
 package com.deloitte.bdh.data.nifi;
 
+import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
+import com.deloitte.bdh.data.nifi.dto.Nifi;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processors.Processors;
 import org.springframework.stereotype.Service;
 

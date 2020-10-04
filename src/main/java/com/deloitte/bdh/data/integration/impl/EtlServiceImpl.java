@@ -2,6 +2,10 @@ package com.deloitte.bdh.data.integration.impl;
 
 import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.nifi.*;
+import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
+import com.deloitte.bdh.data.nifi.dto.Nifi;
+import com.deloitte.bdh.data.nifi.dto.Processor;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.google.common.collect.Lists;
 
 import com.baomidou.dynamic.datasource.annotation.DS;

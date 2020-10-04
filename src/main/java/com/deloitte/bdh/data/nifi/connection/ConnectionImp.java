@@ -3,8 +3,8 @@ package com.deloitte.bdh.data.nifi.connection;
 
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlConnection;
-import com.deloitte.bdh.data.nifi.Processor;
-import com.deloitte.bdh.data.nifi.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.Processor;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

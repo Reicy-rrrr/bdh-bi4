@@ -1,10 +1,10 @@
 package com.deloitte.bdh.data.nifi.connection;
 
 import com.deloitte.bdh.data.model.BiEtlConnection;
-import com.deloitte.bdh.data.nifi.Nifi;
+import com.deloitte.bdh.data.nifi.dto.Nifi;
 import com.deloitte.bdh.data.nifi.dto.CreateConnectionDto;
-import com.deloitte.bdh.data.nifi.Processor;
-import com.deloitte.bdh.data.nifi.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.Processor;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractCurdProcessor;
 import com.deloitte.bdh.data.service.BiEtlConnectionService;
 import com.google.common.collect.Lists;

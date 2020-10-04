@@ -9,7 +9,7 @@ import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.nifi.dto.CreateProcessorDto;
-import com.deloitte.bdh.data.nifi.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.service.BiEtlDbRefService;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
@@ -118,7 +118,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
     }
 
     final protected void setTempForRdelete(BiEtlProcessor etlProcessor, ProcessorContext context) {
-        com.deloitte.bdh.data.nifi.Processor processor = new com.deloitte.bdh.data.nifi.Processor();
+        com.deloitte.bdh.data.nifi.dto.Processor processor = new com.deloitte.bdh.data.nifi.dto.Processor();
         BeanUtils.copyProperties(etlProcessor, processor);
         context.removeProcessorTemp();
         context.addProcessorTemp(processor);

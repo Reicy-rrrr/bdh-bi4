@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.nifi.processors;
 
 
-import com.deloitte.bdh.data.nifi.Nifi;
+import com.deloitte.bdh.data.nifi.dto.Nifi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;

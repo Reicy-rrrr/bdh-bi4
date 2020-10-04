@@ -9,7 +9,7 @@ import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiEtlConnection;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.model.BiProcessors;
-import com.deloitte.bdh.data.nifi.ConnectionsContext;
+import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.service.BiConnectionsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import org.apache.commons.collections4.CollectionUtils;

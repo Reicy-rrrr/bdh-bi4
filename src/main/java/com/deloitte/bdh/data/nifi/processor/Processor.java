@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.nifi.processor;
 
 
-import com.deloitte.bdh.data.nifi.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 
 import java.util.Map;
 

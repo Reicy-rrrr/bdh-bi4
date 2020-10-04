@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.nifi.connection;
 
 
-import com.deloitte.bdh.data.nifi.Nifi;
+import com.deloitte.bdh.data.nifi.dto.Nifi;
 
 import java.util.Map;
 

@@ -2,7 +2,7 @@ package com.deloitte.bdh.data.nifi.processors;
 
 
 import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.nifi.ConnectionsContext;
+import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.nifi.connection.Connection;
 import org.springframework.stereotype.Service;
 

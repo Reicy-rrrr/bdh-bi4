@@ -16,7 +16,7 @@ import com.deloitte.bdh.data.dao.bi.BiEtlProcessorMapper;
 import com.deloitte.bdh.data.nifi.dto.CreateProcessorDto;
 import com.deloitte.bdh.data.model.request.EffectModelDto;
 import com.deloitte.bdh.data.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.nifi.Processor;
+import com.deloitte.bdh.data.nifi.dto.Processor;
 import com.deloitte.bdh.data.service.BiEtlDbRefService;
 import com.deloitte.bdh.data.service.BiEtlModelService;
 import com.deloitte.bdh.data.service.BiEtlParamsService;
