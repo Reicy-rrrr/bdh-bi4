@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.nifi.processors;
 
 
 import com.deloitte.bdh.data.nifi.dto.Nifi;
+import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,7 +33,10 @@ public abstract class AbStractProcessors<T extends Nifi> implements Processors<T
     protected abstract void reverse(T context) throws Exception;
 
     protected void validateContext(T context) throws Exception {
-        //todo 公共的
+        if (null == context.getMethod() || null == context.getModel() || MapUtils.isEmpty(context.getReq())) {
+            throw new Exception("校验失败:参数不合法");
+        }
+
     }
 
 }

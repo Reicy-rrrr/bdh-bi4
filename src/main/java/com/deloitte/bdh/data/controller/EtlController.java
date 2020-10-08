@@ -70,6 +70,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.getProcessors(request.getData()));
     }
 
+    @ApiOperation(value = "基于模板编码查看组件列表", notes = "基于模板编码查看组件列表")
+    @PostMapping("/getProcessorsList")
+    public RetResult<List<EtlProcessorsResp>> getProcessorsList(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(etlService.getProcessorsList(request.getData()));
+    }
+
 
 //
 //    @ApiOperation(value = "启动", notes = "操作")

@@ -1,9 +1,9 @@
 package com.deloitte.bdh.data.model.resp;
 
 
+import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiProcessors;
-import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,5 +26,8 @@ import java.util.List;
 @ToString
 public class EtlProcessorsResp extends BiProcessors {
 
-    List<BiEtlParams> list = Lists.newArrayList();
+    List<BiEtlParams> paramsList = null;
+    List<BiConnections> preConnections = null;
+    List<BiConnections> nextConnections = null;
+
 }

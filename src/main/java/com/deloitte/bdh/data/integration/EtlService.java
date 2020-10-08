@@ -49,4 +49,12 @@ public interface EtlService {
      * @return
      */
     EtlProcessorsResp getProcessors(String processorsCode);
+
+    /**
+     * 查看组件列表
+     *
+     * @param
+     * @return
+     */
+    List<EtlProcessorsResp> getProcessorsList(String modelCode);
 }

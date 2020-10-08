@@ -25,6 +25,7 @@ import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -219,17 +220,45 @@ public class EtlServiceImpl implements EtlService {
         if (StringUtil.isEmpty(processorsCode)) {
             throw new RuntimeException("EtlServiceImpl.getProcessors.error : processorsCode 不能为空");
         }
-        EtlProcessorsResp resp = new EtlProcessorsResp();
-        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                .eq(BiProcessors::getCode, processorsCode));
+        BiProcessors processors = processorsService.getOne(
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getCode, processorsCode));
 
-        if (null != processors) {
-            BeanUtils.copyProperties(processors, resp);
-            List<BiEtlParams> paramsList = biEtlParamsService.list(
-                    new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelProcessorsCode, processorsCode)
-            );
-            resp.setList(paramsList);
+        if (null == processors) {
+            throw new RuntimeException("EtlServiceImpl.getProcessors.error : 未找到对应的目标");
         }
+
+        EtlProcessorsResp resp = new EtlProcessorsResp();
+        BeanUtils.copyProperties(processors, resp);
+        List<BiEtlParams> paramsList = biEtlParamsService.list(
+                new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelProcessorsCode, processorsCode));
+
+        List<BiConnections> preConnections = connectionsService.list(
+                new LambdaQueryWrapper<BiConnections>().eq(BiConnections::getFromProcessorsCode, processorsCode));
+
+        List<BiConnections> nextConnections = connectionsService.list(
+                new LambdaQueryWrapper<BiConnections>().eq(BiConnections::getToProcessorsCode, processorsCode));
+
+        resp.setParamsList(paramsList);
+        resp.setPreConnections(preConnections);
+        resp.setNextConnections(nextConnections);
         return resp;
+    }
+
+    @Override
+    public List<EtlProcessorsResp> getProcessorsList(String modelCode) {
+        BiEtlModel model = biEtlModelService.getOne(
+                new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, modelCode));
+        if (null == model) {
+            throw new RuntimeException("EtlServiceImpl.getProcessorsList.error : 未找到对应的目标");
+        }
+
+        List<EtlProcessorsResp> resps = Lists.newLinkedList();
+        List<BiProcessors> processorsList = processorsService.list(
+                new LambdaQueryWrapper<BiProcessors>().eq(BiProcessors::getRelModelCode, model).orderByAsc(BiProcessors::getCode));
+        if (CollectionUtils.isNotEmpty(processorsList)) {
+            processorsList.forEach(v -> resps.add(getProcessors(v.getCode())));
+        }
+        return resps;
+
     }
 }

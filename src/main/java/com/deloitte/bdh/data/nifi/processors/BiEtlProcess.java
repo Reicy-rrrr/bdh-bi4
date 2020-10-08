@@ -115,9 +115,25 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
     @Override
     protected void validateContext(ProcessorContext context) throws Exception {
         super.validateContext(context);
-        if (null == context.getMethod() || CollectionUtils.isEmpty(context.getEnumList())) {
-            throw new RuntimeException("参数缺失");
+        switch (context.getMethod()) {
+            case SAVE:
+                if (null == context.getBiEtlDatabaseInf() || CollectionUtils.isEmpty(context.getEnumList())
+                        || null == context.getProcessors()) {
+                    throw new RuntimeException("校验失败:参数不合法");
+                }
+                break;
+            case DELETE:
+                if (null == context.getBiEtlDatabaseInf() || CollectionUtils.isEmpty(context.getEnumList())
+                        || null == context.getProcessors() || CollectionUtils.isEmpty(context.getProcessorList())
+                        || CollectionUtils.isEmpty(context.getConnectionList())) {
+                    throw new RuntimeException("校验失败:参数不合法");
+                }
+                break;
+            case VALIDATE:
+            case UPDATE:
+            default:
+                break;
+
         }
-        //todo
     }
 }
