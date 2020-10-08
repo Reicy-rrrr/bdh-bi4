@@ -26,7 +26,7 @@ public interface BiEtlProcessorService extends Service<BiEtlProcessor> {
      * @param id
      * @return
      */
-    Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id);
+//    Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id);
 
     /**
      * 根据 relProcessorCode 获取所有 processor
