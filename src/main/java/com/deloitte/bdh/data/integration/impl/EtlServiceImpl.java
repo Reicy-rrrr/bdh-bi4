@@ -1,7 +1,10 @@
 package com.deloitte.bdh.data.integration.impl;
 
+import com.deloitte.bdh.data.enums.RunStatusEnum;
 import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
+import com.deloitte.bdh.data.model.request.RunModelDto;
+import com.deloitte.bdh.data.model.resp.EtlRunModelResp;
 import com.deloitte.bdh.data.nifi.*;
 import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.nifi.dto.Nifi;
@@ -312,5 +315,27 @@ public class EtlServiceImpl implements EtlService {
         etlProcess.process(context);
 
         return context.getProcessors();
+    }
+
+    @Override
+    public EtlRunModelResp runModel(RunModelDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getId());
+        if (biEtlModel.getStatus().equals(dto.getRunStatus())) {
+            throw new RuntimeException("EtlServiceImpl.runModel.error : 请勿重复执行");
+        }
+
+        if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.runModel.error : 模板失效下不允许操作");
+        }
+
+        if (RunStatusEnum.RUNNING.getKey().equalsIgnoreCase(dto.getRunStatus())) {
+            //todo
+
+        } else {
+
+        }
+        biEtlModel.setModifiedUser(dto.getModifiedUser());
+        biEtlModel.setModifiedDate(LocalDateTime.now());
+        return null;
     }
 }

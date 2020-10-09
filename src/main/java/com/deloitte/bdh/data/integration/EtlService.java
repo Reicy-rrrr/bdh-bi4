@@ -5,7 +5,9 @@ import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
+import com.deloitte.bdh.data.model.request.RunModelDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
+import com.deloitte.bdh.data.model.resp.EtlRunModelResp;
 
 import java.util.List;
 
@@ -67,4 +69,13 @@ public interface EtlService {
      * @return
      */
     BiProcessors outProcessors(CreateOutProcessorsDto dto) throws Exception;
+
+    /**
+     * 输出主键
+     *
+     * @param
+     * @return
+     */
+    EtlRunModelResp runModel(RunModelDto dto) throws Exception;
+
 }

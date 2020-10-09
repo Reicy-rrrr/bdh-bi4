@@ -10,7 +10,9 @@ import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
+import com.deloitte.bdh.data.model.request.RunModelDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
+import com.deloitte.bdh.data.model.resp.EtlRunModelResp;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -38,12 +40,17 @@ public class EtlController {
     private EtlService etlService;
 
 
-    @ApiOperation(value = "引入数据源", notes = "引入数据源")
+    @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
     @PostMapping("/joinResource")
     public RetResult<BiProcessors> joinResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
     }
 
+    @ApiOperation(value = "输出组件", notes = "输出组件")
+    @PostMapping("/outProcessors")
+    public RetResult<BiProcessors> outProcessors(@RequestBody @Validated RetRequest<CreateOutProcessorsDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.outProcessors(request.getData()));
+    }
 
     @ApiOperation(value = "移除组件", notes = "移除组件")
     @PostMapping("/removeProcessors")
@@ -77,18 +84,10 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.getProcessorsList(request.getData()));
     }
 
-
-    @ApiOperation(value = "输出组件", notes = "输出组件")
-    @PostMapping("/outProcessors")
-    public RetResult<BiProcessors> outProcessors(@RequestBody @Validated RetRequest<CreateOutProcessorsDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.outProcessors(request.getData()));
+    @ApiOperation(value = "运行/停止 model", notes = "运行/停止 model")
+    @PostMapping("/runModel")
+    public RetResult<EtlRunModelResp> runModel(@RequestBody @Validated RetRequest<RunModelDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.runModel(request.getData()));
     }
-
-//
-//    @ApiOperation(value = "启动", notes = "操作")
-//    @PostMapping("/getProcessor")
-//    public RetResult<BiEtlProcessor> getProcessor(@RequestBody @Validated RetRequest<String> request) {
-//        return RetResponse.makeOKRsp(biEtlProcessorService.getProcessor(request.getData()));
-//    }
 
 }

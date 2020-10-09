@@ -22,8 +22,8 @@ public abstract class AbstractNifiProcess implements NifiProcessService {
         //todo 数据库读取用户和密码
         String username = "login/bidw@NIFI.COM";
         String password = "REQ51sRHZ";
-//        String nifiToken = null;
-        String nifiToken = redisClusterUtil.STRINGS.get(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username);
+        String nifiToken = null;
+//        String nifiToken = redisClusterUtil.STRINGS.get(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username);
         if (StringUtil.isEmpty(nifiToken)) {
             Map<String, Object> req = Maps.newHashMap();
             req.put("username", username);
