@@ -40,7 +40,7 @@ public class SelectHiveQL extends AbstractProcessor {
 
         // processor 公共的
         Map<String, Object> component = Maps.newHashMap();
-        component.put("name", MapUtils.getString(context.getReq(), "name"));
+        component.put("name", processorType().getTypeDesc() + System.currentTimeMillis());
         component.put("type", ProcessorTypeEnum.SelectHiveQL.getvalue());
         component.put("config", config);
 
