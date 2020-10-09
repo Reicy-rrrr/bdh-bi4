@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
 
-import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
@@ -19,17 +18,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("PutDatabaseRecord")
-public class PutDataBaseRecord extends AbstractProcessor {
+@Service("ConvertJSONToSQL")
+public class ConvertJSONToSQL extends AbstractProcessor {
 
-    private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
 
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
         //配置数据源的
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("SQL select query", QUERY.replace(NifiProcessUtil.TEMP, MapUtils.getString(context.getReq(), "tableName")));
-        properties.put("Database Connection Pooling Service", context.getBiEtlDatabaseInf().getControllerServiceId());
+        properties.put("JDBC Connection Pool", MapUtils.getString(context.getReq(), "JDBC Connection Pool"));
+        properties.put("Statement Type", "INSERT");
+        properties.put("Table Name", MapUtils.getString(context.getReq(), "Table Name"));
+
         //调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
         config.put("schedulingPeriod", "1 * * * * ?");
@@ -38,7 +38,7 @@ public class PutDataBaseRecord extends AbstractProcessor {
 
         //processor 公共的
         Map<String, Object> component = Maps.newHashMap();
-        component.put("name", MapUtils.getString(context.getReq(), "name"));
+        component.put("name", processorType().getTypeDesc() + System.currentTimeMillis());
         component.put("type", ProcessorTypeEnum.ExecuteSQL.getvalue());
         component.put("config", config);
 
@@ -130,7 +130,7 @@ public class PutDataBaseRecord extends AbstractProcessor {
 
     @Override
     protected ProcessorTypeEnum processorType() {
-        return ProcessorTypeEnum.PutDatabaseRecord;
+        return ProcessorTypeEnum.ConvertJSONToSQL;
     }
 
 }

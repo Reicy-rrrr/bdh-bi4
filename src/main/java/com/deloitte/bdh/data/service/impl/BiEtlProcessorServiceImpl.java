@@ -23,7 +23,6 @@ import com.deloitte.bdh.data.service.BiEtlParamsService;
 import com.deloitte.bdh.data.service.BiEtlProcessorService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Lists;
-import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
@@ -57,23 +56,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     @Autowired
     private BiEtlDbRefService etlDbRefService;
 
-
-//    @Override
-//    public Pair<BiEtlProcessor, List<BiEtlParams>> getProcessor(String id) {
-//        if (StringUtil.isEmpty(id)) {
-//            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:id 不能为空");
-//        }
-//        BiEtlProcessor processor = etlProcessorMapper.selectById(id);
-//        if (null == processor) {
-//            throw new RuntimeException("BiEtlProcessorServiceImpl.getProcessor error:未找到对应的对象");
-//        }
-//        //获取对应processor 参数集合
-//        List<BiEtlParams> paramsList = etlParamsService.list(
-//                new LambdaQueryWrapper<BiEtlParams>()
-//                        .eq(BiEtlParams::getRelCode, processor.getCode())
-//        );
-//        return new Pair(processor, paramsList);
-//    }
 
     @Override
     public List<Processor> invokeProcessorList(String relProcessorsCode) {

@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
+import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import io.swagger.annotations.ApiOperation;
@@ -76,6 +77,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.getProcessorsList(request.getData()));
     }
 
+
+    @ApiOperation(value = "输出组件", notes = "输出组件")
+    @PostMapping("/outProcessors")
+    public RetResult<BiProcessors> outProcessors(@RequestBody @Validated RetRequest<CreateOutProcessorsDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.outProcessors(request.getData()));
+    }
 
 //
 //    @ApiOperation(value = "启动", notes = "操作")

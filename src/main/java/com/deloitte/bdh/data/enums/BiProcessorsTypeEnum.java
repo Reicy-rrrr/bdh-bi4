@@ -15,11 +15,8 @@ public enum BiProcessorsTypeEnum {
             switch (typeEnum) {
                 case Mysql_8:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
-                    list.add(ProcessorTypeEnum.ExecuteSQL);
-                    list.add(ProcessorTypeEnum.PutDatabaseRecord);
                     break;
                 case Mysql_7:
-                    list.add(ProcessorTypeEnum.ExecuteSQL);
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     break;
                 case File_Csv:
@@ -37,11 +34,12 @@ public enum BiProcessorsTypeEnum {
         }
     },
 
-    INTO_SOURCE("INTO_SOURCE", "输出到数据库") {
+    OUT_SOURCE("OUT_SOURCE", "输出到数据库") {
         @Override
         public List<ProcessorTypeEnum> includeProcessor(String str) {
             List<ProcessorTypeEnum> list = Lists.newArrayList();
-            list.add(ProcessorTypeEnum.PutDatabaseRecord);
+            list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+            list.add(ProcessorTypeEnum.PutSQL);
             return list;
         }
     },

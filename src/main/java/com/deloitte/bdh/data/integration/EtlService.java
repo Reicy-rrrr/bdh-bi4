@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.integration;
 import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
+import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
 import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 
@@ -57,4 +58,13 @@ public interface EtlService {
      * @return
      */
     List<EtlProcessorsResp> getProcessorsList(String modelCode);
+
+
+    /**
+     * 输出主键
+     *
+     * @param
+     * @return
+     */
+    BiProcessors outProcessors(CreateOutProcessorsDto dto) throws Exception;
 }

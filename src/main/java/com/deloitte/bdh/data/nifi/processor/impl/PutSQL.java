@@ -1,9 +1,11 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
 
-import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
-import com.deloitte.bdh.data.model.*;
+import com.deloitte.bdh.data.model.BiEtlDbRef;
+import com.deloitte.bdh.data.model.BiEtlParams;
+import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.nifi.dto.Processor;
 import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
 import com.google.common.collect.Maps;
@@ -12,23 +14,19 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import com.deloitte.bdh.data.nifi.dto.Processor;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("ExecuteSQL")
-public class ExecuteSQL extends AbstractProcessor {
-
-    private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
+@Service("PutSQL")
+public class PutSQL extends AbstractProcessor {
 
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
         //配置数据源的
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("SQL select query", QUERY.replace(NifiProcessUtil.TEMP, MapUtils.getString(context.getReq(), "SQL select query")));
-        properties.put("Database Connection Pooling Service", context.getBiEtlDatabaseInf().getControllerServiceId());
+        properties.put("JDBC Connection Pool", MapUtils.getString(context.getReq(), "JDBC Connection Pool"));
+
         //调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
         config.put("schedulingPeriod", "1 * * * * ?");
@@ -129,7 +127,7 @@ public class ExecuteSQL extends AbstractProcessor {
 
     @Override
     protected ProcessorTypeEnum processorType() {
-        return ProcessorTypeEnum.ExecuteSQL;
+        return ProcessorTypeEnum.PutSQL;
     }
 
 }

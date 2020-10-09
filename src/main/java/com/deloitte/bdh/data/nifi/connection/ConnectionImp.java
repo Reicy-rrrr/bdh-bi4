@@ -114,7 +114,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
 
     private boolean toConnection(Processor processor) {
         //todo 增加 需要自连接的 processor
-        if (ProcessorTypeEnum.PutDatabaseRecord.getType().equals(processor.getType())) {
+        if (ProcessorTypeEnum.PutSQL.getType().equals(processor.getType())) {
             return true;
         }
         return false;

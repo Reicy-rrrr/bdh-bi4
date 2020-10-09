@@ -9,11 +9,11 @@ public enum ProcessorTypeEnum {
     FetchSFTP("FetchSFTP", "SFTP数据源", "org.apache.nifi.processors.standard.FetchSFTP"),
     SelectHiveQL("SelectHiveQL", "HIVE获取信息", "org.apache.nifi.processors.hive.SelectHiveQL"),
     PutHiveQL("PutHiveQL", "HIVE存入信息", "org.apache.nifi.processors.hive.PutHiveQL"),
-    PutDatabaseRecord("PutDatabaseRecord", "存入数据", "org.apache.nifi.processors.standard.PutDatabaseRecord"),
     GetFTP("GetFTP", "FTP获取文件", "org.apache.nifi.processors.standard.GetFTP"),
     UpdateAttribute("UpdateAttribute", "FTP获取文件", "org.apache.nifi.processors.attributes.UpdateAttribute"),
     ConvertRecord("ConvertRecord", "FTP获取文件", "org.apache.nifi.processors.standard.ConvertRecord"),
-
+    PutSQL("PutSQL", "存入数据", "org.apache.nifi.processors.standard.PutSQL"),
+    ConvertJSONToSQL("ConvertJSONToSQL", "Json转Sql", "org.apache.nifi.processors.standard.ConvertJSONToSQL"),
 
     ;
 

@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.integration.impl;
 
 import com.deloitte.bdh.data.model.BiEtlModel;
+import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
 import com.deloitte.bdh.data.nifi.*;
 import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.nifi.dto.Nifi;
@@ -91,13 +92,13 @@ public class EtlServiceImpl implements EtlService {
         processors.setCreateUser(dto.getCreateUser());
         processors.setTenantId(dto.getTenantId());
         processors.setRelSourceId(biEtlDatabaseInf.getId());
+        //todo 待设置坐标
         processorsService.save(processors);
 
         // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
         Map<String, Object> req = Maps.newHashMap();
-        req.put("name", "引入数据:" + System.currentTimeMillis());
         req.put("createUser", dto.getCreateUser());
-        req.put("tableName", dto.getTableName());
+        req.put("SQL select query", dto.getTableName());
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.JOIN_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
         context.setReq(req);
@@ -260,5 +261,56 @@ public class EtlServiceImpl implements EtlService {
         }
         return resps;
 
+    }
+
+    @Override
+    public BiProcessors outProcessors(CreateOutProcessorsDto dto) throws Exception {
+        BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(dto.getSourceId());
+        if (null == biEtlDatabaseInf) {
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
+        }
+        BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 模型");
+        }
+
+        if (EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.joinResource.error : 数据源状态不合法");
+        }
+
+        //新建processors
+        BiProcessors processors = new BiProcessors();
+        processors.setCode(GenerateCodeUtil.genProcessors());
+        processors.setType(BiProcessorsTypeEnum.OUT_SOURCE.getType());
+        processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
+        processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
+        processors.setStatus(YesOrNoEnum.NO.getKey());
+        processors.setEffect(EffectEnum.ENABLE.getKey());
+        processors.setValidate(YesOrNoEnum.NO.getKey());
+        processors.setRelModelCode(biEtlModel.getCode());
+        processors.setVersion("1");
+        processors.setCreateDate(LocalDateTime.now());
+        processors.setCreateUser(dto.getCreateUser());
+        processors.setTenantId(dto.getTenantId());
+        processors.setRelSourceId(biEtlDatabaseInf.getId());
+        //todo 待设置坐标
+        processorsService.save(processors);
+
+        // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("createUser", dto.getCreateUser());
+        req.put("Table Name", dto.getTableName());
+        req.put("JDBC Connection Pool", biEtlDatabaseInf.getControllerServiceId());
+
+        ProcessorContext context = new ProcessorContext();
+        context.setEnumList(BiProcessorsTypeEnum.OUT_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
+        context.setReq(req);
+        context.setMethod(MethodEnum.SAVE);
+        context.setModel(biEtlModel);
+        context.setBiEtlDatabaseInf(biEtlDatabaseInf);
+        context.setProcessors(processors);
+        etlProcess.process(context);
+
+        return context.getProcessors();
     }
 }
