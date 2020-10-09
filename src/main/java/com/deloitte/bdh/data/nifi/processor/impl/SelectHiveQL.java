@@ -63,7 +63,8 @@ public class SelectHiveQL extends AbstractProcessor {
     protected Map<String, Object> rSave(ProcessorContext context) throws Exception {
         Processor processor = context.getTempProcessor();
         processorService.delProcessor(processor.getId());
-        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
+
+        List<BiEtlParams> paramsList = processor.getList();
         if (CollectionUtils.isNotEmpty(paramsList)) {
             List<String> list = paramsList
                     .stream()
@@ -71,19 +72,44 @@ public class SelectHiveQL extends AbstractProcessor {
                     .collect(Collectors.toList());
             paramsService.removeByIds(list);
         }
+
         //删除该组件有关联表的信息
-        etlDbRefService.removeById(context.getTempProcessor().getDbRef().getId());
+        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
     @Override
     protected Map<String, Object> delete(ProcessorContext context) throws Exception {
+        Processor processor = context.getTempProcessor();
+        processorService.delProcessor(processor.getId());
+        List<BiEtlParams> paramsList = processor.getList();
+        if (CollectionUtils.isNotEmpty(paramsList)) {
+            List<String> list = paramsList
+                    .stream()
+                    .map(BiEtlParams::getId)
+                    .collect(Collectors.toList());
+            paramsService.removeByIds(list);
+        }
 
+        //若有关联表的信息，该组件有则删除
+        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
     @Override
     protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
+        List<BiEtlParams> sourceParamList = context.getTempProcessor().getList();
+        //获取删除前的参数 map
+        Map<String, Object> sourceParam = transferToMap(sourceParamList);
+        //新建 删除的 processor
+        BiEtlProcessor biEtlProcessor = createProcessor(context, sourceParam);
+        //新建 processor param
+        createParams(biEtlProcessor, context, sourceParam);
+        //该组件有关联表的信息
+        createDbRef(biEtlProcessor, context);
+
+        //补偿删除必须要调用该方法
+        setTempForRdelete(biEtlProcessor, context);
         return null;
     }
 

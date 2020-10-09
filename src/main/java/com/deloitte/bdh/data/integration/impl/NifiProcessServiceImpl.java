@@ -159,6 +159,40 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
+    public Map<String, Object> createOtherControllerService(Map<String, Object> map) throws Exception {
+        NifiProcessUtil.validateRequestMap(map, "type", "name");
+
+        String id = MapUtils.getString(map, "id");
+        // 数据源创建默认scope为rootGroup的Id
+        if (StringUtil.isEmpty(id)) {
+            Map<String, Object> rootGroupInfos = this.getRootGroupInfo();
+            //权限校验
+            NifiProcessUtil.checkPermissions(rootGroupInfos);
+            Map processGroupFlowMap = MapUtils.getMap(rootGroupInfos, "processGroupFlow");
+            id = MapUtils.getString(processGroupFlowMap, "id");
+        }
+
+        Map<String, Object> param = Maps.newHashMap();
+        // 连接池类型
+        param.put("type", MapUtils.getString(map, "type"));
+        param.put("name", MapUtils.getString(map, "name"));
+        param.put("comments", MapUtils.getString(map, "comments"));
+
+        Map<String, Object> properties = Maps.newHashMap();
+        properties.putAll(map);
+        properties.remove("type");
+        properties.remove("name");
+        properties.remove("comments");
+        param.put("properties", properties);
+
+        Map<String, Object> req = NifiProcessUtil.postParam(param);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_CONTROLLER_SERVICE.getKey(), id);
+        logger.info("NifiProcessServiceImpl.createControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
+        return JsonUtil.string2Obj(response, Map.class);
+    }
+
+    @Override
     public Map<String, Object> runControllerService(String id, String state) throws Exception {
         if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
             throw new RuntimeException("runControllerService 失败:参数不能为空");

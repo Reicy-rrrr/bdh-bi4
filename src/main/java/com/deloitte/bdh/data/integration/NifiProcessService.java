@@ -69,6 +69,13 @@ public interface NifiProcessService {
     Map<String, Object> createControllerService(Map<String, Object> map) throws Exception;
 
     /**
+     * function:创建除DB类型外的 ControllerService
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> createOtherControllerService(Map<String, Object> map) throws Exception;
+
+    /**
      * function:  启动与停止
      *
      * @return Map<String, Object>

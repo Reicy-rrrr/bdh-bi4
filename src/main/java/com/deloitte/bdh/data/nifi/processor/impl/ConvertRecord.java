@@ -1,19 +1,20 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlDbRef;
+import com.deloitte.bdh.data.model.BiEtlDbService;
 import com.deloitte.bdh.data.model.BiEtlParams;
 import com.deloitte.bdh.data.model.BiEtlProcessor;
 import com.deloitte.bdh.data.nifi.dto.Processor;
 import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
-import com.deloitte.bdh.data.service.BiEtlDbRefService;
+import com.deloitte.bdh.data.service.BiEtlDbCSService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,14 +24,34 @@ import java.util.stream.Collectors;
 @Service("ConvertRecord")
 public class ConvertRecord extends AbstractProcessor {
 
-    private BiEtlDbRefService etlDbRefService;
+    @Autowired
+    private BiEtlDbCSService biEtlDbCSService;
 
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
-        // 配置数据源的
+        String dbId = context.getBiEtlDatabaseInf().getId();
+        BiEtlDbService query = new BiEtlDbService();
+        query.setDbId(dbId);
+        List<BiEtlDbService> controllerServices = biEtlDbCSService.list(query);
+
+        // 配置ConvertRecord的属性
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("record-reader", "c8d16044-fdec-1492-ffff-ffffc01758e1");
-        properties.put("record-writer", "c8d1604b-fdec-1492-0000-0000291459c5");
+        if (!CollectionUtils.isEmpty(controllerServices)) {
+            for (BiEtlDbService controllerService : controllerServices) {
+                if (controllerService == null) {
+                    continue;
+                }
+                if ("record-reader".equals(controllerService.getPropertyName())) {
+                    properties.put("record-reader", controllerService.getServiceId());
+                    continue;
+                }
+
+                if ("record-writer".equals(controllerService.getPropertyName())) {
+                    properties.put("record-writer", controllerService.getServiceId());
+                    continue;
+                }
+            }
+        }
 
         // 调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
@@ -63,7 +84,8 @@ public class ConvertRecord extends AbstractProcessor {
     protected Map<String, Object> rSave(ProcessorContext context) throws Exception {
         Processor processor = context.getTempProcessor();
         processorService.delProcessor(processor.getId());
-        List<BiEtlParams> paramsList = paramsService.list(new LambdaQueryWrapper<BiEtlParams>().eq(BiEtlParams::getRelCode, processor.getCode()));
+
+        List<BiEtlParams> paramsList = processor.getList();
         if (CollectionUtils.isNotEmpty(paramsList)) {
             List<String> list = paramsList
                     .stream()
@@ -71,19 +93,44 @@ public class ConvertRecord extends AbstractProcessor {
                     .collect(Collectors.toList());
             paramsService.removeByIds(list);
         }
+
         //删除该组件有关联表的信息
-        etlDbRefService.removeById(context.getTempProcessor().getDbRef().getId());
+        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
     @Override
     protected Map<String, Object> delete(ProcessorContext context) throws Exception {
+        Processor processor = context.getTempProcessor();
+        processorService.delProcessor(processor.getId());
+        List<BiEtlParams> paramsList = processor.getList();
+        if (CollectionUtils.isNotEmpty(paramsList)) {
+            List<String> list = paramsList
+                    .stream()
+                    .map(BiEtlParams::getId)
+                    .collect(Collectors.toList());
+            paramsService.removeByIds(list);
+        }
 
+        //若有关联表的信息，该组件有则删除
+        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
     @Override
     protected Map<String, Object> rDelete(ProcessorContext context) throws Exception {
+        List<BiEtlParams> sourceParamList = context.getTempProcessor().getList();
+        //获取删除前的参数 map
+        Map<String, Object> sourceParam = transferToMap(sourceParamList);
+        //新建 删除的 processor
+        BiEtlProcessor biEtlProcessor = createProcessor(context, sourceParam);
+        //新建 processor param
+        createParams(biEtlProcessor, context, sourceParam);
+        //该组件有关联表的信息
+        createDbRef(biEtlProcessor, context);
+
+        //补偿删除必须要调用该方法
+        setTempForRdelete(biEtlProcessor, context);
         return null;
     }
 
