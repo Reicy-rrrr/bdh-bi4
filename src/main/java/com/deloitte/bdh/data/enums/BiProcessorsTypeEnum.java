@@ -71,6 +71,16 @@ public enum BiProcessorsTypeEnum {
         throw new RuntimeException("未找到对应的目标");
     }
 
+    public static BiProcessorsTypeEnum getEnum(String type) {
+        BiProcessorsTypeEnum[] enums = BiProcessorsTypeEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(type, enums[i].getType())) {
+                return enums[i];
+            }
+        }
+        throw new RuntimeException("未找到对应的目标");
+    }
+
     public String getType() {
         return type;
     }

@@ -125,7 +125,8 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
             case DELETE:
                 if (null == context.getBiEtlDatabaseInf() || CollectionUtils.isEmpty(context.getEnumList())
                         || null == context.getProcessors() || CollectionUtils.isEmpty(context.getProcessorList())
-                        || CollectionUtils.isEmpty(context.getConnectionList())) {
+//                        || CollectionUtils.isEmpty(context.getConnectionList())
+                ) {
                     throw new RuntimeException("校验失败:参数不合法");
                 }
                 break;

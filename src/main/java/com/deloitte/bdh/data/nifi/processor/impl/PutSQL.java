@@ -31,6 +31,7 @@ public class PutSQL extends AbstractProcessor {
         Map<String, Object> config = Maps.newHashMap();
         config.put("schedulingPeriod", "1 * * * * ?");
         config.put("schedulingStrategy", "CRON_DRIVEN");
+        config.put("autoTerminatedRelationships", new String[]{"success"});
         config.put("properties", properties);
 
         //processor 公共的

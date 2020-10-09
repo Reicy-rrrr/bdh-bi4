@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.*;
 import com.deloitte.bdh.data.dao.bi.BiEtlConnectionMapper;
@@ -77,6 +78,9 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         destination.put("type", "PROCESSOR");
 
         List<String> selectedRelationships = JsonUtil.string2Obj(fromProcessor.getRelationships(), List.class);
+        if (ProcessorTypeEnum.PutSQL.getType().equals(fromProcessor.getType())) {
+            selectedRelationships.remove("success");
+        }
 
         Map<String, Object> component = Maps.newHashMap();
         component.put("source", source);

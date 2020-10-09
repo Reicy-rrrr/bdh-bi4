@@ -144,7 +144,7 @@ public class EtlServiceImpl implements EtlService {
         req.put("createUser", "lw");
 
         ProcessorContext context = new ProcessorContext();
-        context.setEnumList(BiProcessorsTypeEnum.JOIN_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
+        context.setEnumList(BiProcessorsTypeEnum.getEnum(processors.getType()).includeProcessor(biEtlDatabaseInf.getType()));
         context.setMethod(MethodEnum.DELETE);
         context.setModel(biEtlModel);
         context.setBiEtlDatabaseInf(biEtlDatabaseInf);
