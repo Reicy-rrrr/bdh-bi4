@@ -93,11 +93,23 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             case File_Excel:
                 inf = createResourceFromFile(dto);
                 break;
+            case Hive2:
+                inf = createResourceFromHive(dto);
+                break;
+            case Hive:
+                inf = createResourceFromHive(dto);
+                break;
+            case SQLServer:
+                inf = createResourceFromDB(dto);
+                break;
+            case Oracle:
+                inf = createResourceFromDB(dto);
+                break;
             case Mysql_8:
-                inf = createResourceFromMysql(dto);
+                inf = createResourceFromDB(dto);
                 break;
             case Mysql_7:
-                inf = createResourceFromMysql(dto);
+                inf = createResourceFromDB(dto);
                 break;
             default:
                 logger.error("未找到对应的数据模型的类型!");
@@ -251,8 +263,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         // 调用nifi 创建 AvroSchemaRegistry
         Map<String, Object> createRegistryParams = Maps.newHashMap();
-        createRegistryParams.put("type", "org.apache.nifi.schemaregistry.services.AvroSchemaRegistry");
-        createRegistryParams.put("name", inf.getName() + "_AvroSchemaRegistry");
+        createRegistryParams.put("type", PoolTypeEnum.AvroSchemaRegistry.getKey());
+        createRegistryParams.put("name", inf.getName() + PoolTypeEnum.AvroSchemaRegistry.getvalue());
         createRegistryParams.put("avro-reg-validated-field-names", "true");
         // TODO 需要添加json模板
         Map<String, Object> registryMap = nifiProcessService.createOtherControllerService(createRegistryParams);
@@ -269,8 +281,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         // 调用nifi 创建 CSVReader
         Map<String, Object> createReaderParams = Maps.newHashMap();
-        createReaderParams.put("type", "org.apache.nifi.csv.CSVReader");
-        createReaderParams.put("name", inf.getName() + "_CSVReader");
+        createReaderParams.put("type", PoolTypeEnum.CSVReader.getKey());
+        createReaderParams.put("name", inf.getName() + PoolTypeEnum.CSVReader.getvalue());
         createReaderParams.put("schema-access-strategy", "schema-name");
         createReaderParams.put("schema-registry", registryId);
         Map<String, Object> readerMap = nifiProcessService.createOtherControllerService(createReaderParams);
@@ -286,8 +298,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         // 调用nifi 创建 JsonRecordSetWriter
         Map<String, Object> createWriterParams = Maps.newHashMap();
-        createWriterParams.put("type", "org.apache.nifi.json.JsonRecordSetWriter");
-        createWriterParams.put("name", inf.getName() + "_JsonRecordSetWriter");
+        createWriterParams.put("type", PoolTypeEnum.JsonRecordSetWriter.getKey());
+        createWriterParams.put("name", inf.getName() + PoolTypeEnum.JsonRecordSetWriter.getvalue());
         createWriterParams.put("schema-access-strategy", "schema-name");
         createWriterParams.put("schema-registry", registryId);
         Map<String, Object> writerMap = nifiProcessService.createOtherControllerService(createWriterParams);
@@ -303,7 +315,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return inf;
     }
 
-    private BiEtlDatabaseInf createResourceFromMysql(CreateResourcesDto dto) throws Exception {
+    private BiEtlDatabaseInf createResourceFromDB(CreateResourcesDto dto) throws Exception {
         if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
@@ -317,8 +329,12 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         //todo 应该读取配置
         if (SourceTypeEnum.Mysql_8.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
-        } else {
+        } else if (SourceTypeEnum.Mysql_7.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
+        } else if (SourceTypeEnum.Oracle.getType().equals(dto.getType())) {
+            inf.setDriverLocations("/usr/java/jdk1.8.0_171/ojdbc8-19.7.0.0.jar");
+        } else if (SourceTypeEnum.SQLServer.getType().equals(dto.getType())) {
+            inf.setDriverLocations("/usr/java/jdk1.8.0_171/sqljdbc4-4.0.jar");
         }
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
@@ -345,4 +361,38 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return inf;
     }
 
+    private BiEtlDatabaseInf createResourceFromHive(CreateResourcesDto dto) throws Exception {
+        if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
+            throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
+        }
+
+        BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
+        BeanUtils.copyProperties(dto, inf);
+        inf.setPoolType(PoolTypeEnum.HiveConnectionPool.getKey());
+        inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
+        inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
+
+        inf.setEffect(EffectEnum.DISABLE.getKey());
+        inf.setCreateDate(LocalDateTime.now());
+        inf.setModifiedDate(LocalDateTime.now());
+
+        // 调用nifi 创建 controllerService
+        Map<String, Object> createParams = Maps.newHashMap();
+        // 连接池类型
+        createParams.put("type", inf.getPoolType());
+        createParams.put("name", inf.getName());
+        createParams.put("comments", inf.getComments());
+
+        createParams.put("hive-db-connect-url", inf.getDbUser());
+        createParams.put("hive-db-user", inf.getDbUser());
+        createParams.put("hive-db-password", inf.getDbPassword());
+        Map<String, Object> sourceMap = nifiProcessService.createOtherControllerService(createParams);
+
+        //nifi 返回后设置补充dto
+        inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+        inf.setControllerServiceId(MapUtils.getString(sourceMap, "id"));
+        inf.setRootGroupId(MapUtils.getString(sourceMap, "parentGroupId"));
+        biEtlDatabaseInfMapper.insert(inf);
+        return inf;
+    }
 }
