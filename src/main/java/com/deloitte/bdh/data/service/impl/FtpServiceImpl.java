@@ -2,19 +2,31 @@ package com.deloitte.bdh.data.service.impl;
 
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ExcelUitils;
 import com.deloitte.bdh.common.util.FtpUtil;
+import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.model.resp.FtpUploadResult;
+import com.deloitte.bdh.data.model.resp.JsonTemplate;
+import com.deloitte.bdh.data.model.resp.JsonTemplateField;
 import com.deloitte.bdh.data.service.FtpService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import static jdk.xml.internal.JdkXmlUtils.getValue;
 
 
 @Service
@@ -97,11 +109,112 @@ public class FtpServiceImpl implements FtpService {
                 logger.warn("文件上传到ftp服务器失败");
                 throw new BizException("文件上传到ftp服务器失败");
             }
+            file.getInputStream().close();
         } catch (IOException e) {
             logger.error("文件上传到ftp服务器失败", e);
             throw new BizException("文件上传到ftp服务器失败");
         }
-        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, finalName);
+
+        JsonTemplate jsonTemplate = initJsonTemplate(file);
+        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, finalName, jsonTemplate);
+    }
+
+    /**
+     * 根据上传文件初始化文件转换JSON格式模板
+     *
+     * @param file 上传文件
+     * @return com.deloitte.bdh.data.model.resp.JsonTemplate
+     */
+    private JsonTemplate initJsonTemplate(MultipartFile file) {
+        String fileName = file.getOriginalFilename().toLowerCase();
+        if (fileName.endsWith(".xls") || fileName.endsWith(".xlsx")) {
+            return initJsonTemplateByExcel(file);
+        } else if (fileName.endsWith(".csv")) {
+            return initJsonTemplateByCsv(file);
+        }
+        return null;
+    }
+
+    /**
+     * 根据Excel文件初始化文件转换JSON格式模板
+     *
+     * @param file Excel类型文件
+     * @return com.deloitte.bdh.data.model.resp.JsonTemplate
+     */
+    private JsonTemplate initJsonTemplateByExcel(MultipartFile file) {
+        JsonTemplate jsonTemplate = new JsonTemplate();
+        List<JsonTemplateField> fields = new ArrayList();
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            if (workbook == null) {
+                logger.error("初始化JSON转换模板失败，上传文件内容为空！");
+                throw new BizException("初始化JSON转换模板失败，上传文件内容不能为空！");
+            }
+            Sheet dataSheet = workbook.getSheetAt(0);
+            // poi 行号从0开始
+            if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
+                logger.error("初始化JSON转换模板失败，上传文件内容为空！");
+                throw new BizException("初始化JSON转换模板失败，上传文件内容不能为空！");
+            }
+
+            Row headerRow = dataSheet.getRow(0);
+            int lastCellNum = 0;
+            if (headerRow == null || (lastCellNum = headerRow.getLastCellNum()) <= 1) {
+                logger.error("初始化JSON转换模板失败，上传文件首行内容为空！");
+                throw new BizException("初始化JSON转换模板失败，上传文件首行内容不能为空！");
+            }
+
+            for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
+                Cell cell = headerRow.getCell(cellIndex);
+                if (cell == null) {
+                    cell = headerRow.createCell(cellIndex);
+                }
+                String field = ExcelUitils.getCellStringValue(cell);
+                if (StringUtils.isBlank(field)) {
+                    logger.error("初始化JSON转换模板失败，上传文件首行单元格[{}]内容为空！", cell.getAddress());
+                    throw new BizException("初始化JSON转换模板失败，上传文件首行单元格[" + cell.getAddress() + "]内容为空！");
+                }
+                JsonTemplateField templateField = new JsonTemplateField(field);
+                fields.add(templateField);
+            }
+            jsonTemplate.setFields(fields);
+        } catch (IOException e) {
+            logger.error("初始化JSON转换模板失败，程序运行错误！", e);
+            throw new BizException("初始化JSON转换模板失败，程序运行错误！");
+        } catch (InvalidFormatException e) {
+            logger.error("初始化JSON转换模板失败，程序运行错误！", e);
+            throw new BizException("初始化JSON转换模板失败，程序运行错误！");
+        }
+        return jsonTemplate;
+    }
+
+    /**
+     * 根据CSV文件初始化文件转换JSON格式模板
+     *
+     * @param file CSV类型文件
+     * @return com.deloitte.bdh.data.model.resp.JsonTemplate
+     */
+    private JsonTemplate initJsonTemplateByCsv(MultipartFile file) {
+        JsonTemplate jsonTemplate = new JsonTemplate();
+        List<JsonTemplateField> fields = new ArrayList();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), "GBK"))) {
+            // 第一行信息，为标题信息
+            String headerLine = reader.readLine();
+            if (StringUtils.isBlank(headerLine)) {
+                logger.error("初始化JSON转换模板失败，上传文件首行内容为空！");
+                throw new BizException("初始化JSON转换模板失败，上传文件首行内容为空！");
+            }
+
+            String[] items = headerLine.split(",");
+            for (String field : items) {
+                JsonTemplateField templateField = new JsonTemplateField(field);
+                fields.add(templateField);
+            }
+        } catch (Exception e) {
+            logger.error("初始化JSON转换模板失败，程序运行错误！", e);
+            throw new BizException("初始化JSON转换模板失败，程序运行错误！");
+        }
+        jsonTemplate.setFields(fields);
+        return jsonTemplate;
     }
 
     /**

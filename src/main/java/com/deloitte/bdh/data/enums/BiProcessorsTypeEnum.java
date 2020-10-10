@@ -19,6 +19,15 @@ public enum BiProcessorsTypeEnum {
                 case Mysql_7:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     break;
+                case Oracle:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    break;
+                case SQLServer:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    break;
+                case Hive:
+                    list.add(ProcessorTypeEnum.SelectHiveQL);
+                    break;
                 case File_Csv:
                     list.add(ProcessorTypeEnum.GetFTP);
                     list.add(ProcessorTypeEnum.UpdateAttribute);
@@ -26,6 +35,9 @@ public enum BiProcessorsTypeEnum {
                     break;
                 case File_Excel:
                     list.add(ProcessorTypeEnum.GetFTP);
+                    list.add(ProcessorTypeEnum.ConvertExcelToCSVProcessor);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
+                    list.add(ProcessorTypeEnum.ConvertRecord);
                     break;
                 default:
                     list.add(ProcessorTypeEnum.SelectHiveQL);

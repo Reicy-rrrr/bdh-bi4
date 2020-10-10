@@ -14,6 +14,7 @@ public enum ProcessorTypeEnum {
     ConvertRecord("ConvertRecord", "FTP获取文件", "org.apache.nifi.processors.standard.ConvertRecord"),
     PutSQL("PutSQL", "存入数据", "org.apache.nifi.processors.standard.PutSQL"),
     ConvertJSONToSQL("ConvertJSONToSQL", "Json转Sql", "org.apache.nifi.processors.standard.ConvertJSONToSQL"),
+    ConvertExcelToCSVProcessor("ConvertExcelToCSVProcessor", "Excel文件转Csv文件", "org.apache.nifi.processors.poi.ConvertExcelToCSVProcessor"),
 
     ;
 

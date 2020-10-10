@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -140,6 +141,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         createDto.setAddress(uploadResult.getFilePath());
         createDto.setDbName(uploadResult.getFileName());
         createDto.setType(SourceTypeEnum.File_Csv.getType());
+        createDto.setComments(JSON.toJSONString(uploadResult.getJsonTemplate()));
         BiEtlDatabaseInf inf = createResource(createDto);
         return inf;
     }
@@ -246,6 +248,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) throws Exception {
+        String jsonTemplate = dto.getComments();
+        dto.setComments(null);
+
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
@@ -264,9 +269,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 调用nifi 创建 AvroSchemaRegistry
         Map<String, Object> createRegistryParams = Maps.newHashMap();
         createRegistryParams.put("type", PoolTypeEnum.AvroSchemaRegistry.getKey());
-        createRegistryParams.put("name", inf.getName() + PoolTypeEnum.AvroSchemaRegistry.getvalue());
+        createRegistryParams.put("name", PoolTypeEnum.AvroSchemaRegistry.getvalue() + System.currentTimeMillis());
         createRegistryParams.put("avro-reg-validated-field-names", "true");
-        // TODO 需要添加json模板
+        createRegistryParams.put("records", jsonTemplate);
         Map<String, Object> registryMap = nifiProcessService.createOtherControllerService(createRegistryParams);
 
         String registryId = MapUtils.getString(registryMap, "id");
@@ -282,9 +287,14 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 调用nifi 创建 CSVReader
         Map<String, Object> createReaderParams = Maps.newHashMap();
         createReaderParams.put("type", PoolTypeEnum.CSVReader.getKey());
-        createReaderParams.put("name", inf.getName() + PoolTypeEnum.CSVReader.getvalue());
+        createReaderParams.put("name", PoolTypeEnum.CSVReader.getvalue() + System.currentTimeMillis());
         createReaderParams.put("schema-access-strategy", "schema-name");
         createReaderParams.put("schema-registry", registryId);
+        // Treat First Line as Header
+        createReaderParams.put("Skip Header Line", "true");
+        // Ignore CSV Header Column Names
+        createReaderParams.put("ignore-csv-header", "false");
+
         Map<String, Object> readerMap = nifiProcessService.createOtherControllerService(createReaderParams);
 
         BiEtlDbService readerCS = new BiEtlDbService();
@@ -299,7 +309,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 调用nifi 创建 JsonRecordSetWriter
         Map<String, Object> createWriterParams = Maps.newHashMap();
         createWriterParams.put("type", PoolTypeEnum.JsonRecordSetWriter.getKey());
-        createWriterParams.put("name", inf.getName() + PoolTypeEnum.JsonRecordSetWriter.getvalue());
+        createWriterParams.put("name", PoolTypeEnum.JsonRecordSetWriter.getvalue() + System.currentTimeMillis());
         createWriterParams.put("schema-access-strategy", "schema-name");
         createWriterParams.put("schema-registry", registryId);
         Map<String, Object> writerMap = nifiProcessService.createOtherControllerService(createWriterParams);

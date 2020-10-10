@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
-
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
@@ -17,18 +16,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("SelectHiveQL")
-public class SelectHiveQL extends AbstractProcessor {
-
+/**
+ * Excel文件转换CSV文件Processor
+ */
+@Service("ConvertExcelToCSVProcessor")
+public class ConvertExcelToCSVProcessor extends AbstractProcessor {
 
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
-        // 配置数据源的
+        // 配置ConvertExcelToCSVProcessor的属性
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("Hive Database Connection Pooling Service", context.getBiEtlDatabaseInf().getControllerServiceId());
-        properties.put("HiveQL Pre-Query", "pre");
-        properties.put("HiveQL Select Query", "select");
-        properties.put("HiveQL Post-Query", "post");
+        // Number of Rows to Skip
+        properties.put("excel-extract-first-row", "0");
 
         // 调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
@@ -39,7 +38,7 @@ public class SelectHiveQL extends AbstractProcessor {
         // processor 公共的
         Map<String, Object> component = Maps.newHashMap();
         component.put("name", processorType().getTypeDesc() + System.currentTimeMillis());
-        component.put("type", ProcessorTypeEnum.SelectHiveQL.getvalue());
+        component.put("type", ProcessorTypeEnum.ConvertExcelToCSVProcessor.getvalue());
         component.put("config", config);
 
         //新建 processor
@@ -111,7 +110,6 @@ public class SelectHiveQL extends AbstractProcessor {
         return null;
     }
 
-
     @Override
     public Map<String, Object> update(ProcessorContext context) throws Exception {
         return null;
@@ -125,11 +123,11 @@ public class SelectHiveQL extends AbstractProcessor {
     @Override
     public Map<String, Object> validate(ProcessorContext context) throws Exception {
         return null;
+
     }
 
     @Override
     protected ProcessorTypeEnum processorType() {
-        return ProcessorTypeEnum.SelectHiveQL;
+        return ProcessorTypeEnum.ConvertExcelToCSVProcessor;
     }
-
 }

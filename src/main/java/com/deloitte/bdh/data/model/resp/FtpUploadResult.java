@@ -3,11 +3,13 @@ package com.deloitte.bdh.data.model.resp;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * ftp文件上传结果
  */
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class FtpUploadResult {
 
@@ -43,4 +45,10 @@ public class FtpUploadResult {
      */
     @ApiModelProperty(value = "文件名称", example = "测试.csv", required = true)
     private String fileName;
+
+    /**
+     * 文件转化json模板
+     */
+    @ApiModelProperty(value = "文件转化json模板", required = true)
+    private JsonTemplate jsonTemplate;
 }
