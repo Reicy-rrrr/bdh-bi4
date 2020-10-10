@@ -3,7 +3,10 @@ package com.deloitte.bdh.data.nifi.processor.impl;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
-import com.deloitte.bdh.data.model.*;
+import com.deloitte.bdh.data.model.BiEtlDbRef;
+import com.deloitte.bdh.data.model.BiEtlParams;
+import com.deloitte.bdh.data.model.BiEtlProcessor;
+import com.deloitte.bdh.data.nifi.dto.Processor;
 import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
 import com.google.common.collect.Maps;
@@ -12,23 +15,20 @@ import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import com.deloitte.bdh.data.nifi.dto.Processor;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("ExecuteSQL")
-public class ExecuteSQL extends AbstractProcessor {
+@Service("ConvertAvroToJSON")
+public class ConvertAvroToJSON extends AbstractProcessor {
 
-    private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
 
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
         //配置数据源的
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("SQL select query", QUERY.replace(NifiProcessUtil.TEMP, MapUtils.getString(context.getReq(), "SQL select query")));
-        properties.put("Database Connection Pooling Service", context.getBiEtlDatabaseInf().getControllerServiceId());
+        properties.put("JSON container options", "array");
+        properties.put("Wrap Single Record", "true");
         //调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
         config.put("schedulingPeriod", "1 * * * * ?");
@@ -45,13 +45,10 @@ public class ExecuteSQL extends AbstractProcessor {
         BiEtlProcessor biEtlProcessor = super.createProcessor(context, component);
         // 新建 processor param
         List<BiEtlParams> paramsList = super.createParams(biEtlProcessor, context, component);
-        //该组件有关联表的信息
-        BiEtlDbRef dbRef = super.createDbRef(biEtlProcessor, context);
 
         Processor processor = new Processor();
         BeanUtils.copyProperties(biEtlProcessor, processor);
         processor.setList(paramsList);
-        processor.setDbRef(dbRef);
         context.addProcessorList(processor);
         return null;
     }
@@ -69,9 +66,6 @@ public class ExecuteSQL extends AbstractProcessor {
                     .collect(Collectors.toList());
             paramsService.removeByIds(list);
         }
-
-        //删除该组件有关联表的信息
-        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
@@ -87,9 +81,6 @@ public class ExecuteSQL extends AbstractProcessor {
                     .collect(Collectors.toList());
             paramsService.removeByIds(list);
         }
-
-        //若有关联表的信息，该组件有则删除
-        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
@@ -102,9 +93,6 @@ public class ExecuteSQL extends AbstractProcessor {
         BiEtlProcessor biEtlProcessor = createProcessor(context, sourceParam);
         //新建 processor param
         createParams(biEtlProcessor, context, sourceParam);
-        //该组件有关联表的信息
-        createDbRef(biEtlProcessor, context);
-
         //补偿删除必须要调用该方法
         setTempForRdelete(biEtlProcessor, context);
         return null;
@@ -129,7 +117,7 @@ public class ExecuteSQL extends AbstractProcessor {
 
     @Override
     protected ProcessorTypeEnum processorType() {
-        return ProcessorTypeEnum.ExecuteSQL;
+        return ProcessorTypeEnum.ConvertAvroToJSON;
     }
 
 }

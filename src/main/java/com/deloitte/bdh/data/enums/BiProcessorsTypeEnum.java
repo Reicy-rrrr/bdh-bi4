@@ -15,9 +15,11 @@ public enum BiProcessorsTypeEnum {
             switch (typeEnum) {
                 case Mysql_8:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
                     break;
                 case Mysql_7:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
                     break;
                 case Oracle:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
@@ -78,6 +80,16 @@ public enum BiProcessorsTypeEnum {
         for (int i = 0; i < enums.length; i++) {
             if (StringUtils.equals(type, enums[i].getType())) {
                 return enums[i].getTypeDesc();
+            }
+        }
+        throw new RuntimeException("未找到对应的目标");
+    }
+
+    public static BiProcessorsTypeEnum getEnum(String type) {
+        BiProcessorsTypeEnum[] enums = BiProcessorsTypeEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(type, enums[i].getType())) {
+                return enums[i];
             }
         }
         throw new RuntimeException("未找到对应的目标");

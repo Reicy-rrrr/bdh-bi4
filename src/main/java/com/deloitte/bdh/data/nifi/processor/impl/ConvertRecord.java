@@ -62,7 +62,7 @@ public class ConvertRecord extends AbstractProcessor {
         // processor 公共的
         Map<String, Object> component = Maps.newHashMap();
         component.put("name", processorType().getTypeDesc() + System.currentTimeMillis());
-        component.put("type", ProcessorTypeEnum.ConvertRecord.getvalue());
+        component.put("type", processorType().getvalue());
         component.put("config", config);
 
         //新建 processor

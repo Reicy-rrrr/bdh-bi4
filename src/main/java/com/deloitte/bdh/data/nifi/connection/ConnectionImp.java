@@ -25,7 +25,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
         for (int i = 0; i < processorList.size(); i++) {
             String fromCode, toCode;
             if (i == processorList.size() - 1) {
-                if (!toConnection(processorList.get(i))) {
+                if (toConnection(processorList.get(i))) {
                     continue;
                 }
                 fromCode = processorList.get(i).getCode();
@@ -45,7 +45,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
     public Map<String, Object> rSave(ProcessorContext context) throws Exception {
         List<BiEtlConnection> connectionList = context.getConnectionList();
         for (BiEtlConnection connection : connectionList) {
-            etlConnectionService.dropConnection(connection);
+//            etlConnectionService.dropConnection(connection);
             etlConnectionService.delConnection(connection);
         }
         return null;
@@ -57,7 +57,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
         List<BiEtlConnection> connectionList = context.getConnectionList();
         if (CollectionUtils.isNotEmpty(connectionList)) {
             for (BiEtlConnection connection : connectionList) {
-                etlConnectionService.dropConnection(connection);
+//                etlConnectionService.dropConnection(connection);
                 etlConnectionService.delConnection(connection);
                 context.getHasDelConnectionList().add(connection);
             }
@@ -73,7 +73,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
             for (int i = 0; i < newProcessorList.size(); i++) {
                 String fromCode, toCode;
                 if (i == newProcessorList.size() - 1) {
-                    if (!toConnection(newProcessorList.get(i))) {
+                    if (toConnection(newProcessorList.get(i))) {
                         continue;
                     }
                     fromCode = newProcessorList.get(i).getCode();
@@ -115,8 +115,8 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
     private boolean toConnection(Processor processor) {
         //todo 增加 需要自连接的 processor，目前只有 putsql ?
         if (ProcessorTypeEnum.PutSQL.getType().equals(processor.getType())) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }

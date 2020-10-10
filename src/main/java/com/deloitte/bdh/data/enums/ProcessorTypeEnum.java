@@ -5,13 +5,14 @@ import org.apache.commons.lang3.StringUtils;
 public enum ProcessorTypeEnum {
 
     ExecuteSQL("ExecuteSQL", "数据源获取信息", "org.apache.nifi.processors.standard.ExecuteSQL"),
+    ConvertAvroToJSON("ConvertAvroToJSON", "avro转json", "org.apache.nifi.processors.avro.ConvertAvroToJSON"),
     FetchFTP("FetchFTP", "FTP获取文件", "org.apache.nifi.processors.standard.FetchFTP"),
     FetchSFTP("FetchSFTP", "SFTP数据源", "org.apache.nifi.processors.standard.FetchSFTP"),
     SelectHiveQL("SelectHiveQL", "HIVE获取信息", "org.apache.nifi.processors.hive.SelectHiveQL"),
     PutHiveQL("PutHiveQL", "HIVE存入信息", "org.apache.nifi.processors.hive.PutHiveQL"),
     GetFTP("GetFTP", "FTP获取文件", "org.apache.nifi.processors.standard.GetFTP"),
-    UpdateAttribute("UpdateAttribute", "FTP获取文件", "org.apache.nifi.processors.attributes.UpdateAttribute"),
-    ConvertRecord("ConvertRecord", "FTP获取文件", "org.apache.nifi.processors.standard.ConvertRecord"),
+    UpdateAttribute("UpdateAttribute", "UpdateAttribute", "org.apache.nifi.processors.attributes.UpdateAttribute"),
+    ConvertRecord("ConvertRecord", "ConvertRecord", "org.apache.nifi.processors.standard.ConvertRecord"),
     PutSQL("PutSQL", "存入数据", "org.apache.nifi.processors.standard.PutSQL"),
     ConvertJSONToSQL("ConvertJSONToSQL", "Json转Sql", "org.apache.nifi.processors.standard.ConvertJSONToSQL"),
     ConvertExcelToCSVProcessor("ConvertExcelToCSVProcessor", "Excel文件转Csv文件", "org.apache.nifi.processors.poi.ConvertExcelToCSVProcessor"),
