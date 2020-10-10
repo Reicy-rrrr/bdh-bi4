@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum ProcessorTypeEnum {
 
     ExecuteSQL("ExecuteSQL", "数据源获取信息", "org.apache.nifi.processors.standard.ExecuteSQL"),
+    ConvertAvroToJSON("ConvertAvroToJSON", "avro转json", "org.apache.nifi.processors.avro.ConvertAvroToJSON"),
     FetchFTP("FetchFTP", "FTP获取文件", "org.apache.nifi.processors.standard.FetchFTP"),
     FetchSFTP("FetchSFTP", "SFTP数据源", "org.apache.nifi.processors.standard.FetchSFTP"),
     SelectHiveQL("SelectHiveQL", "HIVE获取信息", "org.apache.nifi.processors.hive.SelectHiveQL"),

@@ -15,9 +15,11 @@ public enum BiProcessorsTypeEnum {
             switch (typeEnum) {
                 case Mysql_8:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
                     break;
                 case Mysql_7:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
                     break;
                 case File_Csv:
                     list.add(ProcessorTypeEnum.GetFTP);
