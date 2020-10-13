@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.model.resp;
 
+import com.deloitte.bdh.data.model.BiEtlDbFile;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * ftp文件上传结果
+ *
+ * @author chenghzhang
  */
 @Data
 @NoArgsConstructor
@@ -49,6 +52,12 @@ public class FtpUploadResult {
     /**
      * 文件转化json模板
      */
-    @ApiModelProperty(value = "文件转化json模板", required = true)
-    private JsonTemplate jsonTemplate;
+/*    @ApiModelProperty(value = "文件转化json模板", required = true)
+    private JsonTemplate jsonTemplate;*/
+
+    /**
+     * 文件信息
+     */
+    @ApiModelProperty(value = "文件信息", required = true)
+    private BiEtlDbFile fileInfo;
 }

@@ -1,27 +1,27 @@
 package com.deloitte.bdh.data.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.enums.EffectEnum;
+import com.deloitte.bdh.data.enums.FileTypeEnum;
 import com.deloitte.bdh.data.enums.PoolTypeEnum;
 import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.model.BiEtlDbService;
+import com.deloitte.bdh.data.model.BiEtlDbFile;
 import com.deloitte.bdh.data.model.request.*;
+import com.deloitte.bdh.data.model.resp.FilePreReadResult;
 import com.deloitte.bdh.data.model.resp.FtpUploadResult;
-import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
-import com.deloitte.bdh.data.service.BiEtlDbCSService;
-import com.deloitte.bdh.data.service.FtpService;
+import com.deloitte.bdh.data.service.*;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
@@ -34,7 +34,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +62,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private FtpService ftpService;
 
     @Autowired
+    private FileReadService fileReadService;
+
+    @Autowired
     private BiEtlDbCSService biEtlDbCSService;
+
+    @Autowired
+    private BiEtlDbFileService biEtlDbFileService;
 
     @Override
     public PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto) {
@@ -120,7 +128,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public BiEtlDatabaseInf uploadResource(UploadResourcesDto dto) throws Exception {
+    public FilePreReadResult uploadFileResource(FileResourcesUploadDto dto) throws Exception {
         MultipartFile file = dto.getFile();
         // 租户id
         String tenantId = dto.getTenantId();
@@ -140,10 +148,121 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 暂时将文件名称存放到数据库名称字段，文件路径存放到地址
         createDto.setAddress(uploadResult.getFilePath());
         createDto.setDbName(uploadResult.getFileName());
-        createDto.setType(SourceTypeEnum.File_Csv.getType());
-        createDto.setComments(JSON.toJSONString(uploadResult.getJsonTemplate()));
+        if (file.getOriginalFilename().toLowerCase().endsWith(FileTypeEnum.Csv.getValue())) {
+            createDto.setType(SourceTypeEnum.File_Csv.getType());
+        } else {
+            createDto.setType(SourceTypeEnum.File_Excel.getType());
+        }
+
         BiEtlDatabaseInf inf = createResource(createDto);
-        return inf;
+
+        // 保存上传的文件信息
+        BiEtlDbFile fileInfo = uploadResult.getFileInfo();
+        fileInfo.setDbId(inf.getId());
+        fileInfo.setIp(inf.getIp());
+        fileInfo.setCreateUser(inf.getCreateUser());
+        fileInfo.setCreateDate(inf.getCreateDate());
+        // TODO:设置过期时间
+        fileInfo.setExpireDate(inf.getCreateDate());
+        biEtlDbFileService.save(fileInfo);
+
+        // 初始化mongodb集合名称
+        String collectionName = initMongoCollectionName(inf);
+        // 将mongodb集合名称暂存到数据源的数据库名称字段中
+        inf.setDbName(collectionName);
+        this.updateById(inf);
+        createDto.setDbName(collectionName);
+        FilePreReadResult readResult = fileReadService.preRead(file);
+        readResult.setDbId(inf.getId());
+        readResult.setFileId(fileInfo.getId());
+        return readResult;
+    }
+
+    @Override
+    public FilePreReadResult addUploadFileResource(FileResourcesAddUploadDto dto) throws Exception {
+        MultipartFile file = dto.getFile();
+        // 租户id
+        String tenantId = dto.getTenantId();
+        if (StringUtils.isBlank(tenantId)) {
+            throw new BizException("租户id不能为空");
+        }
+        String dbId = dto.getDbId();
+        if (StringUtils.isBlank(dbId)) {
+            throw new BizException("数据源id不能为空！");
+        }
+        BiEtlDatabaseInf database = this.getById(dbId);
+        if (database == null) {
+            logger.error("未查询到数据源，错误的id[{}]", dbId);
+            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
+        }
+
+        SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
+        if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
+            logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
+            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
+        }
+
+        FtpUploadResult uploadResult = ftpService.uploadExcelFile(file, tenantId);
+        if (uploadResult == null) {
+            throw new BizException("文件上传ftp失败！");
+        }
+        // 保存上传的文件信息
+        BiEtlDbFile fileInfo = uploadResult.getFileInfo();
+        fileInfo.setDbId(database.getId());
+        fileInfo.setCreateUser(dto.getCreateUser());
+        fileInfo.setCreateDate(LocalDateTime.now());
+        // TODO:设置过期时间
+        fileInfo.setExpireDate(LocalDateTime.now());
+        biEtlDbFileService.save(fileInfo);
+
+        FilePreReadResult readResult = fileReadService.preRead(file);
+        readResult.setDbId(database.getId());
+        readResult.setFileId(fileInfo.getId());
+        return readResult;
+    }
+
+    @Override
+    public BiEtlDatabaseInf saveFileResource(FileResourcesSaveDto dto) throws Exception {
+        String dbId = dto.getDbId();
+        if (StringUtils.isBlank(dbId)) {
+            throw new BizException("数据源id不能为空！");
+        }
+        String fileId = dto.getFileId();
+        if (StringUtils.isBlank(fileId)) {
+            throw new BizException("文件信息id不能为空！");
+        }
+        BiEtlDatabaseInf database = this.getById(dbId);
+        if (database == null) {
+            logger.error("未查询到数据源，错误的id[{}]", dbId);
+            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
+        }
+        SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
+        if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
+            logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
+            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
+        }
+
+        // 查询已经上传的文件信息
+        BiEtlDbFile etlDbFile = biEtlDbFileService.getById(fileId);
+        if (etlDbFile == null) {
+            logger.error("未查询到文件信息，错误的id[{}]", fileId);
+            throw new BizException("未查询到数据源，错误的id[{" + fileId + "}]");
+        }
+        // 如果文件状态为已读，则不允许在重复保存
+        if (etlDbFile.getReadFlag() == 0) {
+            return database;
+        }
+        String collectionName = database.getDbName();
+        String fileName = etlDbFile.getStoredFileName();
+        String filePath = etlDbFile.getFilePath();
+        // 从ftp服务器获取文件
+        byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
+        // 读取文件
+        fileReadService.read(fileBytes, etlDbFile.getFileType(), collectionName);
+        // 修改文件状态为已读
+        etlDbFile.setReadFlag(0);
+        biEtlDbFileService.updateById(etlDbFile);
+        return database;
     }
 
     @Override
@@ -248,9 +367,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) throws Exception {
-        String jsonTemplate = dto.getComments();
-        dto.setComments(null);
-
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
@@ -266,7 +382,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setRootGroupId(MapUtils.getString(groupFlow, "id"));
         int insert = biEtlDatabaseInfMapper.insert(inf);
 
-        // 调用nifi 创建 AvroSchemaRegistry
+        /*// 调用nifi 创建 AvroSchemaRegistry
         Map<String, Object> createRegistryParams = Maps.newHashMap();
         createRegistryParams.put("type", PoolTypeEnum.AvroSchemaRegistry.getKey());
         createRegistryParams.put("name", PoolTypeEnum.AvroSchemaRegistry.getvalue() + System.currentTimeMillis());
@@ -321,7 +437,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         writerCS.setTenantId(inf.getTenantId());
         writerCS.setCreateDate(inf.getCreateDate());
         writerCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(writerCS);
+        biEtlDbCSService.insert(writerCS);*/
         return inf;
     }
 
@@ -404,5 +520,23 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setRootGroupId(MapUtils.getString(sourceMap, "parentGroupId"));
         biEtlDatabaseInfMapper.insert(inf);
         return inf;
+    }
+
+    /**
+     * 初始化生成mongo集合名称
+     * 默认：租户id + "_" + yyyyMMdd + "_" + dbId
+     *
+     * @param inf
+     * @return
+     */
+    private String initMongoCollectionName(BiEtlDatabaseInf inf) {
+        if (inf == null) {
+            return null;
+        }
+
+        StringBuilder collectionName = new StringBuilder(32);
+        String now = DateUtils.formatShortDate(new Date());
+        collectionName.append(inf.getTenantId()).append("_").append(now).append("_").append(inf.getId());
+        return collectionName.toString();
     }
 }

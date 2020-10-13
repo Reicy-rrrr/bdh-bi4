@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.request.*;
+import com.deloitte.bdh.data.model.resp.FilePreReadResult;
 import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
@@ -48,10 +49,22 @@ public class BiSourceController {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.createResource(request.getData()));
     }
 
-    @ApiOperation(value = "上传数据源", notes = "上传数据源")
-    @PostMapping("/uploadResource")
-    public RetResult<BiEtlDatabaseInf> uploadResource(@ModelAttribute UploadResourcesDto uploadResourcesDto) throws Exception {
-        return RetResponse.makeOKRsp(biEtlDatabaseInfService.uploadResource(uploadResourcesDto));
+    @ApiOperation(value = "上传文件数据源", notes = "上传文件数据源")
+    @PostMapping("/uploadFileResource")
+    public RetResult<FilePreReadResult> uploadFileResource(@ModelAttribute FileResourcesUploadDto fileResourcesUploadDto) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.uploadFileResource(fileResourcesUploadDto));
+    }
+
+    @ApiOperation(value = "追加上传文件数据源", notes = "追加上传文件数据源")
+    @PostMapping("/addUploadFileResource")
+    public RetResult<FilePreReadResult> addUploadFileResource(@ModelAttribute FileResourcesAddUploadDto addUploadDto) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.addUploadFileResource(addUploadDto));
+    }
+
+    @ApiOperation(value = "保存文件数据源", notes = "保存文件数据源")
+    @PostMapping("/saveFileResource")
+    public RetResult<BiEtlDatabaseInf> saveFileResource(@RequestBody @Validated RetRequest<FileResourcesSaveDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.saveFileResource(request.getData()));
     }
 
     @ApiOperation(value = "启用/禁用数据源", notes = "启用/禁用数据源")

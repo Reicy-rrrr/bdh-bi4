@@ -3,6 +3,9 @@ package com.deloitte.bdh.data.service;
 import com.deloitte.bdh.data.model.resp.FtpUploadResult;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * @author chenghzhang
+ */
 public interface FtpService {
 
     /**
@@ -13,4 +16,22 @@ public interface FtpService {
      * @return Pair<String, String>: left-文件地址 right-文件名称
      */
     FtpUploadResult uploadExcelFile(MultipartFile file, String tenantId);
+
+    /**
+     * 获取ftp文件字节数组
+     *
+     * @param filePath 文件目录
+     * @param fileName 文件名称
+     * @return
+     */
+    byte[] getFileBytes(String filePath, String fileName);
+
+    /**
+     * 删除ftp文件
+     *
+     * @param filePath 文件目录
+     * @param fileName 文件名称
+     * @return
+     */
+    boolean deleteFile(String filePath, String fileName);
 }

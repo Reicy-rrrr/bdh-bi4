@@ -312,8 +312,13 @@
             <artifactId>poi-ooxml-schemas</artifactId>
             <version>3.15</version>
         </dependency>
-    </dependencies>
 
+        <!-- mongodb -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <finalName>${project.artifactId}</finalName>

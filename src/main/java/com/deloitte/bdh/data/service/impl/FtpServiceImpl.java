@@ -1,11 +1,12 @@
 package com.deloitte.bdh.data.service.impl;
 
+import com.deloitte.bdh.common.base.MongoHelper;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
-import com.deloitte.bdh.common.util.ExcelUitils;
+import com.deloitte.bdh.common.util.ExcelUtils;
 import com.deloitte.bdh.common.util.FtpUtil;
-import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.UUIDUtil;
+import com.deloitte.bdh.data.model.BiEtlDbFile;
 import com.deloitte.bdh.data.model.resp.FtpUploadResult;
 import com.deloitte.bdh.data.model.resp.JsonTemplate;
 import com.deloitte.bdh.data.model.resp.JsonTemplateField;
@@ -15,6 +16,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +29,9 @@ import java.util.Date;
 import java.util.List;
 
 
-
+/**
+ * @author chenghzhang
+ */
 @Service
 public class FtpServiceImpl implements FtpService {
 
@@ -64,6 +68,9 @@ public class FtpServiceImpl implements FtpService {
      */
     @Value("${ftp.server.path}")
     private String path;
+
+    @Autowired
+    private MongoHelper mongoHelper;
 
     @Override
     public FtpUploadResult uploadExcelFile(MultipartFile file, String tenantId) {
@@ -114,8 +121,43 @@ public class FtpServiceImpl implements FtpService {
             throw new BizException("文件上传到ftp服务器失败");
         }
 
-        JsonTemplate jsonTemplate = initJsonTemplate(file);
-        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, finalName, jsonTemplate);
+        BiEtlDbFile fileInfo = initFileInfo(file);
+        fileInfo.setStoredFileName(finalName);
+        fileInfo.setFilePath(remotePath);
+        fileInfo.setTenantId(tenantId);
+        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, finalName, fileInfo);
+    }
+
+    @Override
+    public byte[] getFileBytes(String filePath, String fileName) {
+        // 获取ftp文件流
+        FtpUtil ftp = new FtpUtil(host, port, username, password);
+        byte[] bytes = null;
+        try {
+            bytes = ftp.getFileBytesByName(filePath, fileName);
+        } catch (Exception e) {
+            logger.error("获取ftp服务器文件流失败", e);
+            throw new BizException("获取ftp服务器文件流失败");
+        }
+        return bytes;
+    }
+
+    @Override
+    public boolean deleteFile(String filePath, String fileName) {
+        return false;
+    }
+
+    /**
+     * 根据上传文件初始化需要保存的文件信息
+     * @param file
+     * @return
+     */
+    private BiEtlDbFile initFileInfo(MultipartFile file) {
+        BiEtlDbFile fileInfo = new BiEtlDbFile();
+        fileInfo.setOriginalFileName(file.getOriginalFilename());
+        fileInfo.setFileType(file.getContentType());
+        fileInfo.setFileSize(file.getSize());
+        return fileInfo;
     }
 
     /**
@@ -167,7 +209,7 @@ public class FtpServiceImpl implements FtpService {
                 if (cell == null) {
                     cell = headerRow.createCell(cellIndex);
                 }
-                String field = ExcelUitils.getCellStringValue(cell);
+                String field = ExcelUtils.getCellStringValue(cell);
                 if (StringUtils.isBlank(field)) {
                     logger.error("初始化JSON转换模板失败，上传文件首行单元格[{}]内容为空！", cell.getAddress());
                     throw new BizException("初始化JSON转换模板失败，上传文件首行单元格[" + cell.getAddress() + "]内容为空！");
@@ -204,8 +246,8 @@ public class FtpServiceImpl implements FtpService {
             }
 
             String[] items = headerLine.split(",");
-            for (String field : items) {
-                JsonTemplateField templateField = new JsonTemplateField(field);
+            for (int i = 0; i < items.length; i++) {
+                JsonTemplateField templateField = new JsonTemplateField(items[i]);
                 fields.add(templateField);
             }
         } catch (Exception e) {

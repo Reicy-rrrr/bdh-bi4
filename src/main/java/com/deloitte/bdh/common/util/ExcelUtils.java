@@ -14,7 +14,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExcelUitils {
+public class ExcelUtils {
 
     public static final String CONTENT_TYPE_XLS = "application/vnd.ms-excel";
     public static final String CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -23,6 +23,88 @@ public class ExcelUitils {
     private static String dateFormatPattern = "yyyyMMdd";
     private static SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatPattern);
     private static DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
+
+    /**
+     * 获取单元格值
+     *
+     * @param cell 单元格
+     * @return
+     */
+    public static Object getCellValue(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        CellType cellType = cell.getCellTypeEnum();
+        switch (cellType) {
+            case BLANK:
+                return "";
+            case BOOLEAN:
+                return cell.getBooleanCellValue();
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return getNumericCellValue(cell);
+            case ERROR:
+                return Byte.toString(cell.getErrorCellValue());
+            case FORMULA:
+                return getFormulaCellValue(cell);
+            default:
+                throw new IllegalStateException("Unexpected cell type (" + cellType + ")");
+        }
+    }
+
+    /**
+     * 获取公式类型单元格值
+     *
+     * @param cell 单元格
+     * @return
+     */
+    private static Object getFormulaCellValue(Cell cell) {
+        CellValue cellValue = null;
+        /*
+         * 首先进行计算，计算异常就直接获取单元格的字符串或者数值型值
+         */
+        try {
+            cellValue = cell.getRow().getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator().evaluate(cell);
+        } catch (Exception e) {
+            try {
+                return getNumericCellValue(cell);
+            } catch (IllegalStateException e1) {
+                return cell.getStringCellValue();
+            }
+        }
+
+        switch (cellValue.getCellTypeEnum()) {
+            case BLANK:
+                return "";
+            case BOOLEAN:
+                return cell.getBooleanCellValue();
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return getNumericCellValue(cell);
+            case ERROR:
+                return Byte.toString(cell.getErrorCellValue());
+            case FORMULA:
+                return cellValue.getStringValue();
+            default:
+                throw new IllegalStateException("Unexpected cell type (" + cellValue.getCellTypeEnum() + ")");
+        }
+    }
+
+    /**
+     * 获取数值类型单元格值（包括数值和日期格式）
+     *
+     * @param cell 单元格
+     * @return
+     */
+    private static Object getNumericCellValue(Cell cell) {
+        if (DateUtil.isCellDateFormatted(cell)) {
+            return cell.getDateCellValue();
+        } else {
+            return cell.getNumericCellValue();
+        }
+    }
 
     public static String getCellStringValue(Cell cell) {
         if (cell == null) {
