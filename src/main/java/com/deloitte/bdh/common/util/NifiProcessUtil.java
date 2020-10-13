@@ -1,5 +1,6 @@
 package com.deloitte.bdh.common.util;
 
+import com.deloitte.bdh.data.enums.NifiEnum;
 import com.deloitte.bdh.data.enums.SourceTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -19,16 +20,18 @@ public class NifiProcessUtil {
      * 组装nifi特殊 url
      */
     public static String assemblyUrl(String url, String source) {
-        return assemblyUrl(url, source, null);
+        return assemblyUrl(url, source, "");
     }
 
     /**
      * 组装nifi特殊 url
      */
-    public static String assemblyUrl(String url, String source, String id) {
+    public static String assemblyUrl(String url, String source, String... id) {
         StringBuilder stringBuilder = new StringBuilder(url);
-        if (!StringUtil.isEmpty(id)) {
-            source = source.replace(TEMP, id);
+        if (null != id && id.length > 0) {
+            for (String str : id) {
+                source = source.replaceFirst(TEMP, str);
+            }
         }
         stringBuilder.append(source);
         return stringBuilder.toString();
@@ -209,8 +212,13 @@ public class NifiProcessUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(randPosition());
-        System.out.println(randPosition());
-
+//        String str1 =assemblyUrl( "https://10.81.128.4:9443", NifiEnum.ROOT_GROUP_INFO.getKey());
+//        System.out.println(str1);
+//
+//        String str2 =assemblyUrl( "https://10.81.128.4:9443", NifiEnum.CREATE_PROCSS_GROUP.getKey(),"id");
+//        System.out.println(str2);
+//
+//        String str3 =assemblyUrl( "https://10.81.128.4:9443", NifiEnum.LISTING_FLOWFILE_IDS.getKey(),"id1","id2");
+//        System.out.println(str3);
     }
 }

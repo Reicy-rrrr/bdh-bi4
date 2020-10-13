@@ -15,6 +15,7 @@ import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
+import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,7 +78,9 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         destination.put("groupId", fromProcessor.getProcessGroupId());
         destination.put("type", "PROCESSOR");
 
-        List<String> selectedRelationships = JsonUtil.string2Obj(fromProcessor.getRelationships(), List.class);
+        List<String> selectedRelationships = JsonUtil.string2Obj(fromProcessor.getRelationships(),
+                new TypeReference<List<String>>() {
+                });
         if (ProcessorTypeEnum.PutSQL.getType().equals(fromProcessor.getType())) {
             selectedRelationships.remove("success");
         }

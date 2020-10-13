@@ -275,7 +275,8 @@ public class HttpClientUtil {
 
             if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
                 result = getRedirectedUrl(response);
-            } else if (statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED) {
+            } else if (statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_CREATED
+                    || statusCode == HttpStatus.SC_ACCEPTED) {
 //                result = getEntityData(response);
             } else {
                 throw new RuntimeException(String.format("调用外部接口报错,错误码:%s,描述:%s", statusCode, result));

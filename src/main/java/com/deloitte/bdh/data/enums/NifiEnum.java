@@ -83,6 +83,22 @@ public enum NifiEnum {
      * run-status
      */
     RUN_STATUS("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
+
+    /**
+     * 查看listing-requests
+     */
+    LISTING_REQUESTS("/nifi-api/flowfile-queues/" + NifiProcessUtil.TEMP + "/listing-requests", "查看listing-requests"),
+
+    /**
+     * 查看FlowFiles ids
+     */
+    LISTING_FLOWFILE_IDS("/nifi-api/flowfile-queues/" + NifiProcessUtil.TEMP + "/listing-requests/" + NifiProcessUtil.TEMP, "查看FlowFiles ids"),
+
+    /**
+     * 查看FlowFiles content
+     */
+    LISTING_FLOWFILE_CONTENT("/nifi-api/flowfile-queues/" + NifiProcessUtil.TEMP + "/flowfiles/" + NifiProcessUtil.TEMP + "/content", "查看FlowFiles content"),
+
     ;
 
     private String key;

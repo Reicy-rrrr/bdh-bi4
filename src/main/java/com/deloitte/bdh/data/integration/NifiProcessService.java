@@ -158,4 +158,32 @@ public interface NifiProcessService {
      * @return Map<String, Object>
      */
     Map<String, Object> delConnections(String id) throws Exception;
+
+    /**
+     * function:查询 getListing
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> getListingRequest(String connectionId) throws Exception;
+
+    /**
+     * function:查询 getListing
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> getFlowFileList(String connectionId, String requestId) throws Exception;
+
+    /**
+     * function:查询 content
+     *
+     * @return Map<String, Object>
+     */
+    String getFlowFileContent(String connectionId, String flowFileId, String clusterNodeId) throws Exception;
+
+    /**
+     * function:查询 content(整合，默认读取所有)
+     *
+     * @return Map<String, Object>
+     */
+    String preview(String connectionId) throws Exception;
 }

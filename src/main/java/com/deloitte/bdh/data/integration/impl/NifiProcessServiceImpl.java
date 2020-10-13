@@ -6,11 +6,14 @@ import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.NifiEnum;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.codehaus.jackson.type.TypeReference;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -22,7 +25,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     public Map<String, Object> cluster() throws Exception {
         logger.info("NifiProcessServiceImpl.cluster, URL:{}", URL + NifiEnum.ACCESS_TOKEN.getKey());
         String response = HttpClientUtil.get(URL + NifiEnum.NIFI_CLUSTER.getKey(), super.setHeaderAuthorization(), null);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -32,7 +36,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         if (StringUtil.isEmpty(response)) {
             throw new RuntimeException("未获取到NIFI的RootGroup相关信息");
         }
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -51,7 +56,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_PROCSS_GROUP.getKey(), id);
         logger.info("NifiProcessServiceImpl.createProcessGroup, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -62,7 +68,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCSS_GROUPS.getKey(), id);
         logger.info("NifiProcessServiceImpl.getProcessGroup, URL:{}", url);
         String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -80,7 +87,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         logger.info("NifiProcessServiceImpl.delProcessGroup 信息, URL:{} ", url);
 
         String response = HttpClientUtil.delete(url, headers);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -95,7 +103,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCSS_GROUPS.getKey(), MapUtils.getString(map, "id"));
         logger.info("NifiProcessServiceImpl.updProcessGroup, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -120,7 +129,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_STATUS.getKey(), id);
         logger.info("NifiProcessServiceImpl.runState, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -155,7 +165,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.createControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -189,7 +200,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.createControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -208,7 +220,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.runControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -220,7 +233,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.getControllerService 信息, URL:{}", url);
         String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -238,7 +252,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         logger.info("NifiProcessServiceImpl.delControllerService 信息, URL:{} ", url);
 
         String response = HttpClientUtil.delete(url, headers);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -253,7 +268,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), MapUtils.getString(map, "id"));
         logger.info("NifiProcessServiceImpl.updControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -268,7 +284,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_PROCESSOR.getKey(), id);
         logger.info("NifiProcessServiceImpl.createProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -280,7 +297,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
         logger.info("NifiProcessServiceImpl.getProcessor 信息, URL:{} ", url);
         String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -297,7 +315,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
         logger.info("NifiProcessServiceImpl.updateProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -315,7 +334,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         logger.info("NifiProcessServiceImpl.delProcessor 信息, URL:{} ", url);
 
         String response = HttpClientUtil.delete(url, headers);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -331,7 +351,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_CONNECTIONS.getKey(), id);
         logger.info("NifiProcessServiceImpl.createConnections, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), req);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -343,7 +364,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONNECTIONS.getKey(), id);
         logger.info("NifiProcessServiceImpl.getConnections 信息, URL:{} ", url);
         String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -355,7 +377,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.DROP_CONNECTIONS.getKey(), id);
         logger.info("NifiProcessServiceImpl.dropConnections 信息, URL:{} ", url);
         String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), null);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
     @Override
@@ -373,7 +396,85 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         logger.info("NifiProcessServiceImpl.delConnections 信息, URL:{} ", url);
 
         String response = HttpClientUtil.delete(url, headers);
-        return JsonUtil.string2Obj(response, Map.class);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
+    public Map<String, Object> getListingRequest(String connectionId) throws Exception {
+        if (StringUtil.isEmpty(connectionId)) {
+            throw new RuntimeException("NifiProcessServiceImpl.getListing 失败:connectionId 不能为空");
+        }
+
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.LISTING_REQUESTS.getKey(), connectionId);
+        logger.info("NifiProcessServiceImpl.getListing 信息, URL:{} ", url);
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
+    public Map<String, Object> getFlowFileList(String connectionId, String requestId) throws Exception {
+        if (StringUtil.isEmpty(connectionId) || StringUtil.isEmpty(requestId)) {
+            throw new RuntimeException("NifiProcessServiceImpl.getFlowFileList 失败:id 不能为空");
+        }
+
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.LISTING_FLOWFILE_IDS.getKey(), connectionId, requestId);
+        logger.info("NifiProcessServiceImpl.getFlowFileList 信息, URL:{} ", url);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
+    public String getFlowFileContent(String connectionId, String flowFileId, String clusterNodeId) throws Exception {
+        if (StringUtil.isEmpty(connectionId) || StringUtil.isEmpty(flowFileId) || StringUtil.isEmpty(clusterNodeId)) {
+            throw new RuntimeException("NifiProcessServiceImpl.getFlowFileContent 失败:id 不能为空");
+        }
+
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.LISTING_FLOWFILE_CONTENT.getKey(), connectionId, flowFileId);
+        url = url + "?clusterNodeId=" + clusterNodeId;
+        logger.info("NifiProcessServiceImpl.getFlowFileContent 信息, URL:{} ", url);
+        return HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
+    }
+
+    @Override
+    public String preview(String connectionId) throws Exception {
+        Map<String, Object> listRequestMap = JsonUtil.string2Obj(
+                JsonUtil.obj2String(this.getListingRequest(connectionId).get("listingRequest")),
+                new TypeReference<Map<String, Object>>() {
+                });
+
+        Integer objectCount = MapUtils.getInteger(JsonUtil.string2Obj(
+                JsonUtil.obj2String(listRequestMap.get("queueSize")), new TypeReference<Map<String, Object>>() {
+                }), "objectCount");
+
+        if (objectCount == 0) {
+            return null;
+        }
+
+        listRequestMap = JsonUtil.string2Obj(
+                JsonUtil.obj2String(this.getFlowFileList(connectionId, MapUtils.getString(listRequestMap, "id"))
+                        .get("listingRequest")), new TypeReference<Map<String, Object>>() {
+                });
+
+        List<Map<String, Object>> flowFileSummaries = JsonUtil.string2Obj(
+                JsonUtil.obj2String(listRequestMap.get("flowFileSummaries")),
+                new TypeReference<List<Map<String, Object>>>() {
+                });
+
+        if (CollectionUtils.isEmpty(flowFileSummaries)) {
+            return null;
+        }
+
+        //todo 目前只读取第一个 ，待确定传输文件大小
+        Integer size = MapUtils.getInteger(flowFileSummaries.get(0), "size");
+        if (size == 0) {
+            return null;
+        }
+        String uuid = MapUtils.getString(flowFileSummaries.get(0), "uuid");
+        String clusterNodeId = MapUtils.getString(flowFileSummaries.get(0), "clusterNodeId");
+        return getFlowFileContent(connectionId, uuid, clusterNodeId);
     }
 
 

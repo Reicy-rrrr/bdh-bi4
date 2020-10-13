@@ -105,4 +105,10 @@ public class NifiController {
         return RetResponse.makeOKRsp(nifiProcessService.runState((String) request.getData().get("id"),
                 (String) request.getData().get("state"), (Boolean) request.getData().get("group")));
     }
+
+    @ApiOperation(value = "preview", notes = "preview")
+    @PostMapping("/preview")
+    public RetResult<Object> preview(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.preview(request.getData()));
+    }
 }
