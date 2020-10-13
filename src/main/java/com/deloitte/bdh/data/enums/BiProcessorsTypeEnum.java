@@ -16,10 +16,12 @@ public enum BiProcessorsTypeEnum {
                 case Mysql_8:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
                     break;
                 case Mysql_7:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
                     break;
                 case Oracle:
                     list.add(ProcessorTypeEnum.ExecuteSQL);

@@ -3,6 +3,8 @@ package com.deloitte.bdh.data.service;
 import com.deloitte.bdh.data.model.BiProcessors;
 import com.deloitte.bdh.common.base.Service;
 
+import java.util.List;
+
 
 /**
  * <p>
@@ -14,5 +16,5 @@ import com.deloitte.bdh.common.base.Service;
  */
 public interface BiProcessorsService extends Service<BiProcessors> {
 
-
+    List<BiProcessors> getPreChain(String processorsCode);
 }

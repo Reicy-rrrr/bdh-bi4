@@ -82,7 +82,7 @@ public enum NifiEnum {
     /**
      * run-status
      */
-    RUN_STATUS("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
+    RUN_PROCESSOR("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
 
     /**
      * 查看listing-requests

@@ -110,7 +110,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> runState(String id, String state, boolean group) throws Exception {
         if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
-            throw new RuntimeException("runState 失败:参数不能为空");
+            throw new RuntimeException("runState 失败 : 参数不能为空");
         }
         Map<String, Object> prcessorMap = null;
         if (group) {
@@ -126,7 +126,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         Map<String, Object> req = NifiProcessUtil.postParam(null, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
         req.put("state", state);
         req.remove("component");
-        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_STATUS.getKey(), id);
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_PROCESSOR.getKey(), id);
         logger.info("NifiProcessServiceImpl.runState, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {

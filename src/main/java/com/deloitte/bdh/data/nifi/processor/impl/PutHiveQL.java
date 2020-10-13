@@ -30,7 +30,7 @@ public class PutHiveQL extends AbstractProcessor {
 
         // 调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
-        config.put("schedulingPeriod", "1 * * * * ?");
+        config.put("schedulingPeriod", "0 0 0 1/1 * ?");
         config.put("schedulingStrategy", "CRON_DRIVEN");
         config.put("properties", properties);
 

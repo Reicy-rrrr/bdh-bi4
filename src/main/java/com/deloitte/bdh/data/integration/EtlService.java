@@ -71,11 +71,19 @@ public interface EtlService {
     BiProcessors outProcessors(CreateOutProcessorsDto dto) throws Exception;
 
     /**
-     * 输出主键
+     * 运行主键
      *
      * @param
      * @return
      */
     EtlRunModelResp runModel(RunModelDto dto) throws Exception;
+
+    /**
+     * 预览组件
+     *
+     * @param
+     * @return
+     */
+    String preview(String processorsCode) throws Exception;
 
 }

@@ -45,7 +45,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
     public Map<String, Object> rSave(ProcessorContext context) throws Exception {
         List<BiEtlConnection> connectionList = context.getConnectionList();
         for (BiEtlConnection connection : connectionList) {
-//            etlConnectionService.dropConnection(connection);
+            etlConnectionService.dropConnection(connection);
             etlConnectionService.delConnection(connection);
         }
         return null;
@@ -57,7 +57,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
         List<BiEtlConnection> connectionList = context.getConnectionList();
         if (CollectionUtils.isNotEmpty(connectionList)) {
             for (BiEtlConnection connection : connectionList) {
-//                etlConnectionService.dropConnection(connection);
+                etlConnectionService.dropConnection(connection);
                 etlConnectionService.delConnection(connection);
                 context.getHasDelConnectionList().add(connection);
             }

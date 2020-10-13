@@ -338,4 +338,11 @@ public class EtlServiceImpl implements EtlService {
         biEtlModel.setModifiedDate(LocalDateTime.now());
         return null;
     }
+
+    @Override
+    public String preview(String processorsCode) throws Exception {
+        //获取所有的processors 集合
+        List<BiProcessors> processorsList = processorsService.getPreChain(processorsCode);
+        return null;
+    }
 }

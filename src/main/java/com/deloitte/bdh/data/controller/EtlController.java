@@ -84,6 +84,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.getProcessorsList(request.getData()));
     }
 
+    @ApiOperation(value = "预览 processors", notes = "预览 processors")
+    @PostMapping("/preview")
+    public RetResult<String> preview(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.preview(request.getData()));
+    }
+
     @ApiOperation(value = "运行/停止 model", notes = "运行/停止 model")
     @PostMapping("/runModel")
     public RetResult<EtlRunModelResp> runModel(@RequestBody @Validated RetRequest<RunModelDto> request) throws Exception {
