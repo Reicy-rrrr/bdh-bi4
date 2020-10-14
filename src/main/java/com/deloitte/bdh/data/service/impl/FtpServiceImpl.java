@@ -124,11 +124,10 @@ public class FtpServiceImpl implements FtpService {
 
         BiEtlDbFile fileInfo = initFileInfo(file);
         fileInfo.setStoredFileName(finalName);
-        fileInfo.setFilePath(uploadPath);
         fileInfo.setTenantId(tenantId);
-
         // 文件存储的完整全路径（访问时需要用完整路径）
         String remoteFullPath = root + uploadPath;
+        fileInfo.setFilePath(remoteFullPath);
         return new FtpUploadResult(host, String.valueOf(port), username, password, remoteFullPath, finalName, fileInfo);
     }
 
