@@ -147,7 +147,13 @@ public class FtpServiceImpl implements FtpService {
 
     @Override
     public boolean deleteFile(String filePath, String fileName) {
-        return false;
+        FtpUtil ftp = new FtpUtil(host, port, username, password);
+        try {
+            return ftp.deleteFile(filePath + fileName);
+        } catch (Exception e) {
+            logger.error("获取ftp服务器文件流失败", e);
+            throw new BizException("获取ftp服务器文件流失败");
+        }
     }
 
     /**

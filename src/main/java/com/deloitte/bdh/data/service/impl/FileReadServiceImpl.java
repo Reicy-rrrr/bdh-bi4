@@ -75,7 +75,7 @@ public class FileReadServiceImpl implements FileReadService {
     }
 
     @Override
-    public void read(MultipartFile file, String collectionName) {
+    public void read(MultipartFile file, Map<String, String> columnTypes, String collectionName) {
         switch (FileTypeEnum.values(file.getContentType())) {
             case Csv:
                 readCsv(file, collectionName);
@@ -95,7 +95,7 @@ public class FileReadServiceImpl implements FileReadService {
     }
 
     @Override
-    public void read(byte[] bytes, String fileType, String collectionName) {
+    public void read(byte[] bytes, String fileType, Map<String, String> columnTypes, String collectionName) {
         switch (FileTypeEnum.values(fileType)) {
             case Csv:
                 readCsv(bytes, collectionName);

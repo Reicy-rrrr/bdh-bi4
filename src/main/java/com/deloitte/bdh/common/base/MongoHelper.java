@@ -61,7 +61,6 @@ public class MongoHelper<T> {
         return mongoTemplate.getCollection(collectionName).createIndex(Indexes.ascending(filedName), options);
     }
 
-
     /**
      * 功能描述: 获取当前集合对应的所有索引的名称
      *
@@ -100,7 +99,6 @@ public class MongoHelper<T> {
      * @param infos 对象列表
      * @return:void
      */
-
     public void insertBatch(List<T> infos, String collectionName) {
         mongoTemplate.insert(infos, collectionName);
     }
@@ -136,14 +134,24 @@ public class MongoHelper<T> {
      * @param clazz          集合中对象的类型
      * @return:void
      */
-
-    public void deleteById(String id, Class<T> clazz, String collectionName) {
+    public void removeById(String id, Class<T> clazz, String collectionName) {
         // 设置查询条件，当id=#{id}
         Query query = new Query(Criteria.where("id").is(id));
         // mongodb在删除对象的时候会判断对象类型，如果你不传入对象类型，只传入了集合名称，它是找不到的
         // 上面我们为了方便管理和提升后续处理的性能，将一个集合限制了一个对象类型，所以需要自行管理一下对象类型
         // 在接口传入时需要同时传入对象类型
         mongoTemplate.remove(query, clazz, collectionName);
+    }
+
+    /**
+     * 功能描述: 清空集合中的内容
+     *
+     * @param collectionName 集合名称
+     * @return:void
+     */
+    public void removeAll(String collectionName) {
+        Query query = new Query();
+        mongoTemplate.findAllAndRemove(query, collectionName);
     }
 
     /**
@@ -154,7 +162,6 @@ public class MongoHelper<T> {
      * @param collectionName 集合名称
      * @return:java.util.List<T>
      */
-
     public T selectById(String id, Class<T> clazz, String collectionName) {
         // 查询对象的时候，不仅需要传入id这个唯一键，还需要传入对象的类型，以及集合的名称
         return mongoTemplate.findById(id, clazz, collectionName);
@@ -180,7 +187,6 @@ public class MongoHelper<T> {
      * @param clazz       对象类型
      * @return:java.util.List<T>
      */
-
     public List<T> selectList(String collectName, Map<String, String> conditions, Class<T> clazz) {
         if (ObjectUtils.isEmpty(conditions)) {
             return selectList(collectName, clazz);
@@ -224,7 +230,6 @@ public class MongoHelper<T> {
      * @param size        每页条数
      * @return:java.util.List<T>
      */
-
     public List<T> selectListByPage(String collectName, Map<String, String> conditions, Class<T> clazz, Integer page, Integer size) {
         if (ObjectUtils.isEmpty(conditions)) {
             return selectListByPage(collectName, clazz, page, size);
@@ -292,6 +297,15 @@ public class MongoHelper<T> {
             query = new Query();
         }
         return this.mongoTemplate.count(query, collectName);
+    }
+
+    /**
+     * 功能描述: 删除集合
+     *
+     * @param collectName 集合名称
+     */
+    public void drop(String collectName) {
+        mongoTemplate.dropCollection(collectName);
     }
 
     @Autowired

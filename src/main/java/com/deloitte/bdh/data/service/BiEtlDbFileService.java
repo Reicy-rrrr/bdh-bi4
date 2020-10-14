@@ -1,11 +1,14 @@
 package com.deloitte.bdh.data.service;
 
-import com.deloitte.bdh.data.model.BiEtlDbFile;
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.model.BiEtlDbFile;
+import com.deloitte.bdh.data.model.request.BiEtlDbFileUploadDto;
+import com.deloitte.bdh.data.model.resp.BiEtlDbFileUploadResp;
 
 /**
  * <p>
- *  服务类
+ * 数据源文件服务类
  * </p>
  *
  * @author chenghzhang
@@ -13,4 +16,27 @@ import com.deloitte.bdh.common.base.Service;
  */
 public interface BiEtlDbFileService extends Service<BiEtlDbFile> {
 
+    /**
+     * 数据源文件上传
+     *
+     * @param fileUploadDto
+     * @return
+     */
+    BiEtlDbFileUploadResp upload(BiEtlDbFileUploadDto fileUploadDto);
+
+    /**
+     * 数据源文件删除（只删除文件信息、ftp上的文件）
+     *
+     * @param deleteRequest
+     * @return
+     */
+    Boolean delete(RetRequest<String> deleteRequest);
+
+    /**
+     * 根据数据源删除文件文件（只删除文件信息、ftp上的文件）
+     *
+     * @param dbId 数据源id
+     * @return
+     */
+    Boolean deleteByDbId(String dbId);
 }

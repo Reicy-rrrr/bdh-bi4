@@ -4,7 +4,6 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.request.*;
-import com.deloitte.bdh.data.model.resp.FilePreReadResult;
 
 import java.util.List;
 
@@ -43,28 +42,28 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
     BiEtlDatabaseInf createResource(CreateResourcesDto dto) throws Exception;
 
     /**
-     * 上传文件数据源
+     * 创建文件数据源
      *
      * @param dto
      * @return
      */
-    FilePreReadResult uploadFileResource(FileResourcesUploadDto dto) throws Exception;
+    BiEtlDatabaseInf createFileResource(CreateFileResourcesDto dto) throws Exception;
 
     /**
-     * 追加上传文件
+     * 追加文件数据源
      *
      * @param dto
      * @return
      */
-    FilePreReadResult addUploadFileResource(FileResourcesAddUploadDto dto) throws Exception;
+    BiEtlDatabaseInf appendFileResource(AppendFileResourcesDto dto) throws Exception;
 
     /**
-     * 保存文件数据源
+     * 重置文件数据源（重新上传，清空之前上传的数据）
      *
      * @param dto
      * @return
      */
-    BiEtlDatabaseInf saveFileResource(FileResourcesSaveDto dto) throws Exception;
+    BiEtlDatabaseInf resetFileResource(ResetFileResourcesDto dto) throws Exception;
 
     /**
      * 启用/禁用数据源

@@ -1,9 +1,16 @@
 package com.deloitte.bdh.data.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.base.RetResponse;
+import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.model.request.BiEtlDbFileUploadDto;
+import com.deloitte.bdh.data.model.resp.BiEtlDbFileUploadResp;
+import com.deloitte.bdh.data.service.BiEtlDbFileService;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -17,4 +24,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/biEtlDbFile")
 public class BiEtlDbFileController {
 
+    private BiEtlDbFileService biEtlDbFileService;
+
+    @ApiOperation(value = "上传文件", notes = "上传文件")
+    @PostMapping("/upload")
+    public RetResult<BiEtlDbFileUploadResp> upload(@ModelAttribute BiEtlDbFileUploadDto fileUploadDto) {
+        return RetResponse.makeOKRsp(biEtlDbFileService.upload(fileUploadDto));
+    }
+
+    @ApiOperation(value = "删除文件", notes = "删除文件")
+    @PostMapping("/delete")
+    public RetResult<Boolean> delete(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(biEtlDbFileService.delete(request));
+    }
+
+    @Autowired
+    public void setBiEtlDbFileService(BiEtlDbFileService biEtlDbFileService) {
+        this.biEtlDbFileService = biEtlDbFileService;
+    }
 }

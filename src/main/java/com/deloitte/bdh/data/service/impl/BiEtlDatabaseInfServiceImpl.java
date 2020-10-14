@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.common.base.MongoHelper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
@@ -19,8 +20,6 @@ import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.BiEtlDbFile;
 import com.deloitte.bdh.data.model.request.*;
-import com.deloitte.bdh.data.model.resp.FilePreReadResult;
-import com.deloitte.bdh.data.model.resp.FtpUploadResult;
 import com.deloitte.bdh.data.service.*;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
@@ -31,10 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -69,6 +66,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Autowired
     private BiEtlDbFileService biEtlDbFileService;
+
+    @Autowired
+    private MongoHelper mongoHelper;
 
     @Override
     public PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto) {
@@ -128,140 +128,168 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public FilePreReadResult uploadFileResource(FileResourcesUploadDto dto) throws Exception {
-        MultipartFile file = dto.getFile();
-        // 租户id
-        String tenantId = dto.getTenantId();
-        if (StringUtils.isBlank(tenantId)) {
-            throw new BizException("租户id不能为空");
+    public BiEtlDatabaseInf createFileResource(CreateFileResourcesDto dto) throws Exception {
+        // 文件信息id
+        String fileId = dto.getFileId();
+        if (StringUtils.isBlank(fileId)) {
+            logger.error("保存文件型数据源失败，接收到的文件信息id为空！");
+            throw new BizException("保存文件型数据源失败，文件信息id不能为空！");
         }
-        // TODO 校验租户正确性，级租户与当前用户的管理关系
-        FtpUploadResult uploadResult = ftpService.uploadExcelFile(file, tenantId);
-        if (uploadResult == null) {
-            throw new BizException("文件上传ftp失败！");
+
+        BiEtlDbFile dbFile = biEtlDbFileService.getById(fileId);
+        if (dbFile == null) {
+            logger.error("保存文件型数据源失败，根据id[{}]未查询到文件信息！", fileId);
+            throw new BizException("保存文件型数据源失败，未查询到文件信息！");
+        }
+        // 如果文件状态为已读，则不允许在重复保存
+        if (dbFile.getReadFlag() == 0) {
+            logger.error("保存文件型数据源失败，根据id[{}]查询到文件已经读取过！", fileId);
+            throw new BizException("保存文件型数据源失败，文件已被读取过！");
         }
 
         // 初始化创建dto，调用创建数据源接口
         CreateResourcesDto createDto = new CreateResourcesDto();
+        String fileType = dbFile.getFileType();
         BeanUtils.copyProperties(dto, createDto);
-
-        // 暂时将文件名称存放到数据库名称字段，文件路径存放到地址
-        createDto.setAddress(uploadResult.getFilePath());
-        createDto.setDbName(uploadResult.getFileName());
-        if (file.getOriginalFilename().toLowerCase().endsWith(FileTypeEnum.Csv.getValue())) {
+        if (fileType.endsWith(FileTypeEnum.Csv.getValue())) {
             createDto.setType(SourceTypeEnum.File_Csv.getType());
         } else {
             createDto.setType(SourceTypeEnum.File_Excel.getType());
         }
-
+        createDto.setCreateUser(dto.getOperator());
         BiEtlDatabaseInf inf = createResource(createDto);
 
-        // 保存上传的文件信息
-        BiEtlDbFile fileInfo = uploadResult.getFileInfo();
-        fileInfo.setDbId(inf.getId());
-        fileInfo.setIp(inf.getIp());
-        fileInfo.setCreateUser(inf.getCreateUser());
-        fileInfo.setCreateDate(inf.getCreateDate());
-        // TODO:设置过期时间
-        fileInfo.setExpireDate(inf.getCreateDate());
-        biEtlDbFileService.save(fileInfo);
-
-        // 初始化mongodb集合名称
+        // 根据数据源信息初始化mongodb集合名称
         String collectionName = initMongoCollectionName(inf);
         // 将mongodb集合名称暂存到数据源的数据库名称字段中
         inf.setDbName(collectionName);
         this.updateById(inf);
-        createDto.setDbName(collectionName);
-        FilePreReadResult readResult = fileReadService.preRead(file);
-        readResult.setDbId(inf.getId());
-        readResult.setFileId(fileInfo.getId());
-        return readResult;
-    }
 
-    @Override
-    public FilePreReadResult addUploadFileResource(FileResourcesAddUploadDto dto) throws Exception {
-        MultipartFile file = dto.getFile();
-        // 租户id
-        String tenantId = dto.getTenantId();
-        if (StringUtils.isBlank(tenantId)) {
-            throw new BizException("租户id不能为空");
-        }
-        String dbId = dto.getDbId();
-        if (StringUtils.isBlank(dbId)) {
-            throw new BizException("数据源id不能为空！");
-        }
-        BiEtlDatabaseInf database = this.getById(dbId);
-        if (database == null) {
-            logger.error("未查询到数据源，错误的id[{}]", dbId);
-            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
-        }
-
-        SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
-        if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
-            logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
-            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
-        }
-
-        FtpUploadResult uploadResult = ftpService.uploadExcelFile(file, tenantId);
-        if (uploadResult == null) {
-            throw new BizException("文件上传ftp失败！");
-        }
-        // 保存上传的文件信息
-        BiEtlDbFile fileInfo = uploadResult.getFileInfo();
-        fileInfo.setDbId(database.getId());
-        fileInfo.setCreateUser(dto.getCreateUser());
-        fileInfo.setCreateDate(LocalDateTime.now());
-        // TODO:设置过期时间
-        fileInfo.setExpireDate(LocalDateTime.now());
-        biEtlDbFileService.save(fileInfo);
-
-        FilePreReadResult readResult = fileReadService.preRead(file);
-        readResult.setDbId(database.getId());
-        readResult.setFileId(fileInfo.getId());
-        return readResult;
-    }
-
-    @Override
-    public BiEtlDatabaseInf saveFileResource(FileResourcesSaveDto dto) throws Exception {
-        String dbId = dto.getDbId();
-        if (StringUtils.isBlank(dbId)) {
-            throw new BizException("数据源id不能为空！");
-        }
-        String fileId = dto.getFileId();
-        if (StringUtils.isBlank(fileId)) {
-            throw new BizException("文件信息id不能为空！");
-        }
-        BiEtlDatabaseInf database = this.getById(dbId);
-        if (database == null) {
-            logger.error("未查询到数据源，错误的id[{}]", dbId);
-            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
-        }
-        SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
-        if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
-            logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
-            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
-        }
-
-        // 查询已经上传的文件信息
-        BiEtlDbFile etlDbFile = biEtlDbFileService.getById(fileId);
-        if (etlDbFile == null) {
-            logger.error("未查询到文件信息，错误的id[{}]", fileId);
-            throw new BizException("未查询到数据源，错误的id[{" + fileId + "}]");
-        }
-        // 如果文件状态为已读，则不允许在重复保存
-        if (etlDbFile.getReadFlag() == 0) {
-            return database;
-        }
-        String collectionName = database.getDbName();
-        String fileName = etlDbFile.getStoredFileName();
-        String filePath = etlDbFile.getFilePath();
+        String fileName = dbFile.getStoredFileName();
+        String filePath = dbFile.getFilePath();
         // 从ftp服务器获取文件
         byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
         // 读取文件
-        fileReadService.read(fileBytes, etlDbFile.getFileType(), collectionName);
+        fileReadService.read(fileBytes, fileType, dto.getColumns(), collectionName);
+        // 设置文件的关联数据源id
+        dbFile.setDbId(inf.getId());
         // 修改文件状态为已读
-        etlDbFile.setReadFlag(0);
-        biEtlDbFileService.updateById(etlDbFile);
+        dbFile.setReadFlag(0);
+        biEtlDbFileService.updateById(dbFile);
+        return inf;
+    }
+
+    @Override
+    public BiEtlDatabaseInf appendFileResource(AppendFileResourcesDto dto) throws Exception {
+        // 数据源id
+        String dbId = dto.getDbId();
+        if (StringUtils.isBlank(dbId)) {
+            logger.error("追加文件型数据源失败，接收到的数据源id为空！");
+            throw new BizException("追加文件型数据源失败，数据源id不能为空！");
+        }
+        // 文件信息id
+        String fileId = dto.getFileId();
+        if (StringUtils.isBlank(fileId)) {
+            logger.error("追加文件型数据源失败，接收到的文件信息id为空！");
+            throw new BizException("追加文件型数据源失败，文件信息id不能为空！");
+        }
+
+        BiEtlDatabaseInf database = this.getById(dbId);
+        if (database == null) {
+            logger.error("未查询到数据源，错误的id[{}]", dbId);
+            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
+        }
+        SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
+        if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
+            logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
+            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
+        }
+
+        BiEtlDbFile dbFile = biEtlDbFileService.getById(fileId);
+        if (dbFile == null) {
+            logger.error("追加文件型数据源失败，根据id[{}]未查询到文件信息！", fileId);
+            throw new BizException("追加文件型数据源失败，未查询到文件信息！");
+        }
+        // 如果文件状态为已读，则不允许在重复保存
+        if (dbFile.getReadFlag() == 0) {
+            logger.error("追加文件型数据源失败，根据id[{}]查询到文件已经读取过！", fileId);
+            throw new BizException("追加文件型数据源失败，文件已被读取过！");
+        }
+
+        // 获取已有集合名称
+        String collectionName = database.getDbName();
+        // 读取文件
+        String fileName = dbFile.getStoredFileName();
+        String filePath = dbFile.getFilePath();
+        // 从ftp服务器获取文件
+        byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
+        // 读取文件
+        String fileType = dbFile.getFileType();
+        fileReadService.read(fileBytes, fileType, dto.getColumns(), collectionName);
+        // 设置文件的关联数据源id
+        dbFile.setDbId(database.getId());
+        // 修改文件状态为已读
+        dbFile.setReadFlag(0);
+        biEtlDbFileService.updateById(dbFile);
+        return database;
+    }
+
+    @Override
+    public BiEtlDatabaseInf resetFileResource(ResetFileResourcesDto dto) throws Exception {
+        // 数据源id
+        String dbId = dto.getDbId();
+        if (StringUtils.isBlank(dbId)) {
+            logger.error("重置文件型数据源失败，接收到的数据源id为空！");
+            throw new BizException("重置文件型数据源失败，数据源id不能为空！");
+        }
+        // 文件信息id
+        String fileId = dto.getFileId();
+        if (StringUtils.isBlank(fileId)) {
+            logger.error("重置文件型数据源失败，接收到的文件信息id为空！");
+            throw new BizException("重置文件型数据源失败，文件信息id不能为空！");
+        }
+
+        BiEtlDatabaseInf database = this.getById(dbId);
+        if (database == null) {
+            logger.error("未查询到数据源，错误的id[{}]", dbId);
+            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
+        }
+        SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
+        if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
+            logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
+            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
+        }
+
+        BiEtlDbFile dbFile = biEtlDbFileService.getById(fileId);
+        if (dbFile == null) {
+            logger.error("重置文件型数据源失败，根据id[{}]未查询到文件信息！", fileId);
+            throw new BizException("重置文件型数据源失败，未查询到文件信息！");
+        }
+        // 如果文件状态为已读，则不允许在重复保存
+        if (dbFile.getReadFlag() == 0) {
+            logger.error("重置文件型数据源失败，根据id[{}]查询到文件已经读取过！", fileId);
+            throw new BizException("重置文件型数据源失败，文件已被读取过！");
+        }
+
+        // 清空集合中已有的数据
+        String collectionName = database.getDbName();
+        mongoHelper.removeAll(collectionName);
+        // 删除文件信息及已上传ftp服务器的文件
+        biEtlDbFileService.deleteByDbId(dbId);
+
+        // 读取新文件
+        String fileName = dbFile.getStoredFileName();
+        String filePath = dbFile.getFilePath();
+        // 从ftp服务器获取文件
+        byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
+        // 读取文件
+        String fileType = dbFile.getFileType();
+        fileReadService.read(fileBytes, fileType, dto.getColumns(), collectionName);
+        // 设置文件的关联数据源id
+        dbFile.setDbId(database.getId());
+        // 修改文件状态为已读
+        dbFile.setReadFlag(0);
+        biEtlDbFileService.updateById(dbFile);
         return database;
     }
 
