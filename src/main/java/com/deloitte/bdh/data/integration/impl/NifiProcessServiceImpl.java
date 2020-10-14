@@ -108,15 +108,18 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
-    public Map<String, Object> runState(String id, String state, boolean group) throws Exception {
+    public Map<String, Object> runState(String id, String state, boolean isGroup) throws Exception {
         if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
             throw new RuntimeException("runState 失败 : 参数不能为空");
         }
         Map<String, Object> prcessorMap = null;
-        if (group) {
+        String url;
+        if (isGroup) {
             prcessorMap = this.getProcessGroup(id);
+            url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_PROCESSGROUP.getKey(), id);
         } else {
             prcessorMap = this.getProcessor(id);
+            url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_PROCESSOR.getKey(), id);
         }
 
         // 校验权限
@@ -125,8 +128,10 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         //请求参数设置
         Map<String, Object> req = NifiProcessUtil.postParam(null, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
         req.put("state", state);
-        req.remove("component");
-        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_PROCESSOR.getKey(), id);
+        if (isGroup) {
+            req.put("id", id);
+            req.remove("revision");
+        }
         logger.info("NifiProcessServiceImpl.runState, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
@@ -216,7 +221,6 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         //请求参数设置
         Map<String, Object> req = NifiProcessUtil.postParam(null, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
         req.put("state", state);
-        req.remove("component");
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.runControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
@@ -450,7 +454,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
                 }), "objectCount");
 
         if (objectCount == 0) {
-            return null;
+            throw new RuntimeException("NifiProcessServiceImpl.preview error : 数据暂未生成");
         }
 
         listRequestMap = JsonUtil.string2Obj(
@@ -464,13 +468,13 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
                 });
 
         if (CollectionUtils.isEmpty(flowFileSummaries)) {
-            return null;
+            throw new RuntimeException("NifiProcessServiceImpl.preview error : 数据暂未生成");
         }
 
         //todo 目前只读取第一个 ，待确定传输文件大小
         Integer size = MapUtils.getInteger(flowFileSummaries.get(0), "size");
         if (size == 0) {
-            return null;
+            throw new RuntimeException("NifiProcessServiceImpl.preview error : 数据暂未生成");
         }
         String uuid = MapUtils.getString(flowFileSummaries.get(0), "uuid");
         String clusterNodeId = MapUtils.getString(flowFileSummaries.get(0), "clusterNodeId");

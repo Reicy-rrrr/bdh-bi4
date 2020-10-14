@@ -59,7 +59,7 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> runState(String id, String state, boolean group) throws Exception;
+    Map<String, Object> runState(String id, String state, boolean isGroup) throws Exception;
 
     /**
      * function:创建 ControllerService
