@@ -23,10 +23,11 @@ public class FileResourcesSaveDto {
     private String dbId;
 
     @ApiModelProperty(value = "数据源名称", example = "数据源名称", required = true)
-    @NotNull(message = "租户id 不能为空")
+    @NotNull(message = "数据源名称 不能为空")
     private String fileId;
 
-    @ApiModelProperty(value = "字段类型", example = "{id:Integer, code:String, value:Float}", required = true)
+    @ApiModelProperty(value = "字段类型", example = "id:Integer, code:String, value:Float", required = true)
+    @NotNull(message = "字段类型 不能为空")
     private LinkedHashMap<String, String> columns;
 
     @ApiModelProperty(value = "tenantId", example = "123", required = true)

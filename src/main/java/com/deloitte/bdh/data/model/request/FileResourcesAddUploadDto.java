@@ -25,6 +25,7 @@ public class FileResourcesAddUploadDto {
 
     @JSONField(serialize = false)
     @ApiModelProperty(value = "源文件", example = "example.xls")
+    @NotNull(message = "源文件 不能为空")
     private MultipartFile file;
 
     @ApiModelProperty(value = "tenantId", example = "123", required = true)
