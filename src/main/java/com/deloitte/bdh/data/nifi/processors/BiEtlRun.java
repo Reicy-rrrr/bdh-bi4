@@ -35,7 +35,6 @@ public class BiEtlRun extends AbStractProcessors<RunContext> {
         switch (context.getMethod()) {
             case VIEW:
                 preview(context);
-                stopAndClear(context.getModel().getProcessGroupId(), context.getModel().getCode());
                 break;
             case RUN:
                 nifiProcessService.runState(context.getModel().getProcessGroupId(), RunStatusEnum.RUNNING.getKey(), true);
@@ -53,13 +52,31 @@ public class BiEtlRun extends AbStractProcessors<RunContext> {
         logger.info("开始执行创建 BiEtlRun.reverse，参数:{}", JsonUtil.obj2String(context));
         switch (context.getMethod()) {
             case VIEW:
-                stopAndClear(context.getModel().getProcessGroupId(), context.getModel().getCode());
+                logger.info("BiEtlRun.reverse.VIEW : nothing");
                 break;
             case RUN:
                 logger.info("BiEtlRun.reverse.RUN : nothing");
                 break;
             case STOP:
                 logger.info("BiEtlRun.reverse.STOP : nothing");
+                break;
+            default:
+
+        }
+    }
+
+    @Override
+    @Async("taskExecutor")
+    protected void end(RunContext context) throws Exception {
+        switch (context.getMethod()) {
+            case VIEW:
+                stopAndClear(context.getModel().getProcessGroupId(), context.getModel().getCode());
+                break;
+            case RUN:
+                logger.info("BiEtlRun.end.RUN : nothing");
+                break;
+            case STOP:
+                logger.info("BiEtlRun.end.STOP : nothing");
                 break;
             default:
 
@@ -110,9 +127,8 @@ public class BiEtlRun extends AbStractProcessors<RunContext> {
         context.setResult(result);
     }
 
-
-    @Async
-    public void stopAndClear(String processGroupId, String modelCode) throws Exception {
+    private void stopAndClear(String processGroupId, String modelCode) throws Exception {
+        logger.info("1111111111111111111111111");
         //停止
         nifiProcessService.runState(processGroupId, RunStatusEnum.STOP.getKey(), true);
 

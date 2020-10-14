@@ -58,8 +58,6 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlConnectionService biEtlConnectionService;
     @Autowired
     private BiConnectionsService connectionsService;
-    @Autowired
-    private NifiProcessService nifiProcessService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
