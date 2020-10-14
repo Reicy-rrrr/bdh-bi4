@@ -105,7 +105,9 @@ public class NifiProcessUtil {
         revision.remove("clientId");
         postParam.put("revision", revision);
         postParam.put("disconnectedNodeAcknowledged", false);
-        postParam.put("component", req);
+        if (null != req) {
+            postParam.put("component", req);
+        }
         return postParam;
     }
 

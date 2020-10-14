@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.integration.impl;
 
 import com.deloitte.bdh.data.enums.RunStatusEnum;
+import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlModel;
 import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
 import com.deloitte.bdh.data.model.request.RunModelDto;
@@ -63,6 +64,8 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlConnectionService biEtlConnectionService;
     @Autowired
     private BiConnectionsService connectionsService;
+    @Autowired
+    private NifiProcessService nifiProcessService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -341,8 +344,60 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     public String preview(String processorsCode) throws Exception {
+        String result ;
         //获取所有的processors 集合
         List<BiProcessors> processorsList = processorsService.getPreChain(processorsCode);
-        return null;
+
+        //获取processors 下面所有processor 以及需要查询的 connection
+        List<BiEtlProcessor> processorList = Lists.newLinkedList();
+        List<BiEtlConnection> connectionList = Lists.newLinkedList();
+        processorsList.forEach(s -> {
+            List<BiEtlProcessor> var = processorService.list(
+                    new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, s.getCode())
+                            .orderByAsc(BiEtlProcessor::getSequence)
+            );
+
+            if (s.getCode().equals(processorsCode)) {
+                //移除最后一个 processor
+                BiEtlProcessor lastProcessor = var.get(var.size() - 1);
+                var.remove(var.size() - 1);
+                //获取最后一个 processor 上的 connection
+                BiEtlConnection etlConnection = biEtlConnectionService.getOne(
+                        new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getToProcessorCode, lastProcessor.getCode())
+                );
+                connectionList.add(etlConnection);
+            }
+            processorList.addAll(var);
+        });
+
+
+        //todo  以下代码待封装
+        //启动
+        List<BiEtlProcessor> successList = Lists.newArrayList();
+        try {
+            for (BiEtlProcessor var : processorList) {
+                nifiProcessService.runState(var.getProcessId(), RunStatusEnum.RUNNING.getKey(), false);
+                successList.add(var);
+            }
+        } catch (Exception e) {
+            if (CollectionUtils.isNotEmpty(successList)) {
+                nifiProcessService.runState(processorList.get(0).getProcessGroupId(), RunStatusEnum.STOP.getKey(), true);
+            }
+            throw new RuntimeException("preview error : 预览启动失败");
+        }
+
+        try {
+            //让数据生成
+            Thread.sleep(3000);
+            //获取预览数据
+            result = nifiProcessService.preview(connectionList.get(0).getConnectionId());
+        } finally {
+            //停止
+            nifiProcessService.runState(processorList.get(0).getProcessGroupId(), RunStatusEnum.STOP.getKey(), true);
+            //清空所有
+            nifiProcessService.dropConnections(connectionList.get(0).getConnectionId());
+        }
+
+        return result;
     }
 }

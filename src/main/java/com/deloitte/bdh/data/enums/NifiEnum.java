@@ -80,9 +80,14 @@ public enum NifiEnum {
     CONNECTIONS("/nifi-api/connections/" + NifiProcessUtil.TEMP, "查看/删除 connections"),
 
     /**
-     * run-status
+     * run-processor
      */
     RUN_PROCESSOR("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
+
+    /**
+     * run-processGroup
+     */
+    RUN_PROCESSGROUP("/nifi-api/flow/process-groups/" + NifiProcessUtil.TEMP, "run-processGroup"),
 
     /**
      * 查看listing-requests
