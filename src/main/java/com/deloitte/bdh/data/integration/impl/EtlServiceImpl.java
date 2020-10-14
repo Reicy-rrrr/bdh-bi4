@@ -3,14 +3,10 @@ package com.deloitte.bdh.data.integration.impl;
 import com.deloitte.bdh.data.enums.RunStatusEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlModel;
-import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
-import com.deloitte.bdh.data.model.request.RunModelDto;
+import com.deloitte.bdh.data.model.request.*;
 import com.deloitte.bdh.data.model.resp.EtlRunModelResp;
 import com.deloitte.bdh.data.nifi.*;
-import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
-import com.deloitte.bdh.data.nifi.dto.Nifi;
-import com.deloitte.bdh.data.nifi.dto.Processor;
-import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.*;
 import com.google.common.collect.Lists;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
@@ -22,14 +18,12 @@ import com.deloitte.bdh.data.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.model.*;
-import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import com.deloitte.bdh.data.service.*;
 import com.deloitte.bdh.data.nifi.enums.MethodEnum;
 import com.google.common.collect.Maps;
 
 import com.deloitte.bdh.data.integration.EtlService;
-import com.deloitte.bdh.data.model.request.JoinResourceDto;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -331,73 +325,45 @@ public class EtlServiceImpl implements EtlService {
             throw new RuntimeException("EtlServiceImpl.runModel.error : 模板失效下不允许操作");
         }
 
-        if (RunStatusEnum.RUNNING.getKey().equalsIgnoreCase(dto.getRunStatus())) {
-            //todo
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("modifiedUser", dto.getModifiedUser());
 
-        } else {
-
+        MethodEnum methodEnum = MethodEnum.RUN;
+        if (RunStatusEnum.STOP.getKey().equals(dto.getRunStatus())) {
+            methodEnum = MethodEnum.STOP;
         }
-        biEtlModel.setModifiedUser(dto.getModifiedUser());
-        biEtlModel.setModifiedDate(LocalDateTime.now());
+        BiEtlModel model = biEtlModelService.getById(dto.getId());
+        RunContext runContext = new RunContext();
+        runContext.setMethod(methodEnum);
+        runContext.setReq(req);
+        runContext.setModel(model);
+        etlProcess.process(runContext);
+
+        model.setModifiedDate(LocalDateTime.now());
+        model.setModifiedUser(dto.getModifiedUser());
+        model.setStatus(dto.getRunStatus());
+        biEtlModelService.updateById(model);
         return null;
     }
 
     @Override
-    public String preview(String processorsCode) throws Exception {
-        String result ;
-        //获取所有的processors 集合
-        List<BiProcessors> processorsList = processorsService.getPreChain(processorsCode);
+    public String preview(PreviewDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getId());
 
-        //获取processors 下面所有processor 以及需要查询的 connection
-        List<BiEtlProcessor> processorList = Lists.newLinkedList();
-        List<BiEtlConnection> connectionList = Lists.newLinkedList();
-        processorsList.forEach(s -> {
-            List<BiEtlProcessor> var = processorService.list(
-                    new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, s.getCode())
-                            .orderByAsc(BiEtlProcessor::getSequence)
-            );
-
-            if (s.getCode().equals(processorsCode)) {
-                //移除最后一个 processor
-                BiEtlProcessor lastProcessor = var.get(var.size() - 1);
-                var.remove(var.size() - 1);
-                //获取最后一个 processor 上的 connection
-                BiEtlConnection etlConnection = biEtlConnectionService.getOne(
-                        new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getToProcessorCode, lastProcessor.getCode())
-                );
-                connectionList.add(etlConnection);
-            }
-            processorList.addAll(var);
-        });
-
-
-        //todo  以下代码待封装
-        //启动
-        List<BiEtlProcessor> successList = Lists.newArrayList();
-        try {
-            for (BiEtlProcessor var : processorList) {
-                nifiProcessService.runState(var.getProcessId(), RunStatusEnum.RUNNING.getKey(), false);
-                successList.add(var);
-            }
-        } catch (Exception e) {
-            if (CollectionUtils.isNotEmpty(successList)) {
-                nifiProcessService.runState(processorList.get(0).getProcessGroupId(), RunStatusEnum.STOP.getKey(), true);
-            }
-            throw new RuntimeException("preview error : 预览启动失败");
+        if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.preview.error : 模板失效下不允许操作");
         }
 
-        try {
-            //让数据生成
-            Thread.sleep(3000);
-            //获取预览数据
-            result = nifiProcessService.preview(connectionList.get(0).getConnectionId());
-        } finally {
-            //停止
-            nifiProcessService.runState(processorList.get(0).getProcessGroupId(), RunStatusEnum.STOP.getKey(), true);
-            //清空所有
-            nifiProcessService.dropConnections(connectionList.get(0).getConnectionId());
-        }
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("modifiedUser", dto.getModifiedUser());
 
-        return result;
+        RunContext runContext = new RunContext();
+        runContext.setMethod(MethodEnum.VIEW);
+        runContext.setReq(req);
+        runContext.setModel(biEtlModel);
+        runContext.setPreviewCode(dto.getPreviewCode());
+        etlProcess.process(runContext);
+        return runContext.getResult();
     }
+
 }

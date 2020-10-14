@@ -2,10 +2,7 @@ package com.deloitte.bdh.data.integration;
 
 import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiProcessors;
-import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
-import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
-import com.deloitte.bdh.data.model.request.JoinResourceDto;
-import com.deloitte.bdh.data.model.request.RunModelDto;
+import com.deloitte.bdh.data.model.request.*;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import com.deloitte.bdh.data.model.resp.EtlRunModelResp;
 
@@ -71,7 +68,7 @@ public interface EtlService {
     BiProcessors outProcessors(CreateOutProcessorsDto dto) throws Exception;
 
     /**
-     * 运行主键
+     * 启动、停止
      *
      * @param
      * @return
@@ -84,6 +81,6 @@ public interface EtlService {
      * @param
      * @return
      */
-    String preview(String processorsCode) throws Exception;
+    String preview(PreviewDto dto) throws Exception;
 
 }

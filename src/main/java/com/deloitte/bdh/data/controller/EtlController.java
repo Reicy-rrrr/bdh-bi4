@@ -7,10 +7,7 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.integration.EtlService;
 import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiProcessors;
-import com.deloitte.bdh.data.model.request.CreateConnectionsDto;
-import com.deloitte.bdh.data.model.request.CreateOutProcessorsDto;
-import com.deloitte.bdh.data.model.request.JoinResourceDto;
-import com.deloitte.bdh.data.model.request.RunModelDto;
+import com.deloitte.bdh.data.model.request.*;
 import com.deloitte.bdh.data.model.resp.EtlProcessorsResp;
 import com.deloitte.bdh.data.model.resp.EtlRunModelResp;
 import io.swagger.annotations.ApiOperation;
@@ -84,16 +81,16 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.getProcessorsList(request.getData()));
     }
 
-    @ApiOperation(value = "预览 processors", notes = "预览 processors")
-    @PostMapping("/preview")
-    public RetResult<String> preview(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.preview(request.getData()));
-    }
-
     @ApiOperation(value = "运行/停止 model", notes = "运行/停止 model")
     @PostMapping("/runModel")
     public RetResult<EtlRunModelResp> runModel(@RequestBody @Validated RetRequest<RunModelDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.runModel(request.getData()));
+    }
+
+    @ApiOperation(value = "预览 ", notes = "预览 ")
+    @PostMapping("/preview")
+    public RetResult<String> preview(@RequestBody @Validated RetRequest<PreviewDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.preview(request.getData()));
     }
 
 }

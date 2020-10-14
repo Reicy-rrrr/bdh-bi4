@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.nifi;
 import com.deloitte.bdh.data.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.nifi.dto.Nifi;
 import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
+import com.deloitte.bdh.data.nifi.dto.RunContext;
 import com.deloitte.bdh.data.nifi.processors.Processors;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +15,26 @@ public class EtlProcessSelector<T extends Nifi> implements EtlProcess<T> {
     private Processors<ProcessorContext> biEtlProcess;
     @Resource(name = "biEtlConnections")
     private Processors<ConnectionsContext> biProcess;
-
+    @Resource(name = "biEtlRun")
+    private Processors<RunContext> biEtlRun;
 
     @Override
     public T process(T var) throws Exception {
+        //处理 Processor
         if (var instanceof ProcessorContext) {
             biEtlProcess.etl((ProcessorContext) var);
         }
+
+        //处理 Processors
         if (var instanceof ConnectionsContext) {
             biProcess.etl((ConnectionsContext) var);
         }
+
+        //启动、停止、预览
+        if (var instanceof RunContext) {
+            biEtlRun.etl((RunContext) var);
+        }
+
         return var;
     }
 }

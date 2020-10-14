@@ -130,7 +130,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         Map<String, Object> source = nifiProcessService.createProcessor(reqNifi);
 
         processor.setProcessId(MapUtils.getString(source, "id"));
-        processor.setVersion(NifiProcessUtil.getVersion(source));
+//        processor.setVersion(NifiProcessUtil.getVersion(source));
         processor.setRelationships(JsonUtil.obj2String(NifiProcessUtil.getRelationShip(source)));
         etlProcessorMapper.insert(processor);
         return processor;

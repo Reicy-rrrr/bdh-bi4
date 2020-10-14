@@ -11,5 +11,9 @@ public enum MethodEnum {
     SAVE,
     DELETE,
     UPDATE,
-    VALIDATE;
+    VALIDATE,
+    RUN,
+    STOP,
+    VIEW,
+    ;
 }

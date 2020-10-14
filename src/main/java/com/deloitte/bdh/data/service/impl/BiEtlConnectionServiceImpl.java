@@ -94,7 +94,7 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         Map<String, Object> connectionMap = nifiProcessService.createConnections(component, model.getProcessGroupId());
 
         connection.setConnectionId(MapUtils.getString(connectionMap, "id"));
-        connection.setVersion(NifiProcessUtil.getVersion(connectionMap));
+//        connection.setVersion(NifiProcessUtil.getVersion(connectionMap));
         etlConnectionMapper.insert(connection);
         return connection;
     }
