@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.service.impl;
 
-import com.deloitte.bdh.common.base.MongoHelper;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ExcelUtils;
@@ -16,7 +15,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -64,13 +62,16 @@ public class FtpServiceImpl implements FtpService {
     private String password;
 
     /**
+     * ftp服务器文件根目录
+     */
+    @Value("${ftp.server.root}")
+    private String root;
+
+    /**
      * ftp服务器文件存储路径
      */
     @Value("${ftp.server.path}")
     private String path;
-
-    @Autowired
-    private MongoHelper mongoHelper;
 
     @Override
     public FtpUploadResult uploadExcelFile(MultipartFile file, String tenantId) {
@@ -101,7 +102,7 @@ public class FtpServiceImpl implements FtpService {
         pathBuilder.append(FILE_SEPARATOR);
         pathBuilder.append(DateUtils.formatShortDate(new Date()));
         pathBuilder.append(FILE_SEPARATOR);
-        String remotePath = pathBuilder.toString();
+        String uploadPath = pathBuilder.toString();
 
         // 文件使用uuid重新命名
         String suffix = fileName.substring(fileName.lastIndexOf("."));
@@ -110,7 +111,7 @@ public class FtpServiceImpl implements FtpService {
         // 上传文件
         FtpUtil ftp = new FtpUtil(host, port, username, password);
         try {
-            boolean success = ftp.uploadFile(remotePath, finalName, file.getInputStream());
+            boolean success = ftp.uploadFile(uploadPath, finalName, file.getInputStream());
             if (!success) {
                 logger.warn("文件上传到ftp服务器失败");
                 throw new BizException("文件上传到ftp服务器失败");
@@ -123,9 +124,12 @@ public class FtpServiceImpl implements FtpService {
 
         BiEtlDbFile fileInfo = initFileInfo(file);
         fileInfo.setStoredFileName(finalName);
-        fileInfo.setFilePath(remotePath);
+        fileInfo.setFilePath(uploadPath);
         fileInfo.setTenantId(tenantId);
-        return new FtpUploadResult(host, String.valueOf(port), username, password, remotePath, finalName, fileInfo);
+
+        // 文件存储的完整全路径（访问时需要用完整路径）
+        String remoteFullPath = root + uploadPath;
+        return new FtpUploadResult(host, String.valueOf(port), username, password, remoteFullPath, finalName, fileInfo);
     }
 
     @Override
