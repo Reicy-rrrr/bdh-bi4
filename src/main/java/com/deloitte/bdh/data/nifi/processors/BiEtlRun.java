@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-
 @Service
 public class BiEtlRun extends AbStractProcessors<RunContext> {
     @Autowired
@@ -26,7 +25,7 @@ public class BiEtlRun extends AbStractProcessors<RunContext> {
                 processorsService.runState(context.getModel().getProcessGroupId(), RunStatusEnum.RUNNING.getKey(), true);
                 break;
             case STOP:
-                processorsService.stopAndClear(context.getModel().getProcessGroupId(), context.getModel().getCode());
+                processorsService.stopAndClearSync(context.getModel().getProcessGroupId(), context.getModel().getCode());
                 break;
             default:
         }
@@ -55,7 +54,7 @@ public class BiEtlRun extends AbStractProcessors<RunContext> {
     protected void end(RunContext context) throws Exception {
         switch (context.getMethod()) {
             case VIEW:
-                processorsService.stopAndClear(context.getModel().getProcessGroupId(), context.getModel().getCode());
+                processorsService.stopAndClearAsync(context.getModel().getProcessGroupId(), context.getModel().getCode());
                 break;
             case RUN:
                 logger.info("BiEtlRun.end.RUN : nothing");

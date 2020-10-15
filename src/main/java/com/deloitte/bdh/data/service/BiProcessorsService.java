@@ -21,7 +21,9 @@ public interface BiProcessorsService extends Service<BiProcessors> {
 
     void preview(RunContext context) throws Exception;
 
-    void stopAndClear(String processGroupId, String modelCode) throws Exception;
+    void stopAndClearSync(String processGroupId, String modelCode) throws Exception;
+
+    void stopAndClearAsync(String processGroupId, String modelCode) throws Exception;
 
     void runState(String id, String state, boolean isGroup) throws Exception;
 

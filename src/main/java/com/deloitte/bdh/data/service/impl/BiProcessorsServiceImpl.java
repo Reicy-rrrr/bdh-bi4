@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.enums.RunStatusEnum;
+import com.deloitte.bdh.data.integration.AsyncService;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiConnections;
 import com.deloitte.bdh.data.model.BiEtlConnection;
@@ -20,6 +21,7 @@ import com.deloitte.bdh.data.service.BiProcessorsService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +52,8 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     private BiEtlConnectionService biEtlConnectionService;
     @Autowired
     private NifiProcessService nifiProcessService;
+    @Autowired
+    private AsyncService asyncService;
 
     @Override
     public List<BiProcessors> getPreChain(String processorsCode) {
@@ -123,16 +127,24 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     }
 
     @Override
-    public void stopAndClear(String processGroupId, String modelCode) throws Exception {
-        //停止
-        this.runState(processGroupId, RunStatusEnum.STOP.getKey(), true);
-
+    public void stopAndClearSync(String processGroupId, String modelCode) throws Exception {
         //清空所有
         List<BiEtlConnection> connectionList = biEtlConnectionService.list(
                 new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelModelCode, modelCode)
         );
-        for (BiEtlConnection var : connectionList) {
-            nifiProcessService.dropConnections(var.getConnectionId());
+        if (CollectionUtils.isNotEmpty(connectionList)) {
+            asyncService.stopAndClearSync(processGroupId, modelCode, connectionList);
+        }
+    }
+
+    @Override
+    public void stopAndClearAsync(String processGroupId, String modelCode) throws Exception {
+        //清空所有
+        List<BiEtlConnection> connectionList = biEtlConnectionService.list(
+                new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelModelCode, modelCode)
+        );
+        if (CollectionUtils.isNotEmpty(connectionList)) {
+            asyncService.stopAndClearAsync(processGroupId, modelCode, connectionList);
         }
     }
 
