@@ -100,11 +100,14 @@ public class NifiProcessUtil {
     public static Map<String, Object> postParam(Map<String, Object> req, Map<String, Object> revision) {
         //统一设置请求参数
         Map<String, Object> postParam = Maps.newHashMap();
-
-        // revision 里的 version 必须一样,移除 clientId
-        revision.remove("clientId");
-        postParam.put("revision", revision);
         postParam.put("disconnectedNodeAcknowledged", false);
+
+        if (null != revision) {
+            // revision 里的 version 必须一样,移除 clientId
+            revision.remove("clientId");
+            postParam.put("revision", revision);
+        }
+
         if (null != req) {
             postParam.put("component", req);
         }

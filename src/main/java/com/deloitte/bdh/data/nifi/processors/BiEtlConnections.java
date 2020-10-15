@@ -23,16 +23,15 @@ public class BiEtlConnections extends AbStractProcessors<ConnectionsContext> {
             case SAVE:
                 // 处理connection
                 connection.pConnect(context);
-                return context;
-
+                break;
             case DELETE:
                 // 处理connection
                 connection.pConnect(context);
-                return context;
+                break;
             default:
-
+                throw new RuntimeException("BiEtlConnections.positive error:不支持的方法");
         }
-        return null;
+        return context;
     }
 
     @Override
@@ -48,7 +47,7 @@ public class BiEtlConnections extends AbStractProcessors<ConnectionsContext> {
                 connection.rConnect(context);
                 break;
             default:
-
+                throw new RuntimeException("BiEtlConnections.reverse error:不支持的方法");
         }
     }
 
@@ -66,11 +65,9 @@ public class BiEtlConnections extends AbStractProcessors<ConnectionsContext> {
                     throw new RuntimeException("校验失败:参数不合法");
                 }
                 break;
-            case VALIDATE:
             case UPDATE:
             default:
-                throw new Exception("不支持的方法类型");
-
+                throw new RuntimeException("BiEtlConnections.validateContext error:不支持的方法");
         }
     }
 }

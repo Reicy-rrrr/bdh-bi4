@@ -34,8 +34,7 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                 // 处理connection
                 connection.pConnect(context);
                 context.setConnectionComplete(true);
-                return context;
-
+                break;
             case DELETE:
                 // 处理connection
                 connection.pConnect(context);
@@ -43,29 +42,24 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                 // 处理processor
                 for (int i = 0; i < context.getProcessorList().size(); i++) {
                     context.addProcessorTemp(context.getProcessorList().get(i));
-                    //模拟报错
-//                    if (i == 1) {
-//                        int ti = 1 / 0;
-//                    }
                     SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                     context.getHasDelProcessorList().add(context.getTempProcessor());
                     context.removeProcessorTemp();
                 }
                 context.setProcessorComplete(true);
-                return context;
+                break;
             case UPDATE:
-                // 处理processor
                 for (ProcessorTypeEnum typeEnum : context.getEnumList()) {
                     SpringUtil.getBean(typeEnum.getType(), Processor.class).pProcess(context);
                 }
                 context.setProcessorComplete(true);
+                break;
             case VALIDATE:
                 break;
             default:
-
+                throw new RuntimeException("BiEtlProcess.positive error:不支持的方法");
         }
-
-        return null;
+        return context;
     }
 
     @Override
@@ -87,10 +81,8 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                     }
                 }
                 break;
-
             case UPDATE:
                 break;
-
             case DELETE:
                 if (!CollectionUtils.isEmpty(context.getHasDelProcessorList())) {
                     // 说明删除connection成功，先处理processor
@@ -107,8 +99,7 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                 break;
             case VALIDATE:
             default:
-                break;
-
+                throw new RuntimeException("BiEtlProcess.reverse error:不支持的方法");
         }
     }
 
@@ -124,17 +115,13 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                 break;
             case DELETE:
                 if (null == context.getBiEtlDatabaseInf() || CollectionUtils.isEmpty(context.getEnumList())
-                        || null == context.getProcessors() || CollectionUtils.isEmpty(context.getProcessorList())
-//                        || CollectionUtils.isEmpty(context.getConnectionList())
-                ) {
+                        || null == context.getProcessors() || CollectionUtils.isEmpty(context.getProcessorList())) {
                     throw new RuntimeException("校验失败:参数不合法");
                 }
                 break;
-            case VALIDATE:
             case UPDATE:
             default:
-                break;
-
+                throw new RuntimeException("BiEtlProcess.validateContext error:不支持的方法");
         }
     }
 }

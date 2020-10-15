@@ -89,8 +89,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         createProcessorDto.setProcessors(context.getProcessors());
         createProcessorDto.setParams(component);
         createProcessorDto.setSequence(context.getProcessorSequ().toString());
-        BiEtlProcessor biEtlProcessor = processorService.createProcessor(createProcessorDto);
-        return biEtlProcessor;
+        return processorService.createProcessor(createProcessorDto);
     }
 
 
