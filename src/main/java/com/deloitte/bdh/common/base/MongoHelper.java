@@ -176,7 +176,9 @@ public class MongoHelper<T> {
      * @return:java.util.List<T>
      */
     public List<T> selectList(String collectName, Class<T> clazz) {
-        return selectListByPage(collectName, clazz, null, null);
+        Query query = new Query();
+        // 往query中注入查询条件
+        return mongoTemplate.find(query, clazz, collectName);
     }
 
     /**
@@ -208,15 +210,24 @@ public class MongoHelper<T> {
      * @param size        每页条数
      * @return:java.util.List<T>
      */
-    public List<T> selectListByPage(String collectName, Class<T> clazz, Integer page, Integer size) {
+    public MongoPageResult<T> selectListByPage(String collectName, Class<T> clazz, Integer page, Integer size) {
+        MongoPageResult<T> pageResult = new MongoPageResult();
         // 设置分页参数
         Query query = new Query();
         // 设置分页信息，mongo是从第0条开始计算
-        if (!ObjectUtils.isEmpty(page) && ObjectUtils.isEmpty(size)) {
-            query.skip(size * (page - 1));
-            query.limit(size);
+        query.skip(size * (page - 1));
+        query.limit(size);
+        List<T> data = mongoTemplate.find(query, clazz, collectName);
+
+        pageResult.setRows(data);
+        long total = count(collectName);
+        pageResult.setTotal(total);
+        if (size * page >= total) {
+            pageResult.setMore(false);
+        } else {
+            pageResult.setMore(true);
         }
-        return mongoTemplate.find(query, clazz, collectName);
+        return pageResult;
     }
 
 
@@ -230,7 +241,8 @@ public class MongoHelper<T> {
      * @param size        每页条数
      * @return:java.util.List<T>
      */
-    public List<T> selectListByPage(String collectName, Map<String, String> conditions, Class<T> clazz, Integer page, Integer size) {
+    public MongoPageResult<T> selectListByPage(String collectName, Map<String, String> conditions, Class<T> clazz, Integer page, Integer size) {
+        MongoPageResult<T> pageResult = new MongoPageResult();
         if (ObjectUtils.isEmpty(conditions)) {
             return selectListByPage(collectName, clazz, page, size);
         } else {
@@ -240,7 +252,17 @@ public class MongoHelper<T> {
             query.limit(size);
             // 往query中注入查询条件
             conditions.forEach((key, value) -> query.addCriteria(Criteria.where(key).is(value)));
-            return mongoTemplate.find(query, clazz, collectName);
+            List<T> data = mongoTemplate.find(query, clazz, collectName);
+
+            pageResult.setRows(data);
+            long total = count(collectName, conditions);
+            pageResult.setTotal(total);
+            if (size * page >= total) {
+                pageResult.setMore(false);
+            } else {
+                pageResult.setMore(true);
+            }
+            return pageResult;
         }
     }
 

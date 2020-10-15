@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.nifi.processor.impl;
 
 
+import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.model.BiEtlDbRef;
 import com.deloitte.bdh.data.model.BiEtlParams;
@@ -10,6 +11,7 @@ import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,15 +22,16 @@ import java.util.stream.Collectors;
 @Service("SelectHiveQL")
 public class SelectHiveQL extends AbstractProcessor {
 
+    private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
 
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
         // 配置数据源的
         Map<String, Object> properties = Maps.newHashMap();
         properties.put("Hive Database Connection Pooling Service", context.getBiEtlDatabaseInf().getControllerServiceId());
-        properties.put("HiveQL Pre-Query", "pre");
-        properties.put("HiveQL Select Query", "select");
-        properties.put("HiveQL Post-Query", "post");
+//        properties.put("hive-pre-query", "");
+        properties.put("hive-query", QUERY.replace(NifiProcessUtil.TEMP, MapUtils.getString(context.getReq(), "SQL select query")));
+//        properties.put("hive-post-query", "");
 
         // 调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();

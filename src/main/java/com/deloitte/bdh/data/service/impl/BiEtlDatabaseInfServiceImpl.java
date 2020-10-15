@@ -20,7 +20,10 @@ import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.model.BiEtlDbFile;
 import com.deloitte.bdh.data.model.request.*;
-import com.deloitte.bdh.data.service.*;
+import com.deloitte.bdh.data.service.BiEtlDatabaseInfService;
+import com.deloitte.bdh.data.service.BiEtlDbFileService;
+import com.deloitte.bdh.data.service.FileReadService;
+import com.deloitte.bdh.data.service.FtpService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
@@ -60,9 +63,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Autowired
     private FileReadService fileReadService;
-
-    @Autowired
-    private BiEtlDbCSService biEtlDbCSService;
 
     @Autowired
     private BiEtlDbFileService biEtlDbFileService;
@@ -537,7 +537,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         createParams.put("name", inf.getName());
         createParams.put("comments", inf.getComments());
 
-        createParams.put("hive-db-connect-url", inf.getDbUser());
+        createParams.put("hive-db-connect-url", NifiProcessUtil.getDbUrl(inf.getType(), inf.getAddress(), inf.getPort(), inf.getDbName()));
+        createParams.put("hive-config-resources", "/data/hive-site.xml");
         createParams.put("hive-db-user", inf.getDbUser());
         createParams.put("hive-db-password", inf.getDbPassword());
         Map<String, Object> sourceMap = nifiProcessService.createOtherControllerService(createParams);
