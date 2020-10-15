@@ -25,23 +25,38 @@ public enum BiProcessorsTypeEnum {
                     break;
                 case Oracle:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
                     break;
                 case SQLServer:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
                     break;
                 case Hive:
                     list.add(ProcessorTypeEnum.SelectHiveQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
+                    break;
+                case Hive2:
+                    list.add(ProcessorTypeEnum.SelectHiveQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
                     break;
                 case File_Csv:
-                    list.add(ProcessorTypeEnum.GetFTP);
+                    list.add(ProcessorTypeEnum.GetMongo);
                     list.add(ProcessorTypeEnum.UpdateAttribute);
-                    list.add(ProcessorTypeEnum.ConvertRecord);
+//                    list.add(ProcessorTypeEnum.GetFTP);
+//                    list.add(ProcessorTypeEnum.UpdateAttribute);
+//                    list.add(ProcessorTypeEnum.ConvertRecord);
                     break;
                 case File_Excel:
-                    list.add(ProcessorTypeEnum.GetFTP);
-                    list.add(ProcessorTypeEnum.ConvertExcelToCSVProcessor);
+                    list.add(ProcessorTypeEnum.GetMongo);
                     list.add(ProcessorTypeEnum.UpdateAttribute);
-                    list.add(ProcessorTypeEnum.ConvertRecord);
+//                    list.add(ProcessorTypeEnum.GetFTP);
+//                    list.add(ProcessorTypeEnum.ConvertExcelToCSVProcessor);
+//                    list.add(ProcessorTypeEnum.UpdateAttribute);
+//                    list.add(ProcessorTypeEnum.ConvertRecord);
                     break;
                 default:
                     list.add(ProcessorTypeEnum.SelectHiveQL);

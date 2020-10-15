@@ -16,7 +16,7 @@ public enum ProcessorTypeEnum {
     PutSQL("PutSQL", "存入数据", "org.apache.nifi.processors.standard.PutSQL"),
     ConvertJSONToSQL("ConvertJSONToSQL", "Json转Sql", "org.apache.nifi.processors.standard.ConvertJSONToSQL"),
     ConvertExcelToCSVProcessor("ConvertExcelToCSVProcessor", "Excel文件转Csv文件", "org.apache.nifi.processors.poi.ConvertExcelToCSVProcessor"),
-
+    GetMongo("GetMongo", "Mongodb查询集合", "org.apache.nifi.processors.mongodb.GetMongo");
     ;
 
 
