@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.integration.NifiProcessService;
 import com.deloitte.bdh.data.model.*;
@@ -39,8 +38,6 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
 
     @Autowired
     private NifiProcessService nifiProcessService;
-    @Autowired
-    private BiProcessorsService processorsService;
     @Autowired
     private BiEtlModelService etlModelService;
     @Autowired
