@@ -11,7 +11,6 @@ import com.deloitte.bdh.data.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.nifi.processor.AbstractProcessor;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
