@@ -128,8 +128,11 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         for (Map.Entry<String, Object> var : source.entrySet()) {
             String key = var.getKey();
             Object value = var.getValue();
-            String code = GenerateCodeUtil.genParam();
+            if ("position".equals(key)) {
+                continue;
+            }
 
+            String code = GenerateCodeUtil.genParam();
             if (refParamCode == null) {
                 refParamCode = code;
             }
@@ -142,12 +145,9 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
             params.setParamsComponent("PROCESSOR");
             params.setRelCode(processorCode);
             params.setRelProcessorsCode(context.getProcessors().getCode());
-//            params.setRelProcessorsCode("context.getProcessors().getCode()");
             params.setCreateDate(LocalDateTime.now());
             params.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-//            params.setCreateUser("MapUtils.getString(context.getReq())");
             params.setTenantId(context.getProcessors().getTenantId());
-//            params.setTenantId("context.getProcessors().getTenantId()");
             params.setParentCode(refParamCode);
             list.add(params);
 
@@ -213,24 +213,4 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         return source;
     }
 
-//    public static void main(String[] args) {
-//        Map<String, Object> properties = Maps.newHashMap();
-//        properties.put("SQL select query", "SQL select query");
-//        properties.put("Database Connection Pooling Service", "SQL 333 query");
-//        //调度相关的默认值
-//        Map<String, Object> config = Maps.newHashMap();
-//        config.put("schedulingPeriod", "1 * * * * ?");
-//        config.put("schedulingStrategy", "CRON_DRIVEN");
-//        config.put("properties", properties);
-//
-//        //processor 公共的
-//        Map<String, Object> component = Maps.newHashMap();
-//        component.put("name", "SQL select 3333");
-//        component.put("type", ProcessorTypeEnum.ExecuteSQL.getvalue());
-//        component.put("config", config);
-//
-//        List<BiEtlParams> list=AbstractProcessor.transferToParams(null, "123", component, null, true);
-//        Map<String, Object> map= transferToMap(list);
-//        System.out.println(JsonUtil.obj2String(map));
-//    }
 }
