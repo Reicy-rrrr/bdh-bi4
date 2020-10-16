@@ -92,10 +92,10 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
     /**
      * 测试连接
      *
-     * @param dbId
+     * @param dto
      * @return
      */
-    String testConnection(String dbId) throws Exception;
+    String testConnection(TestConnectionDto dto) throws Exception;
 
     /**
      * 获取数据源下所有表集合

@@ -343,10 +343,14 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public String testConnection(String dbId) throws Exception {
+    public String testConnection(TestConnectionDto dto) throws Exception {
         DbContext context = new DbContext();
         context.setMethod(0);
-        context.setDbId(dbId);
+        context.setSourceTypeEnum(SourceTypeEnum.values(dto.getDbType()));
+        context.setDbUrl(NifiProcessUtil.getDbUrl(dto.getDbType(), dto.getIp(), dto.getPort(), dto.getDbName()));
+        context.setDbUserName(dto.getDbUserName());
+        context.setDbPassword(dto.getDbPassword());
+        context.setDriverName(SourceTypeEnum.getDriverNameByType(dto.getDbType()));
         return dbSelector.work(context);
     }
 

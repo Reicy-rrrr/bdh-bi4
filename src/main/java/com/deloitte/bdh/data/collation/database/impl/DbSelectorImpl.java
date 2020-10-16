@@ -20,14 +20,15 @@ public class DbSelectorImpl implements DbSelector {
     @Override
     public String work(DbContext context) throws Exception {
         String result;
-        context(context);
         switch (context.getMethod()) {
             case 1:
                 //getTable
+                context(context);
                 result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).getTables(context);
                 break;
             case 2:
                 //getFields
+                context(context);
                 result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).getFields(context);
                 break;
             default:
