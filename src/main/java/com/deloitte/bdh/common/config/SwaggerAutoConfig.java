@@ -20,7 +20,7 @@ public class SwaggerAutoConfig {
 		return new Docket(DocumentationType.SWAGGER_2)
 				.apiInfo(ApiInfo.DEFAULT)
 				.select()
-				.apis(RequestHandlerSelectors.basePackage("com.deloitte.bdh.data.controller"))
+				.apis(RequestHandlerSelectors.basePackage("com.deloitte.bdh.data"))
 				.paths(PathSelectors.any())
 				.build();
 	}
