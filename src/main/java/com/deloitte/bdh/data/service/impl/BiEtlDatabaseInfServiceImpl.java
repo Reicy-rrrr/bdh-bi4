@@ -12,6 +12,8 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.dao.bi.BiEtlDatabaseInfMapper;
+import com.deloitte.bdh.data.db.DbSelector;
+import com.deloitte.bdh.data.db.dto.DbContext;
 import com.deloitte.bdh.data.enums.EffectEnum;
 import com.deloitte.bdh.data.enums.FileTypeEnum;
 import com.deloitte.bdh.data.enums.PoolTypeEnum;
@@ -56,19 +58,17 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Resource
     private BiEtlDatabaseInfMapper biEtlDatabaseInfMapper;
     @Autowired
-    NifiProcessService nifiProcessService;
-
+    private NifiProcessService nifiProcessService;
     @Autowired
     private FtpService ftpService;
-
     @Autowired
     private FileReadService fileReadService;
-
     @Autowired
     private BiEtlDbFileService biEtlDbFileService;
-
     @Autowired
     private MongoHelper mongoHelper;
+    @Autowired
+    private DbSelector dbSelector;
 
     @Override
     public PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto) {
@@ -114,10 +114,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             case Oracle:
                 inf = createResourceFromDB(dto);
                 break;
-            case Mysql_8:
-                inf = createResourceFromDB(dto);
-                break;
-            case Mysql_7:
+            case Mysql:
                 inf = createResourceFromDB(dto);
                 break;
             default:
@@ -345,6 +342,31 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         }
     }
 
+    @Override
+    public String testConnection(String dbId) throws Exception {
+        DbContext context = new DbContext();
+        context.setMethod(0);
+        context.setDbId(dbId);
+        return dbSelector.work(context);
+    }
+
+    @Override
+    public String getTables(String dbId) throws Exception {
+        DbContext context = new DbContext();
+        context.setMethod(1);
+        context.setDbId(dbId);
+        return dbSelector.work(context);
+    }
+
+    @Override
+    public String getFields(String dbId, String tableName) throws Exception {
+        DbContext context = new DbContext();
+        context.setMethod(2);
+        context.setDbId(dbId);
+        context.setTableName(tableName);
+        return dbSelector.work(context);
+    }
+
 
     private BiEtlDatabaseInf updateResourceFromMysql(UpdateResourcesDto dto) throws Exception {
         if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
@@ -470,7 +492,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     private BiEtlDatabaseInf createResourceFromDB(CreateResourcesDto dto) throws Exception {
-        if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
+        if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
 
@@ -481,9 +503,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
 
         //todo 应该读取配置
-        if (SourceTypeEnum.Mysql_8.getType().equals(dto.getType())) {
-            inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
-        } else if (SourceTypeEnum.Mysql_7.getType().equals(dto.getType())) {
+        if (SourceTypeEnum.Mysql.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
         } else if (SourceTypeEnum.Oracle.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/ojdbc8-19.7.0.0.jar");
@@ -516,7 +536,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     private BiEtlDatabaseInf createResourceFromHive(CreateResourcesDto dto) throws Exception {
-        if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
+        if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
 

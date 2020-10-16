@@ -13,12 +13,7 @@ public enum BiProcessorsTypeEnum {
             List<ProcessorTypeEnum> list = Lists.newLinkedList();
             SourceTypeEnum typeEnum = SourceTypeEnum.values(str);
             switch (typeEnum) {
-                case Mysql_8:
-                    list.add(ProcessorTypeEnum.ExecuteSQL);
-                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
-                    list.add(ProcessorTypeEnum.UpdateAttribute);
-                    break;
-                case Mysql_7:
+                case Mysql:
                     list.add(ProcessorTypeEnum.ExecuteSQL);
                     list.add(ProcessorTypeEnum.ConvertAvroToJSON);
                     list.add(ProcessorTypeEnum.UpdateAttribute);

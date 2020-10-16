@@ -97,4 +97,22 @@ public class BiSourceController {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.updateResource(request.getData()));
     }
 
+    @ApiOperation(value = "测试连接", notes = "测试连接")
+    @PostMapping("/testConnection")
+    public RetResult<String> testConnection(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.testConnection(request.getData()));
+    }
+
+    @ApiOperation(value = "获取数据源下所有表集合", notes = "获取数据源下所有表集合")
+    @PostMapping("/getTables")
+    public RetResult<String> getTables(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getTables(request.getData()));
+    }
+
+    @ApiOperation(value = "获取表所有字段集合", notes = "获取表所有字段集合")
+    @PostMapping("/getFields")
+    public RetResult<String> getFields(@RequestBody @Validated RetRequest<GetFieldsDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getFields(request.getData().getId(), request.getData().getTableName()));
+    }
+
 }

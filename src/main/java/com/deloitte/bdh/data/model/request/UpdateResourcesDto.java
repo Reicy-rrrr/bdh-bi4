@@ -32,9 +32,9 @@ public class UpdateResourcesDto {
     @NotNull(message = "描述 不能为空")
     private String comments;
 
-    @ApiModelProperty(value = "数据源类型（1:mysql8.*;2:msql7.*;3:oracle）", required = true)
+    @ApiModelProperty(value = "数据源类型（1:mysql3:oracle）", required = true)
     @NotNull(message = "数据源类型 不能为空")
-    private String type = SourceTypeEnum.Mysql_8.getType();
+    private String type = SourceTypeEnum.Mysql.getType();
 
     @ApiModelProperty(value = "数据库名称", example = "1", required = true)
     private String dbName;

@@ -88,4 +88,28 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @return
      */
     BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception;
+
+    /**
+     * 测试连接
+     *
+     * @param dbId
+     * @return
+     */
+    String testConnection(String dbId) throws Exception;
+
+    /**
+     * 获取数据源下所有表集合
+     *
+     * @param dbId
+     * @return
+     */
+    String getTables(String dbId) throws Exception;
+
+    /**
+     * 获取表所有字段集合
+     *
+     * @param dbId
+     * @return
+     */
+    String getFields(String dbId, String tableName) throws Exception;
 }
