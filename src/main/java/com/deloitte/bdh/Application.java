@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication(exclude = {DynamicDataSourceAutoConfiguration.class,
         RedisAutoConfiguration.class, CacheAutoConfiguration.class})
-@MapperScan(basePackages = {"com.deloitte.bdh.*.dao"})
+@MapperScan(basePackages = {"com.deloitte.bdh.*.*.dao"})
 @EnableAsync
 public class Application {
 

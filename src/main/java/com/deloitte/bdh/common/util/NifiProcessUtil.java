@@ -1,7 +1,6 @@
 package com.deloitte.bdh.common.util;
 
-import com.deloitte.bdh.data.enums.NifiEnum;
-import com.deloitte.bdh.data.enums.SourceTypeEnum;
+import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
