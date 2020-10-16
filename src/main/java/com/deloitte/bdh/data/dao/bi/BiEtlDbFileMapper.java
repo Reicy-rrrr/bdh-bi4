@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
  * @author chenghzhang
  * @since 2020-10-12
  */
-@Repository
 public interface BiEtlDbFileMapper extends Mapper<BiEtlDbFile> {
 
 }

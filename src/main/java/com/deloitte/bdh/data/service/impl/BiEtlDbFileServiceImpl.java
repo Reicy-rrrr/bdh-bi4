@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,10 +40,11 @@ import java.util.List;
 @Slf4j
 public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, BiEtlDbFile> implements BiEtlDbFileService {
 
+    @Resource
     private BiEtlDbFileMapper biEtlDbFileMapper;
-
+    @Autowired
     private FtpService ftpService;
-
+    @Autowired
     private FileReadService fileReadService;
 
     @Override
@@ -138,18 +140,4 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
         return Boolean.TRUE;
     }
 
-    @Autowired
-    public void setBiEtlDbFileMapper(BiEtlDbFileMapper biEtlDbFileMapper) {
-        this.biEtlDbFileMapper = biEtlDbFileMapper;
-    }
-
-    @Autowired
-    public void setFtpService(FtpService ftpService) {
-        this.ftpService = ftpService;
-    }
-
-    @Autowired
-    public void setFileReadService(FileReadService fileReadService) {
-        this.fileReadService = fileReadService;
-    }
 }

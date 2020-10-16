@@ -9,9 +9,9 @@ import com.deloitte.bdh.data.dao.bi.BiEtlDbServiceMapper;
 import com.deloitte.bdh.data.model.BiEtlDbService;
 import com.deloitte.bdh.data.service.BiEtlDbCSService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -26,7 +26,7 @@ import java.util.List;
 @DS(DSConstant.BI_DB)
 public class BiEtlDbCSServiceImpl extends AbstractService<BiEtlDbServiceMapper, BiEtlDbService> implements BiEtlDbCSService {
 
-    @Autowired
+    @Resource
     private BiEtlDbServiceMapper biEtlDbServiceMapper;
 
     @Override
