@@ -96,6 +96,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BiEtlDatabaseInf inf = null;
         SourceTypeEnum typeEnum = SourceTypeEnum.values(dto.getType());
         switch (typeEnum) {
+            case Hana:
+                inf = createResourceFromDB(dto);
+                break;
             case File_Csv:
                 inf = createResourceFromFile(dto);
                 break;
@@ -513,6 +516,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/ojdbc8-19.7.0.0.jar");
         } else if (SourceTypeEnum.SQLServer.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/sqljdbc4-4.0.jar");
+        } else if (SourceTypeEnum.Hana.getType().equals(dto.getType())) {
+            inf.setDriverLocations("/data/hana/ngdbc-2.3.56.jar");
         }
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
