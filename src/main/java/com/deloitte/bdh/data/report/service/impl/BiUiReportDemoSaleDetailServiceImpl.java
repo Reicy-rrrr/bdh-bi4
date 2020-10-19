@@ -29,9 +29,9 @@ public class BiUiReportDemoSaleDetailServiceImpl extends AbstractService<BiUiRep
     @Override
     public PageResult<List<BiUiReportDemoSaleDetail>> getResources(GetResourcesDto dto) {
         LambdaQueryWrapper<BiUiReportDemoSaleDetail> query = new LambdaQueryWrapper();
-        if (!StringUtil.isEmpty(dto.getTenantId())) {
-            query.eq(BiUiReportDemoSaleDetail::getTenantId, dto.getTenantId());
-        }
+//        if (!StringUtil.isEmpty(dto.getTenantId())) {
+//            query.eq(BiUiReportDemoSaleDetail::getTenantId, dto.getTenantId());
+//        }
         query.orderByDesc(BiUiReportDemoSaleDetail::getCreateDate);
         PageInfo<BiUiReportDemoSaleDetail> pageInfo = new PageInfo(this.list(query));
         PageResult pageResult = new PageResult(pageInfo);

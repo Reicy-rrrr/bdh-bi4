@@ -31,7 +31,7 @@ public class BiUiReportDemoSaleDetailController {
     @Resource
     BiUiReportDemoSaleDetailService biUiReportDemoSaleDetailService;
 
-    @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
+    @ApiOperation(value = "获取demo数据的分页数据", notes = "获取demo数据的分页数据,不和租户信息挂钩")
     @PostMapping("/getResources")
     public RetResult<PageResult> getResources(@RequestBody @Validated RetRequest<GetResourcesDto> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
