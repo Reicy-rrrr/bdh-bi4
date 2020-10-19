@@ -53,6 +53,10 @@ public enum BiProcessorsTypeEnum {
 //                    list.add(ProcessorTypeEnum.UpdateAttribute);
 //                    list.add(ProcessorTypeEnum.ConvertRecord);
                     break;
+                case Hana:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
                 default:
                     list.add(ProcessorTypeEnum.SelectHiveQL);
             }
