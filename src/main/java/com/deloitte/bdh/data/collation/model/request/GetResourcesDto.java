@@ -14,8 +14,10 @@ import javax.validation.constraints.NotNull;
 @ToString
 public class GetResourcesDto extends PageDto {
 
+    @ApiModelProperty(value = "name", example = "00001")
+    private String name;
+
     @ApiModelProperty(value = "tenantId", example = "0", required = true)
     @NotNull(message = "租户id不能为空")
     private String tenantId;
-
 }

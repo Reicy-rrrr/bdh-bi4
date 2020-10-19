@@ -11,8 +11,6 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.service.FileReadService;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
@@ -23,8 +21,10 @@ import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
+import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlDbFileService;
+import com.deloitte.bdh.data.collation.service.FileReadService;
 import com.deloitte.bdh.data.collation.service.FtpService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
@@ -76,6 +76,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (!StringUtil.isEmpty(dto.getTenantId())) {
             fUOLamQW.eq(BiEtlDatabaseInf::getTenantId, dto.getTenantId());
         }
+        // 根据数据源名称模糊查询
+        if (StringUtils.isNotBlank(dto.getName())) {
+            fUOLamQW.like(BiEtlDatabaseInf::getName, dto.getName());
+        }
         fUOLamQW.orderByDesc(BiEtlDatabaseInf::getCreateDate);
         PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo(this.list(fUOLamQW));
         PageResult pageResult = new PageResult(pageInfo);
@@ -96,6 +100,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BiEtlDatabaseInf inf = null;
         SourceTypeEnum typeEnum = SourceTypeEnum.values(dto.getType());
         switch (typeEnum) {
+            case Hana:
+                inf = createResourceFromDB(dto);
+                break;
             case File_Csv:
                 inf = createResourceFromFile(dto);
                 break;
@@ -513,6 +520,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/ojdbc8-19.7.0.0.jar");
         } else if (SourceTypeEnum.SQLServer.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/sqljdbc4-4.0.jar");
+        } else if (SourceTypeEnum.Hana.getType().equals(dto.getType())) {
+            inf.setDriverLocations("/data/hana/ngdbc-2.3.56.jar");
         }
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
