@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ExcelUtils;
 import com.deloitte.bdh.common.util.FtpUtil;
 import com.deloitte.bdh.common.util.UUIDUtil;
+import com.deloitte.bdh.data.collation.enums.FileTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
 import com.deloitte.bdh.data.collation.model.resp.FtpUploadResult;
 import com.deloitte.bdh.data.collation.model.resp.JsonTemplate;
@@ -36,6 +37,10 @@ public class FtpServiceImpl implements FtpService {
     private static final Logger logger = LoggerFactory.getLogger(FtpServiceImpl.class);
 
     private static final String FILE_SEPARATOR = "/";
+
+    private static final long CSV_MAX_SIZE = 50 * 1024 * 1024;
+
+    private static final long EXCEL_MAX_SIZE = 20 * 1024 * 1024;
 
     /**
      * ftp地址
@@ -86,9 +91,19 @@ public class FtpServiceImpl implements FtpService {
             throw new BizException("上传文件名不能为空");
         }
 
+        String fileType = file.getContentType();
         if (!checkExcelFormat(file)) {
-            logger.warn("上传文件格式错误，文件名[{}]，文件类型[{}]。", fileName, file.getContentType());
+            logger.warn("上传文件格式错误，文件名[{}]，文件类型[{}]。", fileName, fileType);
             throw new BizException("上传文件格式错误");
+        }
+
+        long fileSize = file.getSize();
+        if (FileTypeEnum.Csv.getType().equals(fileType) && fileSize > CSV_MAX_SIZE) {
+            logger.warn("上传CSV文件超出预定大小，实际大小为[{}]。", fileSize);
+            throw new BizException("CSV文件上传最大支持50M，请重新上传！");
+        } else if (fileSize > EXCEL_MAX_SIZE) {
+            logger.warn("上传EXCEL文件超出预定大小，实际大小为[{}]。", fileSize);
+            throw new BizException("EXCEL文件上传最大支持20M，请重新上传！");
         }
 
         // 文件上传地址：根路径 + 租户id + 日期（yyyyMMdd）
