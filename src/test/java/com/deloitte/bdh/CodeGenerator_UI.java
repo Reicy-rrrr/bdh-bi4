@@ -159,7 +159,7 @@ public class CodeGenerator_UI {
 		strategy.setSuperServiceImplClass("com.deloitte.bdh.common.base.AbstractService");
 		// 公共父类
 		// 写于父类中的公共字段
-		strategy.setInclude("BI_UI_REPORT_PAGE","BI_UI_REPORT_PAGE_CONFIG","BI_UI_REPORT_DEMO_SALE_DETAIL");
+		strategy.setInclude("BI_UI_MODEL_FIELD","BI_UI_MODEL_FOLDER");
 		strategy.setControllerMappingHyphenStyle(false);
 		mpg.setStrategy(strategy);
 		mpg.setTemplateEngine(new FreemarkerTemplateEngine());

@@ -1,3 +1,43 @@
+-- 数据模型 数据来源
+create table BI_UI_MODEL_FOLDER
+(
+    ID                  int auto_increment
+        primary key,
+    MODEL_ID int null comment '数据模型id',
+    PARENT_ID int null comment '上级id',
+    NAME  varchar(150)  null comment '名称',
+    TYPE   varchar(150)  null comment '文件夹/字段',
+    CREATE_DATE         timestamp(6) not null,
+    CREATE_USER         varchar(50)  not null,
+    MODIFIED_DATE       timestamp(6) null,
+    MODIFIED_USER       varchar(50)  null,
+    IP                  varchar(40)  null,
+    TENANT_ID           varchar(50)  not null
+);
+
+create table BI_UI_MODEL_FIELD
+(
+    ID                  int auto_increment
+        primary key,
+    MODEL_ID int null comment '数据模型id',
+    FOLDER_ID int null comment '所在文件夹',
+    ALIAS_NAME  varchar(150)  null comment '别名',
+--     SOURCE_ID  varchar(150)  null comment '来源id',
+    SOURCE_FIELD  varchar(150)  null comment '物理字段名',
+    IS_HIDDEN BIT  null comment '是否隐藏',
+    SORT_ORDER int null comment '排序',
+    DATA_TYPE varchar(150) null comment '数据类型',
+    IS_DIMENTION BIT null comment '是否维度',
+    IS_MENSURE BIT null comment '是否度量',
+    GEO_INFO_TYPE varchar(150) null comment '地理信息类型',
+    CREATE_DATE         timestamp(6) not null,
+    CREATE_USER         varchar(50)  not null,
+    MODIFIED_DATE       timestamp(6) null,
+    MODIFIED_USER       varchar(50)  null,
+    IP                  varchar(40)  null,
+    TENANT_ID           varchar(50)  not null
+);
+
 -- auto-generated definition
 create table BI_UI_REPORT_PAGE
 (
@@ -16,6 +56,21 @@ create table BI_UI_REPORT_PAGE
 
 -- auto-generated definition
 create table BI_UI_REPORT_PAGE_CONFIG
+(
+    ID                  int auto_increment
+        primary key,
+    PAGE_ID int NOT NULL  comment '报表ID',
+    CONTENT json null comment 'json配置内容',
+    CREATE_DATE         timestamp(6) not null,
+    CREATE_USER         varchar(50)  not null,
+    MODIFIED_DATE       timestamp(6) null,
+    MODIFIED_USER       varchar(50)  null,
+    IP                  varchar(40)  null,
+    TENANT_ID           varchar(50)  not null
+);
+
+-- auto-generated definition
+create table BI_UI_DATA_MODEL
 (
     ID                  int auto_increment
         primary key,
