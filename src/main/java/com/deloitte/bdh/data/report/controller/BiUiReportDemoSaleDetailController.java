@@ -26,7 +26,7 @@ import javax.annotation.Resource;
  * @since 2020-10-19
  */
 @RestController
-@RequestMapping("/biUiReportDemoSaleDetail")
+@RequestMapping("/bi/ui/report/demoSaleDetail")
 public class BiUiReportDemoSaleDetailController {
     @Resource
     BiUiReportDemoSaleDetailService biUiReportDemoSaleDetailService;
