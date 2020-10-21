@@ -14,6 +14,8 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
+import com.deloitte.bdh.data.collation.database.vo.TableData;
+import com.deloitte.bdh.data.collation.database.vo.TableSchema;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.FileTypeEnum;
 import com.deloitte.bdh.data.collation.enums.PoolTypeEnum;
@@ -352,32 +354,48 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public String testConnection(TestConnectionDto dto) throws Exception {
         DbContext context = new DbContext();
-        context.setMethod(0);
         context.setSourceTypeEnum(SourceTypeEnum.values(dto.getDbType()));
         context.setDbUrl(NifiProcessUtil.getDbUrl(dto.getDbType(), dto.getIp(), dto.getPort(), dto.getDbName()));
         context.setDbUserName(dto.getDbUserName());
         context.setDbPassword(dto.getDbPassword());
         context.setDriverName(SourceTypeEnum.getDriverNameByType(dto.getDbType()));
-        return dbSelector.work(context);
+        return dbSelector.test(context);
     }
 
     @Override
-    public String getTables(String dbId) throws Exception {
+    public List<String> getTables(String dbId) throws Exception {
         DbContext context = new DbContext();
-        context.setMethod(1);
         context.setDbId(dbId);
-        return dbSelector.work(context);
+        return dbSelector.getTables(context);
     }
 
     @Override
-    public String getFields(String dbId, String tableName) throws Exception {
+    public List<String> getFields(String dbId, String tableName) throws Exception {
         DbContext context = new DbContext();
-        context.setMethod(2);
         context.setDbId(dbId);
         context.setTableName(tableName);
-        return dbSelector.work(context);
+        return dbSelector.getFields(context);
     }
 
+    @Override
+    public TableSchema getTableSchema(GetTableSchemaDto dto) throws Exception {
+        DbContext context = new DbContext();
+        context.setDbId(dto.getDbId());
+        context.setTableName(dto.getTableName());
+        TableSchema schema = dbSelector.getTableSchema(context);
+        return schema;
+    }
+
+    @Override
+    public TableData getTableData(GetTableDataDto dto) throws Exception {
+        DbContext context = new DbContext();
+        context.setDbId(dto.getDbId());
+        context.setTableName(dto.getTableName());
+        context.setPage(dto.getPage());
+        context.setSize(dto.getSize());
+        TableData data = dbSelector.getTableData(context);
+        return data;
+    }
 
     private BiEtlDatabaseInf updateResourceFromMysql(UpdateResourcesDto dto) throws Exception {
         if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {

@@ -12,13 +12,11 @@ import org.springframework.stereotype.Service;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Service
-public class Oracle extends AbstractProcess implements DbProcess {
+public class Sqlserver extends AbstractProcess implements DbProcess {
+
     @Override
     public String test(DbContext context) throws Exception {
         Connection con = super.connection(context);
@@ -33,7 +31,7 @@ public class Oracle extends AbstractProcess implements DbProcess {
         ResultSet result = statement.executeQuery();
         List<String> list = Lists.newArrayList();
         while (result.next()) {
-            list.add(result.getString("TABLE_NAME"));
+            list.add(result.getString("name"));
         }
         super.close(con);
         return list;
@@ -73,39 +71,24 @@ public class Oracle extends AbstractProcess implements DbProcess {
 
     @Override
     public TableData getTableData(DbContext context) throws Exception {
-        TableData tableData = super.getTableData(context);
-        tableData.getRows().forEach(rowData -> {
-            for (Map.Entry<String, Object> entry : rowData.entrySet()) {
-                Object value = entry.getValue();
-                if (value instanceof oracle.sql.TIMESTAMP) {
-                    try {
-                        entry.setValue(new Date(((oracle.sql.TIMESTAMP) value).dateValue().getTime()));
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        return tableData;
+        return super.getTableData(context);
     }
 
     @Override
     public String tableSql(DbContext context) {
-        return "SELECT * FROM all_tables WHERE OWNER = '" + context.getDbUserName().toUpperCase() + "' ORDER BY table_name";
+        return "SELECT * FROM sysobjects WHERE XTYPE='U'";
     }
 
     @Override
     public String fieldSql(DbContext context) {
-        return "SELECT * FROM user_tab_columns WHERE TABLE_NAME=UPPER('" + context.getTableName().toUpperCase() + "')";
+        return "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + context.getTableName() + "'";
     }
 
     @Override
     protected String selectSql(DbContext context) {
         Integer page = context.getPage();
         Integer size = context.getSize();
-        int start = (page - 1) * size + 1;
-        int end = page * size;
-        return "SELECT * FROM (SELECT tmp.*, ROWNUM AS ROW_NO FROM (SELECT * FROM " + context.getTableName()
-                + ") tmp) WHERE ROW_NO BETWEEN " + start + " AND " + end;
+        int start = (page - 1) * size;
+        return "SELECT * FROM " + context.getTableName() + " LIMIT " + start + ", " + size;
     }
 }

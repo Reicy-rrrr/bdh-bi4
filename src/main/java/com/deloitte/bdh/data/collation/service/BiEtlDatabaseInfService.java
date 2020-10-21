@@ -2,6 +2,8 @@ package com.deloitte.bdh.data.collation.service;
 
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.collation.database.vo.TableData;
+import com.deloitte.bdh.data.collation.database.vo.TableSchema;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.*;
 
@@ -103,7 +105,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dbId
      * @return
      */
-    String getTables(String dbId) throws Exception;
+    List<String> getTables(String dbId) throws Exception;
 
     /**
      * 获取表所有字段集合
@@ -111,5 +113,23 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dbId
      * @return
      */
-    String getFields(String dbId, String tableName) throws Exception;
+    List<String> getFields(String dbId, String tableName) throws Exception;
+
+    /**
+     * 查询表结构
+     *
+     * @param dto 查询表结构dto
+     * @return com.deloitte.bdh.data.collation.database.vo.TableSchema
+     * @throws Exception
+     */
+    TableSchema getTableSchema(GetTableSchemaDto dto) throws Exception;
+
+    /**
+     * 查询表数据
+     *
+     * @param dto 查询表数据dto
+     * @return com.deloitte.bdh.data.collation.database.vo.TableData
+     * @throws Exception
+     */
+    TableData getTableData(GetTableDataDto dto) throws Exception;
 }

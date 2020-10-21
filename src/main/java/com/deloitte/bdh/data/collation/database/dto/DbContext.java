@@ -9,6 +9,9 @@ public class DbContext {
     private Integer method;
     private String dbId;
     private String tableName;
+    //page param
+    private Integer page;
+    private Integer size;
 
     //process
     private SourceTypeEnum sourceTypeEnum;
