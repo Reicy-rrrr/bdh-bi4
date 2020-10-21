@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.database.impl;
 
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.collation.database.DbProcess;
+import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.vo.TableData;
 import com.deloitte.bdh.data.collation.database.vo.TableField;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class Oracle extends AbstractProcess implements DbProcess {
+public class Oracle extends AbstractProcess implements DbSelector {
     @Override
     public String test(DbContext context) throws Exception {
         Connection con = super.connection(context);

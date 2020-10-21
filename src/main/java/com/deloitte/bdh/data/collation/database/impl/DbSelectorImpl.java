@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.database.impl;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
-import com.deloitte.bdh.data.collation.database.DbProcess;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.vo.TableData;
@@ -22,32 +21,32 @@ public class DbSelectorImpl implements DbSelector {
 
     @Override
     public String test(DbContext context) throws Exception {
-        return SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).test(context);
+        return SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).test(context);
     }
 
     @Override
     public List<String> getTables(DbContext context) throws Exception {
         context(context);
-        return SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).getTables(context);
+        return SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).getTables(context);
     }
 
     @Override
     public List<String> getFields(DbContext context) throws Exception {
         context(context);
-        return SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).getFields(context);
+        return SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).getFields(context);
     }
 
     @Override
     public TableSchema getTableSchema(DbContext context) throws Exception {
         context(context);
-        TableSchema result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).getTableSchema(context);
+        TableSchema result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).getTableSchema(context);
         return result;
     }
 
     @Override
     public TableData getTableData(DbContext context) throws Exception {
         context(context);
-        TableData result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbProcess.class).getTableData(context);
+        TableData result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).getTableData(context);
         return result;
     }
 

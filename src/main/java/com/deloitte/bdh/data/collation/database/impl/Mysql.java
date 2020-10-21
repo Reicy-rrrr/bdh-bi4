@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.database.impl;
 
-import com.deloitte.bdh.data.collation.database.DbProcess;
+import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.vo.TableData;
 import com.deloitte.bdh.data.collation.database.vo.TableField;
@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.util.List;
 
 @Service
-public class Mysql extends AbstractProcess implements DbProcess {
+public class Mysql extends AbstractProcess implements DbSelector {
 
     @Override
     public String test(DbContext context) throws Exception {

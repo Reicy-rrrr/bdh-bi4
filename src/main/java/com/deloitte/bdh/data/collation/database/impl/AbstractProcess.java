@@ -50,6 +50,7 @@ public abstract class AbstractProcess {
         Connection con = this.connection(context);
         PreparedStatement statement = con.prepareStatement(countSql(context));
         ResultSet result = statement.executeQuery();
+        this.close(con);
         long count = 0L;
         while (result.next()) {
             count = result.getLong(1);
