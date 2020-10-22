@@ -9,11 +9,14 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.request.AnalyseCategoryReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.request.InitTenantReq;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
+import com.deloitte.bdh.data.analyse.service.BiUiAnalyseDefaultCategoryService;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +43,8 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
 
     @Resource
     BiUiAnalyseCategoryMapper biuiAnalyseCategoryMapper;
+    @Resource
+    BiUiAnalyseDefaultCategoryService biUiAnalyseDefaultCategoryService;
 
     @Override
     public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategorys(AnalyseCategoryReq dto) {
@@ -132,6 +137,14 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             }
         }
         return results;
+    }
+
+    @Override
+    public void initTenantAnalyse(InitTenantReq data) {
+        List<BiUiAnalyseDefaultCategory> defaultCategories = biUiAnalyseDefaultCategoryService.getAllDefaultCategories();
+        for (BiUiAnalyseDefaultCategory defaultCategory : defaultCategories) {
+
+        }
     }
 
     private void convertTree(AnalyseCategoryTree tree, BiUiAnalyseCategory page) {

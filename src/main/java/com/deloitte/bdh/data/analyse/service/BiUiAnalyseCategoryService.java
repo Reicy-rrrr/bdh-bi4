@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.request.AnalyseCategoryReq;
+import com.deloitte.bdh.data.analyse.model.request.InitTenantReq;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 
@@ -61,4 +62,6 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
     BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception;
 
     List<AnalyseCategoryTree> getTree(AnalyseCategoryReq dto);
+
+    void initTenantAnalyse(InitTenantReq data);
 }

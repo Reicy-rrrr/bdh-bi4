@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class CodeGenerator_UI {
 
-	private static final String APPLICATION_MODULE = "data.report";
+	private static final String APPLICATION_MODULE = "data.analyse";
 	private static final String DAO_MODULE = "bi";
 	private static final String DSConstantName = "BI_DB";
 	private static final boolean fileOverrideFlag = false;
@@ -159,7 +159,7 @@ public class CodeGenerator_UI {
 		strategy.setSuperServiceImplClass("com.deloitte.bdh.common.base.AbstractService");
 		// 公共父类
 		// 写于父类中的公共字段
-		strategy.setInclude("BI_UI_MODEL_FIELD","BI_UI_MODEL_FOLDER");
+		strategy.setInclude("BI_UI_ANALYSE_DEFAULT_CATEGORY");
 		strategy.setControllerMappingHyphenStyle(false);
 		mpg.setStrategy(strategy);
 		mpg.setTemplateEngine(new FreemarkerTemplateEngine());

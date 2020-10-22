@@ -39,6 +39,24 @@ create table BI_UI_MODEL_FIELD
     TENANT_ID           varchar(50)  not null
 );
 
+/**
+默认
+ */
+-- auto-generated definition
+create table BI_UI_ANALYSE_DEFAULT_CATEGORY
+(
+    ID                  int auto_increment
+        primary key,
+    CODE varchar(150) null comment '报表编码',
+    NAME varchar(150) null comment '报表名称',
+    DES  varchar(250) null comment '报表描述',
+    ICON   varchar(150)  null comment '图标',
+    CREATE_DATE         timestamp(6) not null,
+    CREATE_USER         varchar(50)  not null,
+    MODIFIED_DATE       timestamp(6) null,
+    MODIFIED_USER       varchar(50)  null,
+);
+
 -- auto-generated definition
 create table BI_UI_ANALYSE_CATEGORY
 (

@@ -6,8 +6,9 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.request.AnalyseCategoryReq;
+import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.request.InitTenantReq;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
@@ -72,5 +73,12 @@ public class BiUiAnalyseCategoryController {
     @PostMapping("/updateAnalyseCategory")
     public RetResult<BiUiAnalyseCategory> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.updateAnalyseCategory(request.getData()));
+    }
+
+    @ApiOperation(value = "修改页面", notes = "修改页面")
+    @PostMapping("/updateAnalyseCategory")
+    public RetResult<BiUiAnalyseCategory> initTenantAnalyse(@RequestBody @Validated RetRequest<InitTenantReq> request) throws Exception {
+        biUiAnalyseCategoryService.initTenantAnalyse(request.getData());
+        return RetResponse.makeOKRsp();
     }
 }
