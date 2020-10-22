@@ -13,8 +13,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-@Service("mysql")
-public class Mysql extends AbstractProcess implements DbSelector {
+@Service("hive")
+public class Hive extends AbstractProcess implements DbSelector {
 
     @Override
     public String test(DbContext context) throws Exception {

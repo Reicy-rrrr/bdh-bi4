@@ -13,8 +13,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-@Service("mysql")
-public class Mysql extends AbstractProcess implements DbSelector {
+@Service("hana")
+public class Hana extends AbstractProcess implements DbSelector {
 
     @Override
     public String test(DbContext context) throws Exception {
@@ -80,8 +80,7 @@ public class Mysql extends AbstractProcess implements DbSelector {
 
     @Override
     public String fieldSql(DbContext context) {
-        return "select * from information_schema.COLUMNS where" +
-                " TABLE_SCHEMA = (select database()) and TABLE_NAME='" + context.getTableName() + "'";
+        return "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, POSITION FROM SYS.COLUMNS WHERE TABLE_NAME = '" + context.getTableName() + "' ORDER BY POSITION";
     }
 
     @Override
@@ -89,6 +88,6 @@ public class Mysql extends AbstractProcess implements DbSelector {
         Integer page = context.getPage();
         Integer size = context.getSize();
         int start = (page - 1) * size;
-        return "SELECT * FROM " + context.getTableName() + " LIMIT " + start + ", " + size;
+        return "SELECT * FROM " + context.getTableName() + " LIMIT 10 OFFSET 0";
     }
 }

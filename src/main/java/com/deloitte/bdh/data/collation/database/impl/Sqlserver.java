@@ -13,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
-@Service
+@Service("sqlserver")
 public class Sqlserver extends AbstractProcess implements DbSelector {
 
     @Override
@@ -87,7 +87,6 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
     protected String selectSql(DbContext context) {
         Integer page = context.getPage();
         Integer size = context.getSize();
-        int start = (page - 1) * size;
-        return "SELECT * FROM " + context.getTableName() + " LIMIT " + start + ", " + size;
+        return "SELECT * FROM (SELECT * , (ROW_NUMBER() OVER(ORDER BY @@SERVERNAME)-1)/" + size + " AS TEMP_NUM FROM test) temp WHERE TEMP_NUM = " + (page - 1);
     }
 }
