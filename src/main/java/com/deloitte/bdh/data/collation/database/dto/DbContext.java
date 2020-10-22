@@ -20,4 +20,5 @@ public class DbContext {
     private String dbPassword;
     private String driverName;
 
+    private String dbName;
 }

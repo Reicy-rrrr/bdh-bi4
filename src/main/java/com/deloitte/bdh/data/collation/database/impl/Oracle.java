@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@Service
+@Service("oracle")
 public class Oracle extends AbstractProcess implements DbSelector {
     @Override
     public String test(DbContext context) throws Exception {
@@ -104,7 +104,7 @@ public class Oracle extends AbstractProcess implements DbSelector {
         Integer size = context.getSize();
         int start = (page - 1) * size + 1;
         int end = page * size;
-        return "SELECT * FROM (SELECT tmp.*, ROWNUM AS ROW_NO FROM (SELECT * FROM " + context.getTableName()
-                + ") tmp) WHERE ROW_NO BETWEEN " + start + " AND " + end;
+        return "SELECT * FROM (SELECT tmp.*, ROWNUM AS TEMP_NUM FROM (SELECT * FROM " + context.getTableName()
+                + ") tmp) WHERE TEMP_NUM BETWEEN " + start + " AND " + end;
     }
 }

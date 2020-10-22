@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
 
-@Service
+@Service("dbSelector")
 public class DbSelectorImpl implements DbSelector {
     @Resource
     private BiEtlDatabaseInfMapper biEtlDatabaseInfMapper;
@@ -52,11 +52,15 @@ public class DbSelectorImpl implements DbSelector {
 
     private void context(DbContext context) {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(context.getDbId());
-        String url = NifiProcessUtil.getDbUrl(inf.getType(), inf.getAddress(), inf.getPort(), inf.getDbName());
         context.setSourceTypeEnum(SourceTypeEnum.values(inf.getType()));
-        context.setDbUrl(url);
+        if (!context.getSourceTypeEnum().equals(SourceTypeEnum.File_Csv)
+                && !context.getSourceTypeEnum().equals(SourceTypeEnum.File_Excel)) {
+            String url = NifiProcessUtil.getDbUrl(inf.getType(), inf.getAddress(), inf.getPort(), inf.getDbName());
+            context.setDbUrl(url);
+        }
         context.setDbUserName(inf.getDbUser());
         context.setDbPassword(inf.getDbPassword());
         context.setDriverName(inf.getDriverName());
+        context.setDbName(inf.getDbName());
     }
 }

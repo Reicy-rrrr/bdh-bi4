@@ -26,7 +26,11 @@ public abstract class AbstractProcess {
         while (result.next()) {
             LinkedHashMap<String, Object> rowData = Maps.newLinkedHashMap();
             for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
-                rowData.put(metaData.getColumnName(colIndex), result.getObject(colIndex));
+                String columnName = metaData.getColumnName(colIndex);
+                if ("TEMP_NUM".equals(columnName)) {
+                    continue;
+                }
+                rowData.put(columnName, result.getObject(colIndex));
             }
             rows.add(rowData);
         }
