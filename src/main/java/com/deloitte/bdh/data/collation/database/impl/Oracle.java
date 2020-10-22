@@ -1,18 +1,23 @@
 package com.deloitte.bdh.data.collation.database.impl;
 
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.collation.database.DbProcess;
+import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
+import com.deloitte.bdh.data.collation.database.vo.TableData;
+import com.deloitte.bdh.data.collation.database.vo.TableField;
+import com.deloitte.bdh.data.collation.database.vo.TableSchema;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
-public class Oracle extends AbstractProcess implements DbProcess {
+public class Oracle extends AbstractProcess implements DbSelector {
     @Override
     public String test(DbContext context) throws Exception {
         Connection con = super.connection(context);
@@ -21,7 +26,7 @@ public class Oracle extends AbstractProcess implements DbProcess {
     }
 
     @Override
-    public String getTables(DbContext context) throws Exception {
+    public List<String> getTables(DbContext context) throws Exception {
         Connection con = super.connection(context);
         PreparedStatement statement = con.prepareStatement(tableSql(context));
         ResultSet result = statement.executeQuery();
@@ -30,11 +35,11 @@ public class Oracle extends AbstractProcess implements DbProcess {
             list.add(result.getString("TABLE_NAME"));
         }
         super.close(con);
-        return JsonUtil.obj2String(list);
+        return list;
     }
 
     @Override
-    public String getFields(DbContext context) throws Exception {
+    public List<String> getFields(DbContext context) throws Exception {
         Connection con = super.connection(context);
         PreparedStatement statement = con.prepareStatement(fieldSql(context));
         ResultSet result = statement.executeQuery();
@@ -43,9 +48,45 @@ public class Oracle extends AbstractProcess implements DbProcess {
             list.add(result.getString("COLUMN_NAME"));
         }
         super.close(con);
-        return JsonUtil.obj2String(list);
+        return list;
     }
 
+    @Override
+    public TableSchema getTableSchema(DbContext context) throws Exception {
+        Connection con = super.connection(context);
+        PreparedStatement statement = con.prepareStatement(fieldSql(context));
+        ResultSet result = statement.executeQuery();
+        TableSchema schema = new TableSchema();
+        List<TableField> columns = Lists.newArrayList();
+        while (result.next()) {
+            TableField field = new TableField();
+            field.setName(result.getString("COLUMN_NAME"));
+            field.setType("String");
+            field.setDesc("");
+            columns.add(field);
+        }
+        super.close(con);
+        schema.setColumns(columns);
+        return schema;
+    }
+
+    @Override
+    public TableData getTableData(DbContext context) throws Exception {
+        TableData tableData = super.getTableData(context);
+        tableData.getRows().forEach(rowData -> {
+            for (Map.Entry<String, Object> entry : rowData.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof oracle.sql.TIMESTAMP) {
+                    try {
+                        entry.setValue(new Date(((oracle.sql.TIMESTAMP) value).dateValue().getTime()));
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        return tableData;
+    }
 
     @Override
     public String tableSql(DbContext context) {
@@ -55,5 +96,15 @@ public class Oracle extends AbstractProcess implements DbProcess {
     @Override
     public String fieldSql(DbContext context) {
         return "SELECT * FROM user_tab_columns WHERE TABLE_NAME=UPPER('" + context.getTableName().toUpperCase() + "')";
+    }
+
+    @Override
+    protected String selectSql(DbContext context) {
+        Integer page = context.getPage();
+        Integer size = context.getSize();
+        int start = (page - 1) * size + 1;
+        int end = page * size;
+        return "SELECT * FROM (SELECT tmp.*, ROWNUM AS ROW_NO FROM (SELECT * FROM " + context.getTableName()
+                + ") tmp) WHERE ROW_NO BETWEEN " + start + " AND " + end;
     }
 }

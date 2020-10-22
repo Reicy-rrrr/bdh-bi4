@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.util.List;
 
 @Service
-public class Mysql extends AbstractProcess implements DbSelector {
+public class Sqlserver extends AbstractProcess implements DbSelector {
 
     @Override
     public String test(DbContext context) throws Exception {
@@ -30,7 +30,7 @@ public class Mysql extends AbstractProcess implements DbSelector {
         ResultSet result = statement.executeQuery();
         List<String> list = Lists.newArrayList();
         while (result.next()) {
-            list.add(result.getString("TABLE_NAME"));
+            list.add(result.getString("name"));
         }
         super.close(con);
         return list;
@@ -75,13 +75,12 @@ public class Mysql extends AbstractProcess implements DbSelector {
 
     @Override
     public String tableSql(DbContext context) {
-        return "select * from information_schema.TABLES where TABLE_SCHEMA=(select database())";
+        return "SELECT * FROM sysobjects WHERE XTYPE='U'";
     }
 
     @Override
     public String fieldSql(DbContext context) {
-        return "select * from information_schema.COLUMNS where" +
-                " TABLE_SCHEMA = (select database()) and TABLE_NAME='" + context.getTableName() + "'";
+        return "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + context.getTableName() + "'";
     }
 
     @Override

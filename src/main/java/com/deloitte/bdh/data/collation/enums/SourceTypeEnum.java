@@ -9,8 +9,8 @@ public enum SourceTypeEnum {
     SQLServer("4", "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:microsoft:sqlserver://IP:PORT; DatabaseName=DBNAME"),
     Hive("5", "hive", "org.apache.hadoop.hive.jdbc.HiveDriver", " jdbc:hive://IP:PORT/DBNAME"),
     Hive2("6", "hive2", "org.apache.hive.jdbc.HiveDriver", "jdbc:hive2://IP:PORT/DBNAME"),
-    File_Excel("7", "Excel", "Excel", null),
-    File_Csv("8", "Csv", "Csv", null),
+    File_Excel("7", "excel", "Excel", null),
+    File_Csv("8", "csv", "Csv", null),
     Hana("9", "hana", "com.sap.db.jdbc.Driver", "jdbc:sap://IP:PORT/?databaseName=DBNAME"),
     ;
 

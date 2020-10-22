@@ -5,6 +5,8 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.collation.database.vo.TableData;
+import com.deloitte.bdh.data.collation.database.vo.TableSchema;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 /**
@@ -105,14 +109,25 @@ public class BiSourceController {
 
     @ApiOperation(value = "获取数据源下所有表集合", notes = "获取数据源下所有表集合")
     @PostMapping("/getTables")
-    public RetResult<String> getTables(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    public RetResult<List> getTables(@RequestBody @Validated RetRequest<String> request) throws Exception {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getTables(request.getData()));
     }
 
-    @ApiOperation(value = "获取表所有字段集合", notes = "获取表所有字段集合")
-    @PostMapping("/getFields")
-    public RetResult<String> getFields(@RequestBody @Validated RetRequest<GetFieldsDto> request) throws Exception {
+//    @ApiOperation(value = "获取表所有字段集合", notes = "获取表所有字段集合")
+//    @PostMapping("/getFields")
+    public RetResult<List> getFields(@RequestBody @Validated RetRequest<GetFieldsDto> request) throws Exception {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getFields(request.getData().getId(), request.getData().getTableName()));
     }
 
+    @ApiOperation(value = "查询表字段字段信息", notes = "查询表字段字段信息")
+    @PostMapping("/getTableSchema")
+    public RetResult<TableSchema> getTableSchema(@RequestBody @Validated RetRequest<GetTableSchemaDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getTableSchema(request.getData()));
+    }
+
+    @ApiOperation(value = "查询表字段数据列表（分页）", notes = "查询表字段数据列表（分页）")
+    @PostMapping("/getTableData")
+    public RetResult<TableData> getTableData(@RequestBody @Validated RetRequest<GetTableDataDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getTableData(request.getData()));
+    }
 }
