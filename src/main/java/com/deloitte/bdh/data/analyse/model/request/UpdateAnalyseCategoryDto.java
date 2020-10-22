@@ -22,6 +22,9 @@ public class UpdateAnalyseCategoryDto {
     @ApiModelProperty(value = "报表名称")
     private String name;
 
+    @ApiModelProperty(value = "描述")
+    private String des;
+
     @ApiModelProperty(value = "上级id")
     private String parentId;
 

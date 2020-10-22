@@ -3,6 +3,8 @@ package com.deloitte.bdh.data.analyse.model.request;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 public class CreateAnalyseCategoryDto {
     /**
@@ -39,4 +41,12 @@ public class CreateAnalyseCategoryDto {
 
     @ApiModelProperty(value = "图标")
     private String icon;
+
+    @ApiModelProperty(value = "tenantId", example = "123", required = true)
+    @NotNull(message = "租户id 不能为空")
+    private String tenantId;
+
+    @ApiModelProperty(value = "创建人", required = true)
+    @NotNull(message = "创建人不能为空")
+    private String createUser;
 }

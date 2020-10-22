@@ -31,14 +31,14 @@ import java.util.List;
  * @since 2020-10-19
  */
 @RestController
-@RequestMapping("/ui/analyse/page")
+@RequestMapping("/ui/analyse/category")
 public class BiUiAnalyseCategoryController {
     @Resource
     BiUiAnalyseCategoryService biUiAnalyseCategoryService;
 
     @ApiOperation(value = "基于租户查询报表的树状结构", notes = "基于租户查询报表的树状结构")
-    @PostMapping("/getReportTree")
-    public RetResult<List<AnalyseCategoryTree>> getReportTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
+    @PostMapping("/getCategoryTree")
+    public RetResult<List<AnalyseCategoryTree>> getCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
     }
 

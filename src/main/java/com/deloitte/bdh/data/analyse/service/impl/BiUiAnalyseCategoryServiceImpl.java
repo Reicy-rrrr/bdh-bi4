@@ -84,6 +84,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     public BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception {
         BiUiAnalyseCategory entity = biuiAnalyseCategoryMapper.selectById(dto.getId());
         entity.setName(dto.getName());
+        entity.setDes(dto.getDes());
         entity.setModifiedDate(LocalDateTime.now());
         biuiAnalyseCategoryMapper.updateById(entity);
         return entity;
