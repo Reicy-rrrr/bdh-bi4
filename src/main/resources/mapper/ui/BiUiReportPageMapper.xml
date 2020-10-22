@@ -8,6 +8,9 @@
         <result column="CODE" property="code" />
         <result column="NAME" property="name" />
         <result column="DES" property="des" />
+        <result column="TYPE" property="type" />
+        <result column="INIT_TYPE" property="initType" />
+        <result column="PARENT_ID" property="parentId" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

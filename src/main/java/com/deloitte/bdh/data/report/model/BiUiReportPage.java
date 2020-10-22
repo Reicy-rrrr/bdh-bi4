@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -15,6 +17,7 @@ import java.io.Serializable;
  * @author bo.wang
  * @since 2020-10-19
  */
+@Data
 @TableName("BI_UI_REPORT_PAGE")
 public class BiUiReportPage implements Serializable {
 
@@ -34,6 +37,24 @@ public class BiUiReportPage implements Serializable {
      */
     @TableField("NAME")
     private String name;
+
+    /**
+     * 文件夹/报表/dashboard
+     */
+    @TableField("TYPE")
+    private String type;
+
+    /**
+     * 是否用户自定义类型CUSTOMER,TYPE1,TYPE2...
+     */
+    @TableField("INIT_TYPE")
+    private String initType;
+
+    /**
+     * 上级id
+     */
+    @TableField("PARENT_ID")
+    private String parentId;
 
     /**
      * 报表描述
@@ -58,91 +79,4 @@ public class BiUiReportPage implements Serializable {
 
     @TableField("TENANT_ID")
     private String tenantId;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDes() {
-        return des;
-    }
-
-    public void setDes(String des) {
-        this.des = des;
-    }
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-    public String getCreateUser() {
-        return createUser;
-    }
-
-    public void setCreateUser(String createUser) {
-        this.createUser = createUser;
-    }
-    public LocalDateTime getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(LocalDateTime modifiedDate) {
-        this.modifiedDate = modifiedDate;
-    }
-    public String getModifiedUser() {
-        return modifiedUser;
-    }
-
-    public void setModifiedUser(String modifiedUser) {
-        this.modifiedUser = modifiedUser;
-    }
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    @Override
-    public String toString() {
-        return "BiUiReportPage{" +
-        "id=" + id +
-        ", code=" + code +
-        ", name=" + name +
-        ", des=" + des +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        "}";
-    }
 }

@@ -1,15 +1,16 @@
 package com.deloitte.bdh.data.report.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author bo.wang
@@ -42,7 +43,7 @@ public class BiUiModelFolder implements Serializable {
     private String name;
 
     /**
-     * 文件夹/字段
+     * 文件夹/报表
      */
     @TableField("TYPE")
     private String type;
@@ -72,6 +73,7 @@ public class BiUiModelFolder implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getModelId() {
         return modelId;
     }
@@ -79,6 +81,7 @@ public class BiUiModelFolder implements Serializable {
     public void setModelId(String modelId) {
         this.modelId = modelId;
     }
+
     public String getParentId() {
         return parentId;
     }
@@ -86,6 +89,7 @@ public class BiUiModelFolder implements Serializable {
     public void setParentId(String parentId) {
         this.parentId = parentId;
     }
+
     public String getName() {
         return name;
     }
@@ -93,6 +97,7 @@ public class BiUiModelFolder implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
     public String getType() {
         return type;
     }
@@ -100,6 +105,7 @@ public class BiUiModelFolder implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -107,6 +113,7 @@ public class BiUiModelFolder implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
     public String getCreateUser() {
         return createUser;
     }
@@ -114,6 +121,7 @@ public class BiUiModelFolder implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
+
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -121,6 +129,7 @@ public class BiUiModelFolder implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -128,6 +137,7 @@ public class BiUiModelFolder implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
+
     public String getIp() {
         return ip;
     }
@@ -135,6 +145,7 @@ public class BiUiModelFolder implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -146,17 +157,17 @@ public class BiUiModelFolder implements Serializable {
     @Override
     public String toString() {
         return "BiUiModelFolder{" +
-        "id=" + id +
-        ", modelId=" + modelId +
-        ", parentId=" + parentId +
-        ", name=" + name +
-        ", type=" + type +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        "}";
+                "id=" + id +
+                ", modelId=" + modelId +
+                ", parentId=" + parentId +
+                ", name=" + name +
+                ", type=" + type +
+                ", createDate=" + createDate +
+                ", createUser=" + createUser +
+                ", modifiedDate=" + modifiedDate +
+                ", modifiedUser=" + modifiedUser +
+                ", ip=" + ip +
+                ", tenantId=" + tenantId +
+                "}";
     }
 }

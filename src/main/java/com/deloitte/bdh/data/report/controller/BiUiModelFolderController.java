@@ -27,7 +27,7 @@ import javax.annotation.Resource;
  * @since 2020-10-21
  */
 @RestController
-@RequestMapping("/bi/ui/model/folder")
+@RequestMapping("/ui/model/folder")
 public class BiUiModelFolderController {
     @Resource
     BiUiModelFolderService biUiModelFolderService;

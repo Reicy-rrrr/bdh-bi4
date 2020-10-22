@@ -2,10 +2,11 @@ package com.deloitte.bdh.data.report.service;
 
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
-import com.deloitte.bdh.data.collation.model.request.GetResourcesDto;
-import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
 import com.deloitte.bdh.data.report.model.BiUiReportPage;
+import com.deloitte.bdh.data.report.model.request.CreateReportDto;
+import com.deloitte.bdh.data.report.model.request.ReportPageReq;
+import com.deloitte.bdh.data.report.model.request.UpdateReportDto;
+import com.deloitte.bdh.data.report.model.resp.ReportPageTree;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public interface BiUiReportPageService extends Service<BiUiReportPage> {
      * @param dto
      * @return
      */
-    PageResult<List<BiUiReportPage>> getResources(GetResourcesDto dto);
+    PageResult<List<BiUiReportPage>> getReportPages(ReportPageReq dto);
 
     /**
      * 查看单个resource
@@ -33,7 +34,7 @@ public interface BiUiReportPageService extends Service<BiUiReportPage> {
      * @param id
      * @return
      */
-    BiUiReportPage getResource(String id);
+    BiUiReportPage getReportPage(String id);
 
     /**
      * 创建页面
@@ -41,7 +42,7 @@ public interface BiUiReportPageService extends Service<BiUiReportPage> {
      * @param dto
      * @return
      */
-    BiUiReportPage createResource(CreateResourcesDto dto) throws Exception;
+    BiUiReportPage createReportPage(CreateReportDto dto) throws Exception;
 
     /**
      * del页面
@@ -49,7 +50,7 @@ public interface BiUiReportPageService extends Service<BiUiReportPage> {
      * @param id
      * @return
      */
-    void delResource(String id) throws Exception;
+    void delReportPage(String id) throws Exception;
 
     /**
      * 修改页面
@@ -57,5 +58,7 @@ public interface BiUiReportPageService extends Service<BiUiReportPage> {
      * @param dto
      * @return
      */
-    BiUiReportPage updateResource(UpdateResourcesDto dto) throws Exception;
+    BiUiReportPage updateReportPage(UpdateReportDto dto) throws Exception;
+
+    List<ReportPageTree> getTree(ReportPageReq dto);
 }

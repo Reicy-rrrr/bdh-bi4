@@ -26,7 +26,7 @@ import javax.annotation.Resource;
  * @since 2020-10-21
  */
 @RestController
-@RequestMapping("/biUiModelField")
+@RequestMapping("/ui/model/field")
 public class BiUiModelFieldController {
     @Resource
     BiUiModelFieldService biUiModelFieldService;

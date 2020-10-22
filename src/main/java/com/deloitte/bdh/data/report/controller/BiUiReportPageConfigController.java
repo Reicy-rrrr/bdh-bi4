@@ -26,7 +26,7 @@ import javax.annotation.Resource;
  * @since 2020-10-19
  */
 @RestController
-@RequestMapping("/bi/ui/report/pageConfig")
+@RequestMapping("/ui/report/pageConfig")
 public class BiUiReportPageConfigController {
     @Resource
     BiUiReportPageConfigService biUiReportPageConfigService;
