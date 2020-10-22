@@ -67,11 +67,15 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
 
     @Override
     public BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto) throws Exception {
-        BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
-        BeanUtils.copyProperties(dto, entity);
-        entity.setCreateDate(LocalDateTime.now());
-        biuiAnalyseCategoryMapper.insert(entity);
-        return entity;
+        if (checkBiUiAnalyseCategoryByName(dto.getName(), dto.getTenantId(), null)) {
+            BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
+            BeanUtils.copyProperties(dto, entity);
+            entity.setCreateDate(LocalDateTime.now());
+            biuiAnalyseCategoryMapper.insert(entity);
+            return entity;
+        } else {
+            throw new Exception("已存在相同名称的文件夹");
+        }
     }
 
     @Override
@@ -83,11 +87,15 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     @Override
     public BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception {
         BiUiAnalyseCategory entity = biuiAnalyseCategoryMapper.selectById(dto.getId());
-        entity.setName(dto.getName());
-        entity.setDes(dto.getDes());
-        entity.setModifiedDate(LocalDateTime.now());
-        biuiAnalyseCategoryMapper.updateById(entity);
-        return entity;
+        if (checkBiUiAnalyseCategoryByName(dto.getName(), entity.getTenantId(), entity.getId())) {
+            entity.setName(dto.getName());
+            entity.setDes(dto.getDes());
+            entity.setModifiedDate(LocalDateTime.now());
+            biuiAnalyseCategoryMapper.updateById(entity);
+            return entity;
+        } else {
+            throw new Exception("已存在相同名称的文件夹");
+        }
     }
 
     @Override
@@ -128,5 +136,19 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
 
     private void convertTree(AnalyseCategoryTree tree, BiUiAnalyseCategory page) {
         BeanUtils.copyProperties(page, tree);
+    }
+
+    public boolean checkBiUiAnalyseCategoryByName(String name, String tenantId, String currentId) {
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
+        query.eq(BiUiAnalyseCategory::getName, name);
+        if (currentId != null) {
+            query.ne(BiUiAnalyseCategory::getId, currentId);
+        }
+        List<BiUiAnalyseCategory> contents = list(query);
+        if (contents.size() > 0) {
+            return false;
+        }
+        return true;
     }
 }
