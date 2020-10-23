@@ -186,7 +186,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             String parentId = defaultCategory.getParentId();
             if (parentId != null) {
                 //默认的parent
-                BiUiAnalyseDefaultCategory defaultParent = defaultCategoryParentIdMap.get(defaultCategory.getId());
+                BiUiAnalyseDefaultCategory defaultParent = defaultCategoryParentIdMap.get(parentId);
                 String parentName = defaultParent.getName();
                 //当前的上级
                 BiUiAnalyseCategory parent = tenantCategoryMap.get(parentName);
