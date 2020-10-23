@@ -34,7 +34,7 @@ public class Hive extends AbstractProcess implements DbSelector {
             if ("telescope_entries".equals(tabName)) {
                 continue;
             }
-            list.add(result.getString(tabName));
+            list.add(tabName);
         }
         super.close(con);
         return list;
@@ -76,7 +76,6 @@ public class Hive extends AbstractProcess implements DbSelector {
 
     @Override
     public TableData getTableData(DbContext context) throws Exception {
-        TableData tableData = super.getTableData(context);
         return super.getTableData(context);
     }
 
