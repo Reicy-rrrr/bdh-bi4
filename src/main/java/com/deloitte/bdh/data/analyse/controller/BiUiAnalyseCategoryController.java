@@ -6,9 +6,8 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
-import com.deloitte.bdh.data.analyse.model.request.AnalyseCategoryReq;
-import com.deloitte.bdh.data.analyse.model.request.UpdateAnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
 import com.github.pagehelper.PageHelper;
@@ -46,7 +45,7 @@ public class BiUiAnalyseCategoryController {
     @PostMapping("/getAnalyseCategorys")
     public RetResult<PageResult> getAnalyseCategorys(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
-        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategorys(request.getData()));
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategories(request.getData()));
     }
 
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
@@ -72,5 +71,18 @@ public class BiUiAnalyseCategoryController {
     @PostMapping("/updateAnalyseCategory")
     public RetResult<BiUiAnalyseCategory> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.updateAnalyseCategory(request.getData()));
+    }
+
+    @ApiOperation(value = "初始化租户目录", notes = "初始化租户目录")
+    @PostMapping("/initTenantAnalyse")
+    public RetResult initTenantAnalyse(@RequestBody @Validated RetRequest<InitTenantReq> request) throws Exception {
+        biUiAnalyseCategoryService.initTenantAnalyse(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "报表和dashboard查询", notes = "报表和dashboard查询")
+    @PostMapping("/getChildAnalysePageList")
+    public RetResult<List<BiUiAnalysePage>> getChildAnalysePageList(@RequestBody @Validated RetRequest<AnalysePageReq> request) throws Exception {
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getChildAnalysePageReq(request.getData()));
     }
 }

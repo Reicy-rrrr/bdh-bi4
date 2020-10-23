@@ -3,9 +3,8 @@ package com.deloitte.bdh.data.analyse.service;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
-import com.deloitte.bdh.data.analyse.model.request.AnalyseCategoryReq;
-import com.deloitte.bdh.data.analyse.model.request.UpdateAnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      * @param dto
      * @return
      */
-    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategorys(AnalyseCategoryReq dto);
+    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategories(AnalyseCategoryReq dto);
 
     /**
      * 查看单个resource
@@ -61,4 +60,8 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
     BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception;
 
     List<AnalyseCategoryTree> getTree(AnalyseCategoryReq dto);
+
+    void initTenantAnalyse(InitTenantReq data) throws Exception;
+
+    List<BiUiAnalysePage> getChildAnalysePageReq(AnalysePageReq data);
 }
