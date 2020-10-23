@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -15,6 +17,7 @@ import java.io.Serializable;
  * @author bo.wang
  * @since 2020-10-22
  */
+@Data
 @TableName("BI_UI_ANALYSE_DEFAULT_CATEGORY")
 public class BiUiAnalyseDefaultCategory implements Serializable {
 
@@ -42,6 +45,11 @@ public class BiUiAnalyseDefaultCategory implements Serializable {
     private String des;
 
     /**
+     * 上级id
+     */
+    @TableField("PARENT_ID")
+    private String parentId;
+    /**
      * 图标
      */
     @TableField("ICON")
@@ -58,83 +66,4 @@ public class BiUiAnalyseDefaultCategory implements Serializable {
 
     @TableField("MODIFIED_USER")
     private String modifiedUser;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getDes() {
-        return des;
-    }
-
-    public void setDes(String des) {
-        this.des = des;
-    }
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-    public String getCreateUser() {
-        return createUser;
-    }
-
-    public void setCreateUser(String createUser) {
-        this.createUser = createUser;
-    }
-    public LocalDateTime getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(LocalDateTime modifiedDate) {
-        this.modifiedDate = modifiedDate;
-    }
-    public String getModifiedUser() {
-        return modifiedUser;
-    }
-
-    public void setModifiedUser(String modifiedUser) {
-        this.modifiedUser = modifiedUser;
-    }
-
-    @Override
-    public String toString() {
-        return "BiUiAnalyseDefaultCategory{" +
-        "id=" + id +
-        ", code=" + code +
-        ", name=" + name +
-        ", des=" + des +
-        ", icon=" + icon +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        "}";
-    }
 }

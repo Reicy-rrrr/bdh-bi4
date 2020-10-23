@@ -47,7 +47,7 @@ public class BiUiAnalyseCategoryController {
     @PostMapping("/getAnalyseCategorys")
     public RetResult<PageResult> getAnalyseCategorys(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
-        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategorys(request.getData()));
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategories(request.getData()));
     }
 
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
@@ -76,7 +76,7 @@ public class BiUiAnalyseCategoryController {
     }
 
     @ApiOperation(value = "修改页面", notes = "修改页面")
-    @PostMapping("/updateAnalyseCategory")
+    @PostMapping("/initTenantAnalyse")
     public RetResult<BiUiAnalyseCategory> initTenantAnalyse(@RequestBody @Validated RetRequest<InitTenantReq> request) throws Exception {
         biUiAnalyseCategoryService.initTenantAnalyse(request.getData());
         return RetResponse.makeOKRsp();

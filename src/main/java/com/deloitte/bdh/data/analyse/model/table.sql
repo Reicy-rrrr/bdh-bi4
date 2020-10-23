@@ -51,6 +51,7 @@ create table BI_UI_ANALYSE_DEFAULT_CATEGORY
     NAME varchar(150) null comment '报表名称',
     DES  varchar(250) null comment '报表描述',
     ICON   varchar(150)  null comment '图标',
+    PARENT_ID int null comment '上级id',
     CREATE_DATE         timestamp(6) not null,
     CREATE_USER         varchar(50)  not null,
     MODIFIED_DATE       timestamp(6) null,

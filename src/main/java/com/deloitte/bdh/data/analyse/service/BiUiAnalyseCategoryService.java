@@ -27,7 +27,7 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      * @param dto
      * @return
      */
-    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategorys(AnalyseCategoryReq dto);
+    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategories(AnalyseCategoryReq dto);
 
     /**
      * 查看单个resource
@@ -63,5 +63,5 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
 
     List<AnalyseCategoryTree> getTree(AnalyseCategoryReq dto);
 
-    void initTenantAnalyse(InitTenantReq data);
+    void initTenantAnalyse(InitTenantReq data) throws Exception;
 }
