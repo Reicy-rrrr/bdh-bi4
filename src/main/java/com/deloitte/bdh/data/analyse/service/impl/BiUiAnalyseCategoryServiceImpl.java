@@ -86,7 +86,13 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
 
     @Override
     public void delAnalyseCategory(String id) throws Exception {
-//        BiUiAnalyseCategory inf = biuiAnalyseCategoryMapper.selectById(id);
+        BiUiAnalyseCategory category = biuiAnalyseCategoryMapper.selectById(id);
+        if (category == null) {
+            throw new Exception("错误的id");
+        }
+        if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(category.getInitType())) {
+            throw new Exception("默认文件夹不能删除");
+        }
         biuiAnalyseCategoryMapper.deleteById(id);
     }
 
