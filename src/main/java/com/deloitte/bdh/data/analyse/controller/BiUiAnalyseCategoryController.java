@@ -54,20 +54,20 @@ public class BiUiAnalyseCategoryController {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategory(request.getData()));
     }
 
-    @ApiOperation(value = "新增页面", notes = "新增页面")
+    @ApiOperation(value = "新增文件夹", notes = "新增文件夹")
     @PostMapping("/createAnalyseCategory")
     public RetResult<BiUiAnalyseCategory> createAnalyseCategory(@RequestBody @Validated RetRequest<CreateAnalyseCategoryDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.createAnalyseCategory(request.getData()));
     }
 
-    @ApiOperation(value = "删除页面", notes = "删除页面")
+    @ApiOperation(value = "删除文件夹", notes = "删除文件夹")
     @PostMapping("/delAnalyseCategory")
     public RetResult<Void> delAnalyseCategory(@RequestBody @Validated RetRequest<String> request) throws Exception {
         biUiAnalyseCategoryService.delAnalyseCategory(request.getData());
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "修改页面", notes = "修改页面")
+    @ApiOperation(value = "修改文件夹", notes = "修改文件夹")
     @PostMapping("/updateAnalyseCategory")
     public RetResult<BiUiAnalyseCategory> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.updateAnalyseCategory(request.getData()));
