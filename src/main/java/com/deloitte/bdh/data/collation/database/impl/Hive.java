@@ -30,7 +30,11 @@ public class Hive extends AbstractProcess implements DbSelector {
         ResultSet result = statement.executeQuery();
         List<String> list = Lists.newArrayList();
         while (result.next()) {
-            list.add(result.getString("TABLE_NAME"));
+            String tabName = result.getString("tab_name");
+            if ("telescope_entries".equals(tabName)) {
+                continue;
+            }
+            list.add(result.getString(tabName));
         }
         super.close(con);
         return list;
@@ -42,8 +46,9 @@ public class Hive extends AbstractProcess implements DbSelector {
         PreparedStatement statement = con.prepareStatement(fieldSql(context));
         ResultSet result = statement.executeQuery();
         List<String> list = Lists.newArrayList();
+        String tableName = context.getTableName();
         while (result.next()) {
-            list.add(result.getString("COLUMN_NAME"));
+            list.add(result.getString("col_name").replace(tableName + ".", ""));
         }
         super.close(con);
         return list;
@@ -56,9 +61,10 @@ public class Hive extends AbstractProcess implements DbSelector {
         ResultSet result = statement.executeQuery();
         TableSchema schema = new TableSchema();
         List<TableField> columns = Lists.newArrayList();
+        String tableName = context.getTableName();
         while (result.next()) {
             TableField field = new TableField();
-            field.setName(result.getString("COLUMN_NAME"));
+            field.setName(result.getString("col_name").replace(tableName + ".", ""));
             field.setType("String");
             field.setDesc("");
             columns.add(field);
@@ -70,25 +76,32 @@ public class Hive extends AbstractProcess implements DbSelector {
 
     @Override
     public TableData getTableData(DbContext context) throws Exception {
+        TableData tableData = super.getTableData(context);
         return super.getTableData(context);
     }
 
     @Override
     public String tableSql(DbContext context) {
-        return "select * from information_schema.TABLES where TABLE_SCHEMA=(select database())";
+        return "show tables";
     }
 
     @Override
     public String fieldSql(DbContext context) {
-        return "select * from information_schema.COLUMNS where" +
-                " TABLE_SCHEMA = (select database()) and TABLE_NAME='" + context.getTableName() + "'";
+        return "desc " + context.getTableName() + "";
     }
 
     @Override
     protected String selectSql(DbContext context) {
         Integer page = context.getPage();
         Integer size = context.getSize();
-        int start = (page - 1) * size;
-        return "SELECT * FROM " + context.getTableName() + " LIMIT " + start + ", " + size;
+        if (page == 1) {
+            return "select * from " + context.getTableName() + " limit " + size;
+        }
+
+        // hive以下方式的分页查询效率极低
+        int start = (page - 1) * size + 1;
+        int end = page * size;
+        return "select * from (select row_number() over () as TEMP_NUM, " + context.getTableName() + ".* from " + context.getTableName()
+                + ") as " + context.getTableName() + " where TEMP_NUM between " + start + " and " + end;
     }
 }

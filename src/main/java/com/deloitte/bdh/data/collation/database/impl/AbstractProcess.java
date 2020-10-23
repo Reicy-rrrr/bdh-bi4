@@ -23,10 +23,13 @@ public abstract class AbstractProcess {
         ResultSetMetaData metaData = result.getMetaData();
         int columnCount = metaData.getColumnCount();
         List<LinkedHashMap<String, Object>> rows = Lists.newArrayList();
+
+        String tableName = context.getTableName();
         while (result.next()) {
             LinkedHashMap<String, Object> rowData = Maps.newLinkedHashMap();
             for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
-                String columnName = metaData.getColumnName(colIndex);
+                // hive数据库查询的结果集字段带表名
+                String columnName = metaData.getColumnName(colIndex).replace(tableName + ".", "");
                 if ("TEMP_NUM".equals(columnName)) {
                     continue;
                 }
@@ -77,5 +80,4 @@ public abstract class AbstractProcess {
             con.close();
         }
     }
-
 }
