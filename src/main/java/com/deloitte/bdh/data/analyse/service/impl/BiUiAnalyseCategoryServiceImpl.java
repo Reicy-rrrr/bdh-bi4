@@ -8,12 +8,11 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
+import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
-import com.deloitte.bdh.data.analyse.model.request.AnalyseCategoryReq;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
-import com.deloitte.bdh.data.analyse.model.request.InitTenantReq;
-import com.deloitte.bdh.data.analyse.model.request.UpdateAnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseDefaultCategoryService;
@@ -46,6 +45,8 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     BiUiAnalyseCategoryMapper biuiAnalyseCategoryMapper;
     @Resource
     BiUiAnalyseDefaultCategoryService biUiAnalyseDefaultCategoryService;
+    @Resource
+    BiUiAnalysePageMapper biUiAnalysePageMapper;
 
     @Override
     public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategories(AnalyseCategoryReq dto) {
@@ -203,6 +204,20 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         }
         //todo 默认文件夹的权限问题
         //todo 初始化默认报表
+    }
+
+    @Override
+    public List<BiUiAnalysePage> getChildAnalysePageReq(AnalysePageReq data) {
+        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();
+        query.eq(BiUiAnalysePage::getTenantId, data.getTenantId());
+        if (data.getName() != null) {
+            query.like(BiUiAnalysePage::getName, data.getName());
+        }
+        if (data.getCategoryId() != null) {
+            query.eq(BiUiAnalysePage::getParentId, data.getCategoryId());
+        }
+        List<BiUiAnalysePage> pages = biUiAnalysePageMapper.selectList(query);
+        return pages;
     }
 
     private void convertTree(AnalyseCategoryTree tree, BiUiAnalyseCategory page) {
