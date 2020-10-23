@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.model.request;
 
+import com.deloitte.bdh.data.collation.enums.AuthTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -34,6 +35,9 @@ public class CreateResourcesDto {
     @ApiModelProperty(value = "数据库名称", example = "1", required = true)
     private String dbName;
 
+    @ApiModelProperty(value = "认证方式", example = "2", required = true)
+    private Integer authType = AuthTypeEnum.USERNAME_AND_PASSWORD.getType();
+
     @ApiModelProperty(value = "用户名", example = "1", required = true)
     private String dbUser;
 
@@ -50,5 +54,4 @@ public class CreateResourcesDto {
     @ApiModelProperty(value = "createUser", example = "1", required = true)
     @NotNull(message = "createUser 不能为空")
     private String createUser;
-
 }
