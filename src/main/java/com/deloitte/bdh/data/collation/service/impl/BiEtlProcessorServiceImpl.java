@@ -92,12 +92,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
                     }
                 });
                 processor.setList(biEtlParamsList);
-
-                dbRefList.forEach(varDbRefList -> {
-                    if (varDbRefList.getProcessorCode().equals(varEtlProcessorList.getCode())) {
-                        processor.setDbRef(varDbRefList);
-                    }
-                });
                 processorList.add(processor);
             });
         }

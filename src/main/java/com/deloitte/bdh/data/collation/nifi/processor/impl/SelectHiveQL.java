@@ -49,13 +49,10 @@ public class SelectHiveQL extends AbstractProcessor {
         BiEtlProcessor biEtlProcessor = createProcessor(context, component);
         // 新建 processor param
         List<BiEtlParams> paramsList = createParams(biEtlProcessor, context, component);
-        //该组件有关联表的信息
-        BiEtlDbRef dbRef = createDbRef(biEtlProcessor, context);
 
         Processor processor = new Processor();
         BeanUtils.copyProperties(biEtlProcessor, processor);
         processor.setList(paramsList);
-        processor.setDbRef(dbRef);
         context.addProcessorList(processor);
         return null;
     }
@@ -74,8 +71,6 @@ public class SelectHiveQL extends AbstractProcessor {
             paramsService.removeByIds(list);
         }
 
-        //删除该组件有关联表的信息
-        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
@@ -92,8 +87,6 @@ public class SelectHiveQL extends AbstractProcessor {
             paramsService.removeByIds(list);
         }
 
-        //若有关联表的信息，该组件有则删除
-        etlDbRefService.removeById(processor.getDbRef().getId());
         return null;
     }
 
@@ -106,8 +99,6 @@ public class SelectHiveQL extends AbstractProcessor {
         BiEtlProcessor biEtlProcessor = createProcessor(context, sourceParam);
         //新建 processor param
         createParams(biEtlProcessor, context, sourceParam);
-        //该组件有关联表的信息
-        createDbRef(biEtlProcessor, context);
 
         //补偿删除必须要调用该方法
         setTempForRdelete(biEtlProcessor, context);

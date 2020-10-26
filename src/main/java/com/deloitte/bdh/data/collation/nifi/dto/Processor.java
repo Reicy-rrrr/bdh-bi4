@@ -27,6 +27,4 @@ import java.util.List;
 public class Processor extends BiEtlProcessor {
 
     private List<BiEtlParams> list;
-
-    private BiEtlDbRef dbRef;
 }
