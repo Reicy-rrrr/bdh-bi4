@@ -94,6 +94,18 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(category.getInitType())) {
             throw new Exception("默认文件夹不能删除");
         }
+        //有下级的不能删除
+        List<BiUiAnalyseCategory> childs = getChildBiUiAnalyseCategoryReq(category.getId(), category.getTenantId());
+        if (childs.size() > 0) {
+            throw new Exception("清先删除下级文件夹");
+        }
+        AnalysePageReq req = new AnalysePageReq();
+        req.setTenantId(category.getTenantId());
+        req.setCategoryId(category.getId());
+        List<BiUiAnalysePage> childPages = getChildAnalysePageReq(req);
+        if (childPages.size() > 0) {
+            throw new Exception("清先删除下级页面");
+        }
         biuiAnalyseCategoryMapper.deleteById(id);
     }
 
@@ -141,7 +153,9 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             AnalyseCategoryTree tree = treeMap.get(page.getId());
             if (page.getParentId() != null) {
                 AnalyseCategoryTree parent = treeMap.get(page.getParentId());
-                parent.getChildren().add(tree);
+                if (parent != null) {
+                    parent.getChildren().add(tree);
+                }
             }
         }
         return results;
@@ -217,6 +231,14 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             query.eq(BiUiAnalysePage::getParentId, data.getCategoryId());
         }
         List<BiUiAnalysePage> pages = biUiAnalysePageMapper.selectList(query);
+        return pages;
+    }
+
+    public List<BiUiAnalyseCategory> getChildBiUiAnalyseCategoryReq(String parentId, String tenantId) {
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
+        query.eq(BiUiAnalyseCategory::getParentId, parentId);
+        List<BiUiAnalyseCategory> pages = list(query);
         return pages;
     }
 
