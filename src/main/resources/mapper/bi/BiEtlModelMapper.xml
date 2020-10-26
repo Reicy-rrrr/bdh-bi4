@@ -23,6 +23,7 @@
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
         <result column="PROCESS_GROUP_ID" property="processGroupId" />
+        <result column="CORN_EXPRESSION" property="cornExpression" />
     </resultMap>
 
 </mapper>

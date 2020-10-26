@@ -7,6 +7,67 @@ import java.util.List;
 
 public enum BiProcessorsTypeEnum {
 
+    SYNC_SOURCE("SYNC_SOURCE", "同步数据源的组件") {
+        @Override
+        public List<ProcessorTypeEnum> includeProcessor(String str) {
+            List<ProcessorTypeEnum> list = Lists.newLinkedList();
+            SourceTypeEnum typeEnum = SourceTypeEnum.values(str);
+            switch (typeEnum) {
+                case Mysql:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case Oracle:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case SQLServer:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case Hive:
+                    list.add(ProcessorTypeEnum.SelectHiveQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case Hive2:
+                    list.add(ProcessorTypeEnum.SelectHiveQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case File_Csv:
+                    list.add(ProcessorTypeEnum.GetMongo);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case File_Excel:
+                    list.add(ProcessorTypeEnum.GetMongo);
+                    list.add(ProcessorTypeEnum.UpdateAttribute);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                case Hana:
+                    list.add(ProcessorTypeEnum.ExecuteSQL);
+                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
+                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
+                    list.add(ProcessorTypeEnum.PutSQL);
+                    break;
+                default:
+
+            }
+            return list;
+        }
+    },
+
     JOIN_SOURCE("JOIN_SOURCE", "引入数据源的组件") {
         @Override
         public List<ProcessorTypeEnum> includeProcessor(String str) {

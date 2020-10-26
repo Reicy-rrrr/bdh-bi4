@@ -20,7 +20,6 @@ import com.deloitte.bdh.data.collation.nifi.dto.CreateProcessorDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.nifi.dto.Processor;
-import com.deloitte.bdh.data.collation.service.BiEtlDbRefService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlParamsService;
 import com.deloitte.bdh.data.collation.service.BiEtlProcessorService;
@@ -56,8 +55,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     private BiEtlParamsService etlParamsService;
     @Autowired
     private BiEtlModelService etlModelService;
-    @Autowired
-    private BiEtlDbRefService etlDbRefService;
 
 
     @Override
@@ -75,11 +72,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
                         .eq(BiEtlParams::getRelProcessorsCode, relProcessorsCode)
         );
 
-        List<BiEtlDbRef> dbRefList = etlDbRefService.list(
-                new LambdaQueryWrapper<BiEtlDbRef>()
-                        .eq(BiEtlDbRef::getProcessorsCode, relProcessorsCode)
-        );
-
         List<Processor> processorList = Lists.newLinkedList();
         if (CollectionUtils.isNotEmpty(etlProcessorList)) {
             etlProcessorList.stream().sorted(Comparator.comparing(BiEtlProcessor::getCode)).forEach(varEtlProcessorList -> {
@@ -92,12 +84,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
                     }
                 });
                 processor.setList(biEtlParamsList);
-
-                dbRefList.forEach(varDbRefList -> {
-                    if (varDbRefList.getProcessorCode().equals(varEtlProcessorList.getCode())) {
-                        processor.setDbRef(varDbRefList);
-                    }
-                });
                 processorList.add(processor);
             });
         }

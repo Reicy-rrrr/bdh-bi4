@@ -15,31 +15,43 @@ import java.io.Serializable;
  * @author lw
  * @since 2020-10-26
  */
-@TableName("BI_ETL_DB_REF")
-public class BiEtlDbRef implements Serializable {
+@TableName("BI_ETL_SYNC_PLAN")
+public class BiEtlSyncPlan implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "ID", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     /**
-     * 编码
+     * 计划编码
      */
     @TableField("CODE")
     private String code;
 
     /**
-     * 源id
+     * 上次计划编码
      */
-    @TableField("SOURCE_ID")
-    private String sourceId;
+    @TableField("PARENT_CODE")
+    private String parentCode;
 
     /**
-     * 模板编码
+     * 所属模板code
      */
-    @TableField("MODEL_CODE")
-    private String modelCode;
+    @TableField("REL_MODEL_CODE")
+    private String relModelCode;
+
+    /**
+     * 同步数量
+     */
+    @TableField("SYNC_COUNT")
+    private String syncCount;
+
+    /**
+     * 执行状态
+     */
+    @TableField("STATUS")
+    private String status;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -73,19 +85,33 @@ public class BiEtlDbRef implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getSourceId() {
-        return sourceId;
+    public String getParentCode() {
+        return parentCode;
     }
 
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
+    public void setParentCode(String parentCode) {
+        this.parentCode = parentCode;
     }
-    public String getModelCode() {
-        return modelCode;
+    public String getRelModelCode() {
+        return relModelCode;
     }
 
-    public void setModelCode(String modelCode) {
-        this.modelCode = modelCode;
+    public void setRelModelCode(String relModelCode) {
+        this.relModelCode = relModelCode;
+    }
+    public String getSyncCount() {
+        return syncCount;
+    }
+
+    public void setSyncCount(String syncCount) {
+        this.syncCount = syncCount;
+    }
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -132,11 +158,13 @@ public class BiEtlDbRef implements Serializable {
 
     @Override
     public String toString() {
-        return "BiEtlDbRef{" +
+        return "BiEtlSyncPlan{" +
         "id=" + id +
         ", code=" + code +
-        ", sourceId=" + sourceId +
-        ", modelCode=" + modelCode +
+        ", parentCode=" + parentCode +
+        ", relModelCode=" + relModelCode +
+        ", syncCount=" + syncCount +
+        ", status=" + status +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

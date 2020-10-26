@@ -15,12 +15,12 @@ import java.io.Serializable;
  * @author lw
  * @since 2020-10-26
  */
-@TableName("BI_ETL_DB_REF")
-public class BiEtlDbRef implements Serializable {
+@TableName("BI_ETL_MAPPING_FIELD")
+public class BiEtlMappingField implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "ID", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     /**
@@ -30,16 +30,22 @@ public class BiEtlDbRef implements Serializable {
     private String code;
 
     /**
-     * 源id
+     * 映射编码
      */
-    @TableField("SOURCE_ID")
-    private String sourceId;
+    @TableField("MAPPING_CODE")
+    private String mappingCode;
 
     /**
-     * 模板编码
+     * 字段名
      */
-    @TableField("MODEL_CODE")
-    private String modelCode;
+    @TableField("FIELD_NAME")
+    private String fieldName;
+
+    /**
+     * 字段类型
+     */
+    @TableField("FIELD_TYPE")
+    private String fieldType;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -73,19 +79,26 @@ public class BiEtlDbRef implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getSourceId() {
-        return sourceId;
+    public String getMappingCode() {
+        return mappingCode;
     }
 
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
+    public void setMappingCode(String mappingCode) {
+        this.mappingCode = mappingCode;
     }
-    public String getModelCode() {
-        return modelCode;
+    public String getFieldName() {
+        return fieldName;
     }
 
-    public void setModelCode(String modelCode) {
-        this.modelCode = modelCode;
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+    public String getFieldType() {
+        return fieldType;
+    }
+
+    public void setFieldType(String fieldType) {
+        this.fieldType = fieldType;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -132,11 +145,12 @@ public class BiEtlDbRef implements Serializable {
 
     @Override
     public String toString() {
-        return "BiEtlDbRef{" +
+        return "BiEtlMappingField{" +
         "id=" + id +
         ", code=" + code +
-        ", sourceId=" + sourceId +
-        ", modelCode=" + modelCode +
+        ", mappingCode=" + mappingCode +
+        ", fieldName=" + fieldName +
+        ", fieldType=" + fieldType +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

@@ -102,19 +102,19 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         return paramsList;
     }
 
-    final protected BiEtlDbRef createDbRef(BiEtlProcessor etlProcessor, ProcessorContext context) {
-        BiEtlDbRef dbRef = new BiEtlDbRef();
-        dbRef.setCode(GenerateCodeUtil.genDbRef());
-        dbRef.setSourceId(context.getBiEtlDatabaseInf().getId());
-        dbRef.setProcessorCode(etlProcessor.getCode());
-        dbRef.setProcessorsCode(context.getProcessors().getCode());
-        dbRef.setModelCode(context.getModel().getCode());
-        dbRef.setCreateDate(LocalDateTime.now());
-        dbRef.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        dbRef.setTenantId(context.getModel().getTenantId());
-        etlDbRefService.save(dbRef);
-        return dbRef;
-    }
+//    final protected BiEtlDbRef createDbRef(BiEtlProcessor etlProcessor, ProcessorContext context) {
+//        BiEtlDbRef dbRef = new BiEtlDbRef();
+//        dbRef.setCode(GenerateCodeUtil.genDbRef());
+//        dbRef.setSourceId(context.getBiEtlDatabaseInf().getId());
+//        dbRef.setProcessorCode(etlProcessor.getCode());
+//        dbRef.setProcessorsCode(context.getProcessors().getCode());
+//        dbRef.setModelCode(context.getModel().getCode());
+//        dbRef.setCreateDate(LocalDateTime.now());
+//        dbRef.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
+//        dbRef.setTenantId(context.getModel().getTenantId());
+//        etlDbRefService.save(dbRef);
+//        return dbRef;
+//    }
 
     final protected void setTempForRdelete(BiEtlProcessor etlProcessor, ProcessorContext context) {
         com.deloitte.bdh.data.collation.nifi.dto.Processor processor = new com.deloitte.bdh.data.collation.nifi.dto.Processor();
