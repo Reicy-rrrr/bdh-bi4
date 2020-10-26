@@ -234,6 +234,13 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         return pages;
     }
 
+    @Override
+    public void batchDelAnalyseCategories(BatchAnalyseCategoryDelReq data) throws Exception {
+        for(String id:data.getIds()){
+            delAnalyseCategory(id);
+        }
+    }
+
     public List<BiUiAnalyseCategory> getChildBiUiAnalyseCategoryReq(String parentId, String tenantId) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);

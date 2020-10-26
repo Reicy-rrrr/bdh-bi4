@@ -64,4 +64,6 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
     void initTenantAnalyse(InitTenantReq data) throws Exception;
 
     List<BiUiAnalysePage> getChildAnalysePageReq(AnalysePageReq data);
+
+    void batchDelAnalyseCategories(BatchAnalyseCategoryDelReq data) throws Exception;
 }
