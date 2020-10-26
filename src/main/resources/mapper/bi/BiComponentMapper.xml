@@ -10,7 +10,6 @@
         <result column="TYPE" property="type" />
         <result column="EFFECT" property="effect" />
         <result column="REF_MODEL_CODE" property="refModelCode" />
-        <result column="REF_MAPPING_CODE" property="refMappingCode" />
         <result column="VERSION" property="version" />
         <result column="POSITION" property="position" />
         <result column="CREATE_DATE" property="createDate" />

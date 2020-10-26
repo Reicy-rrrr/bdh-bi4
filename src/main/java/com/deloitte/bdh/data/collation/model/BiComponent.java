@@ -54,12 +54,6 @@ public class BiComponent implements Serializable {
     private String refModelCode;
 
     /**
-     * 所属MAPPING CODE
-     */
-    @TableField("REF_MAPPING_CODE")
-    private String refMappingCode;
-
-    /**
      * 版本号
      */
     @TableField("VERSION")
@@ -131,13 +125,6 @@ public class BiComponent implements Serializable {
     public void setRefModelCode(String refModelCode) {
         this.refModelCode = refModelCode;
     }
-    public String getRefMappingCode() {
-        return refMappingCode;
-    }
-
-    public void setRefMappingCode(String refMappingCode) {
-        this.refMappingCode = refMappingCode;
-    }
     public String getVersion() {
         return version;
     }
@@ -204,7 +191,6 @@ public class BiComponent implements Serializable {
         ", type=" + type +
         ", effect=" + effect +
         ", refModelCode=" + refModelCode +
-        ", refMappingCode=" + refMappingCode +
         ", version=" + version +
         ", position=" + position +
         ", createDate=" + createDate +
