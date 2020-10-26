@@ -67,6 +67,14 @@ public class BiUiAnalyseCategoryController {
         return RetResponse.makeOKRsp();
     }
 
+    @ApiOperation(value = "删除文件夹", notes = "删除文件夹")
+    @PostMapping("/batchDelAnalyseCategories")
+    public RetResult<Void> batchDelAnalyseCategories(@RequestBody @Validated RetRequest<BatchAnalyseCategoryDelReq> request) throws Exception {
+        biUiAnalyseCategoryService.batchDelAnalyseCategories(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+
     @ApiOperation(value = "修改文件夹", notes = "修改文件夹")
     @PostMapping("/updateAnalyseCategory")
     public RetResult<BiUiAnalyseCategory> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) throws Exception {
