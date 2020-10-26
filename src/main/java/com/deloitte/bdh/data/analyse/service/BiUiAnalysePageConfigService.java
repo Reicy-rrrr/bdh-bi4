@@ -1,9 +1,10 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
-import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigReq;
+import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
+import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 
 /**
  * <p>
@@ -21,15 +22,15 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
 //     * @param dto
 //     * @return
 //     */
-//    PageResult<List<BiUiReportPageConfig>> getResources(GetResourcesDto dto);
+//    PageResult<List<BiUiReportPageConfig>> getAnalysePageConfigs(GetAnalysePageConfigsDto dto);
 
     /**
      * 查看单个resource
      *
-     * @param id
+     * @param req
      * @return
      */
-    BiUiAnalysePageConfig getResource(String id);
+    BiUiAnalysePageConfig getAnalysePageConfig(AnalysePageConfigReq req) throws Exception;
 
     /**
      * 创建页面配置
@@ -37,7 +38,7 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @param dto
      * @return
      */
-    BiUiAnalysePageConfig createResource(CreateResourcesDto dto) throws Exception;
+    BiUiAnalysePageConfig createAnalysePageConfig(CreateAnalysePageConfigsDto dto) throws Exception;
 
     /**
      * del页面配置
@@ -45,7 +46,7 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @param id
      * @return
      */
-    void delResource(String id) throws Exception;
+    void delAnalysePageConfig(String id) throws Exception;
 
     /**
      * 修改页面配置
@@ -53,5 +54,5 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @param dto
      * @return
      */
-    BiUiAnalysePageConfig updateResource(UpdateResourcesDto dto) throws Exception;
+    BiUiAnalysePageConfig updateAnalysePageConfig(UpdateAnalysePageConfigsDto dto) throws Exception;
 }
