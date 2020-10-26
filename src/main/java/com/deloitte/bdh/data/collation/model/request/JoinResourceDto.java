@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.model.request;
 
 
-import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Getter
 @ToString
-public class JoinResourceDto {
+public class JoinResourceDto extends BaseRequest {
 
     @ApiModelProperty(value = "modelId", example = "0", required = true)
     @NotNull(message = " 模板id 不能为空")
@@ -27,17 +27,12 @@ public class JoinResourceDto {
     @ApiModelProperty(value = "tableName", example = "0")
     private String tableName;
 
-    @ApiModelProperty(value = "tenantId", example = "0", required = true)
-    @NotNull(message = "租户id不能为空")
-    private String tenantId;
+    @ApiModelProperty(value = "同步方式", example = "0：直连，1：全量，2：增量")
+    private Integer syncType = SyncTypeEnum.FULL.getKey();
 
-    @ApiModelProperty(value = "createUser", example = "1", required = true)
-    @NotNull(message = "createUser 不能为空")
-    private String createUser;
+    @ApiModelProperty(value = "偏移字段", example = "0")
+    private String offsetField;
 
-    /**
-     * 坐标
-     */
-    @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
+    @ApiModelProperty(value = "偏移量", example = "0")
+    private String offsetValue;
 }

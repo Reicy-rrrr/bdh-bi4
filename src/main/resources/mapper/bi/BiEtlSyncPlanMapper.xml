@@ -7,7 +7,7 @@
         <id column="id" property="id" />
         <result column="CODE" property="code" />
         <result column="PARENT_CODE" property="parentCode" />
-        <result column="REL_MODEL_CODE" property="relModelCode" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
         <result column="SYNC_COUNT" property="syncCount" />
         <result column="STATUS" property="status" />
         <result column="CREATE_DATE" property="createDate" />

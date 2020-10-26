@@ -38,8 +38,8 @@ public class BiEtlSyncPlan implements Serializable {
     /**
      * 所属模板code
      */
-    @TableField("REL_MODEL_CODE")
-    private String relModelCode;
+    @TableField("REF_MODEL_CODE")
+    private String refModelCode;
 
     /**
      * 同步数量
@@ -92,12 +92,12 @@ public class BiEtlSyncPlan implements Serializable {
     public void setParentCode(String parentCode) {
         this.parentCode = parentCode;
     }
-    public String getRelModelCode() {
-        return relModelCode;
+    public String getRefModelCode() {
+        return refModelCode;
     }
 
-    public void setRelModelCode(String relModelCode) {
-        this.relModelCode = relModelCode;
+    public void setRefModelCode(String refModelCode) {
+        this.refModelCode = refModelCode;
     }
     public String getSyncCount() {
         return syncCount;
@@ -162,7 +162,7 @@ public class BiEtlSyncPlan implements Serializable {
         "id=" + id +
         ", code=" + code +
         ", parentCode=" + parentCode +
-        ", relModelCode=" + relModelCode +
+        ", refModelCode=" + refModelCode +
         ", syncCount=" + syncCount +
         ", status=" + status +
         ", createDate=" + createDate +

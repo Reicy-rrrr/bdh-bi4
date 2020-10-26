@@ -6,8 +6,8 @@
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlSyncLog">
         <id column="id" property="id" />
         <result column="PLAN_CODE" property="planCode" />
-        <result column="REL_MODEL_CODE" property="relModelCode" />
-        <result column="MAPPING_CODE" property="mappingCode" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
+        <result column="REF_MAPPING_CODE" property="refMappingCode" />
         <result column="STATUS" property="status" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

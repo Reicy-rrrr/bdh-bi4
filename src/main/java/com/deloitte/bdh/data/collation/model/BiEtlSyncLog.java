@@ -32,14 +32,14 @@ public class BiEtlSyncLog implements Serializable {
     /**
      * 所属模板code
      */
-    @TableField("REL_MODEL_CODE")
-    private String relModelCode;
+    @TableField("REF_MODEL_CODE")
+    private String refModelCode;
 
     /**
      * 映射编码
      */
-    @TableField("MAPPING_CODE")
-    private String mappingCode;
+    @TableField("REF_MAPPING_CODE")
+    private String refMappingCode;
 
     /**
      * 执行状态
@@ -79,19 +79,19 @@ public class BiEtlSyncLog implements Serializable {
     public void setPlanCode(String planCode) {
         this.planCode = planCode;
     }
-    public String getRelModelCode() {
-        return relModelCode;
+    public String getRefModelCode() {
+        return refModelCode;
     }
 
-    public void setRelModelCode(String relModelCode) {
-        this.relModelCode = relModelCode;
+    public void setRefModelCode(String refModelCode) {
+        this.refModelCode = refModelCode;
     }
-    public String getMappingCode() {
-        return mappingCode;
+    public String getRefMappingCode() {
+        return refMappingCode;
     }
 
-    public void setMappingCode(String mappingCode) {
-        this.mappingCode = mappingCode;
+    public void setRefMappingCode(String refMappingCode) {
+        this.refMappingCode = refMappingCode;
     }
     public String getStatus() {
         return status;
@@ -148,8 +148,8 @@ public class BiEtlSyncLog implements Serializable {
         return "BiEtlSyncLog{" +
         "id=" + id +
         ", planCode=" + planCode +
-        ", relModelCode=" + relModelCode +
-        ", mappingCode=" + mappingCode +
+        ", refModelCode=" + refModelCode +
+        ", refMappingCode=" + refMappingCode +
         ", status=" + status +
         ", createDate=" + createDate +
         ", createUser=" + createUser +

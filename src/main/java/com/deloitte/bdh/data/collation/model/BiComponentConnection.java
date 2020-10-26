@@ -44,8 +44,8 @@ public class BiComponentConnection implements Serializable {
     /**
      * 所属模板code
      */
-    @TableField("REL_MODEL_CODE")
-    private String relModelCode;
+    @TableField("REF_MODEL_CODE")
+    private String refModelCode;
 
     /**
      * 版本号
@@ -99,12 +99,12 @@ public class BiComponentConnection implements Serializable {
     public void setToComponentCode(String toComponentCode) {
         this.toComponentCode = toComponentCode;
     }
-    public String getRelModelCode() {
-        return relModelCode;
+    public String getRefModelCode() {
+        return refModelCode;
     }
 
-    public void setRelModelCode(String relModelCode) {
-        this.relModelCode = relModelCode;
+    public void setRefModelCode(String refModelCode) {
+        this.refModelCode = refModelCode;
     }
     public String getVersion() {
         return version;
@@ -163,7 +163,7 @@ public class BiComponentConnection implements Serializable {
         ", code=" + code +
         ", fromComponentCode=" + fromComponentCode +
         ", toComponentCode=" + toComponentCode +
-        ", relModelCode=" + relModelCode +
+        ", refModelCode=" + refModelCode +
         ", version=" + version +
         ", createDate=" + createDate +
         ", createUser=" + createUser +

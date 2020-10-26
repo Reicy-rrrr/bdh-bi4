@@ -8,7 +8,7 @@
         <result column="CODE" property="code" />
         <result column="FROM_COMPONENT_CODE" property="fromComponentCode" />
         <result column="TO_COMPONENT_CODE" property="toComponentCode" />
-        <result column="REL_MODEL_CODE" property="relModelCode" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
         <result column="VERSION" property="version" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

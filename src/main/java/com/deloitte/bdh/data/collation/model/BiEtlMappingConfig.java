@@ -36,6 +36,18 @@ public class BiEtlMappingConfig implements Serializable {
     private String refCode;
 
     /**
+     * 是否独立副本
+     */
+    @TableField("IS_DUPLICATE")
+    private String isDuplicate;
+
+    /**
+     * 所属映射编码
+     */
+    @TableField("BELONG_MAPPING_CODE")
+    private String belongMappingCode;
+
+    /**
      * 同步方式（0：直连，1：全量，2：增量）
      */
     @TableField("TYPE")
@@ -56,8 +68,8 @@ public class BiEtlMappingConfig implements Serializable {
     /**
      * 同步的数据源id
      */
-    @TableField("REL_SOURCE_ID")
-    private String relSourceId;
+    @TableField("REF_SOURCE_ID")
+    private String refSourceId;
 
     /**
      * 源表名
@@ -74,8 +86,8 @@ public class BiEtlMappingConfig implements Serializable {
     /**
      * 关联的processors 编码
      */
-    @TableField("REL_PROCESSORS_CODE")
-    private String relProcessorsCode;
+    @TableField("REF_PROCESSORS_CODE")
+    private String refProcessorsCode;
 
     /**
      * 同步状态
@@ -122,6 +134,20 @@ public class BiEtlMappingConfig implements Serializable {
     public void setRefCode(String refCode) {
         this.refCode = refCode;
     }
+    public String getIsDuplicate() {
+        return isDuplicate;
+    }
+
+    public void setIsDuplicate(String isDuplicate) {
+        this.isDuplicate = isDuplicate;
+    }
+    public String getBelongMappingCode() {
+        return belongMappingCode;
+    }
+
+    public void setBelongMappingCode(String belongMappingCode) {
+        this.belongMappingCode = belongMappingCode;
+    }
     public String getType() {
         return type;
     }
@@ -143,12 +169,12 @@ public class BiEtlMappingConfig implements Serializable {
     public void setOffsetValue(String offsetValue) {
         this.offsetValue = offsetValue;
     }
-    public String getRelSourceId() {
-        return relSourceId;
+    public String getRefSourceId() {
+        return refSourceId;
     }
 
-    public void setRelSourceId(String relSourceId) {
-        this.relSourceId = relSourceId;
+    public void setRefSourceId(String refSourceId) {
+        this.refSourceId = refSourceId;
     }
     public String getFromTableName() {
         return fromTableName;
@@ -164,12 +190,12 @@ public class BiEtlMappingConfig implements Serializable {
     public void setToTableName(String toTableName) {
         this.toTableName = toTableName;
     }
-    public String getRelProcessorsCode() {
-        return relProcessorsCode;
+    public String getRefProcessorsCode() {
+        return refProcessorsCode;
     }
 
-    public void setRelProcessorsCode(String relProcessorsCode) {
-        this.relProcessorsCode = relProcessorsCode;
+    public void setRefProcessorsCode(String refProcessorsCode) {
+        this.refProcessorsCode = refProcessorsCode;
     }
     public String getStatus() {
         return status;
@@ -227,13 +253,15 @@ public class BiEtlMappingConfig implements Serializable {
         "id=" + id +
         ", code=" + code +
         ", refCode=" + refCode +
+        ", isDuplicate=" + isDuplicate +
+        ", belongMappingCode=" + belongMappingCode +
         ", type=" + type +
         ", offsetField=" + offsetField +
         ", offsetValue=" + offsetValue +
-        ", relSourceId=" + relSourceId +
+        ", refSourceId=" + refSourceId +
         ", fromTableName=" + fromTableName +
         ", toTableName=" + toTableName +
-        ", relProcessorsCode=" + relProcessorsCode +
+        ", refProcessorsCode=" + refProcessorsCode +
         ", status=" + status +
         ", createDate=" + createDate +
         ", createUser=" + createUser +

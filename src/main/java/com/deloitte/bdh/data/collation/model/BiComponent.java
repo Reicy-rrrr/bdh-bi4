@@ -50,8 +50,14 @@ public class BiComponent implements Serializable {
     /**
      * 所属模板code
      */
-    @TableField("REL_MODEL_CODE")
-    private String relModelCode;
+    @TableField("REF_MODEL_CODE")
+    private String refModelCode;
+
+    /**
+     * 所属MAPPING CODE
+     */
+    @TableField("REF_MAPPING_CODE")
+    private String refMappingCode;
 
     /**
      * 版本号
@@ -118,12 +124,19 @@ public class BiComponent implements Serializable {
     public void setEffect(String effect) {
         this.effect = effect;
     }
-    public String getRelModelCode() {
-        return relModelCode;
+    public String getRefModelCode() {
+        return refModelCode;
     }
 
-    public void setRelModelCode(String relModelCode) {
-        this.relModelCode = relModelCode;
+    public void setRefModelCode(String refModelCode) {
+        this.refModelCode = refModelCode;
+    }
+    public String getRefMappingCode() {
+        return refMappingCode;
+    }
+
+    public void setRefMappingCode(String refMappingCode) {
+        this.refMappingCode = refMappingCode;
     }
     public String getVersion() {
         return version;
@@ -190,7 +203,8 @@ public class BiComponent implements Serializable {
         ", name=" + name +
         ", type=" + type +
         ", effect=" + effect +
-        ", relModelCode=" + relModelCode +
+        ", refModelCode=" + refModelCode +
+        ", refMappingCode=" + refMappingCode +
         ", version=" + version +
         ", position=" + position +
         ", createDate=" + createDate +

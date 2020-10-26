@@ -7,13 +7,15 @@
         <id column="id" property="id" />
         <result column="CODE" property="code" />
         <result column="REF_CODE" property="refCode" />
+        <result column="IS_DUPLICATE" property="isDuplicate" />
+        <result column="BELONG_MAPPING_CODE" property="belongMappingCode" />
         <result column="TYPE" property="type" />
         <result column="OFFSET_FIELD" property="offsetField" />
         <result column="OFFSET_VALUE" property="offsetValue" />
-        <result column="REL_SOURCE_ID" property="relSourceId" />
+        <result column="REF_SOURCE_ID" property="refSourceId" />
         <result column="FROM_TABLE_NAME" property="fromTableName" />
         <result column="TO_TABLE_NAME" property="toTableName" />
-        <result column="REL_PROCESSORS_CODE" property="relProcessorsCode" />
+        <result column="REF_PROCESSORS_CODE" property="refProcessorsCode" />
         <result column="STATUS" property="status" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

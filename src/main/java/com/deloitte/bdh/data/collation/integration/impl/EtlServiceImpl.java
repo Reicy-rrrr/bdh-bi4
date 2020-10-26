@@ -1,9 +1,6 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
-import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
-import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
-import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.EtlProcessorsResp;
@@ -65,6 +62,7 @@ public class EtlServiceImpl implements EtlService {
         if (null == biEtlDatabaseInf) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
         }
+
         BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 模型");
@@ -73,6 +71,37 @@ public class EtlServiceImpl implements EtlService {
         if (EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 数据源状态不合法");
         }
+        //创建 关联
+        String refCode=GenerateCodeUtil.genDbRef();
+        BiEtlDbRef dbRef = new BiEtlDbRef();
+        dbRef.setCode(refCode);
+        dbRef.setSourceId(dto.getSourceId());
+        dbRef.setModelCode(biEtlModel.getCode());
+        dbRef.setCreateDate(LocalDateTime.now());
+        dbRef.setCreateUser(dto.getOperator());
+        dbRef.setTenantId(dto.getTenantId());
+
+        //新建组件
+        BiComponent component = new BiComponent();
+        component.setCode(GenerateCodeUtil.getComponent());
+        component.setName(ComponentTypeEnum.DATASOURCE.getValue());
+        component.setType(ComponentTypeEnum.DATASOURCE.getKey());
+        component.setEffect(EffectEnum.DISABLE.getKey());
+        component.setRefModelCode(biEtlModel.getCode());
+        component.setVersion("1");
+        component.setPosition(dto.getPosition());
+        component.setCreateDate(LocalDateTime.now());
+        component.setCreateUser(dto.getOperator());
+        component.setTenantId(dto.getTenantId());
+
+
+
+
+        //todo 判断是否同步
+        if (SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
+
+        }
+
 
         //新建processors
         BiProcessors processors = new BiProcessors();
@@ -86,14 +115,14 @@ public class EtlServiceImpl implements EtlService {
         processors.setRelModelCode(biEtlModel.getCode());
         processors.setVersion("1");
         processors.setCreateDate(LocalDateTime.now());
-        processors.setCreateUser(dto.getCreateUser());
+        processors.setCreateUser(dto.getOperator());
         processors.setTenantId(dto.getTenantId());
         //todo 待设置坐标
         processorsService.save(processors);
 
         // 判断数据源类型 ,创建processors ，找到对应需要创建的 process 集合
         Map<String, Object> req = Maps.newHashMap();
-        req.put("createUser", dto.getCreateUser());
+        req.put("createUser", dto.getOperator());
         req.put("SQL select query", dto.getTableName());
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.JOIN_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));

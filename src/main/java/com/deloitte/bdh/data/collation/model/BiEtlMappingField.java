@@ -32,8 +32,8 @@ public class BiEtlMappingField implements Serializable {
     /**
      * 映射编码
      */
-    @TableField("MAPPING_CODE")
-    private String mappingCode;
+    @TableField("REF_MAPPING_CODE")
+    private String refMappingCode;
 
     /**
      * 字段名
@@ -79,12 +79,12 @@ public class BiEtlMappingField implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getMappingCode() {
-        return mappingCode;
+    public String getRefMappingCode() {
+        return refMappingCode;
     }
 
-    public void setMappingCode(String mappingCode) {
-        this.mappingCode = mappingCode;
+    public void setRefMappingCode(String refMappingCode) {
+        this.refMappingCode = refMappingCode;
     }
     public String getFieldName() {
         return fieldName;
@@ -148,7 +148,7 @@ public class BiEtlMappingField implements Serializable {
         return "BiEtlMappingField{" +
         "id=" + id +
         ", code=" + code +
-        ", mappingCode=" + mappingCode +
+        ", refMappingCode=" + refMappingCode +
         ", fieldName=" + fieldName +
         ", fieldType=" + fieldType +
         ", createDate=" + createDate +
