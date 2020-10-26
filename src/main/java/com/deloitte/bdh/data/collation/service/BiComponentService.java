@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.service;
 
-import com.deloitte.bdh.data.collation.model.BiEtlDbRef;
+import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.common.base.Service;
 
 /**
@@ -11,6 +11,6 @@ import com.deloitte.bdh.common.base.Service;
  * @author lw
  * @since 2020-10-26
  */
-public interface BiEtlDbRefService extends Service<BiEtlDbRef> {
+public interface BiComponentService extends Service<BiComponent> {
 
 }

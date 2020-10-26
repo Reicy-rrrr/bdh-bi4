@@ -5,18 +5,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
 
-
-
 /**
  * <p>
- * 前端控制器
+ *  前端控制器
  * </p>
  *
  * @author lw
- * @since 2020-09-25
+ * @since 2020-10-26
  */
 @RestController
-@RequestMapping("/biEtlProcessor")
-public class BiEtlProcessorController {
+@RequestMapping("/biEtlSyncPlan")
+public class BiEtlSyncPlanController {
 
 }

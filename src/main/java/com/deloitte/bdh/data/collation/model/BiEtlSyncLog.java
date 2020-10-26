@@ -15,31 +15,37 @@ import java.io.Serializable;
  * @author lw
  * @since 2020-10-26
  */
-@TableName("BI_ETL_DB_REF")
-public class BiEtlDbRef implements Serializable {
+@TableName("BI_ETL_SYNC_LOG")
+public class BiEtlSyncLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value = "ID", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private String id;
 
     /**
-     * 编码
+     * 计划编码
      */
-    @TableField("CODE")
-    private String code;
+    @TableField("PLAN_CODE")
+    private String planCode;
 
     /**
-     * 源id
+     * 所属模板code
      */
-    @TableField("SOURCE_ID")
-    private String sourceId;
+    @TableField("REL_MODEL_CODE")
+    private String relModelCode;
 
     /**
-     * 模板编码
+     * 映射编码
      */
-    @TableField("MODEL_CODE")
-    private String modelCode;
+    @TableField("MAPPING_CODE")
+    private String mappingCode;
+
+    /**
+     * 执行状态
+     */
+    @TableField("STATUS")
+    private String status;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -66,26 +72,33 @@ public class BiEtlDbRef implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
-    public String getCode() {
-        return code;
+    public String getPlanCode() {
+        return planCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setPlanCode(String planCode) {
+        this.planCode = planCode;
     }
-    public String getSourceId() {
-        return sourceId;
-    }
-
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
-    }
-    public String getModelCode() {
-        return modelCode;
+    public String getRelModelCode() {
+        return relModelCode;
     }
 
-    public void setModelCode(String modelCode) {
-        this.modelCode = modelCode;
+    public void setRelModelCode(String relModelCode) {
+        this.relModelCode = relModelCode;
+    }
+    public String getMappingCode() {
+        return mappingCode;
+    }
+
+    public void setMappingCode(String mappingCode) {
+        this.mappingCode = mappingCode;
+    }
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -132,11 +145,12 @@ public class BiEtlDbRef implements Serializable {
 
     @Override
     public String toString() {
-        return "BiEtlDbRef{" +
+        return "BiEtlSyncLog{" +
         "id=" + id +
-        ", code=" + code +
-        ", sourceId=" + sourceId +
-        ", modelCode=" + modelCode +
+        ", planCode=" + planCode +
+        ", relModelCode=" + relModelCode +
+        ", mappingCode=" + mappingCode +
+        ", status=" + status +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

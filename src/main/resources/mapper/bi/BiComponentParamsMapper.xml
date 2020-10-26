@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.deloitte.bdh.data.collation.dao.bi.BiEtlDbRefMapper">
+<mapper namespace="com.deloitte.bdh.data.collation.dao.bi.BiComponentParamsMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlDbRef">
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiComponentParams">
         <id column="ID" property="id" />
         <result column="CODE" property="code" />
-        <result column="SOURCE_ID" property="sourceId" />
-        <result column="MODEL_CODE" property="modelCode" />
+        <result column="NAME" property="name" />
+        <result column="PARAM_KEY" property="paramKey" />
+        <result column="PARAM_VALUE" property="paramValue" />
+        <result column="REL_COMPONENT_CODE" property="relComponentCode" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />
         <result column="MODIFIED_USER" property="modifiedUser" />
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
+        <result column="PARENT_CODE" property="parentCode" />
     </resultMap>
 
 </mapper>

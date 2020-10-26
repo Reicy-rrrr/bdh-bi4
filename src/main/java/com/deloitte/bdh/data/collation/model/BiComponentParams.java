@@ -15,8 +15,8 @@ import java.io.Serializable;
  * @author lw
  * @since 2020-10-26
  */
-@TableName("BI_ETL_DB_REF")
-public class BiEtlDbRef implements Serializable {
+@TableName("BI_COMPONENT_PARAMS")
+public class BiComponentParams implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,16 +30,28 @@ public class BiEtlDbRef implements Serializable {
     private String code;
 
     /**
-     * 源id
+     * 参数中文名
      */
-    @TableField("SOURCE_ID")
-    private String sourceId;
+    @TableField("NAME")
+    private String name;
 
     /**
-     * 模板编码
+     * 参数KEY
      */
-    @TableField("MODEL_CODE")
-    private String modelCode;
+    @TableField("PARAM_KEY")
+    private String paramKey;
+
+    /**
+     * 参数value
+     */
+    @TableField("PARAM_VALUE")
+    private String paramValue;
+
+    /**
+     * 关联的COMPONENT编码
+     */
+    @TableField("REL_COMPONENT_CODE")
+    private String relComponentCode;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -59,6 +71,12 @@ public class BiEtlDbRef implements Serializable {
     @TableField("TENANT_ID")
     private String tenantId;
 
+    /**
+     * 上级编码
+     */
+    @TableField("PARENT_CODE")
+    private String parentCode;
+
     public String getId() {
         return id;
     }
@@ -73,19 +91,33 @@ public class BiEtlDbRef implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getSourceId() {
-        return sourceId;
+    public String getName() {
+        return name;
     }
 
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
+    public void setName(String name) {
+        this.name = name;
     }
-    public String getModelCode() {
-        return modelCode;
+    public String getParamKey() {
+        return paramKey;
     }
 
-    public void setModelCode(String modelCode) {
-        this.modelCode = modelCode;
+    public void setParamKey(String paramKey) {
+        this.paramKey = paramKey;
+    }
+    public String getParamValue() {
+        return paramValue;
+    }
+
+    public void setParamValue(String paramValue) {
+        this.paramValue = paramValue;
+    }
+    public String getRelComponentCode() {
+        return relComponentCode;
+    }
+
+    public void setRelComponentCode(String relComponentCode) {
+        this.relComponentCode = relComponentCode;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -129,20 +161,30 @@ public class BiEtlDbRef implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+    public String getParentCode() {
+        return parentCode;
+    }
+
+    public void setParentCode(String parentCode) {
+        this.parentCode = parentCode;
+    }
 
     @Override
     public String toString() {
-        return "BiEtlDbRef{" +
+        return "BiComponentParams{" +
         "id=" + id +
         ", code=" + code +
-        ", sourceId=" + sourceId +
-        ", modelCode=" + modelCode +
+        ", name=" + name +
+        ", paramKey=" + paramKey +
+        ", paramValue=" + paramValue +
+        ", relComponentCode=" + relComponentCode +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +
         ", modifiedUser=" + modifiedUser +
         ", ip=" + ip +
         ", tenantId=" + tenantId +
+        ", parentCode=" + parentCode +
         "}";
     }
 }

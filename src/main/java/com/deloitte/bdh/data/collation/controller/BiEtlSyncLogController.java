@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
  * </p>
  *
  * @author lw
- * @since 2020-09-27
+ * @since 2020-10-26
  */
 @RestController
-@RequestMapping("/biEtlParams")
-public class BiEtlParamsController {
+@RequestMapping("/biEtlSyncLog")
+public class BiEtlSyncLogController {
 
 }

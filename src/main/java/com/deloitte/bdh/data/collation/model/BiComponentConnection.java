@@ -15,8 +15,8 @@ import java.io.Serializable;
  * @author lw
  * @since 2020-10-26
  */
-@TableName("BI_ETL_DB_REF")
-public class BiEtlDbRef implements Serializable {
+@TableName("BI_COMPONENT_CONNECTION")
+public class BiComponentConnection implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -30,16 +30,28 @@ public class BiEtlDbRef implements Serializable {
     private String code;
 
     /**
-     * 源id
+     * 关联COMPONENT编码
      */
-    @TableField("SOURCE_ID")
-    private String sourceId;
+    @TableField("FROM_COMPONENT_CODE")
+    private String fromComponentCode;
 
     /**
-     * 模板编码
+     * 被关联COMPONENT编码
      */
-    @TableField("MODEL_CODE")
-    private String modelCode;
+    @TableField("TO_COMPONENT_CODE")
+    private String toComponentCode;
+
+    /**
+     * 所属模板code
+     */
+    @TableField("REL_MODEL_CODE")
+    private String relModelCode;
+
+    /**
+     * 版本号
+     */
+    @TableField("VERSION")
+    private String version;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -73,19 +85,33 @@ public class BiEtlDbRef implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getSourceId() {
-        return sourceId;
+    public String getFromComponentCode() {
+        return fromComponentCode;
     }
 
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
+    public void setFromComponentCode(String fromComponentCode) {
+        this.fromComponentCode = fromComponentCode;
     }
-    public String getModelCode() {
-        return modelCode;
+    public String getToComponentCode() {
+        return toComponentCode;
     }
 
-    public void setModelCode(String modelCode) {
-        this.modelCode = modelCode;
+    public void setToComponentCode(String toComponentCode) {
+        this.toComponentCode = toComponentCode;
+    }
+    public String getRelModelCode() {
+        return relModelCode;
+    }
+
+    public void setRelModelCode(String relModelCode) {
+        this.relModelCode = relModelCode;
+    }
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -132,11 +158,13 @@ public class BiEtlDbRef implements Serializable {
 
     @Override
     public String toString() {
-        return "BiEtlDbRef{" +
+        return "BiComponentConnection{" +
         "id=" + id +
         ", code=" + code +
-        ", sourceId=" + sourceId +
-        ", modelCode=" + modelCode +
+        ", fromComponentCode=" + fromComponentCode +
+        ", toComponentCode=" + toComponentCode +
+        ", relModelCode=" + relModelCode +
+        ", version=" + version +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

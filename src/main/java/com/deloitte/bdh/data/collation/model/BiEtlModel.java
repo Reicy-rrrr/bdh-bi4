@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-25
+ * @since 2020-10-26
  */
 @TableName("BI_ETL_MODEL")
 public class BiEtlModel implements Serializable {
@@ -112,6 +112,12 @@ public class BiEtlModel implements Serializable {
      */
     @TableField("PROCESS_GROUP_ID")
     private String processGroupId;
+
+    /**
+     * 同步时间
+     */
+    @TableField("CORN_EXPRESSION")
+    private String cornExpression;
 
     public String getId() {
         return id;
@@ -246,6 +252,13 @@ public class BiEtlModel implements Serializable {
     public void setProcessGroupId(String processGroupId) {
         this.processGroupId = processGroupId;
     }
+    public String getCornExpression() {
+        return cornExpression;
+    }
+
+    public void setCornExpression(String cornExpression) {
+        this.cornExpression = cornExpression;
+    }
 
     @Override
     public String toString() {
@@ -269,6 +282,7 @@ public class BiEtlModel implements Serializable {
         ", ip=" + ip +
         ", tenantId=" + tenantId +
         ", processGroupId=" + processGroupId +
+        ", cornExpression=" + cornExpression +
         "}";
     }
 }

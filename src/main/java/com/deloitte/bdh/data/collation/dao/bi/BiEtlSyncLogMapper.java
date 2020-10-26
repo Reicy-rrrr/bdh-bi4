@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.dao.bi;
 
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncLog;
 import com.deloitte.bdh.common.base.Mapper;
 
 /**
@@ -11,6 +11,6 @@ import com.deloitte.bdh.common.base.Mapper;
  * @author lw
  * @since 2020-10-26
  */
-public interface BiEtlModelMapper extends Mapper<BiEtlModel> {
+public interface BiEtlSyncLogMapper extends Mapper<BiEtlSyncLog> {
 
 }

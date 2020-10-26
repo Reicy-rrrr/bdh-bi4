@@ -2,9 +2,9 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.data.collation.model.BiEtlDbRef;
-import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbRefMapper;
-import com.deloitte.bdh.data.collation.service.BiEtlDbRefService;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncLog;
+import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncLogMapper;
+import com.deloitte.bdh.data.collation.service.BiEtlSyncLogService;
 import com.deloitte.bdh.common.base.AbstractService;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +18,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiEtlDbRefServiceImpl extends AbstractService<BiEtlDbRefMapper, BiEtlDbRef> implements BiEtlDbRefService {
+public class BiEtlSyncLogServiceImpl extends AbstractService<BiEtlSyncLogMapper, BiEtlSyncLog> implements BiEtlSyncLogService {
 
 }
