@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-10-26
+ * @since 2020-10-27
  */
 @TableName("BI_ETL_MAPPING_FIELD")
 public class BiEtlMappingField implements Serializable {
@@ -30,10 +30,10 @@ public class BiEtlMappingField implements Serializable {
     private String code;
 
     /**
-     * 映射编码
+     * 映射编码或组件编码
      */
-    @TableField("REF_MAPPING_CODE")
-    private String refMappingCode;
+    @TableField("REF_CODE")
+    private String refCode;
 
     /**
      * 字段名
@@ -79,12 +79,12 @@ public class BiEtlMappingField implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getRefMappingCode() {
-        return refMappingCode;
+    public String getRefCode() {
+        return refCode;
     }
 
-    public void setRefMappingCode(String refMappingCode) {
-        this.refMappingCode = refMappingCode;
+    public void setRefCode(String refCode) {
+        this.refCode = refCode;
     }
     public String getFieldName() {
         return fieldName;
@@ -148,7 +148,7 @@ public class BiEtlMappingField implements Serializable {
         return "BiEtlMappingField{" +
         "id=" + id +
         ", code=" + code +
-        ", refMappingCode=" + refMappingCode +
+        ", refCode=" + refCode +
         ", fieldName=" + fieldName +
         ", fieldType=" + fieldType +
         ", createDate=" + createDate +

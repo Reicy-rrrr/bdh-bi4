@@ -13,4 +13,13 @@ import com.deloitte.bdh.common.base.Service;
  */
 public interface BiEtlSyncPlanService extends Service<BiEtlSyncPlan> {
 
+
+    /**
+     * process
+     *
+     * @param
+     * @return
+     */
+    void process(String type) throws Exception;
+
 }

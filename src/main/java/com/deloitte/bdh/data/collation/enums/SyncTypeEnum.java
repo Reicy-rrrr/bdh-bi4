@@ -1,6 +1,8 @@
 package com.deloitte.bdh.data.collation.enums;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 public enum SyncTypeEnum {
 
     DIRECT(0, "直连"),
@@ -18,6 +20,15 @@ public enum SyncTypeEnum {
         this.value = value;
     }
 
+    public static SyncTypeEnum getEnumByKey(String key) {
+        SyncTypeEnum[] enums = SyncTypeEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(key, enums[i].getKey().toString())) {
+                return enums[i];
+            }
+        }
+        throw new RuntimeException("未找到对应的类型");
+    }
 
     public Integer getKey() {
         return key;

@@ -6,7 +6,7 @@
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlMappingField">
         <id column="id" property="id" />
         <result column="CODE" property="code" />
-        <result column="REF_MAPPING_CODE" property="refMappingCode" />
+        <result column="REF_CODE" property="refCode" />
         <result column="FIELD_NAME" property="fieldName" />
         <result column="FIELD_TYPE" property="fieldType" />
         <result column="CREATE_DATE" property="createDate" />

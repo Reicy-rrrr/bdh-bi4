@@ -40,10 +40,11 @@ public class JoinResourceDto extends BaseRequest {
     private SyncTypeEnum syncType = SyncTypeEnum.FULL;
 
     @ApiModelProperty(value = "偏移字段", example = "0")
+    @NotNull(message = "偏移字段 不能为空")
     private String offsetField;
 
-//    @ApiModelProperty(value = "偏移量（第一次设置代表第一次同步的开始位置）", example = "0")
-//    private String offsetValue;
+    @ApiModelProperty(value = "偏移量（第一次设置代表第一次同步的开始位置）", example = "0")
+    private String offsetValue;
 
     @ApiModelProperty(value = "字段列表", example = "0")
     private List<TableField> fields;

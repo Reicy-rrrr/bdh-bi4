@@ -1,7 +1,10 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
+import com.deloitte.bdh.data.collation.database.DbSelector;
+
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
@@ -73,6 +76,8 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private DbHandler dbHandler;
+    @Autowired
+    private DbSelector dbSelector;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -93,8 +98,9 @@ public class EtlServiceImpl implements EtlService {
 
         //step1:创建数据源与model的关系
         BiEtlDbRef biEtlDbRef = refService.getOne(new LambdaQueryWrapper<BiEtlDbRef>()
-                .eq(BiEtlDbRef::getSourceId, biEtlDatabaseInf.getId())
-                .eq(BiEtlDbRef::getModelCode, biEtlModel.getCode()));
+                .eq(BiEtlDbRef::getSourceId, biEtlDatabaseInf.getId()).eq(BiEtlDbRef::getModelCode, biEtlModel.getCode())
+        );
+
         String refCode;
         if (null == biEtlDbRef) {
             refCode = GenerateCodeUtil.genDbRef();
@@ -154,12 +160,14 @@ public class EtlServiceImpl implements EtlService {
                 String processorsCode = GenerateCodeUtil.genProcessors();
                 mappingConfig.setRefProcessorsCode(processorsCode);
                 mappingConfig.setOffsetField(dto.getOffsetField());
+                mappingConfig.setOffsetValue(dto.getOffsetValue());
+                //初次同步设置0
                 mappingConfig.setLocalCount("0");
                 //表名：组件编码+源表名
                 String toTableName = componentCode + dto.getTableName();
                 mappingConfig.setToTableName(toTableName);
 
-                //step2.1.1:创建 字段列表
+                //step2.1.1:创建 字段列表,此处为映射编码
                 List<BiEtlMappingField> fields = transferToFields(dto.getOperator(), dto.getTenantId(), mappingCode, dto.getFields());
                 fieldService.saveBatch(fields);
 
@@ -199,12 +207,12 @@ public class EtlServiceImpl implements EtlService {
                 BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
                 syncPlan.setCode(GenerateCodeUtil.generate());
                 syncPlan.setGroupCode("0");
-                syncPlan.setPlanType("0");//0数据同步、1数据整理
+                //0数据同步、1数据整理
+                syncPlan.setPlanType("0");
                 syncPlan.setRefMappingCode(mappingCode);
                 syncPlan.setPlanStatus(PlanStatusEnum.TO_EXECUTE.getKey());
-                //todo sql
-                syncPlan.setPlanSql("");
-                syncPlan.setSqlCount("");
+                //基于条件，获取元数据的总数，该执行效率较低下，建议 由配置时去执行
+                syncPlan.setSqlCount(getSyncCountSql(biEtlDatabaseInf.getId(), mappingConfig));
                 syncPlan.setSqlLocalCount("0");
                 syncPlan.setCreateDate(LocalDateTime.now());
                 syncPlan.setRefModelCode(biEtlModel.getCode());
@@ -511,7 +519,7 @@ public class EtlServiceImpl implements EtlService {
             params.setCode(GenerateCodeUtil.generate());
             params.setFieldName(var.getName());
             params.setFieldType(var.getColumnType());
-            params.setRefMappingCode(code);
+            params.setRefCode(code);
             params.setCreateDate(LocalDateTime.now());
             params.setCreateUser(operator);
             params.setTenantId(tenantId);
@@ -520,5 +528,21 @@ public class EtlServiceImpl implements EtlService {
         return result;
     }
 
+    public String getSyncCountSql(String sourceId, BiEtlMappingConfig dto) throws Exception {
+        //创建表条件
+        DbContext context = new DbContext();
+        context.setDbId(sourceId);
+        context.setTableName(dto.getFromTableName());
+
+        //当前肯定是需要同步的
+        String offsetField = dto.getOffsetField();
+        String offsetValue = dto.getOffsetValue();
+        if (StringUtils.isNotBlank(offsetValue)) {
+            String condition = "'" + offsetField + "' > =" + "'" + offsetValue + "'";
+            context.setCondition(condition);
+        }
+
+        return String.valueOf(dbSelector.getTableCount(context));
+    }
 
 }
