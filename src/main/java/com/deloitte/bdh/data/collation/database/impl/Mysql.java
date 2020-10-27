@@ -60,7 +60,10 @@ public class Mysql extends AbstractProcess implements DbSelector {
             TableField field = new TableField();
             field.setName(result.getString("COLUMN_NAME"));
             field.setType("String");
-            field.setDesc("");
+            field.setDesc(result.getString("COLUMN_COMMENT"));
+
+            field.setDataType(result.getString("DATA_TYPE"));
+            field.setColumnType(result.getString("COLUMN_TYPE"));
             columns.add(field);
         }
         super.close(con);

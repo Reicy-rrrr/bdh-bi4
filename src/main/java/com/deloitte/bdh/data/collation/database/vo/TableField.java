@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.database.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,4 +27,19 @@ public class TableField {
     /** 字段描述 */
     @ApiModelProperty(value = "字段描述", example = "名称", required = true)
     private String desc;
+
+    /** 字段列类型 */
+    @JsonIgnore
+    @ApiModelProperty(value = "字段列类型", example = "decimal(10,4)")
+    private String columnType;
+
+    /** 字段数据类型 */
+    @JsonIgnore
+    @ApiModelProperty(value = "字段数据类型", example = "decimal")
+    private String dataType;
+
+    /** 字段数据范围 */
+    @JsonIgnore
+    @ApiModelProperty(value = "字段数据范围", example = "10,4")
+    private String dataScope;
 }
