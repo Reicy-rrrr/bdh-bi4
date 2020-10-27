@@ -31,4 +31,19 @@ public interface BiEtlDbMapper {
      * @return
      */
     List<Map<String, Object>> selectColumns(@Param("querySql") String querySql);
+
+    /**
+     * 查询表数据量
+     *
+     * @param querySql 查询sql
+     * @return
+     */
+    long selectCount(@Param("querySql") String querySql);
+
+    /**
+     * 清空表数据
+     * @param truncateSql
+     * @return
+     */
+    long truncateTable(@Param("truncateSql") String truncateSql);
 }
