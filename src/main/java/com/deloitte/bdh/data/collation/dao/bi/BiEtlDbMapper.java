@@ -4,6 +4,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * BiEtlDbMapper
  *
@@ -20,4 +23,12 @@ public interface BiEtlDbMapper {
      * @return
      */
     int createTable(@Param("createSql") String createSql);
+
+    /**
+     * 查询表字段信息
+     *
+     * @param querySql 查询sql
+     * @return
+     */
+    List<Map<String, Object>> selectColumns(@Param("querySql") String querySql);
 }

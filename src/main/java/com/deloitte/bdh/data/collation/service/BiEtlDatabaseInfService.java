@@ -2,8 +2,8 @@ package com.deloitte.bdh.data.collation.service;
 
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.collation.database.vo.TableData;
-import com.deloitte.bdh.data.collation.database.vo.TableSchema;
+import com.deloitte.bdh.data.collation.database.po.TableData;
+import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.*;
 

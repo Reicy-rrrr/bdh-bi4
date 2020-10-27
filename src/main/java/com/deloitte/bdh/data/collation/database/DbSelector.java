@@ -1,8 +1,8 @@
 package com.deloitte.bdh.data.collation.database;
 
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.deloitte.bdh.data.collation.database.vo.TableData;
-import com.deloitte.bdh.data.collation.database.vo.TableSchema;
+import com.deloitte.bdh.data.collation.database.po.TableData;
+import com.deloitte.bdh.data.collation.database.po.TableSchema;
 
 import java.util.List;
 

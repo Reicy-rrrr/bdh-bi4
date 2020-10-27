@@ -2,7 +2,7 @@ package com.deloitte.bdh.data.collation.integration.impl;
 
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.database.vo.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;

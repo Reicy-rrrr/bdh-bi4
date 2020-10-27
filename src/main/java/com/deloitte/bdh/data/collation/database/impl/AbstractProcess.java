@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.database.impl;
 
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.deloitte.bdh.data.collation.database.vo.TableData;
+import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 

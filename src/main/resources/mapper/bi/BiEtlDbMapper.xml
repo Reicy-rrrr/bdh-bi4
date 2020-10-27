@@ -6,4 +6,8 @@
     <update id="createTable" parameterType="String">
         ${createSql}
     </update>
+
+    <select id="selectColumns" parameterType="String" resultType="Map">
+        ${querySql}
+    </select>
 </mapper>

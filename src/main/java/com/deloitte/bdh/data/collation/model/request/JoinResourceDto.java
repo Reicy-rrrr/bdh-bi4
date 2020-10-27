@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.model.request;
 
 
-import com.deloitte.bdh.data.collation.database.vo.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import io.swagger.annotations.ApiModel;

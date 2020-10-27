@@ -1,7 +1,8 @@
 package com.deloitte.bdh.data.collation.database;
 
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
-import com.deloitte.bdh.data.collation.database.vo.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 
 import java.util.List;
 
@@ -32,4 +33,19 @@ public interface DbHandler {
      * @throws Exception
      */
     void createTable(String dbId, String targetTableName, List<TableField> targetFields) throws Exception;
+
+    /**
+     * 查询所有表名列表
+     *
+     * @return
+     */
+    List<String> getTables();
+
+    /**
+     * 查询表所有字段列表
+     *
+     * @param tableName
+     * @return
+     */
+    List<TableColumn> getColumns(String tableName);
 }

@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.database.convertor;
 
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.deloitte.bdh.data.collation.database.vo.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.database.vo;
+package com.deloitte.bdh.data.collation.database.po;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;

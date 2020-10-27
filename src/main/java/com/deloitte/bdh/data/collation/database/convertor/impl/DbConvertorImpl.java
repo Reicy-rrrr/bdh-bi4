@@ -3,7 +3,7 @@ package com.deloitte.bdh.data.collation.database.convertor.impl;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.database.convertor.DbConvertor;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.deloitte.bdh.data.collation.database.vo.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import org.springframework.stereotype.Service;
 

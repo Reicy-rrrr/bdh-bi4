@@ -2,9 +2,9 @@ package com.deloitte.bdh.data.collation.database.impl;
 
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.deloitte.bdh.data.collation.database.vo.TableData;
-import com.deloitte.bdh.data.collation.database.vo.TableField;
-import com.deloitte.bdh.data.collation.database.vo.TableSchema;
+import com.deloitte.bdh.data.collation.database.po.TableData;
+import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +86,7 @@ public class Hive2 extends AbstractProcess implements DbSelector {
 
     @Override
     public String fieldSql(DbContext context) {
-        return "desc " + context.getTableName() + "";
+        return "desc " + context.getTableName();
     }
 
     @Override

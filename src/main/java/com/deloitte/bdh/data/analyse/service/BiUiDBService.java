@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.deloitte.bdh.data.collation.database.po.TableColumn;
+
 import java.util.List;
 
 public interface BiUiDBService {
@@ -11,15 +13,14 @@ public interface BiUiDBService {
 
     /**
      * 根据数据源获取表
-     * @param dataSource
      * @return
      */
-    public List<String> getAllTable(String dataSource);
+    public List<String> getAllTable();
 
     /**
      * 根据表名获取字段
      * @param tableName
      * @return
      */
-    public List<String> getAllColumns(String tableName);
+    public List<TableColumn> getAllColumns(String tableName);
 }
