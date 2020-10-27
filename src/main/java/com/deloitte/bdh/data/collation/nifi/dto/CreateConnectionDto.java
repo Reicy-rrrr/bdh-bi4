@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.nifi.dto;
 
+import com.deloitte.bdh.data.collation.model.BiProcessors;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -44,8 +45,8 @@ public class CreateConnectionDto implements Serializable {
     /**
      * relCode
      */
-    @ApiModelProperty(value = "relCode", example = "1")
-    private String relCode;
+    @ApiModelProperty(value = "processors", example = "1")
+    private BiProcessors processors;
 
     /**
      * modelCode

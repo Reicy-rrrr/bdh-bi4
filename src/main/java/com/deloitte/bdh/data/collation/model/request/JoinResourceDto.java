@@ -33,7 +33,7 @@ public class JoinResourceDto extends BaseRequest {
     @ApiModelProperty(value = "是否独立副本", example = "0")
     private YesOrNoEnum isDuplicate = YesOrNoEnum.YES;
 
-    @ApiModelProperty(value = "是独立副本时，所属的编码", example = "0")
+    @ApiModelProperty(value = "不是独立副本时，所属的编码", example = "0")
     private String belongMappingCode;
 
     @ApiModelProperty(value = "同步方式", example = "0：直连，1：全量，2：增量")

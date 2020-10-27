@@ -35,7 +35,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
                 toCode = processorList.get(i + 1).getCode();
             }
             BiEtlConnection connection = super.createConnection(context, context.getProcessors().getRelModelCode(),
-                    context.getProcessors().getCode(), fromCode, toCode);
+                    context.getProcessors(), fromCode, toCode);
             context.addConnectionList(connection);
         }
         return null;
@@ -83,7 +83,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
                     toCode = newProcessorList.get(i + 1).getCode();
                 }
                 BiEtlConnection connection = super.createConnection(context, context.getProcessors().getRelModelCode(),
-                        context.getProcessors().getCode(), fromCode, toCode);
+                        context.getProcessors(), fromCode, toCode);
                 context.addConnectionList(connection);
             }
         } else {
@@ -91,7 +91,7 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
             List<BiEtlConnection> connectionList = context.getHasDelConnectionList();
             for (BiEtlConnection connection : connectionList) {
                 super.createConnection(context, context.getProcessors().getRelModelCode(),
-                        context.getProcessors().getCode(), connection.getFromProcessorCode(), connection.getToProcessorCode());
+                        context.getProcessors(), connection.getFromProcessorCode(), connection.getToProcessorCode());
             }
         }
         return null;

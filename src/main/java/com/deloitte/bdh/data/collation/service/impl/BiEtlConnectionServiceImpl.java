@@ -63,7 +63,7 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         BiEtlConnection connection = new BiEtlConnection();
         BeanUtils.copyProperties(dto, connection);
         connection.setCode(GenerateCodeUtil.genConnect());
-        connection.setRelProcessorsCode(dto.getRelCode());
+        connection.setRelProcessorsCode(dto.getProcessors().getCode());
         connection.setRelModelCode(model.getCode());
         connection.setCreateDate(LocalDateTime.now());
         connection.setModifiedDate(LocalDateTime.now());
@@ -92,10 +92,9 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         component.put("selectedRelationships", selectedRelationships);
 
         //此处去nifi value
-        Map<String, Object> connectionMap = nifiProcessService.createConnections(component, model.getProcessGroupId());
+        Map<String, Object> connectionMap = nifiProcessService.createConnections(component, dto.getProcessors().getProcessGroupId());
 
         connection.setConnectionId(MapUtils.getString(connectionMap, "id"));
-//        connection.setVersion(NifiProcessUtil.getVersion(connectionMap));
         etlConnectionMapper.insert(connection);
         return connection;
     }

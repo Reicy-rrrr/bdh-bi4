@@ -94,9 +94,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     public BiEtlProcessor createProcessor(CreateProcessorDto dto) throws Exception {
         BiProcessors processors = dto.getProcessors();
 
-        BiEtlModel model = etlModelService
-                .getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
-
         BiEtlProcessor processor = new BiEtlProcessor();
         BeanUtils.copyProperties(dto, processor);
         processor.setCode(GenerateCodeUtil.genProcessor());
@@ -107,11 +104,11 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         processor.setValidateMessage(YesOrNoEnum.NO.getvalue());
         processor.setCreateDate(LocalDateTime.now());
         processor.setRelProcessorsCode(processors.getCode());
-        processor.setProcessGroupId(model.getProcessGroupId());
+        processor.setProcessGroupId(processors.getProcessGroupId());
         //nifi 创建 processor
         Map<String, Object> reqNifi = dto.getParams();
         reqNifi.put("name", dto.getName());
-        reqNifi.put("id", model.getProcessGroupId());
+        reqNifi.put("id", processors.getProcessGroupId());
 
         //此处去nifi value
         reqNifi.put("type", ProcessorTypeEnum.getNifiValue(dto.getType()));
@@ -119,7 +116,6 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
         Map<String, Object> source = nifiProcessService.createProcessor(reqNifi);
 
         processor.setProcessId(MapUtils.getString(source, "id"));
-//        processor.setVersion(NifiProcessUtil.getVersion(source));
         processor.setRelationships(JsonUtil.obj2String(NifiProcessUtil.getRelationShip(source)));
         etlProcessorMapper.insert(processor);
         return processor;

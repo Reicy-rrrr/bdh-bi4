@@ -48,7 +48,7 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiEtlProcessorService processorService;
     @Resource
-    private EtlProcess<Nifi> etlProcess;
+    private EtlProcess etlProcess;
     @Autowired
     private BiProcessorsService processorsService;
     @Autowired
@@ -184,12 +184,15 @@ public class EtlServiceImpl implements EtlService {
                 processors.setCreateDate(LocalDateTime.now());
                 processors.setCreateUser(dto.getOperator());
                 processors.setTenantId(dto.getTenantId());
-                processorsService.save(processors);
 
-                // step2.1.4 调用NIFI生成processor
+                // step2.1.4 调用NIFI生成processors
                 Map<String, Object> req = Maps.newHashMap();
                 req.put("createUser", dto.getOperator());
-                req.put("SQL select query", dto.getTableName());
+                req.put("tenantId", dto.getTenantId());
+                req.put("SQL select query", mappingConfig.getFromTableName());
+                req.put("Table Name", mappingConfig.getToTableName());
+                req.put("JDBC Connection Pool", biEtlDatabaseInf.getControllerServiceId());
+
                 ProcessorContext context = new ProcessorContext();
                 context.setEnumList(BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
                 context.setReq(req);
@@ -197,7 +200,8 @@ public class EtlServiceImpl implements EtlService {
                 context.setModel(biEtlModel);
                 context.setBiEtlDatabaseInf(biEtlDatabaseInf);
                 context.setProcessors(processors);
-                etlProcess.process(context);
+                etlProcess.operateProcessorGroup(context);
+                processorsService.save(context.getProcessors());
 
                 //step2.1.5 生成调度计划
                 BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();

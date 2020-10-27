@@ -77,9 +77,9 @@ public class ConnectionsImp extends AbstractConnection<ConnectionsContext> {
                 connections.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
                 connections.setTenantId(context.getModel().getTenantId());
 
-                BiEtlConnection biEtlConnection = super.createConnection(context, connections.getRelModelCode(),
-                        connections.getCode(), fromProcessor.getCode(), toProcessor.getCode());
-                context.getConnectionList().add(biEtlConnection);
+//                BiEtlConnection biEtlConnection = super.createConnection(context, connections.getRelModelCode(),
+//                        connections.getCode(), fromProcessor.getCode(), toProcessor.getCode());
+//                context.getConnectionList().add(biEtlConnection);
 
                 connectionsService.save(connections);
                 context.getConnectionsList().add(connections);
@@ -130,8 +130,8 @@ public class ConnectionsImp extends AbstractConnection<ConnectionsContext> {
                 BiConnections connections = context.getHasConnectionsList().get(i);
                 BiEtlConnection connection = context.getHasConnectionList().get(i);
 
-                super.createConnection(context, connections.getRelModelCode(),
-                        connections.getCode(), connection.getFromProcessorCode(), connection.getToProcessorCode());
+//                super.createConnection(context, connections.getRelModelCode(),
+//                        connections.getCode(), connection.getFromProcessorCode(), connection.getToProcessorCode());
                 connectionsService.save(connections);
             }
         }

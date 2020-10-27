@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.nifi.connection;
 
 import com.deloitte.bdh.data.collation.model.BiEtlConnection;
+import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.nifi.dto.Nifi;
 import com.deloitte.bdh.data.collation.nifi.dto.CreateConnectionDto;
 import com.deloitte.bdh.data.collation.nifi.dto.Processor;
@@ -55,13 +56,13 @@ public abstract class AbstractConnection<T extends Nifi> extends AbstractCurdPro
     }
 
 
-    final protected BiEtlConnection createConnection(T context, String modelCode, String relCode, String fromCode, String toCode) throws Exception {
+    final protected BiEtlConnection createConnection(T context, String modelCode, BiProcessors processors, String fromCode, String toCode) throws Exception {
         CreateConnectionDto createConnectionDto = new CreateConnectionDto();
         createConnectionDto.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        createConnectionDto.setTenantId(context.getModel().getTenantId());
+        createConnectionDto.setTenantId(MapUtils.getString(context.getReq(), "tenantId"));
         createConnectionDto.setFromProcessorCode(fromCode);
         createConnectionDto.setToProcessorCode(toCode);
-        createConnectionDto.setRelCode(relCode);
+        createConnectionDto.setProcessors(processors);
         createConnectionDto.setModelCode(modelCode);
         return etlConnectionService.createConnection(createConnectionDto);
     }

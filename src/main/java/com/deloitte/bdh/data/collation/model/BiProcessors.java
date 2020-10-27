@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-09-29
+ * @since 2020-10-27
  */
 @TableName("BI_PROCESSORS")
 public class BiProcessors implements Serializable {
@@ -102,10 +102,10 @@ public class BiProcessors implements Serializable {
     private String tenantId;
 
     /**
-     * 依赖的BiporcessorId
+     * 依赖的PROCESS_GROUP_ID
      */
-    @TableField("REL_SOURCE_ID")
-    private String relSourceId;
+    @TableField("PROCESS_GROUP_ID")
+    private String processGroupId;
 
     public String getId() {
         return id;
@@ -226,12 +226,12 @@ public class BiProcessors implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
-    public String getRelSourceId() {
-        return relSourceId;
+    public String getProcessGroupId() {
+        return processGroupId;
     }
 
-    public void setRelSourceId(String relSourceId) {
-        this.relSourceId = relSourceId;
+    public void setProcessGroupId(String processGroupId) {
+        this.processGroupId = processGroupId;
     }
 
     @Override
@@ -254,7 +254,7 @@ public class BiProcessors implements Serializable {
         ", modifiedUser=" + modifiedUser +
         ", ip=" + ip +
         ", tenantId=" + tenantId +
-        ", relSourceId=" + relSourceId +
+        ", processGroupId=" + processGroupId +
         "}";
     }
 }

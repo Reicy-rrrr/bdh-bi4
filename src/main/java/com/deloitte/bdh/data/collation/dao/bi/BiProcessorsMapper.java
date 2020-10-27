@@ -9,7 +9,7 @@ import com.deloitte.bdh.common.base.Mapper;
  * </p>
  *
  * @author lw
- * @since 2020-09-27
+ * @since 2020-10-27
  */
 public interface BiProcessorsMapper extends Mapper<BiProcessors> {
 

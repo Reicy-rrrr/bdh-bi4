@@ -25,14 +25,10 @@ public class ProcessorContext extends Nifi {
 
     private Integer processorSequ = null;
 
-    private Boolean processorComplete = false;
-    private Boolean connectionComplete = false;
-
     //删除才有
     private List<Processor> hasDelProcessorList = Lists.newLinkedList();
     private List<Processor> newProcessorList = Lists.newLinkedList();
     private List<BiEtlConnection> hasDelConnectionList = Lists.newLinkedList();
-
 
     public ProcessorContext addProcessorTemp(Processor processor) {
         if (null != this.tempProcessor) {

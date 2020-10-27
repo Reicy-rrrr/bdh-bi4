@@ -1,17 +1,23 @@
 package com.deloitte.bdh.data.collation.nifi.processors;
 
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.enums.ProcessorTypeEnum;
+import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.BiEtlConnection;
 import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.collation.nifi.connection.Connection;
 import com.deloitte.bdh.data.collation.nifi.processor.Processor;
+import com.google.common.collect.Maps;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -19,26 +25,27 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
 
     @Resource(name = "connectionImp")
     private Connection<ProcessorContext> connection;
+    @Autowired
+    private NifiProcessService nifiProcessService;
 
     @Override
     public ProcessorContext positive(ProcessorContext context) throws Exception {
         logger.info("开始执行创建 BiEtlProcess.positive，参数:{}", JsonUtil.obj2String(context));
         switch (context.getMethod()) {
             case SAVE:
+                //生成processors 的 processGroupId
+                createProcessGroup(context);
                 // 处理processor
                 for (int i = 0; i < context.getEnumList().size(); i++) {
                     context.setProcessorSequ(i);
                     SpringUtil.getBean(context.getEnumList().get(i).getType(), Processor.class).pProcess(context);
                 }
-                context.setProcessorComplete(true);
                 // 处理connection
                 connection.pConnect(context);
-                context.setConnectionComplete(true);
                 break;
             case DELETE:
                 // 处理connection
                 connection.pConnect(context);
-                context.setConnectionComplete(true);
                 // 处理processor
                 for (int i = 0; i < context.getProcessorList().size(); i++) {
                     context.addProcessorTemp(context.getProcessorList().get(i));
@@ -46,13 +53,11 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                     context.getHasDelProcessorList().add(context.getTempProcessor());
                     context.removeProcessorTemp();
                 }
-                context.setProcessorComplete(true);
                 break;
             case UPDATE:
                 for (ProcessorTypeEnum typeEnum : context.getEnumList()) {
                     SpringUtil.getBean(typeEnum.getType(), Processor.class).pProcess(context);
                 }
-                context.setProcessorComplete(true);
                 break;
             case VALIDATE:
                 break;
@@ -80,6 +85,8 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                         context.removeProcessorTemp();
                     }
                 }
+                //处理processors的 processGroupId
+                nifiProcessService.delProcessGroup(context.getProcessors().getProcessGroupId());
                 break;
             case UPDATE:
                 break;
@@ -124,4 +131,14 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                 throw new RuntimeException("BiEtlProcess.validateContext error:不支持的方法");
         }
     }
+
+    private void createProcessGroup(ProcessorContext context) throws Exception {
+        //调用NIFI 创建模板
+        Map<String, Object> reqNifi = Maps.newHashMap();
+        reqNifi.put("name", context.getProcessors().getName());
+        reqNifi.put("position", JsonUtil.string2Obj(NifiProcessUtil.randPosition(), Map.class));
+        Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, context.getModel().getProcessGroupId());
+        context.getProcessors().setProcessGroupId(MapUtils.getString(sourceMap, "id"));
+    }
+
 }
