@@ -54,10 +54,16 @@ public class BiEtlMappingConfig implements Serializable {
     private String offsetValue;
 
     /**
+     * 本地总条数
+     */
+    @TableField("LOCAL_COUNT")
+    private String localCount;
+
+    /**
      * 同步的数据源id
      */
-    @TableField("REL_SOURCE_ID")
-    private String relSourceId;
+    @TableField("REF_SOURCE_ID")
+    private String refSourceId;
 
     /**
      * 源表名
@@ -74,14 +80,8 @@ public class BiEtlMappingConfig implements Serializable {
     /**
      * 关联的processors 编码
      */
-    @TableField("REL_PROCESSORS_CODE")
-    private String relProcessorsCode;
-
-    /**
-     * 同步状态
-     */
-    @TableField("STATUS")
-    private String status;
+    @TableField("REF_PROCESSORS_CODE")
+    private String refProcessorsCode;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -143,12 +143,19 @@ public class BiEtlMappingConfig implements Serializable {
     public void setOffsetValue(String offsetValue) {
         this.offsetValue = offsetValue;
     }
-    public String getRelSourceId() {
-        return relSourceId;
+    public String getLocalCount() {
+        return localCount;
     }
 
-    public void setRelSourceId(String relSourceId) {
-        this.relSourceId = relSourceId;
+    public void setLocalCount(String localCount) {
+        this.localCount = localCount;
+    }
+    public String getRefSourceId() {
+        return refSourceId;
+    }
+
+    public void setRefSourceId(String refSourceId) {
+        this.refSourceId = refSourceId;
     }
     public String getFromTableName() {
         return fromTableName;
@@ -164,19 +171,12 @@ public class BiEtlMappingConfig implements Serializable {
     public void setToTableName(String toTableName) {
         this.toTableName = toTableName;
     }
-    public String getRelProcessorsCode() {
-        return relProcessorsCode;
+    public String getRefProcessorsCode() {
+        return refProcessorsCode;
     }
 
-    public void setRelProcessorsCode(String relProcessorsCode) {
-        this.relProcessorsCode = relProcessorsCode;
-    }
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
+    public void setRefProcessorsCode(String refProcessorsCode) {
+        this.refProcessorsCode = refProcessorsCode;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -230,11 +230,11 @@ public class BiEtlMappingConfig implements Serializable {
         ", type=" + type +
         ", offsetField=" + offsetField +
         ", offsetValue=" + offsetValue +
-        ", relSourceId=" + relSourceId +
+        ", localCount=" + localCount +
+        ", refSourceId=" + refSourceId +
         ", fromTableName=" + fromTableName +
         ", toTableName=" + toTableName +
-        ", relProcessorsCode=" + relProcessorsCode +
-        ", status=" + status +
+        ", refProcessorsCode=" + refProcessorsCode +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

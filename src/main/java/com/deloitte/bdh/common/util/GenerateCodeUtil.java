@@ -11,6 +11,7 @@ public class GenerateCodeUtil {
 
     private static SnowFlakeUtil util = new SnowFlakeUtil(0, 0);
     private static final String PREFIX_MODEL_ = "Model_";
+    private static final String PREFIX_COMPONENT_ = "COMP_";
     private static final String PREFIX_PROCESSORS_ = "PROS_";
     private static final String PREFIX_PROCESSOR_ = "PRO_";
     private static final String PREFIX_PARAMS_ = "PARAM_";
@@ -23,6 +24,10 @@ public class GenerateCodeUtil {
 
     public static String genModel() {
         return generate(PREFIX_MODEL_);
+    }
+
+    public static String getComponent() {
+        return generate(PREFIX_COMPONENT_);
     }
 
     public static String genProcessors() {
@@ -47,6 +52,10 @@ public class GenerateCodeUtil {
 
     public static String genConnects() {
         return generate(PREFIX_CONNECTS_);
+    }
+
+    public static String generate() {
+        return util.nextId() + "";
     }
 
     private static String generate(String prefix) {

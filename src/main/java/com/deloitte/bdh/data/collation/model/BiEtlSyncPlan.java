@@ -30,28 +30,58 @@ public class BiEtlSyncPlan implements Serializable {
     private String code;
 
     /**
-     * 上次计划编码
+     * 计划组编码
      */
-    @TableField("PARENT_CODE")
-    private String parentCode;
+    @TableField("GROUP_CODE")
+    private String groupCode;
+
+    /**
+     * 执行计划类型（数据同步、数据整理）
+     */
+    @TableField("PLAN_TYPE")
+    private String planType;
 
     /**
      * 所属模板code
      */
-    @TableField("REL_MODEL_CODE")
-    private String relModelCode;
+    @TableField("REF_MODEL_CODE")
+    private String refModelCode;
 
     /**
-     * 同步数量
+     * 映射编码
      */
-    @TableField("SYNC_COUNT")
-    private String syncCount;
+    @TableField("REF_MAPPING_CODE")
+    private String refMappingCode;
 
     /**
-     * 执行状态
+     * 执行状态（待执行、执行中、执行完成）
      */
-    @TableField("STATUS")
-    private String status;
+    @TableField("PLAN_STATUS")
+    private String planStatus;
+
+    /**
+     * 执行结果（失败、成功）
+     */
+    @TableField("PLAN_RESULT")
+    private String planResult;
+
+    /**
+     * 执行SQL
+     */
+    @TableField("PLAN_SQL")
+    private String planSql;
+
+    /**
+     * 执行SQL总条数
+     */
+    @TableField("SQL_COUNT")
+    private String sqlCount;
+
+    /**
+     * 执行SQL本地总条数
+     */
+    @TableField("SQL_LOCAL_COUNT")
+    private String sqlLocalCount;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -85,33 +115,68 @@ public class BiEtlSyncPlan implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-    public String getParentCode() {
-        return parentCode;
+    public String getGroupCode() {
+        return groupCode;
     }
 
-    public void setParentCode(String parentCode) {
-        this.parentCode = parentCode;
+    public void setGroupCode(String groupCode) {
+        this.groupCode = groupCode;
     }
-    public String getRelModelCode() {
-        return relModelCode;
-    }
-
-    public void setRelModelCode(String relModelCode) {
-        this.relModelCode = relModelCode;
-    }
-    public String getSyncCount() {
-        return syncCount;
+    public String getPlanType() {
+        return planType;
     }
 
-    public void setSyncCount(String syncCount) {
-        this.syncCount = syncCount;
+    public void setPlanType(String planType) {
+        this.planType = planType;
     }
-    public String getStatus() {
-        return status;
+    public String getRefModelCode() {
+        return refModelCode;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setRefModelCode(String refModelCode) {
+        this.refModelCode = refModelCode;
+    }
+    public String getRefMappingCode() {
+        return refMappingCode;
+    }
+
+    public void setRefMappingCode(String refMappingCode) {
+        this.refMappingCode = refMappingCode;
+    }
+    public String getPlanStatus() {
+        return planStatus;
+    }
+
+    public void setPlanStatus(String planStatus) {
+        this.planStatus = planStatus;
+    }
+    public String getPlanResult() {
+        return planResult;
+    }
+
+    public void setPlanResult(String planResult) {
+        this.planResult = planResult;
+    }
+    public String getPlanSql() {
+        return planSql;
+    }
+
+    public void setPlanSql(String planSql) {
+        this.planSql = planSql;
+    }
+    public String getSqlCount() {
+        return sqlCount;
+    }
+
+    public void setSqlCount(String sqlCount) {
+        this.sqlCount = sqlCount;
+    }
+    public String getSqlLocalCount() {
+        return sqlLocalCount;
+    }
+
+    public void setSqlLocalCount(String sqlLocalCount) {
+        this.sqlLocalCount = sqlLocalCount;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -161,10 +226,15 @@ public class BiEtlSyncPlan implements Serializable {
         return "BiEtlSyncPlan{" +
         "id=" + id +
         ", code=" + code +
-        ", parentCode=" + parentCode +
-        ", relModelCode=" + relModelCode +
-        ", syncCount=" + syncCount +
-        ", status=" + status +
+        ", groupCode=" + groupCode +
+        ", planType=" + planType +
+        ", refModelCode=" + refModelCode +
+        ", refMappingCode=" + refMappingCode +
+        ", planStatus=" + planStatus +
+        ", planResult=" + planResult +
+        ", planSql=" + planSql +
+        ", sqlCount=" + sqlCount +
+        ", sqlLocalCount=" + sqlLocalCount +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

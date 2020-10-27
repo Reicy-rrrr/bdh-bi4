@@ -6,7 +6,7 @@ public enum SourceTypeEnum {
 
     Mysql("1", "mysql", "com.mysql.cj.jdbc.Driver", "jdbc:mysql://IP:PORT/DBNAME"),
     Oracle("3", "oracle", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@IP:PORT:DBNAME"),
-    SQLServer("4", "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:microsoft:sqlserver://IP:PORT; DatabaseName=DBNAME"),
+    SQLServer("4", "sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://IP:PORT;DatabaseName=DBNAME"),
     Hive("5", "hive", "org.apache.hadoop.hive.jdbc.HiveDriver", " jdbc:hive://IP:PORT/DBNAME"),
     Hive2("6", "hive2", "org.apache.hive.jdbc.HiveDriver", "jdbc:hive2://IP:PORT/DBNAME"),
     File_Excel("7", "excel", "Excel", null),

@@ -6,10 +6,15 @@
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlSyncPlan">
         <id column="id" property="id" />
         <result column="CODE" property="code" />
-        <result column="PARENT_CODE" property="parentCode" />
-        <result column="REL_MODEL_CODE" property="relModelCode" />
-        <result column="SYNC_COUNT" property="syncCount" />
-        <result column="STATUS" property="status" />
+        <result column="GROUP_CODE" property="groupCode" />
+        <result column="PLAN_TYPE" property="planType" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
+        <result column="REF_MAPPING_CODE" property="refMappingCode" />
+        <result column="PLAN_STATUS" property="planStatus" />
+        <result column="PLAN_RESULT" property="planResult" />
+        <result column="PLAN_SQL" property="planSql" />
+        <result column="SQL_COUNT" property="sqlCount" />
+        <result column="SQL_LOCAL_COUNT" property="sqlLocalCount" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

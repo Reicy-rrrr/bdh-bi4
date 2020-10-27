@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.integration;
 
+import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiConnections;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.request.*;
@@ -16,7 +17,7 @@ public interface EtlService {
      * @param
      * @return
      */
-    BiProcessors joinResource(JoinResourceDto dto) throws Exception;
+    BiComponent joinResource(JoinResourceDto dto) throws Exception;
 
     /**
      * 移除processors

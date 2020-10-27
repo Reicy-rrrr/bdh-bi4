@@ -50,8 +50,8 @@ public class BiComponentParams implements Serializable {
     /**
      * 关联的COMPONENT编码
      */
-    @TableField("REL_COMPONENT_CODE")
-    private String relComponentCode;
+    @TableField("REF_COMPONENT_CODE")
+    private String refComponentCode;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -112,12 +112,12 @@ public class BiComponentParams implements Serializable {
     public void setParamValue(String paramValue) {
         this.paramValue = paramValue;
     }
-    public String getRelComponentCode() {
-        return relComponentCode;
+    public String getRefComponentCode() {
+        return refComponentCode;
     }
 
-    public void setRelComponentCode(String relComponentCode) {
-        this.relComponentCode = relComponentCode;
+    public void setRefComponentCode(String refComponentCode) {
+        this.refComponentCode = refComponentCode;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -177,7 +177,7 @@ public class BiComponentParams implements Serializable {
         ", name=" + name +
         ", paramKey=" + paramKey +
         ", paramValue=" + paramValue +
-        ", relComponentCode=" + relComponentCode +
+        ", refComponentCode=" + refComponentCode +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

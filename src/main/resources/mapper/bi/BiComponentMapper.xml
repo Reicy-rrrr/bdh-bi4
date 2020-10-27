@@ -9,7 +9,7 @@
         <result column="NAME" property="name" />
         <result column="TYPE" property="type" />
         <result column="EFFECT" property="effect" />
-        <result column="REL_MODEL_CODE" property="relModelCode" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
         <result column="VERSION" property="version" />
         <result column="POSITION" property="position" />
         <result column="CREATE_DATE" property="createDate" />
@@ -20,4 +20,47 @@
         <result column="TENANT_ID" property="tenantId" />
     </resultMap>
 
+    <!-- 组件树映射结果 -->
+    <resultMap id="BiComponentTreeResultMap" type="com.deloitte.bdh.data.collation.model.resp.BiComponentTree">
+        <id column="ID" property="id" />
+        <result column="CODE" property="code" />
+        <result column="NAME" property="name" />
+        <result column="TYPE" property="type" />
+        <result column="EFFECT" property="effect" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
+        <result column="VERSION" property="version" />
+        <result column="POSITION" property="position" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
+        <collection column="{modelCode = REF_MODEL_CODE, componentCode = CODE}" property="from" javaType="java.util.ArrayList"
+                    select="selectByEnd" ofType="com.deloitte.bdh.data.collation.model.resp.BiComponentTree"/>
+    </resultMap>
+
+    <select id="selectByEnd" resultMap="BiComponentTreeResultMap">
+        SELECT bc.*
+        FROM BI_COMPONENT bc, BI_COMPONENT_CONNECTION bcc
+        WHERE bc.CODE = bcc.FROM_COMPONENT_CODE
+        AND bc.REF_MODEL_CODE = #{modelCode, jdbcType=VARCHAR}
+        AND bcc.TO_COMPONENT_CODE = #{componentCode, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectTree" resultMap="BiComponentTreeResultMap">
+        SELECT bc.*
+        FROM BI_COMPONENT bc
+        WHERE bc.REF_MODEL_CODE = #{modelCode, jdbcType=VARCHAR}
+        <choose>
+            <when test="componentCode != null and componentCode != ''">
+                AND bc.CODE = #{componentCode, jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                AND NOT EXISTS (
+                    SELECT 1 FROM BI_COMPONENT_CONNECTION WHERE FROM_COMPONENT_CODE = bc.CODE
+                )
+            </otherwise>
+        </choose>
+    </select>
 </mapper>

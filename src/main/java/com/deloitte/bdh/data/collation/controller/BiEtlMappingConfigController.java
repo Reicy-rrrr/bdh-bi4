@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2020-10-26
  */
 @RestController
-@RequestMapping("/biEtlSyncLog")
-public class BiEtlSyncLogController {
+@RequestMapping("/biEtlMappingConfig")
+public class BiEtlMappingConfigController {
 
 }

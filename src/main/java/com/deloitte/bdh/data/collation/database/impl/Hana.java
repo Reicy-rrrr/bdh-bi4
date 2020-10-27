@@ -75,12 +75,12 @@ public class Hana extends AbstractProcess implements DbSelector {
 
     @Override
     public String tableSql(DbContext context) {
-        return "select * from information_schema.TABLES where TABLE_SCHEMA=(select database())";
+        return "SELECT * FROM TABLES WHERE SCHEMA_NAME = '" + context.getDbUserName().toUpperCase() + "' AND IS_SYSTEM_TABLE = 'FALSE'";
     }
 
     @Override
     public String fieldSql(DbContext context) {
-        return "SELECT SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, POSITION FROM SYS.COLUMNS WHERE TABLE_NAME = '" + context.getTableName() + "' ORDER BY POSITION";
+        return "SELECT * FROM SYS.COLUMNS WHERE TABLE_NAME = '" + context.getTableName() + "' ORDER BY POSITION";
     }
 
     @Override
@@ -88,6 +88,6 @@ public class Hana extends AbstractProcess implements DbSelector {
         Integer page = context.getPage();
         Integer size = context.getSize();
         int start = (page - 1) * size;
-        return "SELECT * FROM " + context.getTableName() + " LIMIT 10 OFFSET 0";
+        return "SELECT * FROM " + context.getTableName() + " LIMIT " + size + " OFFSET " + start;
     }
 }
