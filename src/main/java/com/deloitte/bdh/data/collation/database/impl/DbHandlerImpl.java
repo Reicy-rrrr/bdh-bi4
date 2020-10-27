@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.database.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
-import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
@@ -14,6 +13,7 @@ import com.deloitte.bdh.data.collation.database.vo.TableField;
 import com.deloitte.bdh.data.collation.database.vo.TableSchema;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
+import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -40,8 +40,8 @@ public class DbHandlerImpl implements DbHandler {
     @Resource
     private BiEtlDbMapper biEtlDbMapper;
 
-    @Resource
-    private BiEtlDatabaseInfMapper biEtlDatabaseInfMapper;
+    @Autowired
+    private BiEtlDatabaseInfService biEtlDatabaseInfService;
 
     @Override
     public void createTable(CreateTableDto dto) throws Exception {
@@ -90,7 +90,7 @@ public class DbHandlerImpl implements DbHandler {
 
     private DbContext getDbContext(String dbId) {
         DbContext context = new DbContext();
-        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dbId);
+        BiEtlDatabaseInf inf = biEtlDatabaseInfService.getById(dbId);
         context.setDbId(dbId);
         context.setSourceTypeEnum(SourceTypeEnum.values(inf.getType()));
         if (!context.getSourceTypeEnum().equals(SourceTypeEnum.File_Csv)
