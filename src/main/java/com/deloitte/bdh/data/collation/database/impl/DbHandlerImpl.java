@@ -14,6 +14,7 @@ import com.deloitte.bdh.data.collation.database.vo.TableSchema;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -57,6 +58,15 @@ public class DbHandlerImpl implements DbHandler {
 
         List<String> targetColumns = dto.getFields();
         String createTableSql = buildCreateSql(tableName, allFields, targetColumns);
+        biEtlDbMapper.createTable(createTableSql);
+    }
+
+    @Override
+    public void createTable(String dbId, String targetTableName, List<TableField> targetFields) throws Exception {
+        DbContext context = getDbContext(dbId);
+        // 转换表字段
+        dbConvertor.convertFieldType(targetFields, context);
+        String createTableSql = buildCreateSql(targetTableName, targetFields, Lists.newArrayList());
         biEtlDbMapper.createTable(createTableSql);
     }
 
