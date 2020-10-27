@@ -4,6 +4,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.*;
 import java.util.LinkedHashMap;
@@ -72,6 +73,9 @@ public abstract class AbstractProcess {
     protected abstract String selectSql(DbContext context);
 
     protected String countSql(DbContext context) {
+        if (StringUtils.isNotBlank(context.getCondition())) {
+            return "SELECT COUNT(1) FROM " + context.getTableName() + " WHERE " + context.getCondition();
+        }
         return "SELECT COUNT(1) FROM " + context.getTableName();
     }
 

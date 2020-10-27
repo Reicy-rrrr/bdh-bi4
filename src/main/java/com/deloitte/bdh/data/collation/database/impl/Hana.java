@@ -74,6 +74,11 @@ public class Hana extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public long getTableCount(DbContext context) throws Exception {
+        return super.getTableCount(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "SELECT * FROM TABLES WHERE SCHEMA_NAME = '" + context.getDbUserName().toUpperCase() + "' AND IS_SYSTEM_TABLE = 'FALSE'";
     }

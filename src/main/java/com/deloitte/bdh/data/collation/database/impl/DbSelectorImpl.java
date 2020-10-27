@@ -50,6 +50,13 @@ public class DbSelectorImpl implements DbSelector {
         return result;
     }
 
+    @Override
+    public long getTableCount(DbContext context) throws Exception {
+        context(context);
+        long count = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).getTableCount(context);
+        return count;
+    }
+
     private void context(DbContext context) {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(context.getDbId());
         context.setSourceTypeEnum(SourceTypeEnum.values(inf.getType()));

@@ -89,6 +89,11 @@ public class Oracle extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public long getTableCount(DbContext context) throws Exception {
+        return super.getTableCount(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "SELECT * FROM all_tables WHERE OWNER = '" + context.getDbUserName().toUpperCase() + "' ORDER BY table_name";
     }

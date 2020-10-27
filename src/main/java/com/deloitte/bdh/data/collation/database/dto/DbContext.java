@@ -20,5 +20,9 @@ public class DbContext {
     private String dbPassword;
     private String driverName;
 
+    /** 数据库名 */
     private String dbName;
+
+    /** 条件 */
+    private String condition;
 }

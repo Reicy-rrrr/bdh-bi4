@@ -80,6 +80,11 @@ public class Hive extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public long getTableCount(DbContext context) throws Exception {
+        return super.getTableCount(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "show tables";
     }

@@ -77,6 +77,11 @@ public class Mysql extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public long getTableCount(DbContext context) throws Exception {
+        return super.getTableCount(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "select * from information_schema.TABLES where TABLE_SCHEMA=(select database())";
     }

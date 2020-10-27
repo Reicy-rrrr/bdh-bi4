@@ -16,4 +16,6 @@ public interface DbSelector {
     TableSchema getTableSchema(DbContext context) throws Exception;
 
     TableData getTableData(DbContext context) throws Exception;
+
+    long getTableCount(DbContext context) throws Exception;
 }
