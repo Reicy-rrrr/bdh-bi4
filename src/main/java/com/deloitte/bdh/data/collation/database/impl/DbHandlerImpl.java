@@ -24,6 +24,7 @@ import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -133,6 +134,21 @@ public class DbHandlerImpl implements DbHandler {
         String querySql = buildQueryColumnsSql(tableName);
         List<Map<String, Object>> results = biEtlDbMapper.selectColumns(querySql);
         return formatTableColumn(results);
+    }
+
+    @Override
+    public long getCount(String tableName, String condition) {
+        String querySql = "SELECT COUNT(1) FROM " + tableName;
+        if (StringUtils.isNotBlank(condition)) {
+            querySql = querySql + " WHERE " + condition;
+        }
+        return biEtlDbMapper.selectCount(querySql);
+    }
+
+    @Override
+    public long truncateTable(String tableName) {
+        String truncateSql = "TRUNCATE TABLE " + tableName;
+        return biEtlDbMapper.truncateTable(truncateSql);
     }
 
     private String buildQueryColumnsSql(String tableName) {

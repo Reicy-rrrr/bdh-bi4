@@ -44,8 +44,25 @@ public interface DbHandler {
     /**
      * 查询表所有字段列表
      *
-     * @param tableName
+     * @param tableName 表名
      * @return
      */
     List<TableColumn> getColumns(String tableName);
+
+    /**
+     * 查询表数据量
+     *
+     * @param tableName 表名
+     * @param condition 查询条件
+     * @return
+     */
+    long getCount(String tableName, String condition);
+
+    /**
+     * 清空表数据
+     *
+     * @param tableName 表名
+     * @return
+     */
+    long truncateTable(String tableName);
 }
