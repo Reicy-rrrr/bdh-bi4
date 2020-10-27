@@ -93,6 +93,10 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public List<String> getTables() {
+        // TODO: 暂无数据，临时表测试
+        if (true) {
+            return Lists.newArrayList("ORDERS_USCA_BI");
+        }
         // 查询当前租户下面所有模板
         List<BiEtlModel> models = biEtlModelService.list();
         if (CollectionUtils.isEmpty(models)) {
