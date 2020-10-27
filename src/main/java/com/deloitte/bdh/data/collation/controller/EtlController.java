@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.integration.EtlService;
+import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiConnections;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.request.*;
@@ -39,7 +40,7 @@ public class EtlController {
 
     @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
     @PostMapping("/joinResource")
-    public RetResult<BiProcessors> joinResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
+    public RetResult<BiComponent> joinResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
     }
 

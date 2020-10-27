@@ -54,6 +54,10 @@ public class GenerateCodeUtil {
         return generate(PREFIX_CONNECTS_);
     }
 
+    public static String generate() {
+        return util.nextId() + "";
+    }
+
     private static String generate(String prefix) {
         return prefix + util.nextId();
     }
