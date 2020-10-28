@@ -4,7 +4,9 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.collation.enums.PlanStatusEnum;
+import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
@@ -40,6 +42,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
     @Override
     public void process(String type) throws Exception {
+        //0 同步，1 整理的同步
         if ("0".equals(type)) {
             sync();
         } else {
@@ -55,21 +58,38 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
         );
         list.forEach(s -> {
-            //组装数据 启动nifi 改变执行状态
-            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                    .eq(BiEtlMappingConfig::getCode, s.getRefMappingCode())
-            );
+            try {
+                //todo 判断已处理次数
 
-            //是第一次 还是 定时同步？是增量还是全量？
-            SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
-            //todo 基于条件组装清空语句
+                //组装数据 启动nifi 改变执行状态
+                BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                        .eq(BiEtlMappingConfig::getCode, s.getRefMappingCode())
+                );
 
-            //启动NIFI
-            BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                    .eq(BiProcessors::getCode, config.getRefProcessorsCode())
-            );
+                //是第一次 还是 定时同步？是增量还是全量？
+                SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
+                if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst()) || SyncTypeEnum.FULL == typeEnum) {
+                    //todo 基于条件组装清空语句
+                } else {
+                    //todo 基于条件组装清空语句
+                }
 
-            //todo
+                //启动NIFI
+                BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                        .eq(BiProcessors::getCode, config.getRefProcessorsCode())
+                );
+                processorsService.runState(processors.getProcessGroupId(), RunStatusEnum.RUNNING.getKey(), true);
+
+                //修改plan 执行状态
+                s.setPlanStatus(PlanStatusEnum.EXECUTING.getKey());
+                syncPlanMapper.updateById(s);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+
+                syncPlanMapper.updateById(s);
+
+            }
+
         });
     }
 

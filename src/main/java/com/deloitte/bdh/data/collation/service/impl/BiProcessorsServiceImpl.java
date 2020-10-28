@@ -5,15 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.integration.AsyncService;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.BiConnections;
 import com.deloitte.bdh.data.collation.model.BiEtlConnection;
-import com.deloitte.bdh.data.collation.model.BiEtlProcessor;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.dao.bi.BiProcessorsMapper;
-import com.deloitte.bdh.data.collation.nifi.dto.RunContext;
 import com.deloitte.bdh.data.collation.service.BiConnectionsService;
 import com.deloitte.bdh.data.collation.service.BiEtlConnectionService;
 import com.deloitte.bdh.data.collation.service.BiEtlProcessorService;
@@ -46,8 +43,6 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     private BiProcessorsMapper processorsMapper;
     @Autowired
     private BiConnectionsService connectionsService;
-    @Autowired
-    private BiEtlProcessorService processorService;
     @Autowired
     private BiEtlConnectionService biEtlConnectionService;
     @Autowired
@@ -83,47 +78,6 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         );
         preChain.stream().sorted(Comparator.comparing(BiProcessors::getCode));
         return preChain;
-    }
-
-    @Override
-    public void preview(RunContext context) throws Exception {
-        String result;
-        //获取所有的processors 集合
-        List<BiProcessors> processorsList = this.getPreChain(context.getPreviewCode());
-
-        //获取processors 下面所有processor 以及需要查询的 connection
-        List<BiEtlProcessor> processorList = Lists.newLinkedList();
-        List<BiEtlConnection> connectionList = Lists.newLinkedList();
-        processorsList.forEach(s -> {
-            List<BiEtlProcessor> var = processorService.list(
-                    new LambdaQueryWrapper<BiEtlProcessor>().eq(BiEtlProcessor::getRelProcessorsCode, s.getCode())
-                            .orderByAsc(BiEtlProcessor::getSequence)
-            );
-
-            if (s.getCode().equals(context.getPreviewCode())) {
-                //移除最后一个 processor
-                BiEtlProcessor lastProcessor = var.get(var.size() - 1);
-                var.remove(var.size() - 1);
-                //获取最后一个 processor 上的 connection
-                BiEtlConnection etlConnection = biEtlConnectionService.getOne(
-                        new LambdaQueryWrapper<BiEtlConnection>()
-                                .eq(BiEtlConnection::getToProcessorCode, lastProcessor.getCode())
-                                .ne(BiEtlConnection::getFromProcessorCode, lastProcessor.getCode())
-                );
-                connectionList.add(etlConnection);
-            }
-            processorList.addAll(var);
-        });
-
-        //启动
-        for (BiEtlProcessor var : processorList) {
-            nifiProcessService.runState(var.getProcessId(), RunStatusEnum.RUNNING.getKey(), false);
-        }
-
-        //让数据生成目前设置3秒
-        Thread.sleep(3000);
-        result = nifiProcessService.preview(connectionList.get(0).getConnectionId());
-        context.setResult(result);
     }
 
     @Override

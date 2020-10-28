@@ -10,6 +10,7 @@
         <result column="PLAN_TYPE" property="planType" />
         <result column="REF_MODEL_CODE" property="refModelCode" />
         <result column="REF_MAPPING_CODE" property="refMappingCode" />
+        <result column="IS_FIRST" property="isFirst" />
         <result column="PLAN_STATUS" property="planStatus" />
         <result column="PLAN_RESULT" property="planResult" />
         <result column="PLAN_SQL" property="planSql" />

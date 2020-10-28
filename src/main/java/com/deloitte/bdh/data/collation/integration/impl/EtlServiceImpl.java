@@ -219,6 +219,7 @@ public class EtlServiceImpl implements EtlService {
                 syncPlan.setCreateDate(LocalDateTime.now());
                 syncPlan.setCreateUser(dto.getOperator());
                 syncPlan.setTenantId(dto.getTenantId());
+                syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
                 syncPlanService.save(syncPlan);
             }
             configService.save(mappingConfig);

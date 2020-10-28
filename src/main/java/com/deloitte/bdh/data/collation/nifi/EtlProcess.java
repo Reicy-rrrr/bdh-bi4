@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.collation.nifi;
 
 import com.deloitte.bdh.data.collation.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
-import com.deloitte.bdh.data.collation.nifi.dto.RunContext;
 
 public interface EtlProcess {
 
@@ -11,6 +10,5 @@ public interface EtlProcess {
     @Deprecated
     ConnectionsContext operateProcessorGroupConnections(ConnectionsContext var) throws Exception;
 
-    RunContext operateGroup(RunContext var) throws Exception;
 
 }

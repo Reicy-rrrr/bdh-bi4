@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-10-26
+ * @since 2020-10-28
  */
 @TableName("BI_ETL_SYNC_PLAN")
 public class BiEtlSyncPlan implements Serializable {
@@ -52,6 +52,12 @@ public class BiEtlSyncPlan implements Serializable {
      */
     @TableField("REF_MAPPING_CODE")
     private String refMappingCode;
+
+    /**
+     * 是否第一次整理时的同步操作
+     */
+    @TableField("IS_FIRST")
+    private String isFirst;
 
     /**
      * 执行状态（待执行、执行中、执行完成）
@@ -143,6 +149,13 @@ public class BiEtlSyncPlan implements Serializable {
     public void setRefMappingCode(String refMappingCode) {
         this.refMappingCode = refMappingCode;
     }
+    public String getIsFirst() {
+        return isFirst;
+    }
+
+    public void setIsFirst(String isFirst) {
+        this.isFirst = isFirst;
+    }
     public String getPlanStatus() {
         return planStatus;
     }
@@ -230,6 +243,7 @@ public class BiEtlSyncPlan implements Serializable {
         ", planType=" + planType +
         ", refModelCode=" + refModelCode +
         ", refMappingCode=" + refMappingCode +
+        ", isFirst=" + isFirst +
         ", planStatus=" + planStatus +
         ", planResult=" + planResult +
         ", planSql=" + planSql +
