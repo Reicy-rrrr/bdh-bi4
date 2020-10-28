@@ -47,6 +47,9 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (StringUtils.isNotBlank(dto.getName())) {
             query.like(BiUiAnalysePage::getName, dto.getName());
         }
+        /**
+         * 只查询已经发布过的页面
+         */
         if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(dto.getType())) {
             query.isNotNull(BiUiAnalysePage::getPublishId);
         }

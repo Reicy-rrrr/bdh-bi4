@@ -132,7 +132,9 @@ public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalys
             throw new Exception("页面id不正确");
         }
         BiUiAnalysePageConfig editConfig = getAnalysePageConfigByPageId(dto.getPageId());
-        page.setEditId(editConfig.getId());
+        if (editConfig == null) {
+            throw new Exception("清先编辑页面并保存");
+        }
         /**
          * 从editConfig复制一个publish对象
          */
@@ -143,8 +145,11 @@ public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalys
         publishConfig.setCreateDate(LocalDateTime.now());
         publishConfig.setCreateUser(AnalyseUtils.getCurrentUser());
         biUiReportPageConfigMapper.insert(publishConfig);
+        /**
+         * 这里的BiUiAnalysePageConfig 如果以前publish过,会变为历史版本,当前版本初始化就不会变更,存放在editId中
+         */
         page.setPublishId(publishConfig.getId());
-        biUiReportPageConfigMapper.updateById(editConfig);
+        page.setEditId(editConfig.getId());
         biUiAnalysePageService.updateById(page);
         return publishConfig;
     }
