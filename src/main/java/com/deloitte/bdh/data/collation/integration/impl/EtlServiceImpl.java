@@ -160,7 +160,7 @@ public class EtlServiceImpl implements EtlService {
                 //初次同步设置0
                 mappingConfig.setLocalCount("0");
                 //表名：组件编码+源表名
-                String toTableName = componentCode + dto.getTableName();
+                String toTableName = componentCode + "_" + dto.getTableName();
                 mappingConfig.setToTableName(toTableName);
 
                 //step2.1.1:创建 字段列表,此处为映射编码

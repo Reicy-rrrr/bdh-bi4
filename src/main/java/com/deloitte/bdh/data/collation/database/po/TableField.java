@@ -29,17 +29,15 @@ public class TableField {
     private String desc;
 
     /** 字段列类型 */
-    @JsonIgnore
     @ApiModelProperty(value = "字段列类型", example = "decimal(10,4)")
     private String columnType;
 
     /** 字段数据类型 */
-    @JsonIgnore
+
     @ApiModelProperty(value = "字段数据类型", example = "decimal")
     private String dataType;
 
     /** 字段数据范围 */
-    @JsonIgnore
     @ApiModelProperty(value = "字段数据范围", example = "10,4")
     private String dataScope;
 }
