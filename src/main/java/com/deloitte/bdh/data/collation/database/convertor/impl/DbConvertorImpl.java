@@ -37,6 +37,10 @@ public class DbConvertorImpl implements DbConvertor {
             switch (sourceType) {
                 case Mysql:
                     result = "mysqlToMysql";
+                    break;
+                case Oracle:
+                    result = "oracleToMysql";
+                    break;
                 default:
                     result = "mysqlToMysql";
             }
@@ -44,6 +48,7 @@ public class DbConvertorImpl implements DbConvertor {
             switch (sourceType) {
                 case Mysql:
                     result = "mysqlToHive";
+                    break;
                 default:
                     result = "mysqlToHive";
             }

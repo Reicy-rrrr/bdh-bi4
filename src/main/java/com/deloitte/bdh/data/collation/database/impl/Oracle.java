@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
@@ -60,9 +61,21 @@ public class Oracle extends AbstractProcess implements DbSelector {
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
             TableField field = new TableField();
-            field.setName(result.getString("COLUMN_NAME"));
-            field.setType("String");
-            field.setDesc("");
+            field.setName(result.getString("COLUMN_NAME"));//列名
+            //field.setType(result.getString("DATA_TYPE")); //数据类型
+            field.setDesc(result.getString("COMMENTS"));//备注
+
+            String dataType=result.getString("DATA_TYPE");
+            String dataPrecision=result.getString("DATA_PRECISION");
+            String dataScale=result.getString("DATA_SCALE");
+            String dataLength=result.getString("DATA_LENGTH");
+            if(StringUtil.isNotEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
+                field.setColumnType(dataType+"("+dataPrecision+","+dataScale+")");
+            }else if(StringUtil.isNotEmpty(dataScale)){
+                field.setColumnType(dataType);
+            }else{
+                field.setColumnType(dataType+"("+dataLength+")");
+            }
             columns.add(field);
         }
         super.close(con);
@@ -100,7 +113,10 @@ public class Oracle extends AbstractProcess implements DbSelector {
 
     @Override
     public String fieldSql(DbContext context) {
-        return "SELECT * FROM user_tab_columns WHERE TABLE_NAME=UPPER('" + context.getTableName().toUpperCase() + "')";
+        return " SELECT ACC.COMMENTS,T.COLUMN_NAME,T.DATA_TYPE,T.DATA_LENGTH,T.DATA_PRECISION,T.DATA_SCALE FROM USER_TAB_COLUMNS T " +
+                " LEFT JOIN ALL_COL_COMMENTS ACC ON T.TABLE_NAME=ACC.TABLE_NAME AND T.COLUMN_NAME=ACC.COLUMN_NAME " +
+                " WHERE t.TABLE_NAME='" + context.getTableName().toUpperCase() + "'";
+        //return "SELECT * FROM user_tab_columns WHERE TABLE_NAME=UPPER('" + context.getTableName().toUpperCase() + "')";
     }
 
     @Override
