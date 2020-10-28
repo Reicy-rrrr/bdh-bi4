@@ -75,16 +75,33 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     @Override
     public BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto) throws Exception {
         if (checkBiUiAnalyseCategoryByName(dto.getName(), dto.getTenantId(), null)) {
+            BiUiAnalyseCategory customerTop = getCustomerTop(dto.getTenantId());
+            if (customerTop == null) {
+                throw new Exception("清先初始化默认文件夹");
+            }
             BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
             BeanUtils.copyProperties(dto, entity);
             entity.setCreateDate(LocalDateTime.now());
             entity.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_CUSTOMER);
             entity.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
+            /**
+             * 创建的自定义文件夹都在我的分析下面
+             */
+            entity.setParentId(customerTop.getId());
             biuiAnalyseCategoryMapper.insert(entity);
             return entity;
         } else {
             throw new Exception("已存在相同名称的文件夹");
         }
+    }
+
+    private BiUiAnalyseCategory getCustomerTop(String tenantId) {
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
+        query.eq(BiUiAnalyseCategory::getInitType, AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
+        query.eq(BiUiAnalyseCategory::getType, AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED);
+        List<BiUiAnalyseCategory> customerTops = list(query);
+        return customerTops.size() > 0 ? customerTops.get(0) : null;
     }
 
     @Override
