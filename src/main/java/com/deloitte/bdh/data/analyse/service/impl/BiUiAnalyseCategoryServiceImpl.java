@@ -112,6 +112,9 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     @Override
     public BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception {
         BiUiAnalyseCategory entity = biuiAnalyseCategoryMapper.selectById(dto.getId());
+        if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
+            throw new Exception("默认文件夹不能修改");
+        }
         if (checkBiUiAnalyseCategoryByName(dto.getName(), entity.getTenantId(), entity.getId())) {
             entity.setName(dto.getName());
             entity.setDes(dto.getDes());
