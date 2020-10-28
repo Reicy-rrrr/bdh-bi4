@@ -39,13 +39,13 @@ public class BiUiAnalyseCategory implements Serializable {
     private String name;
 
     /**
-     * 文件夹/报表/dashboard
+     * predefined,customer 我的分析,预定义报表
      */
     @TableField("TYPE")
     private String type;
 
     /**
-     * 是否用户自定义类型CUSTOMER,TYPE1,TYPE2...
+     * 系统初始化,自建
      */
     @TableField("INIT_TYPE")
     private String initType;

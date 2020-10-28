@@ -17,6 +17,9 @@ public class AnalyseCategoryReq extends PageDto {
     @ApiModelProperty(value = "名称")
     private String name;
 
-    @ApiModelProperty(value = "只包含文件夹")
-    private Boolean folderOnly;
+    @ApiModelProperty(value = "系统初始化,自建")
+    private String initType;
+
+    @ApiModelProperty(value = "我的分析,预定义报表")
+    private String type;
 }

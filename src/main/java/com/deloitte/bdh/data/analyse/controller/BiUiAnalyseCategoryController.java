@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -38,6 +39,20 @@ public class BiUiAnalyseCategoryController {
     @ApiOperation(value = "基于租户查询报表的树状结构", notes = "基于租户查询报表的树状结构")
     @PostMapping("/getCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
+    }
+
+    @ApiOperation(value = "预定义报表", notes = "预定义报表")
+    @PostMapping("/getDefaultCategoryTree")
+    public RetResult<List<AnalyseCategoryTree>> getDefaultCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
+        request.getData().setType(AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED);
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
+    }
+
+    @ApiOperation(value = "我的分析", notes = "我的分析")
+    @PostMapping("/getCustomerCategoryTree")
+    public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
+        request.getData().setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
     }
 

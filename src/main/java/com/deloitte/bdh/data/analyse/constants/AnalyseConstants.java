@@ -8,9 +8,18 @@ public class AnalyseConstants {
     /**
      * 用户自定义
      */
-    public static final String INIT_TYPE_CUSTOMER = "CUSTOMER";
+    public static final String CATEGORY_INIT_TYPE_CUSTOMER = "CUSTOMER";
     /**
      * 默认
      */
-    public static final String INIT_TYPE_DEFAULT = "DEFAULT";
+    public static final String CATEGORY_INIT_TYPE_DEFAULT = "DEFAULT";
+
+    /**
+     * 预定义
+     */
+    public static final String CATEGORY_TYPE_PRE_DEFINED = "PRE_DEFINED";
+    /**
+     * 默认
+     */
+    public static final String CATEGORY_TYPE_CUSTOMER = "CUSTOMER";
 }

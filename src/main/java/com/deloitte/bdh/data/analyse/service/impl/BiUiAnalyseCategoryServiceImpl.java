@@ -78,6 +78,8 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
             BeanUtils.copyProperties(dto, entity);
             entity.setCreateDate(LocalDateTime.now());
+            entity.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_CUSTOMER);
+            entity.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
             biuiAnalyseCategoryMapper.insert(entity);
             return entity;
         } else {
@@ -91,7 +93,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         if (category == null) {
             throw new Exception("错误的id");
         }
-        if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(category.getInitType())) {
+        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getInitType())) {
             throw new Exception("默认文件夹不能删除");
         }
         //有下级的不能删除
@@ -112,7 +114,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     @Override
     public BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception {
         BiUiAnalyseCategory entity = biuiAnalyseCategoryMapper.selectById(dto.getId());
-        if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
+        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
             throw new Exception("默认文件夹不能修改");
         }
         if (checkBiUiAnalyseCategoryByName(dto.getName(), entity.getTenantId(), entity.getId())) {
@@ -132,8 +134,11 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         if (!StringUtil.isEmpty(dto.getTenantId())) {
             query.eq(BiUiAnalyseCategory::getTenantId, dto.getTenantId());
         }
-        if (dto.getFolderOnly() != null && dto.getFolderOnly()) {
-            query.eq(BiUiAnalyseCategory::getType, AnalyseConstants.FOLDER);
+        if (dto.getInitType() != null) {
+            query.eq(BiUiAnalyseCategory::getInitType, dto.getInitType());
+        }
+        if (dto.getType() != null) {
+            query.eq(BiUiAnalyseCategory::getType, dto.getType());
         }
         // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(dto.getName())) {
@@ -196,7 +201,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
                 category.setModifiedUser(null);
                 category.setModifiedDate(null);
                 category.setTenantId(data.getTenantId());
-                category.setInitType(AnalyseConstants.INIT_TYPE_DEFAULT);
+                category.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
                 biuiAnalyseCategoryMapper.insert(category);
                 tenantCategoryMap.put(name, category);
                 newCategories.add(category);
@@ -239,7 +244,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
 
     @Override
     public void batchDelAnalyseCategories(BatchAnalyseCategoryDelReq data) throws Exception {
-        for(String id:data.getIds()){
+        for (String id : data.getIds()) {
             delAnalyseCategory(id);
         }
     }
