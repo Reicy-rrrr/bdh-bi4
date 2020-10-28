@@ -49,6 +49,12 @@ public class BiUiAnalyseDefaultCategory implements Serializable {
      */
     @TableField("PARENT_ID")
     private String parentId;
+
+    /**
+     * predefined,customer
+     */
+    @TableField("TYPE")
+    private String type;
     /**
      * 图标
      */

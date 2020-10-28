@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
+import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageConfigService;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +43,12 @@ public class BiUiAnalysePageConfigController {
     @PostMapping("/createAnalysePageConfig")
     public RetResult<BiUiAnalysePageConfig> createAnalysePageConfig(@RequestBody @Validated RetRequest<CreateAnalysePageConfigsDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiReportPageConfigService.createAnalysePageConfig(request.getData()));
+    }
+
+    @ApiOperation(value = "发布页面", notes = "发布页面")
+    @PostMapping("/publishAnalysePageConfig")
+    public RetResult<BiUiAnalysePageConfig> publishAnalysePageConfig(@RequestBody @Validated RetRequest<PublishAnalysePageConfigsDto> request) throws Exception {
+        return RetResponse.makeOKRsp(biUiReportPageConfigService.publishAnalysePageConfig(request.getData()));
     }
 
     @ApiOperation(value = "删除页面配置", notes = "删除页面配置")

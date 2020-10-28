@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
+import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 
 /**
@@ -39,6 +40,15 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @return
      */
     BiUiAnalysePageConfig createAnalysePageConfig(CreateAnalysePageConfigsDto dto) throws Exception;
+
+    /**
+     * 发布一个页面
+     *
+     * @param dto
+     * @return
+     * @throws Exception
+     */
+    public BiUiAnalysePageConfig publishAnalysePageConfig(PublishAnalysePageConfigsDto dto) throws Exception;
 
     /**
      * del页面配置

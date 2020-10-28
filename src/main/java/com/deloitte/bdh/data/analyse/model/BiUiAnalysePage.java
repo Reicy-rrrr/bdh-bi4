@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author bo.wang
@@ -55,6 +55,18 @@ public class BiUiAnalysePage implements Serializable {
      */
     @TableField("PARENT_ID")
     private String parentId;
+
+    /**
+     * 当前编辑的id
+     */
+    @TableField("EDIT_ID")
+    private String editId;
+
+    /**
+     * 发布后写入的id,重复发布都修改这个值为当前版本
+     */
+    @TableField("PUBLISH_ID")
+    private String publishId;
 
     /**
      * 报表描述

@@ -47,6 +47,12 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (StringUtils.isNotBlank(dto.getName())) {
             query.like(BiUiAnalysePage::getName, dto.getName());
         }
+        /**
+         * 只查询已经发布过的页面
+         */
+        if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(dto.getType())) {
+            query.isNotNull(BiUiAnalysePage::getPublishId);
+        }
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         PageInfo<BiUiAnalysePage> pageInfo = new PageInfo(this.list(query));
         PageResult pageResult = new PageResult(pageInfo);
@@ -80,7 +86,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (category == null) {
             throw new Exception("错误的id");
         }
-        if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(category.getInitType())) {
+        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getInitType())) {
             throw new Exception("默认文件夹不能删除");
         }
         biUiAnalysePageMapper.deleteById(id);
