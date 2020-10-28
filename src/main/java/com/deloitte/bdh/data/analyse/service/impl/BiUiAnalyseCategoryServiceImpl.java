@@ -75,9 +75,17 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     @Override
     public BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto) throws Exception {
         if (checkBiUiAnalyseCategoryByName(dto.getName(), dto.getTenantId(), null)) {
-            BiUiAnalyseCategory customerTop = getCustomerTop(dto.getTenantId());
-            if (customerTop == null) {
-                throw new Exception("清先初始化默认文件夹");
+            BiUiAnalyseCategory parent = null;
+            if (dto.getParentId() == null) {
+                parent = getCustomerTop(dto.getTenantId());
+                if (parent == null) {
+                    throw new Exception("清先初始化默认文件夹");
+                }
+            } else {
+                parent = getAnalyseCategory(dto.getParentId());
+                if (parent == null) {
+                    throw new Exception("错误的上级文件夹id");
+                }
             }
             BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
             BeanUtils.copyProperties(dto, entity);
@@ -87,7 +95,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             /**
              * 创建的自定义文件夹都在我的分析下面
              */
-            entity.setParentId(customerTop.getId());
+            entity.setParentId(parent.getId());
             biuiAnalyseCategoryMapper.insert(entity);
             return entity;
         } else {
