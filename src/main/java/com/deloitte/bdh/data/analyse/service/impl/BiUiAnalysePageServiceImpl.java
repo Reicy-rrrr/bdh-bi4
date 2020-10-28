@@ -80,7 +80,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (category == null) {
             throw new Exception("错误的id");
         }
-        if (AnalyseConstants.INIT_TYPE_DEFAULT.equals(category.getInitType())) {
+        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getInitType())) {
             throw new Exception("默认文件夹不能删除");
         }
         biUiAnalysePageMapper.deleteById(id);
