@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-10-26
+ * @since 2020-10-28
  */
 @TableName("BI_ETL_SYNC_PLAN")
 public class BiEtlSyncPlan implements Serializable {
@@ -54,6 +54,12 @@ public class BiEtlSyncPlan implements Serializable {
     private String refMappingCode;
 
     /**
+     * 是否第一次整理时的同步操作
+     */
+    @TableField("IS_FIRST")
+    private String isFirst;
+
+    /**
      * 执行状态（待执行、执行中、执行完成）
      */
     @TableField("PLAN_STATUS")
@@ -64,6 +70,12 @@ public class BiEtlSyncPlan implements Serializable {
      */
     @TableField("PLAN_RESULT")
     private String planResult;
+
+    /**
+     * 处理次数
+     */
+    @TableField("PROCESS_COUNT")
+    private String processCount;
 
     /**
      * 执行SQL
@@ -143,6 +155,13 @@ public class BiEtlSyncPlan implements Serializable {
     public void setRefMappingCode(String refMappingCode) {
         this.refMappingCode = refMappingCode;
     }
+    public String getIsFirst() {
+        return isFirst;
+    }
+
+    public void setIsFirst(String isFirst) {
+        this.isFirst = isFirst;
+    }
     public String getPlanStatus() {
         return planStatus;
     }
@@ -156,6 +175,13 @@ public class BiEtlSyncPlan implements Serializable {
 
     public void setPlanResult(String planResult) {
         this.planResult = planResult;
+    }
+    public String getProcessCount() {
+        return processCount;
+    }
+
+    public void setProcessCount(String processCount) {
+        this.processCount = processCount;
     }
     public String getPlanSql() {
         return planSql;
@@ -230,8 +256,10 @@ public class BiEtlSyncPlan implements Serializable {
         ", planType=" + planType +
         ", refModelCode=" + refModelCode +
         ", refMappingCode=" + refMappingCode +
+        ", isFirst=" + isFirst +
         ", planStatus=" + planStatus +
         ", planResult=" + planResult +
+        ", processCount=" + processCount +
         ", planSql=" + planSql +
         ", sqlCount=" + sqlCount +
         ", sqlLocalCount=" + sqlLocalCount +

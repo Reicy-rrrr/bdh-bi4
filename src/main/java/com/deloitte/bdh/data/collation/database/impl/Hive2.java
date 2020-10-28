@@ -96,16 +96,13 @@ public class Hive2 extends AbstractProcess implements DbSelector {
 
     @Override
     protected String selectSql(DbContext context) {
-        Integer page = context.getPage();
         Integer size = context.getSize();
-        if (page == 1) {
-            return "select * from " + context.getTableName() + " limit " + size;
-        }
+        return "select * from " + context.getTableName() + " limit " + size;
 
-        // hive以下方式的分页查询效率极低
+        /*// hive以下方式的分页查询效率极低
         int start = (page - 1) * size + 1;
         int end = page * size;
         return "select * from (select row_number() over () as TEMP_NUM, " + context.getTableName() + ".* from " + context.getTableName()
-                + ") as " + context.getTableName() + " where TEMP_NUM between " + start + " and " + end;
+                + ") as " + context.getTableName() + " where TEMP_NUM between " + start + " and " + end;*/
     }
 }

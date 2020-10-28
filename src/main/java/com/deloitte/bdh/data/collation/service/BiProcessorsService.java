@@ -1,8 +1,8 @@
 package com.deloitte.bdh.data.collation.service;
 
+import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.collation.nifi.dto.RunContext;
 
 import java.util.List;
 
@@ -19,12 +19,6 @@ public interface BiProcessorsService extends Service<BiProcessors> {
 
     List<BiProcessors> getPreChain(String processorsCode);
 
-    void preview(RunContext context) throws Exception;
-
-    void stopAndClearSync(String processGroupId, String modelCode) throws Exception;
-
-    void stopAndClearAsync(String processGroupId, String modelCode) throws Exception;
-
-    void runState(String id, String state, boolean isGroup) throws Exception;
+    void runState(String code, RunStatusEnum state, boolean isGroup) throws Exception;
 
 }

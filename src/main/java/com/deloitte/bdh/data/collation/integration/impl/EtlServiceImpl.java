@@ -160,7 +160,7 @@ public class EtlServiceImpl implements EtlService {
                 //初次同步设置0
                 mappingConfig.setLocalCount("0");
                 //表名：组件编码+源表名
-                String toTableName = componentCode + dto.getTableName();
+                String toTableName = componentCode + "_" + dto.getTableName();
                 mappingConfig.setToTableName(toTableName);
 
                 //step2.1.1:创建 字段列表,此处为映射编码
@@ -219,6 +219,9 @@ public class EtlServiceImpl implements EtlService {
                 syncPlan.setCreateDate(LocalDateTime.now());
                 syncPlan.setCreateUser(dto.getOperator());
                 syncPlan.setTenantId(dto.getTenantId());
+                syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
+                //设置已处理初始值为0
+                syncPlan.setProcessCount("0");
                 syncPlanService.save(syncPlan);
             }
             configService.save(mappingConfig);

@@ -1,7 +1,5 @@
 package com.deloitte.bdh.data.collation.nifi.enums;
 
-import com.deloitte.bdh.common.util.NifiProcessUtil;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author liuwei
@@ -12,8 +10,5 @@ public enum MethodEnum {
     DELETE,
     UPDATE,
     VALIDATE,
-    RUN,
-    STOP,
-    VIEW,
     ;
 }

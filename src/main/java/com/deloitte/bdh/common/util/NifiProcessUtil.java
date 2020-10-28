@@ -1,6 +1,7 @@
 package com.deloitte.bdh.common.util;
 
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
+import com.deloitte.bdh.data.collation.nifi.exception.NifiException;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
@@ -48,22 +49,22 @@ public class NifiProcessUtil {
      */
     public static void checkPermissions(Map<String, Object> map, Integer type) {
         if (MapUtils.isEmpty(map)) {
-            throw new RuntimeException("验证权限失败:参数不能为空");
+            throw new NifiException("验证权限失败:参数不能为空");
         }
         Map permissions = MapUtils.getMap(map, "permissions");
         if (MapUtils.isEmpty(permissions)) {
-            throw new RuntimeException("验证权限失败:没有permissions相关数据");
+            throw new NifiException("验证权限失败:没有permissions相关数据");
         }
         Boolean canRead = MapUtils.getBoolean(permissions, "canRead");
         Boolean canWrite = MapUtils.getBoolean(permissions, "canWrite");
 
         if (0 == type) {
             if (!canRead) {
-                throw new RuntimeException("验证权限失败:没有读权限");
+                throw new NifiException("验证权限失败:没有读权限");
             }
         } else {
             if (!canWrite) {
-                throw new RuntimeException("验证权限失败:没有写权限");
+                throw new NifiException("验证权限失败:没有写权限");
             }
         }
     }
@@ -121,11 +122,11 @@ public class NifiProcessUtil {
             return;
         }
         if (MapUtils.isEmpty(map)) {
-            throw new RuntimeException("参数校验失败:参数异常");
+            throw new NifiException("参数校验失败:参数异常");
         }
         for (String arge : args) {
             if (StringUtil.isEmpty(MapUtils.getString(map, arge))) {
-                throw new RuntimeException(String.format("参数校验失败,参数%s不能为空", arge));
+                throw new NifiException(String.format("参数校验失败,参数%s不能为空", arge));
             }
         }
     }
@@ -136,7 +137,7 @@ public class NifiProcessUtil {
      */
     public static Boolean validateProcessor(Map<String, Object> map) {
         if (MapUtils.isEmpty(map)) {
-            throw new RuntimeException("参数校验失败:参数异常");
+            throw new NifiException("参数校验失败:参数异常");
         }
 
         //validationStatus：VALID&INVALID ,state:STOPPED
@@ -151,7 +152,7 @@ public class NifiProcessUtil {
      */
     public static List<String> getRelationShip(Map<String, Object> map) {
         if (MapUtils.isEmpty(map)) {
-            throw new RuntimeException("获取relationship失败:参数异常");
+            throw new NifiException("获取relationship失败:参数异常");
         }
         Map<String, Object> component = (Map<String, Object>) MapUtils.getObject(map, "component");
         List<Map<String, Object>> relationships = (List<Map<String, Object>>) MapUtils.getObject(component, "relationships");
@@ -170,11 +171,11 @@ public class NifiProcessUtil {
      */
     public void setRelaAutoTerminateTrue(Map<String, Object> map) {
         if (MapUtils.isEmpty(map)) {
-            throw new RuntimeException("获取relationship失败:参数异常");
+            throw new NifiException("获取relationship失败:参数异常");
         }
         Object rela = MapUtils.getObject(map, "relationships");
         if (null == rela) {
-            throw new RuntimeException(String.format("设置relationship 失败，未找到相关数据:%s", JsonUtil.obj2String(map)));
+            throw new NifiException(String.format("设置relationship 失败，未找到相关数据:%s", JsonUtil.obj2String(map)));
         }
         List<Map<String, Object>> list = (List<Map<String, Object>>) rela;
         for (Map<String, Object> args0 : list) {

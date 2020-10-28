@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.enums.NifiEnum;
+import com.deloitte.bdh.data.collation.nifi.exception.NifiException;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -34,7 +35,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         logger.info("NifiProcessServiceImpl.getRootGroupInfo, URL:{} ", URL + NifiEnum.ACCESS_TOKEN.getKey());
         String response = HttpClientUtil.get(NifiProcessUtil.assemblyUrl(URL, NifiEnum.ROOT_GROUP_INFO.getKey()), super.setHeaderAuthorization(), null);
         if (StringUtil.isEmpty(response)) {
-            throw new RuntimeException("未获取到NIFI的RootGroup相关信息");
+            throw new NifiException("未获取到NIFI的RootGroup相关信息");
         }
         return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
         });
@@ -63,7 +64,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getProcessGroup(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("查询单个ProcessGroup 失败:id不能为空");
+            throw new NifiException("查询单个ProcessGroup 失败:id不能为空");
         }
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCSS_GROUPS.getKey(), id);
         logger.info("NifiProcessServiceImpl.getProcessGroup, URL:{}", url);
@@ -75,7 +76,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> delProcessGroup(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("delProcessGroup:id不能为空");
+            throw new NifiException("delProcessGroup:id不能为空");
         }
         Map<String, Object> sourceMap = this.getProcessGroup(id);
         // 校验权限
@@ -110,7 +111,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> runState(String id, String state, boolean isGroup) throws Exception {
         if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
-            throw new RuntimeException("runState 失败 : 参数不能为空");
+            throw new NifiException("runState 失败 : 参数不能为空");
         }
         Map<String, Object> prcessorMap = null;
         String url;
@@ -212,7 +213,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> runControllerService(String id, String state) throws Exception {
         if (StringUtil.isEmpty(id) || StringUtil.isEmpty(state)) {
-            throw new RuntimeException("runControllerService 失败:参数不能为空");
+            throw new NifiException("runControllerService 失败:参数不能为空");
         }
         Map<String, Object> prcessorMap = this.getControllerService(id);
 
@@ -231,7 +232,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getControllerService(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("查询单个数据源失败:id不能为空");
+            throw new NifiException("查询单个数据源失败:id不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONTROLLER_SERVICE.getKey(), id);
@@ -244,7 +245,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> delControllerService(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("delControllerService:id不能为空");
+            throw new NifiException("delControllerService:id不能为空");
         }
         Map<String, Object> connectMap = this.getControllerService(id);
         // 校验权限
@@ -295,7 +296,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getProcessor(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("查询单个Processor失败:id不能为空");
+            throw new NifiException("查询单个Processor失败:id不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
@@ -326,7 +327,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> delProcessor(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("NifiProcessServiceImpl.delProcessor:id不能为空");
+            throw new NifiException("NifiProcessServiceImpl.delProcessor:id不能为空");
         }
         Map<String, Object> processor = this.getProcessor(id);
         // 校验权限
@@ -345,7 +346,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> createConnections(Map<String, Object> map, String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("createConnections error: id不能为空");
+            throw new NifiException("createConnections error: id不能为空");
         }
         Map<String, Object> prcessorGroupMap = this.getProcessGroup(id);
         // 校验权限
@@ -362,7 +363,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getConnections(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("getConnections失败:id不能为空");
+            throw new NifiException("getConnections失败:id不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CONNECTIONS.getKey(), id);
@@ -375,7 +376,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> dropConnections(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("dropConnections失败:id不能为空");
+            throw new NifiException("dropConnections失败:id不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.DROP_CONNECTIONS.getKey(), id);
@@ -388,7 +389,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> delConnections(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("delConnections:id不能为空");
+            throw new NifiException("delConnections:id不能为空");
         }
         Map<String, Object> connectMap = this.getConnections(id);
         // 校验权限
@@ -407,7 +408,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getListingRequest(String connectionId) throws Exception {
         if (StringUtil.isEmpty(connectionId)) {
-            throw new RuntimeException("NifiProcessServiceImpl.getListing 失败:connectionId 不能为空");
+            throw new NifiException("NifiProcessServiceImpl.getListing 失败:connectionId 不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.LISTING_REQUESTS.getKey(), connectionId);
@@ -420,7 +421,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getFlowFileList(String connectionId, String requestId) throws Exception {
         if (StringUtil.isEmpty(connectionId) || StringUtil.isEmpty(requestId)) {
-            throw new RuntimeException("NifiProcessServiceImpl.getFlowFileList 失败:id 不能为空");
+            throw new NifiException("NifiProcessServiceImpl.getFlowFileList 失败:id 不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.LISTING_FLOWFILE_IDS.getKey(), connectionId, requestId);
@@ -433,7 +434,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public String getFlowFileContent(String connectionId, String flowFileId, String clusterNodeId) throws Exception {
         if (StringUtil.isEmpty(connectionId) || StringUtil.isEmpty(flowFileId) || StringUtil.isEmpty(clusterNodeId)) {
-            throw new RuntimeException("NifiProcessServiceImpl.getFlowFileContent 失败:id 不能为空");
+            throw new NifiException("NifiProcessServiceImpl.getFlowFileContent 失败:id 不能为空");
         }
 
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.LISTING_FLOWFILE_CONTENT.getKey(), connectionId, flowFileId);
@@ -454,7 +455,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
                 }), "objectCount");
 
         if (objectCount == 0) {
-            throw new RuntimeException("NifiProcessServiceImpl.preview error : 数据暂未生成");
+            throw new NifiException("NifiProcessServiceImpl.preview error : 数据暂未生成");
         }
 
         listRequestMap = JsonUtil.string2Obj(
@@ -468,13 +469,13 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
                 });
 
         if (CollectionUtils.isEmpty(flowFileSummaries)) {
-            throw new RuntimeException("NifiProcessServiceImpl.preview error : 数据暂未生成");
+            throw new NifiException("NifiProcessServiceImpl.preview error : 数据暂未生成");
         }
 
         //todo 目前只读取第一个 ，待确定传输文件大小
         Integer size = MapUtils.getInteger(flowFileSummaries.get(0), "size");
         if (size == 0) {
-            throw new RuntimeException("NifiProcessServiceImpl.preview error : 数据暂未生成");
+            throw new NifiException("NifiProcessServiceImpl.preview error : 数据暂未生成");
         }
         String uuid = MapUtils.getString(flowFileSummaries.get(0), "uuid");
         String clusterNodeId = MapUtils.getString(flowFileSummaries.get(0), "clusterNodeId");
