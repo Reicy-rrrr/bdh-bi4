@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
@@ -55,9 +56,27 @@ public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalys
         if (!StringUtil.isEmpty(req.getId())) {
             return biUiReportPageConfigMapper.selectById(req.getId());
         } else if (!StringUtil.isEmpty(req.getPageId())) {
+            if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(req.getType())) {
+                return getPublishAnalysePageConfigByPageId(req.getPageId());
+            }
             return getAnalysePageConfigByPageId(req.getPageId());
         } else {
             throw new Exception("id,pageId不能同时为空");
+        }
+    }
+
+    private BiUiAnalysePageConfig getPublishAnalysePageConfigByPageId(String pageId) throws Exception {
+        if (pageId == null) {
+            throw new Exception("页面id不能为空");
+        }
+        BiUiAnalysePage page = biUiAnalysePageService.getAnalysePage(pageId);
+        if (page == null) {
+            throw new Exception("页面id不正确");
+        }
+        if (page.getPublishId() != null) {
+            return getById(page.getPublishId());
+        } else {
+            throw new Exception("页面没有发布");
         }
     }
 

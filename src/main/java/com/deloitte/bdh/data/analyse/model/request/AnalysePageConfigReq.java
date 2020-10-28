@@ -18,4 +18,7 @@ public class AnalysePageConfigReq {
 
     @ApiModelProperty(value = "名称")
     private String name;
+
+    @ApiModelProperty(value = "类型,EDIT,PUBLISH 默认是为edit")
+    private String type;
 }

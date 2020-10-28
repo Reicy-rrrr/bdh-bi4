@@ -27,4 +27,14 @@ public class AnalyseConstants {
      * 默认
      */
     public static final String CATEGORY_MY_ANALYSE = "我的分析";
+
+    /**
+     * 默认
+     */
+    public static final String PAGE_CONFIG_EDIT = "EDIT";
+
+    /**
+     * 默认
+     */
+    public static final String PAGE_CONFIG_PUBLISH = "PUBLISH";
 }
