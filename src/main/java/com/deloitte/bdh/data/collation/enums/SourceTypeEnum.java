@@ -11,7 +11,10 @@ public enum SourceTypeEnum {
     Hive2("6", "hive2", "org.apache.hive.jdbc.HiveDriver", "jdbc:hive2://IP:PORT/DBNAME"),
     File_Excel("7", "excel", "Excel", null),
     File_Csv("8", "csv", "Csv", null),
-    Hana("9", "hana", "com.sap.db.jdbc.Driver", "jdbc:sap://IP:PORT/?databaseName=DBNAME"),
+//    Hana("9", "hana", "com.sap.db.jdbc.Driver", "jdbc:sap://IP:PORT/?databaseName=DBNAME"),
+    Hana("9", "hana", "com.sap.db.jdbc.Driver", "jdbc:sap://IP:PORT"),
+
+
     ;
 
     private String type;

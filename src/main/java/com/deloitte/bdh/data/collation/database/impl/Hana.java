@@ -85,7 +85,7 @@ public class Hana extends AbstractProcess implements DbSelector {
 
     @Override
     public String fieldSql(DbContext context) {
-        return "SELECT * FROM SYS.COLUMNS WHERE TABLE_NAME = '" + context.getTableName() + "' ORDER BY POSITION";
+        return "SELECT * FROM SYS.COLUMNS WHERE SCHEMA_NAME = '" + context.getDbUserName().toUpperCase() + "' AND TABLE_NAME = '" + context.getTableName() + "' ORDER BY POSITION";
     }
 
     @Override

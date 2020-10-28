@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.database.impl;
 
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
+import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -42,7 +43,13 @@ public abstract class AbstractProcess {
         TableData tableData = new TableData();
         tableData.setRows(rows);
 
-        long count = getTableCount(context);
+        long count = 0L;
+        if (SourceTypeEnum.Hive.equals(context.getSourceTypeEnum())
+                || SourceTypeEnum.Hive2.equals(context.getSourceTypeEnum())) {
+            count = context.getSize();
+        } else {
+            count = getTableCount(context);
+        }
         tableData.setTotal(count);
         Integer page = context.getPage();
         Integer size = context.getSize();
