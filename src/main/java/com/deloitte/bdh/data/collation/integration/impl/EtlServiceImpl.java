@@ -220,6 +220,8 @@ public class EtlServiceImpl implements EtlService {
                 syncPlan.setCreateUser(dto.getOperator());
                 syncPlan.setTenantId(dto.getTenantId());
                 syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
+                //设置已处理初始值为0
+                syncPlan.setProcessCount("0");
                 syncPlanService.save(syncPlan);
             }
             configService.save(mappingConfig);

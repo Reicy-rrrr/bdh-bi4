@@ -13,6 +13,7 @@
         <result column="IS_FIRST" property="isFirst" />
         <result column="PLAN_STATUS" property="planStatus" />
         <result column="PLAN_RESULT" property="planResult" />
+        <result column="PROCESS_COUNT" property="processCount" />
         <result column="PLAN_SQL" property="planSql" />
         <result column="SQL_COUNT" property="sqlCount" />
         <result column="SQL_LOCAL_COUNT" property="sqlLocalCount" />

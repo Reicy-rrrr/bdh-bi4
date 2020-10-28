@@ -72,6 +72,12 @@ public class BiEtlSyncPlan implements Serializable {
     private String planResult;
 
     /**
+     * 处理次数
+     */
+    @TableField("PROCESS_COUNT")
+    private String processCount;
+
+    /**
      * 执行SQL
      */
     @TableField("PLAN_SQL")
@@ -170,6 +176,13 @@ public class BiEtlSyncPlan implements Serializable {
     public void setPlanResult(String planResult) {
         this.planResult = planResult;
     }
+    public String getProcessCount() {
+        return processCount;
+    }
+
+    public void setProcessCount(String processCount) {
+        this.processCount = processCount;
+    }
     public String getPlanSql() {
         return planSql;
     }
@@ -246,6 +259,7 @@ public class BiEtlSyncPlan implements Serializable {
         ", isFirst=" + isFirst +
         ", planStatus=" + planStatus +
         ", planResult=" + planResult +
+        ", processCount=" + processCount +
         ", planSql=" + planSql +
         ", sqlCount=" + sqlCount +
         ", sqlLocalCount=" + sqlLocalCount +
