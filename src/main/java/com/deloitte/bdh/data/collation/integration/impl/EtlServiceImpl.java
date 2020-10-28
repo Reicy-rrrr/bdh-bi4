@@ -35,6 +35,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @DS(DSConstant.BI_DB)
@@ -170,59 +171,11 @@ public class EtlServiceImpl implements EtlService {
                 //step 2.1.2:创建目标表
                 dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
 
-                //step2.1.3:生成processors集合
-                BiProcessors processors = new BiProcessors();
-                processors.setCode(processorsCode);
-                processors.setType(BiProcessorsTypeEnum.SYNC_SOURCE.getType());
-                processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
-                processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
-                processors.setStatus(YesOrNoEnum.NO.getKey());
-                processors.setEffect(EffectEnum.ENABLE.getKey());
-                processors.setValidate(YesOrNoEnum.NO.getKey());
-                processors.setRelModelCode(biEtlModel.getCode());
-                processors.setVersion("1");
-                processors.setCreateDate(LocalDateTime.now());
-                processors.setCreateUser(dto.getOperator());
-                processors.setTenantId(dto.getTenantId());
+                //step2.1.3: 调用NIFI生成processors
+                transferNifi(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
 
-                // step2.1.4 调用NIFI生成processors
-                Map<String, Object> req = Maps.newHashMap();
-                req.put("createUser", dto.getOperator());
-                req.put("tenantId", dto.getTenantId());
-                req.put("SQL select query", mappingConfig.getFromTableName());
-                req.put("Table Name", mappingConfig.getToTableName());
-                req.put("JDBC Connection Pool", biEtlDatabaseInf.getControllerServiceId());
-
-                ProcessorContext context = new ProcessorContext();
-                context.setEnumList(BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
-                context.setReq(req);
-                context.setMethod(MethodEnum.SAVE);
-                context.setModel(biEtlModel);
-                context.setBiEtlDatabaseInf(biEtlDatabaseInf);
-                context.setProcessors(processors);
-                etlProcess.operateProcessorGroup(context);
-                processorsService.save(context.getProcessors());
-
-                //step2.1.5 生成调度计划
-                BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
-                syncPlan.setCode(GenerateCodeUtil.generate());
-                syncPlan.setGroupCode("0");
-                //0数据同步、1数据整理
-                syncPlan.setPlanType("0");
-                syncPlan.setRefMappingCode(mappingCode);
-                syncPlan.setPlanStatus(PlanStatusEnum.TO_EXECUTE.getKey());
-                //基于条件，获取元数据的总数，该执行效率较低下，建议 由配置时去执行
-                syncPlan.setSqlCount(getSyncCountSql(biEtlDatabaseInf.getId(), mappingConfig));
-                syncPlan.setSqlLocalCount("0");
-                syncPlan.setCreateDate(LocalDateTime.now());
-                syncPlan.setRefModelCode(biEtlModel.getCode());
-                syncPlan.setCreateDate(LocalDateTime.now());
-                syncPlan.setCreateUser(dto.getOperator());
-                syncPlan.setTenantId(dto.getTenantId());
-                syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
-                //设置已处理初始值为0
-                syncPlan.setProcessCount("0");
-                syncPlanService.save(syncPlan);
+                //step2.1.4 生成第一次的调度计划
+                createFirstPlan(dto, biEtlModel, biEtlDatabaseInf, mappingConfig);
             }
             configService.save(mappingConfig);
         } else {
@@ -277,21 +230,91 @@ public class EtlServiceImpl implements EtlService {
         return result;
     }
 
-    public String getSyncCountSql(String sourceId, BiEtlMappingConfig dto) throws Exception {
-        //创建表条件
-        DbContext context = new DbContext();
-        context.setDbId(sourceId);
-        context.setTableName(dto.getFromTableName());
+    private ProcessorContext transferNifi(JoinResourceDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+            biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
 
-        //当前肯定是需要同步的
-        String offsetField = dto.getOffsetField();
-        String offsetValue = dto.getOffsetValue();
-        if (StringUtils.isNotBlank(offsetValue)) {
-            String condition = "'" + offsetField + "' > =" + "'" + offsetValue + "'";
-            context.setCondition(condition);
+        switch (SourceTypeEnum.values(biEtlDatabaseInf.getType())) {
+            case Mysql:
+            case Oracle:
+            case SQLServer:
+                return transferNifiTask1(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
+            case Hive:
+            case Hana:
+            default:
+                throw new RuntimeException("暂不支持的类型");
         }
-
-        return String.valueOf(dbSelector.getTableCount(context));
     }
 
+    private ProcessorContext transferNifiTask1(JoinResourceDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+            biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
+        ProcessorContext context = new ProcessorContext();
+
+        BiProcessors processors = new BiProcessors();
+        processors.setCode(processorsCode);
+        processors.setType(BiProcessorsTypeEnum.SYNC_SOURCE.getType());
+        processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()) + System.currentTimeMillis());
+        processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
+        processors.setStatus(YesOrNoEnum.NO.getKey());
+        processors.setEffect(EffectEnum.ENABLE.getKey());
+        processors.setValidate(YesOrNoEnum.NO.getKey());
+        processors.setRelModelCode(biEtlModel.getCode());
+        processors.setVersion("1");
+        processors.setCreateDate(LocalDateTime.now());
+        processors.setCreateUser(dto.getOperator());
+        processors.setTenantId(dto.getTenantId());
+
+        //调用NIFI准备
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("createUser", dto.getOperator());
+        req.put("tenantId", dto.getTenantId());
+        //QueryDatabaseTable
+        req.put("fromControllerServiceId", biEtlDatabaseInf.getControllerServiceId());
+        req.put("fromTableName", mappingConfig.getFromTableName());
+        String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
+        req.put("Columns to Return", JsonUtil.obj2String(fileds));
+        if (StringUtils.isNotBlank(dto.getOffsetValue())) {
+            req.put("db-fetch-where-clause", dto.getOffsetField() + " > " + dto.getOffsetValue());
+        }
+        req.put("Maximum-value Columns", mappingConfig.getOffsetField());
+        //PutDatabaseRecord
+        req.put("toTableName", mappingConfig.getToTableName());
+        context.setEnumList(BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
+        context.setReq(req);
+        context.setMethod(MethodEnum.SAVE);
+        context.setModel(biEtlModel);
+        context.setBiEtlDatabaseInf(biEtlDatabaseInf);
+        context.setProcessors(processors);
+        etlProcess.operateProcessorGroup(context);
+        processorsService.save(context.getProcessors());
+        return context;
+    }
+
+    private void createFirstPlan(JoinResourceDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
+        BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
+        syncPlan.setCode(GenerateCodeUtil.generate());
+        syncPlan.setGroupCode("0");
+        //0数据同步、1数据整理
+        syncPlan.setPlanType("0");
+        syncPlan.setRefMappingCode(mappingConfig.getCode());
+        syncPlan.setPlanStatus(PlanStatusEnum.TO_EXECUTE.getKey());
+        syncPlan.setSqlLocalCount("0");
+        syncPlan.setCreateDate(LocalDateTime.now());
+        syncPlan.setRefModelCode(biEtlModel.getCode());
+        syncPlan.setCreateDate(LocalDateTime.now());
+        syncPlan.setCreateUser(dto.getOperator());
+        syncPlan.setTenantId(dto.getTenantId());
+        syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
+        //设置已处理初始值为0
+        syncPlan.setProcessCount("0");
+        //基于条件，获取元数据的总数，该执行效率较低下，建议 由配置时去执行
+        DbContext context = new DbContext();
+        context.setDbId(biEtlDatabaseInf.getId());
+        context.setTableName(mappingConfig.getFromTableName());
+        if (StringUtils.isNotBlank(dto.getOffsetValue())) {
+            String condition = "'" + dto.getOffsetField() + "' > =" + "'" + dto.getOffsetValue() + "'";
+            context.setCondition(condition);
+        }
+        syncPlan.setSqlCount(String.valueOf(dbSelector.getTableCount(context)));
+        syncPlanService.save(syncPlan);
+    }
 }

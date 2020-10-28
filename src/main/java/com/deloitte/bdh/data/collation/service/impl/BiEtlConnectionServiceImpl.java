@@ -82,7 +82,9 @@ public class BiEtlConnectionServiceImpl extends AbstractService<BiEtlConnectionM
         List<String> selectedRelationships = JsonUtil.string2Obj(fromProcessor.getRelationships(),
                 new TypeReference<List<String>>() {
                 });
-        if (ProcessorTypeEnum.PutSQL.getType().equals(fromProcessor.getType())) {
+
+        if (ProcessorTypeEnum.PutSQL.getType().equals(fromProcessor.getType())
+                || ProcessorTypeEnum.PutDatabaseRecord.getType().equals(fromProcessor.getType())) {
             selectedRelationships.remove("success");
         }
 

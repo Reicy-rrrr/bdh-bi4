@@ -113,8 +113,10 @@ public class ConnectionImp extends AbstractConnection<ProcessorContext> {
     }
 
     private boolean toConnection(Processor processor) {
-        //todo 增加 需要自连接的 processor，目前只有 putsql ?
-        if (ProcessorTypeEnum.PutSQL.getType().equals(processor.getType())) {
+        // 增加 需要自连接的 processor，目前只有 PutSQL 和 PutDatabaseRecord
+        if (ProcessorTypeEnum.PutSQL.getType().equals(processor.getType())
+                || ProcessorTypeEnum.PutDatabaseRecord.getType().equals(processor.getType())
+        ) {
             return false;
         }
         return true;
