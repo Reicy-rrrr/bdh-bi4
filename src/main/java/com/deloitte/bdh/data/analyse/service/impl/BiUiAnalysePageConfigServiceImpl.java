@@ -6,11 +6,14 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
+import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageConfigService;
+import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,8 @@ import java.util.List;
 public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePageConfigMapper, BiUiAnalysePageConfig> implements BiUiAnalysePageConfigService {
     @Resource
     BiUiAnalysePageConfigMapper biUiReportPageConfigMapper;
+    @Resource
+    BiUiAnalysePageService biUiAnalysePageService;
 
 //    @Override
 //    public PageResult<List<BiUiReportPageConfig>> getAnalysePageConfigs(GetAnalysePageConfigsDto dto) {
@@ -57,6 +62,16 @@ public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalys
     }
 
     private BiUiAnalysePageConfig getAnalysePageConfigByPageId(String pageId) throws Exception {
+        if (pageId == null) {
+            throw new Exception("页面id不能为空");
+        }
+        BiUiAnalysePage page = biUiAnalysePageService.getAnalysePage(pageId);
+        if (page == null) {
+            throw new Exception("页面id不正确");
+        }
+        if (page.getEditId() != null) {
+            return getById(page.getEditId());
+        }
         LambdaQueryWrapper<BiUiAnalysePageConfig> query = new LambdaQueryWrapper();
         query.eq(BiUiAnalysePageConfig::getPageId, pageId);
         List<BiUiAnalysePageConfig> configs = list(query);
@@ -71,12 +86,48 @@ public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalys
 
     @Override
     public BiUiAnalysePageConfig createAnalysePageConfig(CreateAnalysePageConfigsDto dto) throws Exception {
+        if (dto.getPageId() == null) {
+            throw new Exception("页面id不能为空");
+        }
+        BiUiAnalysePage page = biUiAnalysePageService.getAnalysePage(dto.getPageId());
+        if (page == null) {
+            throw new Exception("页面id不正确");
+        }
         BiUiAnalysePageConfig entity = new BiUiAnalysePageConfig();
         BeanUtils.copyProperties(dto, entity);
         entity.setCreateUser(AnalyseUtils.getCurrentUser());
         entity.setCreateDate(LocalDateTime.now());
         biUiReportPageConfigMapper.insert(entity);
+        page.setEditId(entity.getId());
+        biUiAnalysePageService.updateById(page);
         return entity;
+    }
+
+    @Override
+    public BiUiAnalysePageConfig publishAnalysePageConfig(PublishAnalysePageConfigsDto dto) throws Exception {
+        if (dto.getPageId() == null) {
+            throw new Exception("页面id不能为空");
+        }
+        BiUiAnalysePage page = biUiAnalysePageService.getAnalysePage(dto.getPageId());
+        if (page == null) {
+            throw new Exception("页面id不正确");
+        }
+        BiUiAnalysePageConfig editConfig = getAnalysePageConfigByPageId(dto.getPageId());
+        page.setEditId(editConfig.getId());
+        /**
+         * 从editConfig复制一个publish对象
+         */
+        BiUiAnalysePageConfig publishConfig = new BiUiAnalysePageConfig();
+        publishConfig.setPageId(editConfig.getPageId());
+        publishConfig.setContent(editConfig.getContent());
+        publishConfig.setTenantId(editConfig.getTenantId());
+        publishConfig.setCreateDate(LocalDateTime.now());
+        publishConfig.setCreateUser(AnalyseUtils.getCurrentUser());
+        biUiReportPageConfigMapper.insert(publishConfig);
+        page.setPublishId(publishConfig.getId());
+        biUiReportPageConfigMapper.updateById(editConfig);
+        biUiAnalysePageService.updateById(page);
+        return publishConfig;
     }
 
     @Override
