@@ -46,14 +46,22 @@ public class BiUiAnalyseCategoryController {
     @PostMapping("/getDefaultCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getDefaultCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         request.getData().setType(AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED);
-        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
+        List<AnalyseCategoryTree> tree = biUiAnalyseCategoryService.getTree(request.getData());
+        if (!tree.isEmpty()) {
+            return RetResponse.makeOKRsp(tree.get(0).getChildren());
+        }
+        return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "我的分析", notes = "我的分析")
     @PostMapping("/getCustomerCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         request.getData().setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
-        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
+        List<AnalyseCategoryTree> tree = biUiAnalyseCategoryService.getTree(request.getData());
+        if (!tree.isEmpty()) {
+            return RetResponse.makeOKRsp(tree.get(0).getChildren());
+        }
+        return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")

@@ -99,7 +99,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
         query.eq(BiUiAnalyseCategory::getInitType, AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
-        query.eq(BiUiAnalyseCategory::getType, AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED);
+        query.eq(BiUiAnalyseCategory::getName, AnalyseConstants.CATEGORY_MY_ANALYSE);
         List<BiUiAnalyseCategory> customerTops = list(query);
         return customerTops.size() > 0 ? customerTops.get(0) : null;
     }

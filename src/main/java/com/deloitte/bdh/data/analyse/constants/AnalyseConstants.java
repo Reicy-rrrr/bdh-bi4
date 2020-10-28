@@ -22,4 +22,9 @@ public class AnalyseConstants {
      * 默认
      */
     public static final String CATEGORY_TYPE_CUSTOMER = "CUSTOMER";
+
+    /**
+     * 默认
+     */
+    public static final String CATEGORY_MY_ANALYSE = "我的分析";
 }
