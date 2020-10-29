@@ -20,6 +20,14 @@ public interface BiEtlSyncPlanService extends Service<BiEtlSyncPlan> {
      * @param
      * @return
      */
-    void process(String type) throws Exception;
+    void process() throws Exception;
+
+    /**
+     * process
+     *
+     * @param
+     * @return
+     */
+    void etl() throws Exception;
 
 }

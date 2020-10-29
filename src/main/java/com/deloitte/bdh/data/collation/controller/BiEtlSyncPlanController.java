@@ -28,11 +28,17 @@ public class BiEtlSyncPlanController {
     @Autowired
     private BiEtlSyncPlanService planService;
 
-    @ApiOperation(value = "调度处理", notes = "数据同步、数据整理")
+    @ApiOperation(value = "调度处理", notes = "数据同步")
     @PostMapping("/process")
-    public RetResult<Void> process(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        planService.process(request.getData());
+    public RetResult<Void> process(@RequestBody @Validated RetRequest<Void> request) throws Exception {
+        planService.process();
         return RetResponse.makeOKRsp();
     }
 
+    @ApiOperation(value = "调度处理", notes = "数据整理")
+    @PostMapping("/etl")
+    public RetResult<Void> etl(@RequestBody @Validated RetRequest<Void> request) throws Exception {
+        planService.etl();
+        return RetResponse.makeOKRsp();
+    }
 }

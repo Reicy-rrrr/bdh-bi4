@@ -44,14 +44,9 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private DbHandler dbHandler;
 
     @Override
-    public void process(String type) throws Exception {
-        //0 同步，1 整理的同步
-        if ("0".equals(type)) {
-            syncToExecute();
-            syncExecuting();
-        } else {
-            etl();
-        }
+    public void process() throws Exception {
+        syncToExecute();
+        syncExecuting();
     }
 
     private void syncToExecute() {
@@ -207,7 +202,9 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         return condition;
     }
 
-    private void etl() {
 
+    @Override
+    public void etl() {
+        //todo 生成调度计划
     }
 }
