@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
@@ -59,8 +60,16 @@ public class Hana extends AbstractProcess implements DbSelector {
         while (result.next()) {
             TableField field = new TableField();
             field.setName(result.getString("COLUMN_NAME"));
-            field.setType("String");
-            field.setDesc("");
+
+            String dataType=result.getString("DATA_TYPE_NAME");
+            String scale=result.getString("SCALE");
+            String length=result.getString("LENGTH");
+            if(StringUtil.isNotEmpty(scale) && !"0".equals(scale) ) {
+                field.setColumnType(dataType+"("+length+","+scale+")");
+            }else{
+                field.setColumnType(dataType+"("+length+")");
+            }
+
             columns.add(field);
         }
         super.close(con);

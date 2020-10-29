@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("sqlServerToMysql")
-public class SqlServerToMysql implements DbConvertor {
+@Service("sqlserverToMysql")
+public class SqlserverToMysql implements DbConvertor {
 
     @Override
     public void convertFieldType(List<TableField> fields, DbContext context) {
