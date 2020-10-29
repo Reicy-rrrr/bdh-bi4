@@ -93,6 +93,12 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
+    public void createTable(String targetTableName, List<TableField> targetFields) throws Exception {
+        String createTableSql = buildCreateTableSql(targetTableName, targetFields, Lists.newArrayList());
+        biEtlDbMapper.createTable(createTableSql);
+    }
+
+    @Override
     public List<String> getTables() {
         // TODO: 暂无数据，临时表测试
         if (true) {

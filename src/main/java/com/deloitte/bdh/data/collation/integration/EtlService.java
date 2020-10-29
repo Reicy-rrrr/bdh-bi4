@@ -12,10 +12,16 @@ public interface EtlService {
      * @param
      * @return
      */
-    BiComponent joinResource(JoinResourceDto dto) throws Exception;
+    BiComponent joinResource(JoinComponentDto dto) throws Exception;
 
 
-
+    /**
+     * 输出组件
+     *
+     * @param
+     * @return
+     */
+    BiComponent out(OutComponentDto dto) throws Exception;
 
 
 }
