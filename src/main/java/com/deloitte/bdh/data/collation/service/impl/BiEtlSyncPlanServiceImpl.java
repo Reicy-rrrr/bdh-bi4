@@ -74,7 +74,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 .eq(BiEtlSyncPlan::getPlanStatus, PlanStatusEnum.EXECUTING.getKey())
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
         );
-
         list.forEach(this::syncExecutingTask);
 
     }
@@ -128,7 +127,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     //全量则清空
                     dbHandler.truncateTable(config.getToTableName());
                 }
-
                 //启动NIFI
                 processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.RUNNING, true);
                 //修改plan 执行状态
@@ -147,16 +145,19 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
     private void syncExecutingTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
+        BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
+        );
+
         try {
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
                 plan.setPlanStatus(PlanStatusEnum.EXECUTED.getKey());
+                //调用nifi 停止与清空
+                processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+
             } else {
                 count++;
-                BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                        .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
-                );
-
                 //基于条件实时查询 localCount
                 String condition = assemblyCondition(plan.getIsFirst(), config);
                 long nowCount = dbHandler.getCount(config.getToTableName(), condition);
@@ -171,6 +172,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     //已同步完成
                     plan.setSqlLocalCount(localCount);
                     plan.setPlanResult(YesOrNoEnum.YES.getKey());
+
                     //调用nifi 停止与清空
                     processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
                     //修改plan 执行状态
