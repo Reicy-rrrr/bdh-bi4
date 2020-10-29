@@ -17,6 +17,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,6 +43,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private BiProcessorsService processorsService;
     @Autowired
     private DbHandler dbHandler;
+    @Resource
+    private AsyncTaskExecutor executor;
 
     @Override
     public void process() throws Exception {
@@ -154,7 +157,14 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             if (10 < count) {
                 plan.setPlanStatus(PlanStatusEnum.EXECUTED.getKey());
                 //调用nifi 停止与清空
-                processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+                String id = doHeader();
+                executor.execute(() -> {
+                    try {
+                        processorsService.runStateAsync(id, config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
 
             } else {
                 count++;
