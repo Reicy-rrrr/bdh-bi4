@@ -42,8 +42,25 @@ public interface BiEtlDbMapper {
 
     /**
      * 清空表数据
+     *
      * @param truncateSql
      * @return
      */
     long truncateTable(@Param("truncateSql") String truncateSql);
+
+    /**
+     * 删除表数据
+     *
+     * @param deleteSql
+     * @return
+     */
+    long delete(@Param("deleteSql") String deleteSql);
+
+    /**
+     * 执行查询sql
+     *
+     * @param querySql
+     * @return
+     */
+    List<Map<String, Object>> executeQuery(@Param("querySql") String querySql);
 }

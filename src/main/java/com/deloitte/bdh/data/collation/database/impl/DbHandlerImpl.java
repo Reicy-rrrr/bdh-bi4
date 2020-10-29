@@ -151,6 +151,20 @@ public class DbHandlerImpl implements DbHandler {
         return biEtlDbMapper.truncateTable(truncateSql);
     }
 
+    @Override
+    public long delete(String tableName, String condition) {
+        if (StringUtils.isBlank(condition)) {
+            return 0L;
+        }
+        String deleteSql = "DELETE FROM " + tableName + " WHERE " + condition;
+        return biEtlDbMapper.truncateTable(deleteSql);
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(String querySql) {
+        return biEtlDbMapper.executeQuery(querySql);
+    }
+
     private String buildQueryColumnsSql(String tableName) {
         // 获取数据落地本地的数据库类型：Hive/MySQL
         String localSourceType = "mysql";

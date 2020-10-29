@@ -8,7 +8,7 @@ import com.deloitte.bdh.data.collation.model.request.PreviewSqlDto;
  * @author chenghzhang
  * @date 2020/10/26
  */
-public interface BiEtlModelHandlerService {
+public interface BiEtlModelHandleService {
 
     /**
      * 预览sql

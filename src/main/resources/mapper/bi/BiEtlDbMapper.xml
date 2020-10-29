@@ -21,4 +21,14 @@
     <update id="truncateTable" parameterType="String">
         ${truncateSql}
     </update>
+
+    <!-- 清空表数据 -->
+    <update id="delete" parameterType="String">
+        ${deleteSql}
+    </update>
+
+    <!-- 清空表数据 -->
+    <select id="executeQuery" parameterType="String" resultType="Map">
+        ${querySql}
+    </select>
 </mapper>

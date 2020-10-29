@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 数据库处理器
@@ -65,4 +66,21 @@ public interface DbHandler {
      * @return
      */
     long truncateTable(String tableName);
+
+    /**
+     * 删除表数据
+     *
+     * @param tableName 表名
+     * @param condition 条件
+     * @return
+     */
+    long delete(String tableName, String condition);
+
+    /**
+     * 执行查询sql
+     *
+     * @param querySql
+     * @return
+     */
+    List<Map<String, Object>> executeQuery(String querySql);
 }
