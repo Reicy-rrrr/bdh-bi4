@@ -8,11 +8,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -29,14 +25,14 @@ public class BiEtlSyncPlanController {
     private BiEtlSyncPlanService planService;
 
     @ApiOperation(value = "调度处理", notes = "数据同步")
-    @PostMapping("/process")
+    @GetMapping("/process")
     public RetResult<Void> process(@RequestBody @Validated RetRequest<Void> request) throws Exception {
         planService.process();
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "调度处理", notes = "数据整理")
-    @PostMapping("/etl")
+    @GetMapping("/etl")
     public RetResult<Void> etl(@RequestBody @Validated RetRequest<Void> request) throws Exception {
         planService.etl();
         return RetResponse.makeOKRsp();
