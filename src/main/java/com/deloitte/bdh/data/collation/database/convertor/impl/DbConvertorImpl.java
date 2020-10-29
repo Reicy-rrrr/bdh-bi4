@@ -41,6 +41,12 @@ public class DbConvertorImpl implements DbConvertor {
                 case Oracle:
                     result = "oracleToMysql";
                     break;
+                case SQLServer:
+                    result = "sqlserver";
+                    break;
+                case Hana:
+                    result = "hanaToMysql";
+                    break;
                 default:
                     result = "mysqlToMysql";
             }

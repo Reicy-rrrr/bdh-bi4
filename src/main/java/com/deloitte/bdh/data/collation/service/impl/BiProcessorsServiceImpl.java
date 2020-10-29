@@ -46,6 +46,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     @Autowired
     private NifiProcessService nifiProcessService;
 
+
     @Override
     public List<BiProcessors> getPreChain(String processorsCode) {
         if (StringUtil.isEmpty(processorsCode)) {

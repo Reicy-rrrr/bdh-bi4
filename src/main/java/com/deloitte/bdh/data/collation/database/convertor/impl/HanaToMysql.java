@@ -3,13 +3,12 @@ package com.deloitte.bdh.data.collation.database.convertor.impl;
 import com.deloitte.bdh.data.collation.database.convertor.DbConvertor;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("oracleToMysql")
-public class OracleToMysql implements DbConvertor {
+@Service("hanaToMysql")
+public class HanaToMysql implements DbConvertor {
 
     @Override
     public void convertFieldType(List<TableField> fields, DbContext context) {
@@ -29,18 +28,34 @@ public class OracleToMysql implements DbConvertor {
      * @return
      */
     private void getTableField(TableField tf){
-        if(tf.getColumnType().contains("VARCHAR")){
-            tf.setColumnType(tf.getColumnType().replace("VARCHAR2","VARCHAR"));
+        if(tf.getColumnType().contains("NCLOB")){
+            tf.setColumnType("LONGTEXT");
         }else if(tf.getColumnType().contains("NUMBER")){
             tf.setColumnType(tf.getColumnType().replace("NUMBER","NUMERIC"));
         }else if(tf.getColumnType().contains("BLOB")){
-            tf.setColumnType(tf.getColumnType().replace("BLOB","LONGBLOB"));
+            tf.setColumnType("LONGBLOB");
         }else if(tf.getColumnType().contains("CLOB")){
-            tf.setColumnType(tf.getColumnType().replace("CLOB","LONGTEXT"));
+            tf.setColumnType("LONGTEXT");
         }else if(tf.getColumnType().contains("TIMESTAMP")){
             tf.setColumnType("TIMESTAMP");
         }else if(tf.getColumnType().contains("DATE")){
             tf.setColumnType("DATETIME");
+        }else if(tf.getColumnType().contains("NVARCHAR")){
+            tf.setColumnType(tf.getColumnType().replace("NVARCHAR","VARCHAR"));
+        }else if(tf.getColumnType().contains("ALPHANUM")){ //ALPHANUM - 存储字母数字字符。整数的值介于1到127之间。
+            tf.setColumnType("INT");
+        }else if(tf.getColumnType().contains("BOOLEAN")){ //布尔值
+            tf.setColumnType("VARCHAR(10)");
+        }else if(tf.getColumnType().contains("DOUBLE")){ //布尔值
+            tf.setColumnType("DOUBLE");
+        }else if(tf.getColumnType().contains("REAL")){
+            tf.setColumnType("REAL");
+        }else if(tf.getColumnType().contains("SHORTTEXT")){
+            tf.setColumnType("LONGTEXT");
+        }else if(tf.getColumnType().contains("SMALLDECIMAL")){
+            tf.setColumnType("DECIMAL");
+        }else if(tf.getColumnType().contains("TIME")){
+            tf.setColumnType("TIME");
         }
     }
 
