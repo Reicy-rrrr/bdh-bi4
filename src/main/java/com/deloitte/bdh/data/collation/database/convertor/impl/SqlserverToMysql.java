@@ -44,6 +44,8 @@ public class SqlserverToMysql implements DbConvertor {
             tf.setColumnType("DATETIME");
         }else if(tf.getColumnType().contains("NUMERIC")){
             tf.setColumnType(tf.getColumnType().replace("NUMERIC","DECIMAL"));
+        }else if(tf.getColumnType().contains("UNIQUEIDENTIFIER")){
+            tf.setColumnType("VARCHAR(40)");
         }
 
     }
