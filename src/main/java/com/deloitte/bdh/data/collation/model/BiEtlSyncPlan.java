@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-10-28
+ * @since 2020-10-30
  */
 @TableName("BI_ETL_SYNC_PLAN")
 public class BiEtlSyncPlan implements Serializable {
@@ -60,16 +60,19 @@ public class BiEtlSyncPlan implements Serializable {
     private String isFirst;
 
     /**
-     * 执行状态（待执行、执行中、执行完成）
+     * 执行阶段（待执行、执行中、执行完成）
      */
-    @TableField("PLAN_STATUS")
-    private String planStatus;
+    @TableField("PLAN_STAGE")
+    private String planStage;
 
     /**
      * 执行结果（失败、成功）
      */
     @TableField("PLAN_RESULT")
     private String planResult;
+
+    @TableField("RESULT_DESC")
+    private String resultDesc;
 
     /**
      * 处理次数
@@ -162,12 +165,12 @@ public class BiEtlSyncPlan implements Serializable {
     public void setIsFirst(String isFirst) {
         this.isFirst = isFirst;
     }
-    public String getPlanStatus() {
-        return planStatus;
+    public String getPlanStage() {
+        return planStage;
     }
 
-    public void setPlanStatus(String planStatus) {
-        this.planStatus = planStatus;
+    public void setPlanStage(String planStage) {
+        this.planStage = planStage;
     }
     public String getPlanResult() {
         return planResult;
@@ -175,6 +178,13 @@ public class BiEtlSyncPlan implements Serializable {
 
     public void setPlanResult(String planResult) {
         this.planResult = planResult;
+    }
+    public String getResultDesc() {
+        return resultDesc;
+    }
+
+    public void setResultDesc(String resultDesc) {
+        this.resultDesc = resultDesc;
     }
     public String getProcessCount() {
         return processCount;
@@ -257,8 +267,9 @@ public class BiEtlSyncPlan implements Serializable {
         ", refModelCode=" + refModelCode +
         ", refMappingCode=" + refMappingCode +
         ", isFirst=" + isFirst +
-        ", planStatus=" + planStatus +
+        ", planStage=" + planStage +
         ", planResult=" + planResult +
+        ", resultDesc=" + resultDesc +
         ", processCount=" + processCount +
         ", planSql=" + planSql +
         ", sqlCount=" + sqlCount +

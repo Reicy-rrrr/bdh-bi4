@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.enums;
 
 
-public enum PlanStatusEnum {
+public enum PlanStageEnum {
 
     TO_EXECUTE("TO_EXECUTE", "待执行"),
     EXECUTING("EXECUTING", "执行中"),
@@ -13,7 +13,7 @@ public enum PlanStatusEnum {
 
     private String value;
 
-    PlanStatusEnum(String key, String value) {
+    PlanStageEnum(String key, String value) {
         this.key = key;
         this.value = value;
     }

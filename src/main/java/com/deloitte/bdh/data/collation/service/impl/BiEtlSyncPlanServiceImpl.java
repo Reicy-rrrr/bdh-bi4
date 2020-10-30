@@ -4,7 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.enums.PlanStatusEnum;
+import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
@@ -56,7 +56,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         //寻找类型为同步，状态为待执行的计划 todo limit
         List<BiEtlSyncPlan> list = syncPlanMapper.selectList(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStatus, PlanStatusEnum.TO_EXECUTE.getKey())
+                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
+                .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
         );
 
@@ -74,7 +75,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         //寻找类型为同步，状态为待执行的计划 todo limit
         List<BiEtlSyncPlan> list = syncPlanMapper.selectList(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStatus, PlanStatusEnum.EXECUTING.getKey())
+                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
         );
         list.forEach(this::syncExecutingTask);
@@ -86,7 +88,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         try {
             //判断已处理次数,超过3次则动作完成。
             if (3 < count) {
-                plan.setPlanStatus(PlanStatusEnum.EXECUTED.getKey());
+                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+                plan.setPlanResult(YesOrNoEnum.NO.getKey());
             } else {
                 //组装数据 启动nifi 改变执行状态
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -100,13 +103,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 //启动NIFI
                 processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.RUNNING, true);
                 //修改plan 执行状态
-                plan.setPlanStatus(PlanStatusEnum.EXECUTING.getKey());
-                //重置为0
+                plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
+                //重置
                 plan.setProcessCount("0");
+                plan.setResultDesc("");
             }
         } catch (Exception e1) {
             e1.printStackTrace();
             count++;
+            plan.setResultDesc(e1.getMessage());
             plan.setProcessCount(String.valueOf(count));
         } finally {
             syncPlanMapper.updateById(plan);
@@ -118,7 +123,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         try {
             //判断已处理次数,超过3次则动作完成。
             if (3 < count) {
-                plan.setPlanStatus(PlanStatusEnum.EXECUTED.getKey());
+                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+                plan.setPlanResult(YesOrNoEnum.NO.getKey());
             } else {
                 //组装数据 启动nifi 改变执行状态
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -133,13 +139,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 //启动NIFI
                 processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.RUNNING, true);
                 //修改plan 执行状态
-                plan.setPlanStatus(PlanStatusEnum.EXECUTING.getKey());
-                //重置为0
+                plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
+                //重置
                 plan.setProcessCount("0");
+                plan.setResultDesc("");
             }
         } catch (Exception e1) {
             e1.printStackTrace();
             count++;
+            plan.setResultDesc(e1.getMessage());
             plan.setProcessCount(String.valueOf(count));
         } finally {
             syncPlanMapper.updateById(plan);
@@ -155,12 +163,13 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         try {
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
-                plan.setPlanStatus(PlanStatusEnum.EXECUTED.getKey());
+                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+                plan.setPlanResult(YesOrNoEnum.NO.getKey());
                 //调用nifi 停止与清空
-                String id = doHeader();
+                String tenantCode = doHeader();
                 executor.execute(() -> {
                     try {
-                        processorsService.runStateAsync(id, config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+                        processorsService.runStateAsync(tenantCode, config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -186,12 +195,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     //调用nifi 停止与清空
                     processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
                     //修改plan 执行状态
-                    plan.setPlanStatus(PlanStatusEnum.EXECUTED.getKey());
+                    plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+                    plan.setPlanResult(YesOrNoEnum.YES.getKey());
+                    plan.setResultDesc("");
                     //todo 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE
                 }
             }
         } catch (Exception e1) {
             e1.printStackTrace();
+            plan.setResultDesc(e1.getMessage());
         } finally {
             plan.setProcessCount(String.valueOf(count));
             syncPlanMapper.updateById(plan);

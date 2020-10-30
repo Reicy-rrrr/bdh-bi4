@@ -321,7 +321,7 @@ public class EtlServiceImpl implements EtlService {
         //0数据同步、1数据整理
         syncPlan.setPlanType("0");
         syncPlan.setRefMappingCode(mappingConfig.getCode());
-        syncPlan.setPlanStatus(PlanStatusEnum.TO_EXECUTE.getKey());
+        syncPlan.setPlanStage(PlanStageEnum.TO_EXECUTE.getKey());
         syncPlan.setSqlLocalCount("0");
         syncPlan.setCreateDate(LocalDateTime.now());
         syncPlan.setRefModelCode(biEtlModel.getCode());
