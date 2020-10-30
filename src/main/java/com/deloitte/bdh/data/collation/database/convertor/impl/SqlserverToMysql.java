@@ -30,14 +30,14 @@ public class SqlserverToMysql implements DbConvertor {
     private void getTableField(TableField tf){
         if(tf.getColumnType().contains("NVARCHAR")){
             tf.setColumnType(tf.getColumnType().replace("NVARCHAR","VARCHAR"));
-        }else if(tf.getColumnType().contains("MONEY")){
-            tf.setColumnType(tf.getColumnType().replace("MONEY","NUMERIC(19,4)"));
+        }else if(tf.getColumnType().equals("MONEY")){ //写等于
+            tf.setColumnType(tf.getColumnType().replace("MONEY","DECIMAL(19,4)"));
         }else if(tf.getColumnType().contains("XML")){
             tf.setColumnType(tf.getColumnType().replace("XML","LONGTEXT"));
         }else if(tf.getColumnType().contains("NTEXT")){
             tf.setColumnType(tf.getColumnType().replace("NTEXT","LONGTEXT"));
         }else if(tf.getColumnType().contains("SMALLMONEY")){
-            tf.setColumnType("NUMERIC(10,4)");
+            tf.setColumnType("DECIMAL(10,4)");
         }else if(tf.getColumnType().contains("DATE")){
             tf.setColumnType("DATETIME");
         }else if(tf.getColumnType().contains("DATETIME2")){
