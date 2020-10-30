@@ -49,7 +49,7 @@ public class ComponentModel {
     @ApiModelProperty(value = "字段映射", required = true)
     private List<String> fields;
 
-    /** 字段映射：key-当前组件字段名称， value-原始表字段名称 */
+    /** 字段映射：left-当前组件字段名称， middle-原始表字段名称， right-原始表名 */
     @ApiModelProperty(value = "字段映射", required = true)
     private List<Triple> fieldMappings;
 
@@ -57,9 +57,17 @@ public class ComponentModel {
     @ApiModelProperty(value = "表名", required = true)
     private String tableName;
 
-    /** 组件输出sql */
-    @ApiModelProperty(value = "组件输出sql")
-    private String sql;
+    /** 组件输出查询sql（所有组件） */
+    @ApiModelProperty(value = "组件输出查询sql")
+    private String querySql;
+
+    /** 组件输出查询sql（输出组件） */
+    @ApiModelProperty(value = "组件输出查询sql")
+    private String createSql;
+
+    /** 组件输出查询sql（输出组件） */
+    @ApiModelProperty(value = "组件输出查询sql")
+    private String insertSql;
 
     /** 组件是否处理 */
     @ApiModelProperty(value = "组件是否处理")

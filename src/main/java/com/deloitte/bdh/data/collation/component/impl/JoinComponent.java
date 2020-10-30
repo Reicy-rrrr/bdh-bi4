@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.JoinFieldModel;
 import com.deloitte.bdh.data.collation.component.model.JoinModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.JoinTypeEnum;
@@ -56,7 +57,7 @@ public class JoinComponent implements ComponentHandler {
         List<BiEtlMappingField> setMappingFields = biEtlMappingFieldService.list(fieldWrapper);
         List<String> setFields = setMappingFields.stream().map(BiEtlMappingField::getFieldName)
                 .collect(Collectors.toList());
-        buildSql(component, joinModel);
+        buildQuerySql(component, joinModel, setFields);
     }
 
     /**
@@ -101,7 +102,7 @@ public class JoinComponent implements ComponentHandler {
      * @param component 组件模型
      * @param joinModel 关联模型
      */
-    private void buildSql(ComponentModel component, JoinModel joinModel) {
+    private void buildQuerySql(ComponentModel component, JoinModel joinModel, List<String> setFields) {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(sql_key_select).append(sql_key_blank);
         List<ComponentModel> fromComponents = component.getFrom();
@@ -121,16 +122,20 @@ public class JoinComponent implements ComponentHandler {
                 continue;
             }
             for (Triple<String, String, String> fieldMapping : fromMappings) {
+                String fieldName = fieldMapping.getLeft();
+                // 全名 = tableName + "." + fieldName
+                String fullName = fieldMapping.getRight() + sql_key_separator + fieldMapping.getMiddle();
+                // 如果设置了字段，查询结果集为已设置字段，未设置则全量
+                if (!CollectionUtils.isEmpty(setFields) && !setFields.contains(fieldName)) {
+                    continue;
+                }
                 // 将从组件的字段添加到连接组件中
                 currMappings.add(fieldMapping);
-                String fieldName = fieldMapping.getLeft();
-                String fullName = fieldMapping.getRight();
                 if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                     sqlBuilder.append(sql_key_blank);
                     sqlBuilder.append(fullName);
                     sqlBuilder.append(sql_key_blank);
                     sqlBuilder.append(sql_key_as);
-                    sqlBuilder.append(sql_key_blank);
                     sqlBuilder.append(fieldName);
                     sqlBuilder.append(sql_key_comma);
                 } else {
@@ -146,10 +151,9 @@ public class JoinComponent implements ComponentHandler {
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(sql_key_from);
-        sqlBuilder.append(sql_key_blank);
         buildTableSql(sqlBuilder, joinModel, fromCompMap);
         component.setTableName(component.getCode());
-        component.setSql(sqlBuilder.toString());
+        component.setQuerySql(sqlBuilder.toString());
         component.setFieldMappings(currMappings);
         // 组装连接组件的字段
         List<String> fields = currMappings.stream().map(Triple<String, String, String>::getLeft)
@@ -175,7 +179,7 @@ public class JoinComponent implements ComponentHandler {
                 sqlBuilder.append(sql_key_blank);
             } else {
                 sqlBuilder.append(sql_key_bracket_left);
-                sqlBuilder.append(leftComp.getSql());
+                sqlBuilder.append(leftComp.getQuerySql());
                 // 子查询使用组件code作为别名
                 sqlBuilder.append(sql_key_bracket_right);
                 sqlBuilder.append(leftComp.getCode());
@@ -200,26 +204,34 @@ public class JoinComponent implements ComponentHandler {
             } else {
                 sqlBuilder.append(sql_key_bracket_left);
                 sqlBuilder.append(sql_key_blank);
-                sqlBuilder.append(rightComp.getSql());
+                sqlBuilder.append(rightComp.getQuerySql());
                 // 子查询使用组件code作为别名
                 sqlBuilder.append(sql_key_bracket_right);
                 sqlBuilder.append(sql_key_blank);
                 sqlBuilder.append(sql_key_as);
-                sqlBuilder.append(sql_key_blank);
                 sqlBuilder.append(rightComp.getTableName());
                 sqlBuilder.append(sql_key_blank);
             }
 
             sqlBuilder.append(sql_key_on);
-            sqlBuilder.append(sql_key_blank);
-            sqlBuilder.append(joinModel.getTableName());
-            sqlBuilder.append(sql_key_separator);
-            sqlBuilder.append(rightModel.getLeftField());
-            sqlBuilder.append(sql_key_equal);
-            sqlBuilder.append(rightModel.getTableName());
-            sqlBuilder.append(sql_key_separator);
-            sqlBuilder.append(rightModel.getRightField());
-            sqlBuilder.append(sql_key_blank);
+            List<JoinFieldModel> joinFields = rightModel.getJoinFields();
+            if (CollectionUtils.isEmpty(joinFields)) {
+                throw new BizException("关联的右侧表关联字段不能为空，处理失败！");
+            }
+            for (int index = 0; index < joinFields.size(); index++) {
+                JoinFieldModel joinField = joinFields.get(index);
+                if (index != 0) {
+                    sqlBuilder.append(sql_key_and);
+                }
+                sqlBuilder.append(joinModel.getTableName());
+                sqlBuilder.append(sql_key_separator);
+                sqlBuilder.append(joinField.getLeftField());
+                sqlBuilder.append(sql_key_equal);
+                sqlBuilder.append(rightModel.getTableName());
+                sqlBuilder.append(sql_key_separator);
+                sqlBuilder.append(joinField.getRightField());
+                sqlBuilder.append(sql_key_blank);
+            }
 
             if (!CollectionUtils.isEmpty(rightModel.getRight())) {
                 buildTableSql(sqlBuilder, rightModel, componentModels);

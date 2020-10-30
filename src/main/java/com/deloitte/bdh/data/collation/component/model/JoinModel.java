@@ -20,20 +20,14 @@ public class JoinModel {
     /** 表名 */
     private String tableName;
 
-    /** 关联层级 */
-    private int level;
-
     /** 关联类型：left，inner，full */
     private String joinType;
 
     /** 左边表名 */
     private String leftTableName;
 
-    /** 左边表字段 */
-    private String leftField;
-
-    /** 右边表字段 */
-    private String rightField;
+    /** 关联的字段 */
+    private List<JoinFieldModel> joinFields;
 
     /** 右边的表 */
     @JsonIgnore

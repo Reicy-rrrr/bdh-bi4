@@ -1,17 +1,14 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
-import com.alibaba.druid.sql.SQLUtils;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
-import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.model.request.PreviewSqlDto;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
@@ -43,9 +40,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     private BiEtlModelService biEtlModelService;
 
     @Autowired
-    private BiEtlDbRefService biEtlDbRefService;
-
-    @Autowired
     private BiEtlMappingConfigService biEtlMappingConfigService;
 
     @Autowired
@@ -55,26 +49,16 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     private BiComponentService biComponentService;
 
     @Autowired
-    private BiComponentConnectionService biComponentConnectionService;
-
-    @Autowired
     private BiComponentParamsService biComponentParamsService;
-
-    @Autowired
-    private DbHandler dbHandler;
 
     @Autowired
     private ComponentHandler componentHandler;
 
     @Override
-    public String previewSql(PreviewSqlDto dto) {
-        // 模板code
-        String modelCode = dto.getModelCode();
+    public ComponentModel handleComponent(String modelCode, String componentCode) {
         if (StringUtils.isBlank(modelCode)) {
             throw new BizException("模板code不能为空！");
         }
-        // 组件code
-        String componentCode = dto.getComponentCode();
         if (StringUtils.isBlank(componentCode)) {
             throw new BizException("组件code不能为空");
         }
@@ -85,14 +69,13 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         convertToModel(componentTree, componentModel);
         componentModel.setLast(true);
         handleComponent(componentModel);
-        String resultSql = SQLUtils.formatMySql(componentModel.getSql(), SQLUtils.DEFAULT_FORMAT_OPTION);
-        return resultSql;
+        return componentModel;
     }
 
     @Override
-    public String createSql(String modelCode) {
+    public ComponentModel handleModel(String modelCode) {
         if (StringUtils.isBlank(modelCode)) {
-            throw new BizException("模板id不能为空！");
+            throw new BizException("模板code不能为空！");
         }
 
         LambdaQueryWrapper<BiEtlModel> modelWrapper = new LambdaQueryWrapper();
@@ -109,7 +92,7 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         convertToModel(componentTree, componentModel);
         componentModel.setLast(true);
         handleComponent(componentModel);
-        return componentModel.getSql();
+        return componentModel;
     }
 
     /**

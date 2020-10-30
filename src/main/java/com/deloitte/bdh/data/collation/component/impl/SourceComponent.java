@@ -74,11 +74,11 @@ public class SourceComponent implements ComponentHandler {
             String fullName = tableName + sql_key_separator + fieldName;
             // 使用全名进行编码获取到字段别名（全名可以避免重复）
             String newName = renameColumn(fullName);
-            Triple<String, String, String> mapping = new ImmutableTriple(newName, fieldName, fullName);
+            Triple<String, String, String> mapping = new ImmutableTriple(newName, fieldName, tableName);
             fieldMappings.add(mapping);
         });
         component.setFieldMappings(fieldMappings);
-        initSql(component);
+        buildQuerySql(component);
     }
 
     /**
@@ -86,17 +86,16 @@ public class SourceComponent implements ComponentHandler {
      *
      * @param component
      */
-    private void initSql(ComponentModel component) {
+    private void buildQuerySql(ComponentModel component) {
         String tableName = component.getTableName();
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(sql_key_select);
-        sqlBuilder.append(sql_key_blank);
         List<Triple> fieldMappings = component.getFieldMappings();
         fieldMappings.forEach(fieldMapping -> {
-            sqlBuilder.append(fieldMapping.getRight());
+            String fullName = fieldMapping.getRight() + sql_key_separator + fieldMapping.getMiddle();
+            sqlBuilder.append(fullName);
             sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(sql_key_as);
-            sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(fieldMapping.getLeft());
             sqlBuilder.append(sql_key_comma);
         });
@@ -104,8 +103,7 @@ public class SourceComponent implements ComponentHandler {
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(sql_key_from);
-        sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(tableName);
-        component.setSql(sqlBuilder.toString());
+        component.setQuerySql(sqlBuilder.toString());
     }
 }

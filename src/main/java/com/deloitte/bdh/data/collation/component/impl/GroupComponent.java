@@ -42,7 +42,7 @@ public class GroupComponent implements ComponentHandler {
 
         ComponentModel fromComponent = fromComponents.get(0);
         component.setTableName(component.getCode());
-        component.setSql(fromComponent.getSql());
+        component.setQuerySql(fromComponent.getQuerySql());
 
         // TODO:根据实际情况设置
         List<Triple> fromMappings = fromComponent.getFieldMappings();

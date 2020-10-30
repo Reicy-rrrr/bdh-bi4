@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.service;
 
-import com.deloitte.bdh.data.collation.model.request.PreviewSqlDto;
+import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 
 /**
  * etl模板处理Service
@@ -11,18 +11,19 @@ import com.deloitte.bdh.data.collation.model.request.PreviewSqlDto;
 public interface BiEtlModelHandleService {
 
     /**
-     * 预览sql
+     * 处理组件
      *
-     * @param dto
-     * @return
+     * @param modelCode     模板code
+     * @param componentCode 组件code
+     * @return ComponentModel
      */
-    String previewSql(PreviewSqlDto dto);
+    ComponentModel handleComponent(String modelCode, String componentCode);
 
     /**
-     * 组装sql
+     * 处理模板
      *
-     * @param modelId 模板id
-     * @return
+     * @param modelCode 模板code
+     * @return ComponentModel
      */
-    String createSql(String modelId);
+    ComponentModel handleModel(String modelCode);
 }
