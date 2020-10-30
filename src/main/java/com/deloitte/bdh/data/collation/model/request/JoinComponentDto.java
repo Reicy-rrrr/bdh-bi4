@@ -35,13 +35,13 @@ public class JoinComponentDto extends BaseRequest {
     private String tableName;
 
     @ApiModelProperty(value = "是否独立副本", example = "0")
-    private YesOrNoEnum isDuplicate = YesOrNoEnum.YES;
+    private String duplicate = YesOrNoEnum.YES.getKey();
 
     @ApiModelProperty(value = "不是独立副本时，所属的编码", example = "0")
     private String belongMappingCode;
 
     @ApiModelProperty(value = "同步方式", example = "0：直连，1：全量，2：增量")
-    private SyncTypeEnum syncType = SyncTypeEnum.FULL;
+    private Integer syncType = SyncTypeEnum.FULL.getKey();
 
     @ApiModelProperty(value = "偏移字段", example = "0")
     @NotNull(message = "偏移字段 不能为空")

@@ -122,11 +122,11 @@ public class EtlServiceImpl implements EtlService {
         component.setTenantId(dto.getTenantId());
 
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.DULICATE, dto.getIsDuplicate().getKey());
+        params.put(ComponentCons.DULICATE, YesOrNoEnum.getValue(dto.getDuplicate()).getKey());
         params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
 
         //判断独立副本
-        if (YesOrNoEnum.YES.equals(dto.getIsDuplicate())) {
+        if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             String mappingCode = GenerateCodeUtil.generate();
             dto.setBelongMappingCode(mappingCode);
 
@@ -134,7 +134,7 @@ public class EtlServiceImpl implements EtlService {
             BiEtlMappingConfig mappingConfig = new BiEtlMappingConfig();
             mappingConfig.setCode(mappingCode);
             mappingConfig.setRefCode(refCode);
-            mappingConfig.setType(dto.getSyncType().getKey().toString());
+            mappingConfig.setType(SyncTypeEnum.getEnumByKey(dto.getSyncType()).getKey().toString());
             mappingConfig.setRefSourceId(biEtlDatabaseInf.getId());
             mappingConfig.setFromTableName(dto.getTableName());
             mappingConfig.setToTableName(dto.getTableName());
@@ -142,7 +142,7 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setCreateUser(dto.getOperator());
             mappingConfig.setTenantId(dto.getTenantId());
 
-            if (!SyncTypeEnum.DIRECT.equals(dto.getSyncType())) {
+            if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
                 component.setEffect(EffectEnum.DISABLE.getKey());
                 if (CollectionUtils.isEmpty(dto.getFields())) {
                     throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,所选字段不能为空");

@@ -20,10 +20,10 @@ public enum SyncTypeEnum {
         this.value = value;
     }
 
-    public static SyncTypeEnum getEnumByKey(String key) {
+    public static SyncTypeEnum getEnumByKey(Object key) {
         SyncTypeEnum[] enums = SyncTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (StringUtils.equals(key, enums[i].getKey().toString())) {
+            if (StringUtils.equals(key.toString(), enums[i].getKey().toString())) {
                 return enums[i];
             }
         }
