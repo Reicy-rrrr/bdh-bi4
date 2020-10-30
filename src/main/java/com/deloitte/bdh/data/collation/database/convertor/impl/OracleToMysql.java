@@ -34,21 +34,25 @@ public class OracleToMysql implements DbConvertor {
         }else if(tf.getColumnType().contains("NUMBER")){
             tf.setColumnType(tf.getColumnType().replace("NUMBER","NUMERIC"));
         }else if(tf.getColumnType().contains("BLOB")){
-            tf.setColumnType(tf.getColumnType().replace("BLOB","LONGBLOB"));
+            tf.setColumnType("LONGBLOB");
         }else if(tf.getColumnType().contains("CLOB")){
-            tf.setColumnType(tf.getColumnType().replace("CLOB","LONGTEXT"));
+            tf.setColumnType("LONGTEXT");
         }else if(tf.getColumnType().contains("TIMESTAMP")){
             tf.setColumnType("TIMESTAMP");
         }else if(tf.getColumnType().contains("DATE")){
             tf.setColumnType("DATETIME");
         }else if(tf.getColumnType().contains("WITH LOCAL TIME ZONE")){
             tf.setColumnType("VARCHAR(50)");
-        }else if(tf.getColumnType().contains("LONG RAW")){
-            tf.setColumnType("RAW");
+        }else if(tf.getColumnType().contains("RAW")){
+            tf.setColumnType("LONGTEXT");
         }else if(tf.getColumnType().contains("INTERVAL DAY(2) TO")) {
             tf.setColumnType("VARCHAR(50)");
         }else if(tf.getColumnType().contains("INTERVAL YEAR(2) TO")) {
             tf.setColumnType("VARCHAR(50)");
+        }else if(tf.getColumnType().contains("BINARY_DOUBLE")){
+            tf.setColumnType("DOUBLE");
+        }else if(tf.getColumnType().contains("BINARY_FLOAT")){
+            tf.setColumnType("FLOAT");
         }
 
     }
