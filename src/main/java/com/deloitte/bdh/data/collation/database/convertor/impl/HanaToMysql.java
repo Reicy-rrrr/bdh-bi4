@@ -56,6 +56,10 @@ public class HanaToMysql implements DbConvertor {
             tf.setColumnType("DECIMAL");
         }else if(tf.getColumnType().contains("TIME")){
             tf.setColumnType("TIME");
+        }else if(tf.getColumnType().contains("ST_GEOMETRY")){
+            tf.setColumnType("TEXT");
+        }else if(tf.getColumnType().contains("ST_POINT")){
+            tf.setColumnType("TEXT");
         }
     }
 
