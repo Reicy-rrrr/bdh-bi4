@@ -41,7 +41,16 @@ public class OracleToMysql implements DbConvertor {
             tf.setColumnType("TIMESTAMP");
         }else if(tf.getColumnType().contains("DATE")){
             tf.setColumnType("DATETIME");
+        }else if(tf.getColumnType().contains("WITH LOCAL TIME ZONE")){
+            tf.setColumnType("VARCHAR(50)");
+        }else if(tf.getColumnType().contains("LONG RAW")){
+            tf.setColumnType("RAW");
+        }else if(tf.getColumnType().contains("INTERVAL DAY(2) TO")) {
+            tf.setColumnType("VARCHAR(50)");
+        }else if(tf.getColumnType().contains("INTERVAL YEAR(2) TO")) {
+            tf.setColumnType("VARCHAR(50)");
         }
+
     }
 
 
