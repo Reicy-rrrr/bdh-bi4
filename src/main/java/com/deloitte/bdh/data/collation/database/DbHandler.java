@@ -36,6 +36,17 @@ public interface DbHandler {
     void createTable(String dbId, String targetTableName, List<TableField> targetFields) throws Exception;
 
     /**
+     * 创建表
+     *
+     * @param targetTableName 目标表名
+     * @param targetFields    目标字段
+     * @return
+     * @throws Exception
+     */
+    void createTable(String targetTableName, List<TableField> targetFields) throws Exception;
+
+
+    /**
      * 查询所有表名列表
      *
      * @return

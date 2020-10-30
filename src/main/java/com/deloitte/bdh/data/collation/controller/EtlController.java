@@ -34,9 +34,14 @@ public class EtlController {
 
     @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
     @PostMapping("/joinResource")
-    public RetResult<BiComponent> joinResource(@RequestBody @Validated RetRequest<JoinResourceDto> request) throws Exception {
+    public RetResult<BiComponent> joinResource(@RequestBody @Validated RetRequest<JoinComponentDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
     }
 
+    @ApiOperation(value = "输出组件", notes = "输出组件")
+    @PostMapping("/out")
+    public RetResult<BiComponent> out(@RequestBody @Validated RetRequest<OutComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.out(request.getData()));
+    }
 
 }

@@ -33,4 +33,9 @@ public abstract class AbstractService<M extends Mapper<T>, T> extends
 		return tenantCode + "-" + sequenceValue;
 	}
 
+	public String doHeader() {
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		String tenantCode = request.getHeader("x-bdh-tenant-code");
+		return tenantCode;
+	}
 }

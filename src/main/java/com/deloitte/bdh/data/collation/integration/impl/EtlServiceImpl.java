@@ -46,18 +46,10 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlDatabaseInfService databaseInfService;
     @Autowired
     private BiEtlModelService biEtlModelService;
-    @Autowired
-    private BiEtlProcessorService processorService;
     @Resource
     private EtlProcess etlProcess;
     @Autowired
     private BiProcessorsService processorsService;
-    @Autowired
-    private BiEtlParamsService biEtlParamsService;
-    @Autowired
-    private BiEtlConnectionService biEtlConnectionService;
-    @Autowired
-    private BiConnectionsService connectionsService;
 
     @Autowired
     private BiComponentService componentService;
@@ -78,7 +70,7 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent joinResource(JoinResourceDto dto) throws Exception {
+    public BiComponent joinResource(JoinComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
@@ -195,6 +187,36 @@ public class EtlServiceImpl implements EtlService {
         return component;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public BiComponent out(OutComponentDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.out.error : 未找到目标 模型");
+        }
+
+        String componentCode = GenerateCodeUtil.getComponent();
+        BiComponent component = new BiComponent();
+        component.setCode(componentCode);
+        component.setName(ComponentTypeEnum.OUT.getValue());
+        component.setType(ComponentTypeEnum.OUT.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
+        component.setRefModelCode(biEtlModel.getCode());
+        component.setVersion("1");
+        component.setPosition(dto.getPosition());
+        component.setCreateDate(LocalDateTime.now());
+        component.setCreateUser(dto.getOperator());
+        component.setTenantId(dto.getTenantId());
+
+        //创建最终表,表名为模板编码
+        String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
+        dbHandler.createTable(tableName, dto.getFields());
+        List<BiEtlMappingField> fields = transferToFields(dto.getOperator(), dto.getTenantId(), componentCode, dto.getFields());
+        fieldService.saveBatch(fields);
+        componentService.save(component);
+        return component;
+    }
+
     private List<BiComponentParams> transferToParams(String operator, String tenantId, String code, Map<String, Object> source) {
         List<BiComponentParams> list = Lists.newArrayList();
         for (Map.Entry<String, Object> var : source.entrySet()) {
@@ -216,6 +238,9 @@ public class EtlServiceImpl implements EtlService {
 
     private List<BiEtlMappingField> transferToFields(String operator, String tenantId, String code, List<TableField> list) {
         List<BiEtlMappingField> result = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(list)) {
+            return result;
+        }
         for (TableField var : list) {
             BiEtlMappingField params = new BiEtlMappingField();
             params.setCode(GenerateCodeUtil.generate());
@@ -230,7 +255,7 @@ public class EtlServiceImpl implements EtlService {
         return result;
     }
 
-    private ProcessorContext transferNifi(JoinResourceDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+    private ProcessorContext transferNifi(JoinComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
             biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
 
         switch (SourceTypeEnum.values(biEtlDatabaseInf.getType())) {
@@ -245,7 +270,7 @@ public class EtlServiceImpl implements EtlService {
         }
     }
 
-    private ProcessorContext transferNifiTask1(JoinResourceDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+    private ProcessorContext transferNifiTask1(JoinComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
             biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
         ProcessorContext context = new ProcessorContext();
 
@@ -289,7 +314,7 @@ public class EtlServiceImpl implements EtlService {
         return context;
     }
 
-    private void createFirstPlan(JoinResourceDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
+    private void createFirstPlan(JoinComponentDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
         syncPlan.setCode(GenerateCodeUtil.generate());
         syncPlan.setGroupCode("0");

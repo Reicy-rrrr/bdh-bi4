@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @Getter
 @ToString
-public class JoinResourceDto extends BaseRequest {
+public class JoinComponentDto extends BaseRequest {
 
     @ApiModelProperty(value = "modelId", example = "0", required = true)
     @NotNull(message = " 模板id 不能为空")
