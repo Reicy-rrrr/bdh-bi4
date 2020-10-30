@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
-import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;

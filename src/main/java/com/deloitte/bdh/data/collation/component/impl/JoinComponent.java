@@ -1,20 +1,23 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.JoinModel;
-import com.deloitte.bdh.data.collation.component.model.JoinTable;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.JoinTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
+import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
+import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -34,6 +37,9 @@ public class JoinComponent implements ComponentHandler {
 
     private static final String param_key_tables = "tables";
 
+    @Autowired
+    private BiEtlMappingFieldService biEtlMappingFieldService;
+
     @Override
     public void handle(ComponentModel component) {
         String componentCode = component.getCode();
@@ -43,6 +49,13 @@ public class JoinComponent implements ComponentHandler {
                 .collect(Collectors.toMap(BiComponentParams::getParamKey, param -> param));
 
         JoinModel joinModel = buildJoinModel(componentCode, paramsMap);
+
+        // 查询设定的需要的字段信息
+        LambdaQueryWrapper<BiEtlMappingField> fieldWrapper = new LambdaQueryWrapper();
+        fieldWrapper.eq(BiEtlMappingField::getRefCode, componentCode);
+        List<BiEtlMappingField> setMappingFields = biEtlMappingFieldService.list(fieldWrapper);
+        List<String> setFields = setMappingFields.stream().map(BiEtlMappingField::getFieldName)
+                .collect(Collectors.toList());
         buildSql(component, joinModel);
     }
 
