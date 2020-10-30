@@ -23,14 +23,14 @@ public enum YesOrNoEnum {
      * @param key 环境key
      * @return String
      */
-    public static String getValue(String key) {
+    public static YesOrNoEnum getValue(String key) {
         YesOrNoEnum[] enums = YesOrNoEnum.values();
-        for (int i = 0; i < enums.length; i++) {
-            if (StringUtils.equals(key, enums[i].getKey())) {
-                return enums[i].getvalue();
+        for (YesOrNoEnum anEnum : enums) {
+            if (StringUtils.equals(key, anEnum.getKey())) {
+                return anEnum;
             }
         }
-        return "";
+        throw new RuntimeException("未找到对应的类型");
     }
 
     public String getKey() {

@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
-import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
-import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
-import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
@@ -22,6 +19,7 @@ import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -175,9 +173,10 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanResult(YesOrNoEnum.NO.getKey());
                 //调用nifi 停止与清空
                 String tenantCode = doHeader();
+                String processorsCode = getProcessorsCode(config);
                 executor.execute(() -> {
                     try {
-//                        processorsService.runStateAsync(tenantCode, config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+                        processorsService.runStateAsync(tenantCode, processorsCode, RunStatusEnum.STOP, true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -201,15 +200,29 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     plan.setPlanResult(YesOrNoEnum.YES.getKey());
 
                     //调用nifi 停止与清空
-//                    processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+                    String tenantCode = doHeader();
+                    String processorsCode = getProcessorsCode(config);
+                    executor.execute(() -> {
+                        try {
+                            processorsService.runStateAsync(tenantCode, processorsCode, RunStatusEnum.STOP, true);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                     plan.setPlanResult(YesOrNoEnum.YES.getKey());
                     plan.setResultDesc("");
                     //todo 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE
 
-                    //todo 设置Component 状态为可用
-//                    BiComponent component = componentService.getOne();
+                    //设置Component 状态为可用
+                    BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                            .eq(BiComponent::getCode, config.getRefComponentCode())
+                    );
+                    component.setEffect(EffectEnum.ENABLE.getKey());
+                    component.setModifiedDate(LocalDateTime.now());
+                    componentService.updateById(component);
                 }
             }
         } catch (Exception e1) {
