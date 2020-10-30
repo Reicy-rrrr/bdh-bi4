@@ -47,7 +47,7 @@ public class PutDatabaseRecord extends AbstractProcessor {
 
         //配置数据源的
         Map<String, Object> properties = Maps.newHashMap();
-//        properties.put("Database Connection Pooling Service", MapUtils.getString(context.getReq(), "toControllerServiceId"));
+//        properties.put("put-db-record-dcbp-service", MapUtils.getString(context.getReq(), "toControllerServiceId"));
         properties.put("put-db-record-table-name", MapUtils.getString(context.getReq(), "toTableName"));
         //todo 基于租户前置创建，此处默认设置
         properties.put("put-db-record-record-reader", "a5994ef0-0174-1000-0000-00006d114be3");

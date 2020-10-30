@@ -50,10 +50,8 @@ public enum BiProcessorsTypeEnum {
                     list.add(ProcessorTypeEnum.PutSQL);
                     break;
                 case Hana:
-                    list.add(ProcessorTypeEnum.ExecuteSQL);
-                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
-                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
-                    list.add(ProcessorTypeEnum.PutSQL);
+                    list.add(ProcessorTypeEnum.QueryDatabaseTable);
+                    list.add(ProcessorTypeEnum.PutDatabaseRecord);
                     break;
                 default:
 
@@ -66,7 +64,7 @@ public enum BiProcessorsTypeEnum {
         @Override
         public List<ProcessorTypeEnum> includeProcessor(String str) {
             List<ProcessorTypeEnum> list = Lists.newArrayList();
-            list.add(ProcessorTypeEnum.QueryDatabaseTable);
+            list.add(ProcessorTypeEnum.ExecuteSQL);
             list.add(ProcessorTypeEnum.PutDatabaseRecord);
             return list;
         }

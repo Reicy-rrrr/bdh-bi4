@@ -23,17 +23,31 @@ import java.util.stream.Collectors;
 @Service("ExecuteSQL")
 public class ExecuteSQL extends AbstractProcessor {
 
-    private final static String QUERY = "select * from " + NifiProcessUtil.TEMP;
-
     @Override
     public Map<String, Object> save(ProcessorContext context) throws Exception {
+//        ""Database Connection Pooling Service"": "b8f52732-0174-1000-ffff-ffffeba67f67",
+//                ""sql-pre-query"": null,
+//                ""SQL select query"": "select * from oracle_data",
+//                ""sql-post-query"": null,
+//                ""Max Wait Time"": "0 seconds",
+//                ""dbf-normalize"": "true",
+//                ""dbf-user-logical-types"": "false",
+//                ""compression-format"": "NONE",
+//                ""dbf-default-precision"": "10",
+//                ""dbf-default-scale"": "0",
+//                ""esql-max-rows"": "0",
+//                ""esql-output-batch-size"": "11111",
+//                ""esql-fetch-size"": "11111"
         //配置数据源的
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("SQL select query", QUERY.replace(NifiProcessUtil.TEMP, MapUtils.getString(context.getReq(), "SQL select query")));
-        properties.put("Database Connection Pooling Service", context.getBiEtlDatabaseInf().getControllerServiceId());
+        properties.put("SQL select query", MapUtils.getString(context.getReq(), "sqlSelectQuery"));
+        //todo a5b9fc8e-0174-1000-0000-000039bf90cc
+//        properties.put("Database Connection Pooling Service", MapUtils.getString(context.getReq(), "fromControllerServiceId"));
+        properties.put("Database Connection Pooling Service", "a5b9fc8e-0174-1000-0000-000039bf90cc");
+
         //调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
-        config.put("schedulingPeriod", "0 0 0 1/1 * ?");
+        config.put("schedulingPeriod", "0 0 0 3 3 ? 2090");
         config.put("schedulingStrategy", "CRON_DRIVEN");
         config.put("properties", properties);
 

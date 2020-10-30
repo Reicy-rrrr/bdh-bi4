@@ -3,18 +3,19 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
-import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
-import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
+import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -45,6 +46,11 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private DbHandler dbHandler;
     @Resource
     private AsyncTaskExecutor executor;
+    @Autowired
+    private BiComponentService componentService;
+    @Autowired
+    private BiComponentParamsService componentParamsService;
+
 
     @Override
     public void process() throws Exception {
@@ -100,8 +106,10 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 if (0 == count) {
                     dbHandler.truncateTable(config.getToTableName());
                 }
+                //获取归属组件信息
+                String processorsCode = getProcessorsCode(config);
                 //启动NIFI
-                processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.RUNNING, true);
+                processorsService.runState(processorsCode, RunStatusEnum.RUNNING, true);
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
@@ -137,7 +145,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     dbHandler.truncateTable(config.getToTableName());
                 }
                 //启动NIFI
-                processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.RUNNING, true);
+                processorsService.runState(getProcessorsCode(config), RunStatusEnum.RUNNING, true);
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
@@ -169,7 +177,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 String tenantCode = doHeader();
                 executor.execute(() -> {
                     try {
-                        processorsService.runStateAsync(tenantCode, config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+//                        processorsService.runStateAsync(tenantCode, config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -193,12 +201,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     plan.setPlanResult(YesOrNoEnum.YES.getKey());
 
                     //调用nifi 停止与清空
-                    processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
+//                    processorsService.runState(config.getRefProcessorsCode(), RunStatusEnum.STOP, true);
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                     plan.setPlanResult(YesOrNoEnum.YES.getKey());
                     plan.setResultDesc("");
                     //todo 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE
+
+                    //todo 设置Component 状态为可用
+//                    BiComponent component = componentService.getOne();
                 }
             }
         } catch (Exception e1) {
@@ -226,6 +237,23 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         return condition;
     }
 
+
+    private String getProcessorsCode(BiEtlMappingConfig config) {
+        BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getCode, config.getRefComponentCode())
+        );
+        if (null == component) {
+            throw new RuntimeException("EtlServiceImpl.getProcessorsCode.error : 未找到目标 组件");
+        }
+        BiComponentParams componentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, component.getCode())
+                .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
+        );
+        if (null == componentParams) {
+            throw new RuntimeException("EtlServiceImpl.getProcessorsCode.error : 未找到目标组件 参数");
+        }
+        return componentParams.getParamValue();
+    }
 
     @Override
     public void etl() {

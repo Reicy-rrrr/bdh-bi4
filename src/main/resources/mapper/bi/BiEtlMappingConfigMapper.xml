@@ -14,7 +14,7 @@
         <result column="REF_SOURCE_ID" property="refSourceId" />
         <result column="FROM_TABLE_NAME" property="fromTableName" />
         <result column="TO_TABLE_NAME" property="toTableName" />
-        <result column="REF_PROCESSORS_CODE" property="refProcessorsCode" />
+        <result column="REF_COMPONENT_CODE" property="refComponentCode" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

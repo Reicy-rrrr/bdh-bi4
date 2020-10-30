@@ -78,10 +78,10 @@ public class BiEtlMappingConfig implements Serializable {
     private String toTableName;
 
     /**
-     * 关联的processors 编码
+     * 归属COMPONENTCODE
      */
-    @TableField("REF_PROCESSORS_CODE")
-    private String refProcessorsCode;
+    @TableField("REF_COMPONENT_CODE")
+    private String refComponentCode;
 
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
@@ -171,12 +171,12 @@ public class BiEtlMappingConfig implements Serializable {
     public void setToTableName(String toTableName) {
         this.toTableName = toTableName;
     }
-    public String getRefProcessorsCode() {
-        return refProcessorsCode;
+    public String getRefComponentCode() {
+        return refComponentCode;
     }
 
-    public void setRefProcessorsCode(String refProcessorsCode) {
-        this.refProcessorsCode = refProcessorsCode;
+    public void setRefComponentCode(String refComponentCode) {
+        this.refComponentCode = refComponentCode;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -234,7 +234,7 @@ public class BiEtlMappingConfig implements Serializable {
         ", refSourceId=" + refSourceId +
         ", fromTableName=" + fromTableName +
         ", toTableName=" + toTableName +
-        ", refProcessorsCode=" + refProcessorsCode +
+        ", refComponentCode=" + refComponentCode +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +
