@@ -113,7 +113,7 @@ public class EtlServiceImpl implements EtlService {
         component.setCode(componentCode);
         component.setName(ComponentTypeEnum.DATASOURCE.getValue());
         component.setType(ComponentTypeEnum.DATASOURCE.getKey());
-        component.setEffect(EffectEnum.ENABLE.getKey());
+        component.setEffect(EffectEnum.DISABLE.getKey());
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
