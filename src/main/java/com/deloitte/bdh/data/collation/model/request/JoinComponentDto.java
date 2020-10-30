@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.model.request;
 
 
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import io.swagger.annotations.ApiModel;
@@ -22,6 +23,9 @@ public class JoinComponentDto extends BaseRequest {
     @ApiModelProperty(value = "modelId", example = "0", required = true)
     @NotNull(message = " 模板id 不能为空")
     private String modelId;
+
+    @ApiModelProperty(value = "componentName", example = "0", required = true)
+    private String componentName = ComponentTypeEnum.DATASOURCE.getValue() + System.currentTimeMillis();
 
     @ApiModelProperty(value = "sourceId", example = "0", required = true)
     @NotNull(message = "数据源id 不能为空")

@@ -111,7 +111,7 @@ public class EtlServiceImpl implements EtlService {
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
         component.setCode(componentCode);
-        component.setName(ComponentTypeEnum.DATASOURCE.getValue());
+        component.setName(dto.getComponentName());
         component.setType(ComponentTypeEnum.DATASOURCE.getKey());
         component.setEffect(EffectEnum.DISABLE.getKey());
         component.setRefModelCode(biEtlModel.getCode());
@@ -226,6 +226,7 @@ public class EtlServiceImpl implements EtlService {
         //设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
+        //关联组件与processors
         params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
         params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
@@ -298,7 +299,7 @@ public class EtlServiceImpl implements EtlService {
         BiProcessors processors = new BiProcessors();
         processors.setCode(processorsCode);
         processors.setType(BiProcessorsTypeEnum.SYNC_SOURCE.getType());
-        processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()) + System.currentTimeMillis());
+        processors.setName(dto.getComponentName());
         processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
         processors.setStatus(YesOrNoEnum.NO.getKey());
         processors.setEffect(EffectEnum.ENABLE.getKey());
