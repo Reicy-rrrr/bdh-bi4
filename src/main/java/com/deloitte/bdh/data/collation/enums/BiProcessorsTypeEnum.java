@@ -14,23 +14,13 @@ public enum BiProcessorsTypeEnum {
             SourceTypeEnum typeEnum = SourceTypeEnum.values(str);
             switch (typeEnum) {
                 case Mysql:
-                    list.add(ProcessorTypeEnum.QueryDatabaseTable);
-                    list.add(ProcessorTypeEnum.PutDatabaseRecord);
-                    break;
                 case Oracle:
-                    list.add(ProcessorTypeEnum.QueryDatabaseTable);
-                    list.add(ProcessorTypeEnum.PutDatabaseRecord);
-                    break;
                 case SQLServer:
+                case Hana:
                     list.add(ProcessorTypeEnum.QueryDatabaseTable);
                     list.add(ProcessorTypeEnum.PutDatabaseRecord);
                     break;
                 case Hive:
-                    list.add(ProcessorTypeEnum.SelectHiveQL);
-                    list.add(ProcessorTypeEnum.ConvertAvroToJSON);
-                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
-                    list.add(ProcessorTypeEnum.PutSQL);
-                    break;
                 case Hive2:
                     list.add(ProcessorTypeEnum.SelectHiveQL);
                     list.add(ProcessorTypeEnum.ConvertAvroToJSON);
@@ -38,20 +28,11 @@ public enum BiProcessorsTypeEnum {
                     list.add(ProcessorTypeEnum.PutSQL);
                     break;
                 case File_Csv:
-                    list.add(ProcessorTypeEnum.GetMongo);
-                    list.add(ProcessorTypeEnum.UpdateAttribute);
-                    list.add(ProcessorTypeEnum.ConvertJSONToSQL);
-                    list.add(ProcessorTypeEnum.PutSQL);
-                    break;
                 case File_Excel:
                     list.add(ProcessorTypeEnum.GetMongo);
                     list.add(ProcessorTypeEnum.UpdateAttribute);
                     list.add(ProcessorTypeEnum.ConvertJSONToSQL);
                     list.add(ProcessorTypeEnum.PutSQL);
-                    break;
-                case Hana:
-                    list.add(ProcessorTypeEnum.QueryDatabaseTable);
-                    list.add(ProcessorTypeEnum.PutDatabaseRecord);
                     break;
                 default:
 

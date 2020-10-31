@@ -25,7 +25,7 @@ public interface BiEtlConnectionService extends Service<BiEtlConnection> {
     /**
      * 创建 Connection
      *
-     * @param dto
+     * @param connection
      * @return
      */
     void dropConnection(BiEtlConnection connection) throws Exception;
@@ -34,7 +34,7 @@ public interface BiEtlConnectionService extends Service<BiEtlConnection> {
     /**
      * 创建 Connection
      *
-     * @param dto
+     * @param connection
      * @return
      */
     void delConnection(BiEtlConnection connection) throws Exception;

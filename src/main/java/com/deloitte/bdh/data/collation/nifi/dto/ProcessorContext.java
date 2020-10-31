@@ -14,7 +14,7 @@ import java.util.List;
 public class ProcessorContext extends Nifi {
     private List<ProcessorTypeEnum> enumList;
 
-    private BiEtlDatabaseInf biEtlDatabaseInf = null;
+    private BiEtlDatabaseInf biEtlDatabaseInf = null;//可以废弃
     private BiProcessors processors = null;
 
     private List<Processor> processorList = null;

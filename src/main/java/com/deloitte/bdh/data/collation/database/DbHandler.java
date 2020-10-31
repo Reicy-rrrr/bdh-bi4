@@ -88,6 +88,14 @@ public interface DbHandler {
     long delete(String tableName, String condition);
 
     /**
+     * 删除表
+     *
+     * @param tableName 表名
+     * @return
+     */
+    void drop(String tableName);
+
+    /**
      * 执行查询sql
      *
      * @param querySql

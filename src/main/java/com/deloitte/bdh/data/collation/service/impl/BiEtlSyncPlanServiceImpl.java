@@ -57,12 +57,13 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     }
 
     private void syncToExecute() {
-        //寻找类型为同步，状态为待执行的计划 todo limit
+        //寻找类型为同步，状态为待执行的计划
         List<BiEtlSyncPlan> list = syncPlanMapper.selectList(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "0")
                 .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
                 .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                .last("limit 50")
         );
 
         list.forEach(s -> {
@@ -76,12 +77,13 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     }
 
     private void syncExecuting() {
-        //寻找类型为同步，状态为待执行的计划 todo limit
+        //寻找类型为同步，状态为待执行的计划
         List<BiEtlSyncPlan> list = syncPlanMapper.selectList(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "0")
                 .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
                 .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                .last("limit 50")
         );
         list.forEach(this::syncExecutingTask);
 
@@ -93,7 +95,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             //判断已处理次数,超过3次则动作完成。
             if (3 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(YesOrNoEnum.NO.getKey());
+                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             } else {
                 //组装数据 启动nifi 改变执行状态
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -112,7 +114,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
                 plan.setProcessCount("0");
-                plan.setResultDesc("");
+                plan.setResultDesc(" ");
             }
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -130,7 +132,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             //判断已处理次数,超过3次则动作完成。
             if (3 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(YesOrNoEnum.NO.getKey());
+                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             } else {
                 //组装数据 启动nifi 改变执行状态
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -148,7 +150,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
                 plan.setProcessCount("0");
-                plan.setResultDesc("");
+                plan.setResultDesc(" ");
             }
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -170,7 +172,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(YesOrNoEnum.NO.getKey());
+                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
                 String tenantCode = doHeader();
                 String processorsCode = getProcessorsCode(config);
@@ -197,7 +199,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 } else {
                     //已同步完成
                     plan.setSqlLocalCount(localCount);
-                    plan.setPlanResult(YesOrNoEnum.YES.getKey());
+                    plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
                     String tenantCode = doHeader();
@@ -212,8 +214,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                    plan.setPlanResult(YesOrNoEnum.YES.getKey());
-                    plan.setResultDesc("");
+                    plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
+                    plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
                     //todo 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE
 
                     //设置Component 状态为可用

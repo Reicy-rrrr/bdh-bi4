@@ -167,6 +167,12 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
+    public void drop(String tableName) {
+        String deleteSql = "DROP FROM " + tableName;
+        biEtlDbMapper.truncateTable(deleteSql);
+    }
+
+    @Override
     public List<Map<String, Object>> executeQuery(String querySql) {
         return biEtlDbMapper.executeQuery(querySql);
     }

@@ -2,15 +2,23 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.collation.model.BiComponentConnection;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentConnectionMapper;
+import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.request.ComponentLinkDto;
 import com.deloitte.bdh.data.collation.service.BiComponentConnectionService;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.data.collation.service.BiEtlModelService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author lw
@@ -19,5 +27,28 @@ import org.springframework.stereotype.Service;
 @Service
 @DS(DSConstant.BI_DB)
 public class BiComponentConnectionServiceImpl extends AbstractService<BiComponentConnectionMapper, BiComponentConnection> implements BiComponentConnectionService {
+    @Resource
+    private BiComponentConnectionMapper mapper;
+    @Autowired
+    private BiEtlModelService biEtlModelService;
 
+    @Override
+    public BiComponentConnection link(ComponentLinkDto dto) {
+        BiEtlModel model = biEtlModelService.getById(dto.getModelId());
+        if (null == model) {
+            throw new RuntimeException("EtlServiceImpl.link.error : 未找到目标 模板");
+        }
+
+        BiComponentConnection connection = new BiComponentConnection();
+        connection.setCode(GenerateCodeUtil.genConnects());
+        connection.setFromComponentCode(dto.getFromComponentCode());
+        connection.setToComponentCode(dto.getToComponentCode());
+        connection.setRefModelCode(model.getCode());
+        connection.setVersion("1");
+        connection.setCreateDate(LocalDateTime.now());
+        connection.setCreateUser(dto.getOperator());
+        connection.setTenantId(dto.getTenantId());
+        mapper.insert(connection);
+        return connection;
+    }
 }

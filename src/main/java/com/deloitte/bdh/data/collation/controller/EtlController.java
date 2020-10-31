@@ -27,19 +27,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/bi/etl")
 public class EtlController {
-
     @Autowired
     private EtlService etlService;
 
 
     @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
-    @PostMapping("/joinResource")
+    @PostMapping("/resource/join")
     public RetResult<BiComponent> joinResource(@RequestBody @Validated RetRequest<JoinComponentDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
     }
 
-    @ApiOperation(value = "输出组件", notes = "输出组件")
-    @PostMapping("/out")
+    @ApiOperation(value = "移除数据源组件", notes = "移除数据源组件")
+    @PostMapping("/resource/remove")
+    public RetResult<Void> removeResource(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        etlService.removeResource(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "引入输出组件", notes = "引入输出组件")
+    @PostMapping("/out/join")
     public RetResult<BiComponent> out(@RequestBody @Validated RetRequest<OutComponentDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.out(request.getData()));
     }

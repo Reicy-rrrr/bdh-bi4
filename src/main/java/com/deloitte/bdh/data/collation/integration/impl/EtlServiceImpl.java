@@ -70,6 +70,7 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private DbSelector dbSelector;
 
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public BiComponent joinResource(JoinComponentDto dto) throws Exception {
@@ -125,9 +126,10 @@ public class EtlServiceImpl implements EtlService {
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getValue(dto.getDuplicate()).getKey());
         params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
 
-        //判断独立副本
+        //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             String mappingCode = GenerateCodeUtil.generate();
+            params.put(ComponentCons.BELONG_MAPPING_CODE, mappingCode);
             dto.setBelongMappingCode(mappingCode);
 
             //step2.1:是独立副本，创建映射
@@ -141,6 +143,7 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setCreateDate(LocalDateTime.now());
             mappingConfig.setCreateUser(dto.getOperator());
             mappingConfig.setTenantId(dto.getTenantId());
+            mappingConfig.setRefComponentCode(componentCode);
 
             if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
                 component.setEffect(EffectEnum.DISABLE.getKey());
@@ -153,7 +156,6 @@ public class EtlServiceImpl implements EtlService {
                 }
                 //同步都涉及 偏移字段，方便同步
                 String processorsCode = GenerateCodeUtil.genProcessors();
-                mappingConfig.setRefComponentCode(componentCode);
                 mappingConfig.setOffsetField(dto.getOffsetField());
                 mappingConfig.setOffsetValue(dto.getOffsetValue());
                 //初次同步设置0
@@ -190,6 +192,70 @@ public class EtlServiceImpl implements EtlService {
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
         return component;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void removeResource(String code) throws Exception {
+        //获取组件信息，判断组件是否存在
+        BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getCode, code)
+        );
+        if (null == component) {
+            throw new RuntimeException("EtlServiceImpl.removeResource.error : 未找到目标 组件");
+        }
+
+        //获取组件参数
+        List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, code)
+        );
+
+        //是否独立的数据源组件
+        String dulicate = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.DULICATE)).findAny().get().getParamValue();
+        if (YesOrNoEnum.NO.getKey().equals(dulicate)) {
+            //非独立副本可以直接删除返回
+            componentService.remove(component.getId());
+            return;
+        }
+
+        //独立副本时，该组件是否被其他模板的组件引用
+        String mappingCode = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.BELONG_MAPPING_CODE)).findAny().get().getParamValue();
+
+        List<BiComponentParams> refParamsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getParamKey, ComponentCons.BELONG_MAPPING_CODE)
+                .eq(BiComponentParams::getParamValue, mappingCode)
+                .ne(BiComponentParams::getRefComponentCode, code)
+        );
+        if (CollectionUtils.isNotEmpty(refParamsList)) {
+            //todo 待确定是否还能删除
+            throw new RuntimeException("EtlServiceImpl.removeResource.error : 该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
+        }
+
+        //判断当前组件同步类型，"直连" 则直接删除
+        BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getCode, mappingCode)
+        );
+        if (SyncTypeEnum.DIRECT.getKey().toString().equals(config.getType())) {
+            componentService.remove(component.getId());
+        }
+
+        //当前是 "非直连"
+        BiEtlSyncPlan syncPlan = syncPlanService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getRefMappingCode, mappingCode)
+                .orderByDesc(BiEtlSyncPlan::getCreateDate)
+                .last("limit 1")
+        );
+
+        //不管当前是 第一次同步还是定时调度，是待同步还是同步中还是同步完成，都一致操作
+        //1：停止清空NIFI，2：删除NIFI配置，3：删除本地表，4：删除本地组件配置，5：若当前调度计划未完成，修改状态为取消
+        componentService.remove(component.getId());
+        if (StringUtils.isBlank(syncPlan.getPlanResult())) {
+            syncPlan.setPlanResult(PlanResultEnum.CANCEL.getKey());
+            syncPlanService.updateById(syncPlan);
+        }
+
     }
 
     @Override
@@ -399,4 +465,5 @@ public class EtlServiceImpl implements EtlService {
         processorsService.save(context.getProcessors());
         return context;
     }
+
 }

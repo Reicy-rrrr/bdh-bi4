@@ -20,7 +20,6 @@ import com.deloitte.bdh.data.collation.nifi.dto.CreateProcessorDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.nifi.dto.Processor;
-import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlParamsService;
 import com.deloitte.bdh.data.collation.service.BiEtlProcessorService;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -53,8 +52,7 @@ public class BiEtlProcessorServiceImpl extends AbstractService<BiEtlProcessorMap
     private NifiProcessService nifiProcessService;
     @Autowired
     private BiEtlParamsService etlParamsService;
-    @Autowired
-    private BiEtlModelService etlModelService;
+
 
 
     @Override

@@ -6,17 +6,20 @@ import com.deloitte.bdh.common.annotation.Header;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
+import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
-import com.deloitte.bdh.data.collation.model.BiConnections;
-import com.deloitte.bdh.data.collation.model.BiEtlConnection;
-import com.deloitte.bdh.data.collation.model.BiProcessors;
+import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiProcessorsMapper;
-import com.deloitte.bdh.data.collation.service.BiConnectionsService;
-import com.deloitte.bdh.data.collation.service.BiEtlConnectionService;
-import com.deloitte.bdh.data.collation.service.BiProcessorsService;
+import com.deloitte.bdh.data.collation.nifi.EtlProcess;
+import com.deloitte.bdh.data.collation.nifi.dto.Processor;
+import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
+import com.deloitte.bdh.data.collation.nifi.enums.MethodEnum;
+import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,14 +41,26 @@ import java.util.*;
 @DS(DSConstant.BI_DB)
 public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper, BiProcessors> implements BiProcessorsService {
     private static final Logger logger = LoggerFactory.getLogger(BiProcessorsServiceImpl.class);
+    @Autowired
+    private NifiProcessService nifiProcessService;
+    @Autowired
+    private BiEtlDatabaseInfService databaseInfService;
+    @Autowired
+    private BiEtlModelService biEtlModelService;
     @Resource
     private BiProcessorsMapper processorsMapper;
+    @Resource
+    private BiEtlProcessorService processorService;
     @Autowired
     private BiConnectionsService connectionsService;
     @Autowired
+    private BiComponentParamsService componentParamsService;
+    @Autowired
     private BiEtlConnectionService biEtlConnectionService;
     @Autowired
-    private NifiProcessService nifiProcessService;
+    private BiEtlMappingConfigService configService;
+    @Resource
+    private EtlProcess etlProcess;
 
 
     @Override
@@ -111,6 +126,48 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
                 nifiProcessService.dropConnections(var.getConnectionId());
             }
         }
+    }
+
+    @Override
+    public void removeProcessors(String processorsCode) throws Exception {
+        BiProcessors processors = processorsMapper.selectOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, processorsCode)
+        );
+        BiEtlModel biEtlModel = biEtlModelService.getOne(
+                new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, processors.getRelModelCode()));
+
+        List<Processor> processorList = processorService.invokeProcessorList(processors.getCode());
+
+        List<BiEtlConnection> connectionList = biEtlConnectionService.list(new LambdaQueryWrapper<BiEtlConnection>()
+                .eq(BiEtlConnection::getRelProcessorsCode, processors.getCode()));
+
+        BiComponentParams biComponentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
+                .eq(BiComponentParams::getParamValue, processors.getCode())
+        );
+
+        //获取数据源类型，用于回滚，当为数据源组件 肯定有值
+        String dbType = null;
+        if (null != biComponentParams) {
+            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                    .eq(BiEtlMappingConfig::getCode, biComponentParams.getParamValue())
+            );
+            dbType = databaseInfService.getById(config.getRefSourceId()).getType();
+        }
+
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("createUser", processors.getCreateUser());
+        req.put("tenantId", processors.getTenantId());
+        ProcessorContext context = new ProcessorContext();
+        context.setEnumList(BiProcessorsTypeEnum.getEnum(processors.getType()).includeProcessor(dbType));
+        context.setMethod(MethodEnum.DELETE);
+        context.setModel(biEtlModel);
+        context.setProcessors(processors);
+        context.addProcessorList(processorList);
+        context.addConnectionList(connectionList);
+        context.setReq(req);
+        etlProcess.operateProcessorGroup(context);
+        processorsMapper.deleteById(processors.getId());
     }
 
     private Set<String> preProcessorChain(List<BiConnections> list, Set<String> set, String processorsCode) {
