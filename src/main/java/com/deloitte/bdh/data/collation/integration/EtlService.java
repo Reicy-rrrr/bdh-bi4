@@ -6,7 +6,6 @@ import com.deloitte.bdh.data.collation.model.request.*;
 
 public interface EtlService {
 
-
     /**
      * 引入数据源
      *
@@ -16,20 +15,21 @@ public interface EtlService {
     BiComponent joinResource(JoinComponentDto dto) throws Exception;
 
     /**
-     * 移除数据源
-     *
-     * @param
-     * @return
-     */
-    void removeResource(String code) throws Exception;
-
-    /**
      * 输出组件
      *
      * @param
      * @return
      */
     BiComponent out(OutComponentDto dto) throws Exception;
+
+
+    /**
+     * 移除组件
+     *
+     * @param
+     * @return
+     */
+    void remove(String code) throws Exception;
 
 
 }

@@ -25,5 +25,4 @@ public interface BiComponentService extends Service<BiComponent> {
      */
     BiComponentTree selectTree(String modelCode, String componentCode);
 
-    void remove(String id) throws Exception;
 }

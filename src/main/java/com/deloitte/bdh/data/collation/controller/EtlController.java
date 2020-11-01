@@ -37,17 +37,17 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
     }
 
-    @ApiOperation(value = "移除数据源组件", notes = "移除数据源组件")
-    @PostMapping("/resource/remove")
-    public RetResult<Void> removeResource(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        etlService.removeResource(request.getData());
-        return RetResponse.makeOKRsp();
-    }
-
     @ApiOperation(value = "引入输出组件", notes = "引入输出组件")
     @PostMapping("/out/join")
     public RetResult<BiComponent> out(@RequestBody @Validated RetRequest<OutComponentDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.out(request.getData()));
+    }
+
+    @ApiOperation(value = "移除组件", notes = "移除组件")
+    @PostMapping("/component/remove")
+    public RetResult<Void> remove(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        etlService.remove(request.getData());
+        return RetResponse.makeOKRsp();
     }
 
 }
