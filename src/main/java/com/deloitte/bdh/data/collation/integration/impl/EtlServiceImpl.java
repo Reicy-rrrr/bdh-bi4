@@ -472,6 +472,7 @@ public class EtlServiceImpl implements EtlService {
         syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
         //设置已处理初始值为0
         syncPlan.setProcessCount("0");
+        syncPlan.setPlanResult(null);
         //基于条件，获取元数据的总数，该执行效率较低下，建议 由配置时去执行
         DbContext context = new DbContext();
         context.setDbId(biEtlDatabaseInf.getId());

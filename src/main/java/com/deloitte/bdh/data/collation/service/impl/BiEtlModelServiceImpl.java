@@ -145,7 +145,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             //调用xxjob 设置调度任务
             Map<String, String> params = Maps.newHashMap();
             params.put("modelCode", inf.getCode());
-            params.put("tenantCode", doHeader());
+            params.put("tenantCode", ThreadLocalUtil.getTenantCode());
             jobService.update(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
                     dto.getCronExpression(), params);
         }
@@ -265,7 +265,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (!StringUtil.isEmpty(dto.getCronExpression())) {
             Map<String, String> params = Maps.newHashMap();
             params.put("modelCode", inf.getCode());
-            params.put("tenantCode", doHeader());
+            params.put("tenantCode", ThreadLocalUtil.getTenantCode());
             jobService.add(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
                     dto.getCronExpression(), params);
         }

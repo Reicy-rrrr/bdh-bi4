@@ -12,7 +12,6 @@ import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -34,8 +33,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private BiComponentMapper biComponentMapper;
     @Autowired
     private BiProcessorsService processorsService;
-    @Resource
-    private AsyncTaskExecutor executor;
     @Autowired
     private BiComponentParamsService componentParamsService;
 
@@ -55,15 +52,10 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         );
 
         //调用nifi 停止与清空
-        String tenantCode = doHeader();
         components.forEach(s -> {
             String processorsCode = getProcessorsCode(s.getCode());
-            executor.execute(() -> {
-                try {
-                    processorsService.runStateAsync(tenantCode, processorsCode, RunStatusEnum.STOP, true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            async(() -> {
+                processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
             });
         });
     }
