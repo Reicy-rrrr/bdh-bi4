@@ -40,7 +40,7 @@ public class BiUiAnalysePageConfigController {
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfig(request.getData()));
     }
 
-    @ApiOperation(value = "查看页面配置详情列表", notes = "查看页面配置详情列表")
+    @ApiOperation(value = "查看某个页面配置历史版本详情列表", notes = "查看某个页面配置历史版本详情列表")
     @PostMapping("/getAnalysePageConfigList")
     public RetResult<List<BiUiAnalysePageConfig>> getAnalysePageConfigList(@RequestBody @Validated RetRequest<AnalysePageConfigReq> request) throws Exception {
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfigList(request.getData()));

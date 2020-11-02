@@ -53,6 +53,12 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(dto.getType())) {
             query.isNotNull(BiUiAnalysePage::getPublishId);
         }
+        /**
+         * 没有发布过的页面
+         */
+        if (AnalyseConstants.PAGE_CONFIG_EDIT.equals(dto.getType())) {
+            query.isNull(BiUiAnalysePage::getPublishId);
+        }
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         PageInfo<BiUiAnalysePage> pageInfo = new PageInfo(this.list(query));
         PageResult pageResult = new PageResult(pageInfo);

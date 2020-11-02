@@ -5,10 +5,10 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.request.DBTableColumnReq;
 import com.deloitte.bdh.data.analyse.model.request.DBTableReq;
+import com.deloitte.bdh.data.analyse.model.resp.TableColumnTree;
 import com.deloitte.bdh.data.analyse.service.BiUiDBService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFieldService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFolderService;
-import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -43,7 +44,7 @@ public class BiUiDBController {
 
     @ApiOperation(value = "获取所有表列", notes = "获取所有表列")
     @PostMapping("/getAllColumns")
-    public RetResult<List<TableColumn>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
+    public RetResult<Collection<TableColumnTree>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
         DBTableColumnReq req = request.getData();
         return RetResponse.makeOKRsp(biUiDBService.getAllColumns(req.getTableName(), req.getTenantId()));
     }

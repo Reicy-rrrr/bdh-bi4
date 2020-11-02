@@ -39,9 +39,17 @@ public class AnalyseConstants {
     public static final String PAGE_CONFIG_PUBLISH = "PUBLISH";
 
     /**
-     * 默认
+     * 第一层,表名
      */
     public static final String DATA_MODEL_TYPE_TOP = "TOP";
+    /**
+     * 第二层 维度
+     */
+    public static final String DATA_MODEL_TYPE_TOP_DL = "TOP_DL";
+    /**
+     * 第二层 度量
+     */
+    public static final String DATA_MODEL_TYPE_TOP_WD = "TOP_WD";
     /**
      * 默认
      */
