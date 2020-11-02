@@ -43,4 +43,7 @@ public class CreateModelDto {
     @NotNull(message = "createUser 不能为空")
     private String createUser;
 
+    @ApiModelProperty(value = "cron 表达式", example = "表达式")
+    private String cronExpression;
+
 }
