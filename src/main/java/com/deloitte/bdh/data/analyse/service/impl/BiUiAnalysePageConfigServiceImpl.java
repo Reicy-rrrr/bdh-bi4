@@ -170,4 +170,32 @@ public class BiUiAnalysePageConfigServiceImpl extends AbstractService<BiUiAnalys
         biUiReportPageConfigMapper.updateById(entity);
         return entity;
     }
+
+    @Override
+    public List<BiUiAnalysePageConfig> getAnalysePageConfigList(AnalysePageConfigReq data) throws Exception {
+        String pageId = data.getPageId();
+        if (pageId == null) {
+            throw new Exception("页面id不能为空");
+        }
+        BiUiAnalysePage page = biUiAnalysePageService.getAnalysePage(pageId);
+        if (page == null) {
+            throw new Exception("页面id不正确");
+        }
+        LambdaQueryWrapper<BiUiAnalysePageConfig> query = new LambdaQueryWrapper();
+        query.eq(BiUiAnalysePageConfig::getPageId, pageId);
+        List<BiUiAnalysePageConfig> configs = list(query);
+        for (BiUiAnalysePageConfig config : configs) {
+            if (page.getEditId() != null) {
+                if (page.getEditId().equals(config.getId())) {
+                    config.setStatus(AnalyseConstants.PAGE_CONFIG_EDIT);
+                }
+            }
+            if (page.getPublishId() != null) {
+                if (page.getPublishId().equals(config.getId())) {
+                    config.setStatus(AnalyseConstants.PAGE_CONFIG_PUBLISH);
+                }
+            }
+        }
+        return configs;
+    }
 }

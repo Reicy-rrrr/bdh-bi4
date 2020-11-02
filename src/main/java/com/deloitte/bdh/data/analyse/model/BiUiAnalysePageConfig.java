@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.Data;
+
+import javax.persistence.Transient;
 import java.io.Serializable;
 
 /**
@@ -15,6 +18,7 @@ import java.io.Serializable;
  * @author bo.wang
  * @since 2020-10-19
  */
+@Data
 @TableName("BI_UI_ANALYSE_PAGE_CONFIG")
 public class BiUiAnalysePageConfig implements Serializable {
 
@@ -59,90 +63,6 @@ public class BiUiAnalysePageConfig implements Serializable {
     @TableField("VERSION")
     private String version;
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-    public String getPageId() {
-        return pageId;
-    }
-
-    public void setPageId(String pageId) {
-        this.pageId = pageId;
-    }
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-    public String getCreateUser() {
-        return createUser;
-    }
-
-    public void setCreateUser(String createUser) {
-        this.createUser = createUser;
-    }
-    public LocalDateTime getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(LocalDateTime modifiedDate) {
-        this.modifiedDate = modifiedDate;
-    }
-    public String getModifiedUser() {
-        return modifiedUser;
-    }
-
-    public void setModifiedUser(String modifiedUser) {
-        this.modifiedUser = modifiedUser;
-    }
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    @Override
-    public String toString() {
-        return "BiUiReportPageConfig{" +
-        "id=" + id +
-        ", pageId=" + pageId +
-        ", content=" + content +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        ", version=" + version +
-        "}";
-    }
+    @Transient
+    private String status;
 }

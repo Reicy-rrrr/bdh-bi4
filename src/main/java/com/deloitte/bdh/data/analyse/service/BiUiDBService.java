@@ -22,5 +22,5 @@ public interface BiUiDBService {
      * @param tableName
      * @return
      */
-    public List<TableColumn> getAllColumns(String tableName);
+    public List<TableColumn> getAllColumns(String tableName,String tenantId);
 }

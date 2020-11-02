@@ -44,7 +44,8 @@ public class BiUiDBController {
     @ApiOperation(value = "获取所有表列", notes = "获取所有表列")
     @PostMapping("/getAllColumns")
     public RetResult<List<TableColumn>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
-        return RetResponse.makeOKRsp(biUiDBService.getAllColumns(request.getData().getTableName()));
+        DBTableColumnReq req = request.getData();
+        return RetResponse.makeOKRsp(biUiDBService.getAllColumns(req.getTableName(), req.getTenantId()));
     }
 
 }

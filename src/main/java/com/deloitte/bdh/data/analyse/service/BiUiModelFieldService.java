@@ -1,13 +1,15 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
-import com.deloitte.bdh.data.analyse.model.BiUiModelField;
-import com.deloitte.bdh.common.base.Service;
+
+import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author bo.wang
@@ -21,6 +23,8 @@ public interface BiUiModelFieldService extends Service<BiUiModelField> {
      * @return
      */
     BiUiModelField getResource(String id);
+
+    public List<BiUiModelField> getTenantBiUiModelFields(String tenantId);
 
     /**
      * 创建页面
