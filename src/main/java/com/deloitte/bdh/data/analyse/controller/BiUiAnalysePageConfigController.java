@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * <p>
@@ -37,6 +38,12 @@ public class BiUiAnalysePageConfigController {
     @PostMapping("/getAnalysePageConfig")
     public RetResult<BiUiAnalysePageConfig> getAnalysePageConfig(@RequestBody @Validated RetRequest<AnalysePageConfigReq> request) throws Exception {
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfig(request.getData()));
+    }
+
+    @ApiOperation(value = "查看页面配置详情列表", notes = "查看页面配置详情列表")
+    @PostMapping("/getAnalysePageConfigList")
+    public RetResult<List<BiUiAnalysePageConfig>> getAnalysePageConfigList(@RequestBody @Validated RetRequest<AnalysePageConfigReq> request) throws Exception {
+        return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfigList(request.getData()));
     }
 
     @ApiOperation(value = "新增页面配置", notes = "新增页面配置")

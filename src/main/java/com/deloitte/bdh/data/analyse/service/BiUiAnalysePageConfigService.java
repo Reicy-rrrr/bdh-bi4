@@ -7,6 +7,8 @@ import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -65,4 +67,11 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @return
      */
     BiUiAnalysePageConfig updateAnalysePageConfig(UpdateAnalysePageConfigsDto dto) throws Exception;
+
+    /**
+     * 获取list
+     * @param data
+     * @return
+     */
+    List<BiUiAnalysePageConfig> getAnalysePageConfigList(AnalysePageConfigReq data) throws Exception;
 }

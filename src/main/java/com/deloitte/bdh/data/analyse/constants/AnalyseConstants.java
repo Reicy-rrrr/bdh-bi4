@@ -37,4 +37,17 @@ public class AnalyseConstants {
      * 默认
      */
     public static final String PAGE_CONFIG_PUBLISH = "PUBLISH";
+
+    /**
+     * 默认
+     */
+    public static final String DATA_MODEL_TYPE_TOP = "TOP";
+    /**
+     * 默认
+     */
+    public static final String DATA_MODEL_TYPE_FOLDER = "FOLDER";
+    /**
+     * 默认
+     */
+    public static final String DATA_MODEL_TYPE_FIELD = "FIELD";
 }
