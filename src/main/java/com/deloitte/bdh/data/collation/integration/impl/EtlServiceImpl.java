@@ -124,7 +124,7 @@ public class EtlServiceImpl implements EtlService {
         component.setTenantId(dto.getTenantId());
 
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.DULICATE, YesOrNoEnum.getValue(dto.getDuplicate()).getKey());
+        params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
         params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
 
         //判断是独立副本

@@ -5,23 +5,26 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.*;
-import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
-import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
+import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
+import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -32,6 +35,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * <p>
@@ -52,6 +56,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private NifiProcessService nifiProcessService;
     @Autowired
     private XxJobService jobService;
+    @Autowired
+    private BiComponentService componentService;
+    @Autowired
+    private BiEtlSyncPlanService syncPlanService;
 
     @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
@@ -153,6 +161,50 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         return inf;
     }
 
+    @Override
+    public void runModel(String modelCode) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, modelCode)
+        );
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.runModel.error : 未找到目标 模型");
+        }
+        if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.runModel.error : 失效状态下无法发布");
+        }
+
+        biEtlModel.setModifiedDate(LocalDateTime.now());
+        RunStatusEnum runStatusEnum = RunStatusEnum.getEnum(biEtlModel.getStatus());
+        if (RunStatusEnum.RUNNING == runStatusEnum) {
+            // 停止 NIFI
+            componentService.stopComponents(modelCode);
+            // 停止 job
+            jobService.stop(modelCode);
+            //判断是否有执行计划正在执行中，有则取消
+            List<BiEtlSyncPlan> planList = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                    .eq(BiEtlSyncPlan::getRefModelCode, modelCode)
+                    .isNull(BiEtlSyncPlan::getPlanResult)
+            );
+            if (CollectionUtils.isNotEmpty(planList)) {
+                planList.forEach(s -> {
+                    s.setPlanResult(PlanResultEnum.CANCEL.getValue());
+                    s.setModifiedDate(LocalDateTime.now());
+                });
+                syncPlanService.updateBatchById(planList);
+            }
+            biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
+        } else {
+            // 1：校验 model validae 状态，
+            if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
+                throw new RuntimeException("EtlServiceImpl.runModel.error : 未校验无法发布");
+            }
+            //2：todo 调用校验
+            //3：启动模板 ，启动xxjob，有job去生成执行计划
+            jobService.start(modelCode);
+            biEtlModel.setStatus(RunStatusEnum.RUNNING.getKey());
+        }
+        biEtlModelMapper.insert(biEtlModel);
+    }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
         BiEtlModel inf = new BiEtlModel();
@@ -184,7 +236,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         return inf;
     }
-
 
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
         BiEtlModel inf = new BiEtlModel();

@@ -82,6 +82,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtils.isNotBlank(dto.getName())) {
             fUOLamQW.like(BiEtlDatabaseInf::getName, dto.getName());
         }
+        if (StringUtils.isNotBlank(dto.getEffect())) {
+            fUOLamQW.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
+        }
         fUOLamQW.orderByDesc(BiEtlDatabaseInf::getCreateDate);
         PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo(this.list(fUOLamQW));
         PageResult pageResult = new PageResult(pageInfo);
