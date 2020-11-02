@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.component.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,8 +16,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class JoinFieldModel {
     /** 左边表字段 */
+    @ApiModelProperty(value = "左边表字段", example = "product_id")
     private String leftField;
 
     /** 右边表字段 */
+    @ApiModelProperty(value = "右边表字段", example = "id")
     private String rightField;
 }

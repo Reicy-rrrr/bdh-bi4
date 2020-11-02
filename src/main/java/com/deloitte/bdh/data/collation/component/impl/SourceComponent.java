@@ -4,21 +4,24 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -68,13 +71,16 @@ public class SourceComponent implements ComponentHandler {
             fieldNames = columns.stream().map(TableColumn::getName).collect(Collectors.toList());
         }
         component.setFields(fieldNames);
-        List<Triple> fieldMappings = Lists.newArrayList();
+
+        List<FieldMappingModel> fieldMappings = Lists.newArrayList();
+        Map<String, String> columnTypes = getColumnTypes(componentCode);
         fieldNames.forEach(fieldName -> {
             // fullName: table.column
             String fullName = tableName + sql_key_separator + fieldName;
             // 使用全名进行编码获取到字段别名（全名可以避免重复）
-            String newName = renameColumn(fullName);
-            Triple<String, String, String> mapping = new ImmutableTriple(newName, fieldName, tableName);
+            String tempName = renameColumn(fullName);
+            FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldName,
+                    tableName, MapUtils.getString(columnTypes, fieldName));
             fieldMappings.add(mapping);
         });
         component.setFieldMappings(fieldMappings);
@@ -90,13 +96,14 @@ public class SourceComponent implements ComponentHandler {
         String tableName = component.getTableName();
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(sql_key_select);
-        List<Triple> fieldMappings = component.getFieldMappings();
+        List<FieldMappingModel> fieldMappings = component.getFieldMappings();
         fieldMappings.forEach(fieldMapping -> {
-            String fullName = fieldMapping.getRight() + sql_key_separator + fieldMapping.getMiddle();
+            String fullName = fieldMapping.getOriginalTableName()
+                    + sql_key_separator + fieldMapping.getOriginalFieldName();
             sqlBuilder.append(fullName);
             sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(sql_key_as);
-            sqlBuilder.append(fieldMapping.getLeft());
+            sqlBuilder.append(fieldMapping.getTempFieldName());
             sqlBuilder.append(sql_key_comma);
         });
         // 删除SELECT中最后多余的“,”
@@ -105,5 +112,21 @@ public class SourceComponent implements ComponentHandler {
         sqlBuilder.append(sql_key_from);
         sqlBuilder.append(tableName);
         component.setQuerySql(sqlBuilder.toString());
+    }
+
+    /**
+     * 获取字段类型
+     *
+     * @param componentCode 组件code
+     * @return
+     */
+    private Map<String, String> getColumnTypes(String componentCode) {
+        List<TableField> tableFields = dbHandler.getTargetTableFields(componentCode);
+        if (CollectionUtils.isEmpty(tableFields)) {
+            return Maps.newHashMap();
+        }
+        Map<String, String> columnTypes = tableFields.stream()
+                .collect(Collectors.toMap(TableField::getName, tableField -> tableField.getColumnType()));
+        return columnTypes;
     }
 }

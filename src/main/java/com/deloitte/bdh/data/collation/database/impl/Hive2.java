@@ -67,6 +67,7 @@ public class Hive2 extends AbstractProcess implements DbSelector {
             field.setName(result.getString("col_name").replace(tableName + ".", ""));
             field.setType("String");
             field.setDesc("");
+            field.setDataType(result.getString("data_type"));
             columns.add(field);
         }
         super.close(con);

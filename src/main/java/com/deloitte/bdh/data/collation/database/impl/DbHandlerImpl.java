@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
@@ -15,15 +16,12 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
-import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
-import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
-import com.deloitte.bdh.data.collation.service.BiComponentService;
-import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
-import com.deloitte.bdh.data.collation.service.BiEtlModelService;
+import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
+import com.deloitte.bdh.data.collation.model.*;
+import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +40,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @DS(DSConstant.BI_DB)
+@Slf4j
 public class DbHandlerImpl implements DbHandler {
 
     @Autowired
@@ -65,6 +64,8 @@ public class DbHandlerImpl implements DbHandler {
     @Autowired
     private BiComponentParamsService biComponentParamsService;
 
+    @Autowired
+    private BiEtlMappingConfigService biEtlMappingConfigService;
 
     @Override
     public void createTable(CreateTableDto dto) throws Exception {
@@ -254,5 +255,77 @@ public class DbHandlerImpl implements DbHandler {
         context.setDriverName(inf.getDriverName());
         context.setDbName(inf.getDbName());
         return context;
+    }
+
+    @Override
+    public List<TableField> getTargetTableFields(String sourceComponentCode) {
+        if (StringUtils.isBlank(sourceComponentCode)) {
+            throw new BizException("数据源组件code不能为空！");
+        }
+        LambdaQueryWrapper<BiEtlMappingConfig> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(BiEtlMappingConfig::getRefCode, sourceComponentCode);
+        BiEtlMappingConfig mappingConfig = biEtlMappingConfigService.getOne(queryWrapper);
+        if (mappingConfig == null) {
+            throw new BizException("数据源组件配置信息未查询到！");
+        }
+
+        // 根据同步方式处理：直连需要根据数据源查询，其他的直接在本地库查询
+        String dbId = mappingConfig.getRefSourceId();
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
+        String tableName = null;
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            tableName = mappingConfig.getFromTableName();
+            DbContext context = new DbContext();
+            context.setDbId(dbId);
+            context.setTableName(tableName);
+            TableSchema tableSchema = null;
+            try {
+                tableSchema = dbSelector.getTableSchema(context);
+            } catch (Exception e) {
+                log.error("查询远程数据表字段信息错误", e);
+                throw new BizException("数据源组件配置信息未查询到！");
+            }
+            List<TableField> columns = tableSchema.getColumns();
+            dbConvertor.convertFieldType(columns, context);
+            return columns;
+        }
+
+        tableName = mappingConfig.getToTableName();
+        String querySql = buildQueryColumnsSql(tableName);
+        List<Map<String, Object>> results = biEtlDbMapper.selectColumns(querySql);
+        // TODO： 查询当前落地库为mysql？hive？，根据类型获取字段类型
+        String localDbType = "mysql";
+        if ("mysql".equals(localDbType)) {
+            return getTableFieldFromMysql(results);
+        } else {
+            return getTableFieldFromHive(results, tableName);
+        }
+    }
+
+    private List<TableField> getTableFieldFromMysql(List<Map<String, Object>> results) {
+        List<TableField> columns = Lists.newArrayList();
+        results.forEach(columnMap -> {
+            TableField field = new TableField();
+            field.setName(MapUtils.getString(columnMap, "COLUMN_NAME"));
+            field.setType("String");
+            field.setDesc(MapUtils.getString(columnMap, "COLUMN_COMMENT"));
+            field.setDataType(MapUtils.getString(columnMap, "DATA_TYPE"));
+            field.setColumnType(MapUtils.getString(columnMap, "COLUMN_TYPE"));
+            columns.add(field);
+        });
+        return columns;
+    }
+
+    private List<TableField> getTableFieldFromHive(List<Map<String, Object>> results, String tableName) {
+        List<TableField> columns = Lists.newArrayList();
+        results.forEach(columnMap -> {
+            TableField field = new TableField();
+            field.setName(MapUtils.getString(columnMap, "col_name")
+                    .replace(tableName + ".", ""));
+            field.setType("String");
+            field.setColumnType(MapUtils.getString(columnMap, "data_type"));
+            columns.add(field);
+        });
+        return columns;
     }
 }
