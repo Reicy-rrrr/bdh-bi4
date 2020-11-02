@@ -6,8 +6,10 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -58,4 +60,11 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto) throws Exception;
+
+    /**
+     * 获取组件数据
+     * @param data
+     * @return
+     */
+    BaseComponentDataResponse getComponentDta(Map data);
 }

@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * <p>
@@ -64,5 +66,11 @@ public class BiUiAnalysePageController {
     @PostMapping("/updateAnalysePage")
     public RetResult<BiUiAnalysePage> updateAnalysePage(@RequestBody @Validated RetRequest<UpdateAnalysePageDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalysePageService.updateAnalysePage(request.getData()));
+    }
+
+    @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
+    @PostMapping("/getComponentDta")
+    public RetResult<BaseComponentDataResponse> getComponentDta(@RequestBody @Validated RetRequest<Map> request) throws Exception {
+        return RetResponse.makeOKRsp(biUiAnalysePageService.getComponentDta(request.getData()));
     }
 }

@@ -6,7 +6,7 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
-import com.deloitte.bdh.data.analyse.model.resp.TableColumnTree;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
 import com.deloitte.bdh.data.analyse.service.BiUiDBService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFieldService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFolderService;
@@ -49,7 +49,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
     }
 
     @Override
-    public Collection<TableColumnTree> getAllColumns(String tableName, String tenantId) {
+    public Collection<DataModelFieldTree> getAllColumns(String tableName, String tenantId) {
         if (StringUtil.isEmpty(tableName)) {
             throw new RuntimeException("表不能为空");
         }
@@ -57,22 +57,22 @@ public class BiUiDBServiceImpl implements BiUiDBService {
             throw new RuntimeException("租户id不能为空");
         }
         List<TableColumn> columns = dbHandler.getColumns(tableName);
-        Map<String, TableColumnTree> treeMap = new LinkedHashMap<>();
-        Map<String, TableColumnTree> folderMap = new LinkedHashMap<>();
+        Map<String, DataModelFieldTree> treeMap = new LinkedHashMap<>();
+        Map<String, DataModelFieldTree> folderMap = new LinkedHashMap<>();
 
-        TableColumnTree top = new TableColumnTree();
+        DataModelFieldTree top = new DataModelFieldTree();
         top.setName(tableName);
         top.setModelType(AnalyseConstants.DATA_MODEL_TYPE_TOP);
         top.setId(AnalyseConstants.DATA_MODEL_TYPE_TOP);
         folderMap.put(AnalyseConstants.DATA_MODEL_TYPE_TOP, top);
 
-        TableColumnTree wd = new TableColumnTree();
+        DataModelFieldTree wd = new DataModelFieldTree();
         wd.setName("维度");
         wd.setModelType(AnalyseConstants.DATA_MODEL_TYPE_TOP_WD);
         wd.setId(AnalyseConstants.DATA_MODEL_TYPE_TOP_WD);
         folderMap.put(AnalyseConstants.DATA_MODEL_TYPE_TOP_WD, wd);
 
-        TableColumnTree dl = new TableColumnTree();
+        DataModelFieldTree dl = new DataModelFieldTree();
         dl.setName("度量");
         dl.setModelType(AnalyseConstants.DATA_MODEL_TYPE_TOP_DL);
         dl.setId(AnalyseConstants.DATA_MODEL_TYPE_TOP_DL);
@@ -84,7 +84,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
          * 表当前信息
          */
         for (TableColumn column : columns) {
-            TableColumnTree tree = new TableColumnTree();
+            DataModelFieldTree tree = new DataModelFieldTree();
             BeanUtils.copyProperties(column, tree);
             tree.setModelType(AnalyseConstants.DATA_MODEL_TYPE_FIELD);
             tree.setId("O_" + column.getName());
@@ -95,7 +95,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
          */
         List<BiUiModelFolder> folders = biUiModelFolderService.getTenantBiUiModelFolders(tenantId);
         for (BiUiModelFolder folder : folders) {
-            TableColumnTree tree = new TableColumnTree();
+            DataModelFieldTree tree = new DataModelFieldTree();
             tree.setName(folder.getName());
             tree.setDataType(folder.getType());
             tree.setId("F_" + folder.getName());
@@ -107,9 +107,9 @@ public class BiUiDBServiceImpl implements BiUiDBService {
          */
         for (BiUiModelFolder folder : folders) {
             if (folder.getParentId() != null) {
-                TableColumnTree parent = folderMap.get(folder.getParentId());
+                DataModelFieldTree parent = folderMap.get(folder.getParentId());
                 if (parent != null) {
-                    TableColumnTree child = folderMap.get(folder.getId());
+                    DataModelFieldTree child = folderMap.get(folder.getId());
                     if (child != null) {
                         parent.addChildren(child);
                     }
@@ -121,7 +121,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
          */
         List<BiUiModelField> fields = biUiModelFieldService.getTenantBiUiModelFields(tenantId);
         for (BiUiModelField field : fields) {
-            TableColumnTree tree = new TableColumnTree();
+            DataModelFieldTree tree = new DataModelFieldTree();
             tree.setName(field.getSourceField());
             BeanUtils.copyProperties(field, tree);
             tree.setModelType(AnalyseConstants.DATA_MODEL_TYPE_FIELD);
@@ -130,9 +130,9 @@ public class BiUiDBServiceImpl implements BiUiDBService {
         /**
          * 组建field树
          */
-        for (TableColumnTree child : treeMap.values()) {
+        for (DataModelFieldTree child : treeMap.values()) {
             if (child.getFolderId() != null) {
-                TableColumnTree parent = folderMap.get(child.getFolderId());
+                DataModelFieldTree parent = folderMap.get(child.getFolderId());
                 if (parent != null) {
                     parent.addChildren(child);
                 }

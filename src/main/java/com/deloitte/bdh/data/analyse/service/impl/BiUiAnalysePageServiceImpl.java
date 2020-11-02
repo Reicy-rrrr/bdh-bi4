@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -7,11 +8,14 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
-import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.model.datamodel.GridComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -110,6 +115,17 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         } else {
             throw new Exception("已存在相同名称的文件夹");
         }
+    }
+
+    @Override
+    public BaseComponentDataResponse getComponentDta(Map data) {
+        String type = (String) data.get("type");
+        if (AnalyseTypeConstants.GRID.equals(type)) {
+            GridComponentDataRequest request = JSONObject.parseObject(JSONObject.toJSONString(data), GridComponentDataRequest.class);
+            DataConfig dataConfig = request.getDataConfig();
+            DataModel dataModel = dataConfig.getDataModel();
+        }
+        return null;
     }
 
     public boolean checkBiUiAnalysePageByName(String name, String tenantId, String currentId) {

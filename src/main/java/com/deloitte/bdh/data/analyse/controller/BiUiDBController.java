@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
 import com.deloitte.bdh.data.analyse.model.request.DBTableColumnReq;
 import com.deloitte.bdh.data.analyse.model.request.DBTableReq;
 import com.deloitte.bdh.data.analyse.model.resp.TableColumnTree;
@@ -44,7 +45,7 @@ public class BiUiDBController {
 
     @ApiOperation(value = "获取所有表列", notes = "获取所有表列")
     @PostMapping("/getAllColumns")
-    public RetResult<Collection<TableColumnTree>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
+    public RetResult<Collection<DataModelFieldTree>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
         DBTableColumnReq req = request.getData();
         return RetResponse.makeOKRsp(biUiDBService.getAllColumns(req.getTableName(), req.getTenantId()));
     }
