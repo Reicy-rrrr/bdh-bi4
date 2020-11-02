@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -51,7 +50,7 @@ public class ComponentModel {
 
     /** 字段映射：left-当前组件字段名称， middle-原始表字段名称， right-原始表名 */
     @ApiModelProperty(value = "字段映射", required = true)
-    private List<Triple> fieldMappings;
+    private List<FieldMappingModel> fieldMappings;
 
     /** 表名：源组件表名对应真实数据表名，其他组件表名为该组件code */
     @ApiModelProperty(value = "表名", required = true)

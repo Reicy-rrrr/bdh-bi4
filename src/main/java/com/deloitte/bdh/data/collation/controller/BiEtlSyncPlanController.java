@@ -24,18 +24,26 @@ public class BiEtlSyncPlanController {
     @Autowired
     private BiEtlSyncPlanService planService;
 
-    @ApiOperation(value = "调度处理", notes = "数据同步")
-    @GetMapping("/process")
-    public RetResult<Void> process(String tenantId) throws Exception {
-        ServletUtil.rSetHeader(tenantId);
-        planService.process();
+    @ApiOperation(value = "同步调度处理", notes = "数据同步")
+    @GetMapping("/sync")
+    public RetResult<Void> sync(String tenantCode) throws Exception {
+        ServletUtil.rSetHeader(tenantCode);
+        planService.sync();
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "调度处理", notes = "数据整理")
+    @ApiOperation(value = "整理调度处理", notes = "数据整理")
     @GetMapping("/etl")
-    public RetResult<Void> etl(String tenantId) throws Exception {
-        ServletUtil.rSetHeader(tenantId);
+    public RetResult<Void> etl(String tenantCode) throws Exception {
+        ServletUtil.rSetHeader(tenantCode);
+        planService.etl();
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "模板调度处理", notes = "模板")
+    @GetMapping("/model")
+    public RetResult<Void> model(String modelCode) throws Exception {
+        ServletUtil.rSetHeader(modelCode);
         planService.etl();
         return RetResponse.makeOKRsp();
     }

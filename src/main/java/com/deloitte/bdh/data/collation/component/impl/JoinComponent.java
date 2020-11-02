@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.component.model.JoinFieldModel;
 import com.deloitte.bdh.data.collation.component.model.JoinModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
@@ -16,7 +17,6 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,7 +109,7 @@ public class JoinComponent implements ComponentHandler {
         Map<String, ComponentModel> fromCompMap = fromComponents.stream()
                 .collect(Collectors.toMap(ComponentModel::getTableName, fromModel -> fromModel));
 
-        List<Triple> currMappings = Lists.newArrayList();
+        List<FieldMappingModel> currMappings = Lists.newArrayList();
         for (ComponentModel fromComponent : fromComponents) {
             if (fromComponent == null) {
                 continue;
@@ -117,16 +117,17 @@ public class JoinComponent implements ComponentHandler {
 
             String fromTableName = fromComponent.getTableName();
             ComponentTypeEnum fromType = fromComponent.getTypeEnum();
-            List<Triple> fromMappings = fromComponent.getFieldMappings();
+            List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
             if (CollectionUtils.isEmpty(fromMappings)) {
                 continue;
             }
-            for (Triple<String, String, String> fieldMapping : fromMappings) {
-                String fieldName = fieldMapping.getLeft();
+            for (FieldMappingModel fieldMapping : fromMappings) {
+                String tempFieldName = fieldMapping.getTempFieldName();
                 // 全名 = tableName + "." + fieldName
-                String fullName = fieldMapping.getRight() + sql_key_separator + fieldMapping.getMiddle();
+                String fullName = fieldMapping.getOriginalTableName() + sql_key_separator
+                        + fieldMapping.getFinalFieldName();
                 // 如果设置了字段，查询结果集为已设置字段，未设置则全量
-                if (!CollectionUtils.isEmpty(setFields) && !setFields.contains(fieldName)) {
+                if (!CollectionUtils.isEmpty(setFields) && !setFields.contains(tempFieldName)) {
                     continue;
                 }
                 // 将从组件的字段添加到连接组件中
@@ -136,13 +137,13 @@ public class JoinComponent implements ComponentHandler {
                     sqlBuilder.append(fullName);
                     sqlBuilder.append(sql_key_blank);
                     sqlBuilder.append(sql_key_as);
-                    sqlBuilder.append(fieldName);
+                    sqlBuilder.append(tempFieldName);
                     sqlBuilder.append(sql_key_comma);
                 } else {
                     sqlBuilder.append(sql_key_blank);
                     sqlBuilder.append(fromTableName);
                     sqlBuilder.append(sql_key_separator);
-                    sqlBuilder.append(fieldName);
+                    sqlBuilder.append(tempFieldName);
                     sqlBuilder.append(sql_key_comma);
                 }
             }
@@ -156,7 +157,7 @@ public class JoinComponent implements ComponentHandler {
         component.setQuerySql(sqlBuilder.toString());
         component.setFieldMappings(currMappings);
         // 组装连接组件的字段
-        List<String> fields = currMappings.stream().map(Triple<String, String, String>::getLeft)
+        List<String> fields = currMappings.stream().map(FieldMappingModel::getTempFieldName)
                 .collect(Collectors.toList());
         component.setFields(fields);
     }

@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
@@ -13,11 +14,11 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -70,10 +71,10 @@ public class OutComponent implements ComponentHandler {
         component.getFieldMappings().forEach(fieldMapping -> {
             sqlBuilder.append(component.getTableName());
             sqlBuilder.append(sql_key_separator);
-            sqlBuilder.append(fieldMapping.getLeft());
+            sqlBuilder.append(fieldMapping.getTempFieldName());
             sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(sql_key_as);
-            sqlBuilder.append(fieldMapping.getMiddle());
+            sqlBuilder.append(fieldMapping.getFinalFieldName());
             sqlBuilder.append(sql_key_comma);
         });
         // 删除SELECT中最后多余的“,”
@@ -118,7 +119,7 @@ public class OutComponent implements ComponentHandler {
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(sql_key_bracket_left);
         component.getFieldMappings().forEach(fieldMapping -> {
-            sqlBuilder.append(fieldMapping.getMiddle());
+            sqlBuilder.append(fieldMapping.getFinalFieldName());
             sqlBuilder.append(sql_key_comma);
         });
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
@@ -141,29 +142,30 @@ public class OutComponent implements ComponentHandler {
         fieldWrapper.eq(BiEtlMappingField::getRefCode, componentCode);
         List<BiEtlMappingField> setMappingFields = biEtlMappingFieldService.list(fieldWrapper);
         // 获取到从组件的字段映射
-        List<Triple> fromMappings = fromComponent.getFieldMappings();
-        List<Triple> currMappings = Lists.newArrayList();
+        List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
+        List<FieldMappingModel> currMappings = Lists.newArrayList();
         if (CollectionUtils.isEmpty(setMappingFields)) {
             currMappings = fromMappings;
         } else {
             List<String> setFields = setMappingFields.stream().map(BiEtlMappingField::getFieldName)
                     .collect(Collectors.toList());
             currMappings = fromMappings.stream()
-                    .filter(fromMapping -> setFields.contains(fromMapping.getLeft())).collect(Collectors.toList());
+                    .filter(fromMapping -> setFields.contains(fromMapping.getTempFieldName()))
+                    .collect(Collectors.toList());
         }
 
         // 根据字段名称去重（建表或者插入字段名不能有重复）
         Set<String> uniqueFields = Sets.newHashSet();
-        List<Triple> finalMappings = Lists.newArrayList();
+        List<FieldMappingModel> finalMappings = Lists.newArrayList();
         currMappings.forEach(fieldMapping -> {
-            String fieldName = (String) fieldMapping.getMiddle();
+            String fieldName = fieldMapping.getFinalFieldName();
             if (uniqueFields.add(fieldName)) {
                 finalMappings.add(fieldMapping);
             }
         });
         component.setFieldMappings(finalMappings);
         // 最终字段
-        List<String> finalFields = finalMappings.stream().map(Triple<String, String, String>::getLeft)
+        List<String> finalFields = finalMappings.stream().map(FieldMappingModel::getTempFieldName)
                 .collect(Collectors.toList());
         component.setFields(finalFields);
     }

@@ -49,8 +49,10 @@ public class HttpClientUtil {
      */
     public static String get(String url, Map<String, Object> headers, Map<String, Object> params) throws IOException {
         HttpGet httpGet = new HttpGet(createParamUrl(url, params));
-        for (Map.Entry<String, Object> param : headers.entrySet()) {
-            httpGet.addHeader(param.getKey(), String.valueOf(param.getValue()));
+        if (null != headers) {
+            for (Map.Entry<String, Object> param : headers.entrySet()) {
+                httpGet.addHeader(param.getKey(), String.valueOf(param.getValue()));
+            }
         }
         httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         return getResult(httpGet);
@@ -104,7 +106,6 @@ public class HttpClientUtil {
         }
         return getResult(httpPost);
     }
-
 
 
     /**

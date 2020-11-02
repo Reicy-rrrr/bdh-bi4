@@ -3,10 +3,10 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,9 +45,9 @@ public class GroupComponent implements ComponentHandler {
         component.setQuerySql(fromComponent.getQuerySql());
 
         // TODO:根据实际情况设置
-        List<Triple> fromMappings = fromComponent.getFieldMappings();
+        List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
         // 组装连接组件的字段
-        List<String> fields = fromMappings.stream().map(Triple<String, String, String>::getLeft)
+        List<String> fields = fromMappings.stream().map(FieldMappingModel::getTempFieldName)
                 .collect(Collectors.toList());
         component.setFields(fields);
         component.setFieldMappings(fromMappings);

@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableSchema;
 
 import java.util.List;
 import java.util.Map;
@@ -102,4 +103,12 @@ public interface DbHandler {
      * @return
      */
     List<Map<String, Object>> executeQuery(String querySql);
+
+    /**
+     * 查询数据源组件表字段
+     *
+     * @param sourceComponentCode 数据源组件code
+     * @return
+     */
+    List<TableField> getTargetTableFields(String sourceComponentCode);
 }

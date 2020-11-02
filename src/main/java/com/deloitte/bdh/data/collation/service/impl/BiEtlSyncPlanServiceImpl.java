@@ -51,7 +51,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
 
     @Override
-    public void process() throws Exception {
+    public void sync() throws Exception {
         syncToExecute();
         syncExecuting();
     }
@@ -251,7 +251,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         }
         return condition;
     }
-
 
     private String getProcessorsCode(BiEtlMappingConfig config) {
         BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()

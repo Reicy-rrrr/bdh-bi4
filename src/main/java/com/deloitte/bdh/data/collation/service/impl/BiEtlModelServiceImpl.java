@@ -4,14 +4,12 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.common.util.NifiProcessUtil;
-import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
+import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
@@ -52,6 +50,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModelMapper biEtlModelMapper;
     @Autowired
     private NifiProcessService nifiProcessService;
+    @Autowired
+    private XxJobService jobService;
 
     @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
@@ -97,19 +97,21 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         biEtlModel.setEffect(dto.getEffect());
         biEtlModel.setModifiedUser(dto.getModifiedUser());
         biEtlModel.setModifiedDate(LocalDateTime.now());
+        biEtlModelMapper.updateById(biEtlModel);
         return biEtlModel;
     }
 
     @Override
     public void delModel(String id) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(id);
-        //todo 模板删除判断下面是否有process
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行状态下,不允许删除");
         }
 
         String processGroupId = inf.getProcessGroupId();
         Map<String, Object> sourceMap = nifiProcessService.delProcessGroup(processGroupId);
+        //todo 待删除的东西比较多
+        jobService.remove(inf.getCode());
         biEtlModelMapper.deleteById(id);
         logger.info("删除数据成功:{}", JsonUtil.obj2String(sourceMap));
     }
@@ -117,7 +119,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public BiEtlModel updateModel(UpdateModelDto dto) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(dto.getId());
-        //todo  被 process 引入的数据源是否不能修改
+        inf.setModifiedDate(LocalDateTime.now());
+        inf.setModifiedUser(dto.getOperator());
+        //运行中的模板 不允许修改
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行中的 model 不允许修改");
         }
@@ -128,7 +132,15 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (!StringUtil.isEmpty(dto.getComments())) {
             inf.setComments(dto.getComments());
         }
-
+        if (!StringUtil.isEmpty(dto.getCronExpression())) {
+            inf.setCornExpression(dto.getCronExpression());
+            //调用xxjob 设置调度任务
+            Map<String, String> params = Maps.newHashMap();
+            params.put("modelCode", inf.getCode());
+            params.put("tenantCode", doHeader());
+            jobService.update(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
+                    dto.getCronExpression(), params);
+        }
         //调用nifi
         Map<String, Object> reqNifi = Maps.newHashMap();
         reqNifi.put("id", inf.getProcessGroupId());
@@ -198,6 +210,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         reqNifi.put("comments", inf.getComments());
         reqNifi.put("position", JsonUtil.string2Obj(inf.getPosition(), Map.class));
         Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
+
+        if (!StringUtil.isEmpty(dto.getCronExpression())) {
+            Map<String, String> params = Maps.newHashMap();
+            params.put("modelCode", inf.getCode());
+            params.put("tenantCode", doHeader());
+            jobService.add(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
+                    dto.getCronExpression(), params);
+        }
 
         //nifi 返回后设置补充dto
         inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
