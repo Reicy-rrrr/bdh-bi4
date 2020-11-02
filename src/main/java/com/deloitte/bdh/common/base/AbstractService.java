@@ -50,6 +50,7 @@ public abstract class AbstractService<M extends Mapper<T>, T> extends ServiceImp
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            ThreadLocalUtil.clear();
         });
     }
 

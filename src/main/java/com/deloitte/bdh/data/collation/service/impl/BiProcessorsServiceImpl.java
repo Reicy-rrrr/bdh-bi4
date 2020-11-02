@@ -138,8 +138,6 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         }
 
         Map<String, Object> req = Maps.newHashMap();
-        req.put("createUser", processors.getCreateUser());
-        req.put("tenantId", processors.getTenantId());
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.getEnum(processors.getType()).includeProcessor(dbType));
         context.setMethod(MethodEnum.DELETE);

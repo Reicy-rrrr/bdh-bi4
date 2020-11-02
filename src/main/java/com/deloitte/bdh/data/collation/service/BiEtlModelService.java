@@ -29,14 +29,6 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
     PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto);
 
     /**
-     * 查看单个 Model
-     *
-     * @param id
-     * @return
-     */
-    BiEtlModel getModel(String id);
-
-    /**
      * 创建数据源
      *
      * @param dto

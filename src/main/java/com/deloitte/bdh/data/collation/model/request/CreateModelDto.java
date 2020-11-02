@@ -17,9 +17,6 @@ import javax.validation.constraints.NotNull;
 @ToString
 public class CreateModelDto {
 
-    @ApiModelProperty(value = "tenantId", example = "123", required = true)
-    @NotNull(message = "租户id 不能为空")
-    private String tenantId;
 
     @ApiModelProperty(value = "Model名称(ETL名称)", example = "Model 名称", required = true)
     @NotNull(message = "ETL名称 不能为空")
@@ -35,13 +32,9 @@ public class CreateModelDto {
     @ApiModelProperty(value = "坐标Json", example = "0")
     private String position = NifiProcessUtil.randPosition();
 
-    @ApiModelProperty(value = "父编码", example = "xxxxx")
+    @ApiModelProperty(value = "父编码", example = "0")
     @NotNull(message = "父编码 不能为空")
     private String parentCode = "0";
-
-    @ApiModelProperty(value = "createUser", example = "1", required = true)
-    @NotNull(message = "createUser 不能为空")
-    private String createUser;
 
     @ApiModelProperty(value = "cron 表达式", example = "表达式")
     private String cronExpression;

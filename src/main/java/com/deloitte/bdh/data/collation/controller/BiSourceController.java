@@ -38,7 +38,7 @@ public class BiSourceController {
 
     @ApiOperation(value = "基于租户获取数据源列表", notes = "基于租户获取数据源列表")
     @PostMapping("/getResources")
-    public RetResult<PageResult> getResources(@RequestBody @Validated RetRequest<GetResourcesDto> request) {
+    public RetResult<PageResult<BiEtlDatabaseInf>> getResources(@RequestBody @Validated RetRequest<GetResourcesDto> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getResources(request.getData()));
     }
@@ -46,7 +46,7 @@ public class BiSourceController {
     @ApiOperation(value = "查看单个数据源详情", notes = "查看单个数据源详情")
     @PostMapping("/getResource")
     public RetResult<BiEtlDatabaseInf> getResource(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getResource(request.getData()));
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.getById(request.getData()));
     }
 
     @ApiOperation(value = "新增数据源", notes = "新增数据源")
@@ -113,7 +113,7 @@ public class BiSourceController {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getTables(request.getData()));
     }
 
-//    @ApiOperation(value = "获取表所有字段集合", notes = "获取表所有字段集合")
+    //    @ApiOperation(value = "获取表所有字段集合", notes = "获取表所有字段集合")
 //    @PostMapping("/getFields")
     public RetResult<List> getFields(@RequestBody @Validated RetRequest<GetFieldsDto> request) throws Exception {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.getFields(request.getData().getId(), request.getData().getTableName()));

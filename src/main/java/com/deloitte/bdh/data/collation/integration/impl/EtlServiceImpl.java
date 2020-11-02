@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 
@@ -75,12 +76,12 @@ public class EtlServiceImpl implements EtlService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public BiComponent joinResource(JoinComponentDto dto) throws Exception {
-        BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getResource(dto.getSourceId());
+        BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
         }
 
-        BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 模型");
         }
@@ -102,8 +103,8 @@ public class EtlServiceImpl implements EtlService {
             dbRef.setSourceId(dto.getSourceId());
             dbRef.setModelCode(biEtlModel.getCode());
             dbRef.setCreateDate(LocalDateTime.now());
-            dbRef.setCreateUser(dto.getOperator());
-            dbRef.setTenantId(dto.getTenantId());
+            dbRef.setCreateUser(ThreadLocalUtil.getOperator());
+            dbRef.setTenantId(ThreadLocalUtil.getTenantId());
             refService.save(dbRef);
         } else {
             refCode = biEtlDbRef.getCode();
@@ -120,8 +121,8 @@ public class EtlServiceImpl implements EtlService {
         component.setVersion("1");
         component.setPosition(dto.getPosition());
         component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(dto.getOperator());
-        component.setTenantId(dto.getTenantId());
+        component.setCreateUser(ThreadLocalUtil.getOperator());
+        component.setTenantId(ThreadLocalUtil.getTenantId());
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
@@ -142,8 +143,8 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setFromTableName(dto.getTableName());
             mappingConfig.setToTableName(dto.getTableName());
             mappingConfig.setCreateDate(LocalDateTime.now());
-            mappingConfig.setCreateUser(dto.getOperator());
-            mappingConfig.setTenantId(dto.getTenantId());
+            mappingConfig.setCreateUser(ThreadLocalUtil.getOperator());
+            mappingConfig.setTenantId(ThreadLocalUtil.getTenantId());
             mappingConfig.setRefComponentCode(componentCode);
 
             if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
@@ -166,7 +167,7 @@ public class EtlServiceImpl implements EtlService {
                 mappingConfig.setToTableName(toTableName);
 
                 //step2.1.1:创建 字段列表,此处为映射编码
-                List<BiEtlMappingField> fields = transferToFields(dto.getOperator(), dto.getTenantId(), mappingCode, dto.getFields());
+                List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), mappingCode, dto.getFields());
                 fieldService.saveBatch(fields);
 
                 //step 2.1.2:创建目标表
@@ -189,7 +190,7 @@ public class EtlServiceImpl implements EtlService {
         }
 
         //step3:保存组件
-        List<BiComponentParams> biComponentParams = transferToParams(dto.getOperator(), dto.getTenantId(), componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
         return component;
@@ -198,7 +199,7 @@ public class EtlServiceImpl implements EtlService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public BiComponent out(OutComponentDto dto) throws Exception {
-        BiEtlModel biEtlModel = biEtlModelService.getModel(dto.getModelId());
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.out.error : 未找到目标 模型");
         }
@@ -214,8 +215,8 @@ public class EtlServiceImpl implements EtlService {
         component.setVersion("1");
         component.setPosition(dto.getPosition());
         component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(dto.getOperator());
-        component.setTenantId(dto.getTenantId());
+        component.setCreateUser(ThreadLocalUtil.getOperator());
+        component.setTenantId(ThreadLocalUtil.getTenantId());
         componentService.save(component);
 
         //创建最终表,表名默认为模板编码
@@ -223,7 +224,7 @@ public class EtlServiceImpl implements EtlService {
         String processorsCode = GenerateCodeUtil.genProcessors();
 
         //保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(dto.getOperator(), dto.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         //设置组件参数
@@ -233,7 +234,7 @@ public class EtlServiceImpl implements EtlService {
         params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
         params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
-        List<BiComponentParams> biComponentParams = transferToParams(dto.getOperator(), dto.getTenantId(), componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
         componentParamsService.saveBatch(biComponentParams);
 
         dbHandler.createTable(tableName, dto.getFields());
@@ -427,13 +428,11 @@ public class EtlServiceImpl implements EtlService {
         processors.setRelModelCode(biEtlModel.getCode());
         processors.setVersion("1");
         processors.setCreateDate(LocalDateTime.now());
-        processors.setCreateUser(dto.getOperator());
-        processors.setTenantId(dto.getTenantId());
+        processors.setCreateUser(ThreadLocalUtil.getOperator());
+        processors.setTenantId(ThreadLocalUtil.getTenantId());
 
         //调用NIFI准备
         Map<String, Object> reqNifi = Maps.newHashMap();
-        reqNifi.put("createUser", dto.getOperator());
-        reqNifi.put("tenantId", dto.getTenantId());
         //QueryDatabaseTable
         reqNifi.put("fromControllerServiceId", biEtlDatabaseInf.getControllerServiceId());
         reqNifi.put("fromTableName", mappingConfig.getFromTableName());
@@ -467,8 +466,8 @@ public class EtlServiceImpl implements EtlService {
         syncPlan.setCreateDate(LocalDateTime.now());
         syncPlan.setRefModelCode(biEtlModel.getCode());
         syncPlan.setCreateDate(LocalDateTime.now());
-        syncPlan.setCreateUser(dto.getOperator());
-        syncPlan.setTenantId(dto.getTenantId());
+        syncPlan.setCreateUser(ThreadLocalUtil.getOperator());
+        syncPlan.setTenantId(ThreadLocalUtil.getTenantId());
         syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
         //设置已处理初始值为0
         syncPlan.setProcessCount("0");
@@ -499,13 +498,11 @@ public class EtlServiceImpl implements EtlService {
         processors.setRelModelCode(biEtlModel.getCode());
         processors.setVersion("1");
         processors.setCreateDate(LocalDateTime.now());
-        processors.setCreateUser(dto.getOperator());
-        processors.setTenantId(dto.getTenantId());
+        processors.setCreateUser(ThreadLocalUtil.getOperator());
+        processors.setTenantId(ThreadLocalUtil.getTenantId());
 
         //调用NIFI准备
         Map<String, Object> reqNifi = Maps.newHashMap();
-        reqNifi.put("createUser", dto.getOperator());
-        reqNifi.put("tenantId", dto.getTenantId());
         //ExecuteSQL
 //        reqNifi.put("fromControllerServiceId", null);
         reqNifi.put("sqlSelectQuery", MapUtils.getString(params, ComponentCons.SQL_SELECT_QUERY));

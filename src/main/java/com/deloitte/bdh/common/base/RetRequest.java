@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author dahpeng
@@ -18,6 +19,7 @@ public class RetRequest<T> implements Serializable {
     @ApiModelProperty(value = "请求标识号")
     private String sid;
     @ApiModelProperty(value = "当前操作用户id")
+    @NotNull(message = " operator 不能为空")
     private String operator;
     @ApiModelProperty(value = "国际化语言标识", example = "cn")
     private String lang;
@@ -26,6 +28,7 @@ public class RetRequest<T> implements Serializable {
     @ApiModelProperty(value = "来源平台版本号,PC 从 1.0开始, IOS, Android 传当前版本号", example = "1.0")
     private String version;
     @ApiModelProperty(value = "当前租户id")
+    @NotNull(message = " tenantId 不能为空")
     private String tenantId;
     @ApiModelProperty(value = "当前ip")
     private String ip;
