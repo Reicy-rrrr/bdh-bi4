@@ -100,7 +100,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         );
         nifiProcessService.runState(processors.getProcessGroupId(), state.getKey(), isGroup);
         if (RunStatusEnum.STOP == state) {
-            //清空所有 这里该走异步 todo
+            //清空所有 这里该走异步
             List<BiEtlConnection> connectionList = biEtlConnectionService.list(
                     new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, code)
             );

@@ -67,4 +67,13 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @return
      */
     BiEtlModel updateModel(UpdateModelDto dto) throws Exception;
+
+    /**
+     * 运行/停止 Model
+     *
+     * @param modelCode
+     * @return
+     */
+    void runModel(String modelCode) throws Exception;
+
 }

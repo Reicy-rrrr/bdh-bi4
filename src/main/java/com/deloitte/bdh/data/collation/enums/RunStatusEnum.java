@@ -36,6 +36,16 @@ public enum RunStatusEnum {
         return "";
     }
 
+    public static RunStatusEnum getEnum(String key) {
+        RunStatusEnum[] enums = RunStatusEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(key, enums[i].getKey())) {
+                return enums[i];
+            }
+        }
+        throw new RuntimeException("未找到目标对象");
+    }
+
     public String getKey() {
         return key;
     }
