@@ -74,9 +74,15 @@ public class WebLogAspect {
         if (joinPoint.getArgs().length > 0) {
             Map<String, Object> params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
             ThreadLocalUtil.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
-            ThreadLocalUtil.set("tenantId", MapUtils.getString(params, "tenantId"));
-            ThreadLocalUtil.set("ip", MapUtils.getString(params, "ip"));
-            ThreadLocalUtil.set("operator", MapUtils.getString(params, "operator"));
+            if (null != MapUtils.getString(params, "tenantId")) {
+                ThreadLocalUtil.set("tenantId", MapUtils.getString(params, "tenantId"));
+            }
+            if (null != MapUtils.getString(params, "ip")) {
+                ThreadLocalUtil.set("ip", MapUtils.getString(params, "ip"));
+            }
+            if (null != MapUtils.getString(params, "operator")) {
+                ThreadLocalUtil.set("operator", MapUtils.getString(params, "operator"));
+            }
         }
     }
 
