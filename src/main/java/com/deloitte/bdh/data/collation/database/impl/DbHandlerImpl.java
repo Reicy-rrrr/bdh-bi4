@@ -224,7 +224,7 @@ public class DbHandlerImpl implements DbHandler {
      */
     private String buildCreateTableSql(String tableName, List<TableField> allFields, List<String> targetColumns) {
         StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("CREATE TABLE ").append(tableName).append("(");
+        sqlBuilder.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append("(");
         for (int index = 0; index < allFields.size(); index++) {
             TableField field = allFields.get(index);
             String fieldName = field.getName();

@@ -70,7 +70,6 @@ public class SourceComponent implements ComponentHandler {
             List<TableColumn> columns = dbHandler.getColumns(tableName);
             fieldNames = columns.stream().map(TableColumn::getName).collect(Collectors.toList());
         }
-        component.setFields(fieldNames);
 
         List<FieldMappingModel> fieldMappings = Lists.newArrayList();
         Map<String, String> columnTypes = getColumnTypes(componentCode);
@@ -78,11 +77,14 @@ public class SourceComponent implements ComponentHandler {
             // fullName: table.column
             String fullName = tableName + sql_key_separator + fieldName;
             // 使用全名进行编码获取到字段别名（全名可以避免重复）
-            String tempName = renameColumn(fullName);
+            String tempName = getColumnAlias(fullName);
             FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldName,
                     tableName, MapUtils.getString(columnTypes, fieldName));
             fieldMappings.add(mapping);
         });
+
+        List<String> tempFields = fieldMappings.stream().map(FieldMappingModel::getTempFieldName).collect(Collectors.toList());
+        component.setFields(tempFields);
         component.setFieldMappings(fieldMappings);
         buildQuerySql(component);
     }

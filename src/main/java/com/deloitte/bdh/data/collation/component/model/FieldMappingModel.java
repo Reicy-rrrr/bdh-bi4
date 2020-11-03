@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FieldMappingModel {
+public class FieldMappingModel implements Cloneable {
     /** 临时字段名称：重命名后的字段名称（example:BI570E5A0E84C5E171） */
     @ApiModelProperty(value = "临时字段名称", example = "BI570E5A0E84C5E171")
     private String tempFieldName;
@@ -30,4 +30,15 @@ public class FieldMappingModel {
     /** 原始字段类型 */
     @ApiModelProperty(value = "原始字段类型", example = "decimal(10,4)")
     private String originalColumnType;
+    /** 原始字段是否为索引 */
+    @ApiModelProperty(value = "原始字段是否为索引", example = "true")
+    private boolean isIndex = false;
+
+    public FieldMappingModel(String tempFieldName, String finalFieldName, String originalFieldName, String originalTableName, String originalColumnType) {
+        this.tempFieldName = tempFieldName;
+        this.finalFieldName = finalFieldName;
+        this.originalFieldName = originalFieldName;
+        this.originalTableName = originalTableName;
+        this.originalColumnType = originalColumnType;
+    }
 }
