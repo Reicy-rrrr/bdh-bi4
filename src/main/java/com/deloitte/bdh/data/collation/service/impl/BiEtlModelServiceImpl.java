@@ -8,10 +8,7 @@ import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
-import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.collation.model.BiEtlDbRef;
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
+import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
@@ -217,7 +214,27 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             throw new RuntimeException("校验失败:该模板关联的数据源状态异常");
         }
 
+        BiEtlModel biEtlModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, modelCode)
+        );
+        if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.runModel.validate : 失效状态下无法发布");
+        }
 
+        if (StringUtil.isEmpty(biEtlModel.getCornExpression())) {
+            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
+        }
+
+        //获取模板下所有的组件
+        List<BiComponent> components = componentService.list(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefModelCode, modelCode)
+        );
+        if (CollectionUtils.isEmpty(components)) {
+            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置组件信息");
+        }
+        components.forEach(s -> {
+
+        });
 
     }
 

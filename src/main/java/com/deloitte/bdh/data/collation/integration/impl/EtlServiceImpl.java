@@ -132,13 +132,11 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-//        params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             String mappingCode = GenerateCodeUtil.generate();
-            component.setRefMappingCode(dto.getBelongMappingCode());
-//            params.put(ComponentCons.BELONG_MAPPING_CODE, mappingCode);
+            component.setRefMappingCode(mappingCode);
             dto.setBelongMappingCode(mappingCode);
 
             //step2.1:是独立副本，创建映射
@@ -489,8 +487,8 @@ public class EtlServiceImpl implements EtlService {
         //当前是 "非直连"
         //不管当前是 第一次同步还是定时调度，是待同步还是同步中还是同步完成，都一致操作
         //1：若当前调度计划未完成，2： 停止清空NIFI，修改状态为取消，3：删除本地表，4：删除本地组件配置，5： 删除NIFI配置
-        String processorsCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
+        BiComponentParams processorsCodeParam = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get();
         BiEtlSyncPlan syncPlan = syncPlanService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getRefMappingCode, mappingCode)
                 .orderByDesc(BiEtlSyncPlan::getCreateDate)
@@ -500,8 +498,8 @@ public class EtlServiceImpl implements EtlService {
             syncPlan.setPlanResult(PlanResultEnum.CANCEL.getKey());
             syncPlanService.updateById(syncPlan);
         }
-        processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
-        processorsService.removeProcessors(processorsCode);
+        processorsService.runState(processorsCodeParam.getParamValue(), RunStatusEnum.STOP, true);
+        processorsService.removeProcessors(processorsCodeParam.getParamValue(), config.getRefSourceId());
         dbHandler.drop(config.getToTableName());
         componentService.removeById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
@@ -521,7 +519,7 @@ public class EtlServiceImpl implements EtlService {
         Optional<BiComponentParams> optionalProcessorsCode = paramsList.stream()
                 .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny();
         if (optionalProcessorsCode.isPresent()) {
-            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue());
+            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue(), null);
         }
 
         Optional<BiComponentParams> optionalTableName = paramsList.stream()
