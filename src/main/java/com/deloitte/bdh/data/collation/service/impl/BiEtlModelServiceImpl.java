@@ -8,6 +8,8 @@ import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
+import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
+import com.deloitte.bdh.data.collation.model.BiEtlDbRef;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
@@ -15,10 +17,8 @@ import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
-import com.deloitte.bdh.data.collation.service.BiComponentService;
-import com.deloitte.bdh.data.collation.service.BiEtlModelService;
+import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,7 +46,8 @@ import java.util.Map;
 @DS(DSConstant.BI_DB)
 public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiEtlModel> implements BiEtlModelService {
     private static final Logger logger = LoggerFactory.getLogger(BiEtlModelServiceImpl.class);
-
+    @Autowired
+    private BiEtlDatabaseInfService databaseInfService;
     @Resource
     private BiEtlModelMapper biEtlModelMapper;
     @Autowired
@@ -57,6 +58,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiComponentService componentService;
     @Autowired
     private BiEtlSyncPlanService syncPlanService;
+    @Autowired
+    private BiEtlDbRefService refService;
 
     @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
@@ -189,12 +192,33 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
                 throw new RuntimeException("EtlServiceImpl.runModel.error : 未校验无法发布");
             }
-            //2：todo 调用校验
+            //2：调用校验
+            validate(modelCode);
             //3：启动模板 ，启动xxjob，有job去生成执行计划
             jobService.start(modelCode);
             biEtlModel.setStatus(RunStatusEnum.RUNNING.getKey());
         }
         biEtlModelMapper.insert(biEtlModel);
+    }
+
+    @Override
+    public void validate(String modelCode) {
+        //1：校验数据源是否可用，2：校验是否配置cron 表达式，3：校验输入组件，输出组件，4：校验nifi配置
+        BiEtlDbRef dbRef = refService.getOne(new LambdaQueryWrapper<BiEtlDbRef>()
+                .eq(BiEtlDbRef::getModelCode, modelCode)
+        );
+
+        if (null == dbRef) {
+            throw new RuntimeException("校验失败:该模板未关联数据源");
+        }
+
+        BiEtlDatabaseInf databaseInf = databaseInfService.getById(dbRef.getId());
+        if (!databaseInf.getEffect().equals(EffectEnum.ENABLE.getKey())) {
+            throw new RuntimeException("校验失败:该模板关联的数据源状态异常");
+        }
+
+
+
     }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {

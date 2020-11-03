@@ -170,11 +170,11 @@ public class EtlServiceImpl implements EtlService {
                 List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), mappingCode, dto.getFields());
                 fieldService.saveBatch(fields);
 
-                //step 2.1.2:创建目标表
-                dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
-
-                //step2.1.3: 调用NIFI生成processors
+                //step2.1.2: 调用NIFI生成processors
                 transferNifiSource(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
+
+                //step 2.1.3:创建目标表
+                dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
 
                 //step2.1.4 生成第一次的调度计划
                 createFirstPlan(dto, biEtlModel, biEtlDatabaseInf, mappingConfig);
@@ -325,6 +325,8 @@ public class EtlServiceImpl implements EtlService {
             syncPlanService.updateById(syncPlan);
         }
         processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+        processorsService.removeProcessors(processorsCode);
+        dbHandler.drop(config.getToTableName());
         componentService.removeById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
@@ -333,8 +335,6 @@ public class EtlServiceImpl implements EtlService {
         fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
                 .eq(BiEtlMappingField::getRefCode, config.getCode())
         );
-        dbHandler.drop(config.getToTableName());
-        processorsService.removeProcessors(processorsCode);
     }
 
     private void removeOut(BiComponent component) throws Exception {

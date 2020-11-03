@@ -169,7 +169,7 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public void drop(String tableName) {
-        String deleteSql = "DROP FROM " + tableName;
+        String deleteSql = "DROP TABLE " + tableName;
         biEtlDbMapper.truncateTable(deleteSql);
     }
 
