@@ -101,35 +101,45 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         if (!componentModel.isHandled()) {
             throw new BizException("当前组件还未处理，不支持预览sql！");
         }
-        ComponentTypeEnum type = componentModel.getTypeEnum();
-        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-            componentModel.setPreviewSql(componentModel.getQuerySql() + " LIMIT 10");
-            return;
-        }
 
-        List<FieldMappingModel> mappings = componentModel.getFieldMappings();
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(ComponentHandler.sql_key_select);
+
+        ComponentTypeEnum type = componentModel.getTypeEnum();
+        List<FieldMappingModel> mappings = componentModel.getFieldMappings();
         mappings.forEach(fieldMapping -> {
-            sqlBuilder.append(componentModel.getTableName());
-            sqlBuilder.append(ComponentHandler.sql_key_separator);
-            sqlBuilder.append(fieldMapping.getTempFieldName());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(ComponentHandler.sql_key_as);
-            sqlBuilder.append(fieldMapping.getFinalFieldName());
-            sqlBuilder.append(ComponentHandler.sql_key_comma);
+            if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+                sqlBuilder.append(fieldMapping.getOriginalFieldName());
+                sqlBuilder.append(ComponentHandler.sql_key_comma);
+            } else {
+                sqlBuilder.append(componentModel.getTableName());
+                sqlBuilder.append(ComponentHandler.sql_key_separator);
+                sqlBuilder.append(fieldMapping.getTempFieldName());
+                sqlBuilder.append(ComponentHandler.sql_key_blank);
+                sqlBuilder.append(ComponentHandler.sql_key_as);
+                sqlBuilder.append(fieldMapping.getFinalFieldName());
+                sqlBuilder.append(ComponentHandler.sql_key_comma);
+            }
         });
         // 删除SELECT中最后多余的“,”
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
         sqlBuilder.append(ComponentHandler.sql_key_blank);
-
         sqlBuilder.append(ComponentHandler.sql_key_from);
-        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
-        sqlBuilder.append(componentModel.getQuerySql() + " LIMIT 5");
-        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
-        sqlBuilder.append(ComponentHandler.sql_key_blank);
-        sqlBuilder.append(ComponentHandler.sql_key_as);
-        sqlBuilder.append(componentModel.getTableName());
+
+        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+            sqlBuilder.append(componentModel.getTableName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append("LIMIT 10");
+        } else {
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+            sqlBuilder.append(componentModel.getQuerySql());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append("LIMIT 10");
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_as);
+            sqlBuilder.append(componentModel.getTableName());
+        }
         componentModel.setPreviewSql(sqlBuilder.toString());
     }
 
