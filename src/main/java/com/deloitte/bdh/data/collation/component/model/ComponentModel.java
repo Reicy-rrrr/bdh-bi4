@@ -36,6 +36,10 @@ public class ComponentModel {
     @ApiModelProperty(value = "所属模板code", example = "10")
     private String refModelCode;
 
+    /** 关联映射code（源组件） */
+    @ApiModelProperty(value = "关联映射code", example = "10")
+    private String refMappingCode;
+
     /** 从组件（上一个组件） */
     @ApiModelProperty(value = "从组件（上一个组件）")
     private List<ComponentModel> from;

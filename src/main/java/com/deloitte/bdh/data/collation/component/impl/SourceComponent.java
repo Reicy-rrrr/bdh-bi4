@@ -3,11 +3,13 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -48,7 +50,7 @@ public class SourceComponent implements ComponentHandler {
         String componentCode = component.getCode();
         // 查询配置映射（表名）
         LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
-        configWrapper.eq(BiEtlMappingConfig::getRefCode, componentCode);
+        configWrapper.eq(BiEtlMappingConfig::getCode, component.getRefMappingCode());
         List<BiEtlMappingConfig> configs = biEtlMappingConfigService.list(configWrapper);
         if (CollectionUtils.isEmpty(configs)) {
             throw new BizException("源表组件配置映射信息不能为空！");
@@ -72,7 +74,7 @@ public class SourceComponent implements ComponentHandler {
         }
 
         List<FieldMappingModel> fieldMappings = Lists.newArrayList();
-        Map<String, String> columnTypes = getColumnTypes(componentCode);
+        Map<String, String> columnTypes = getColumnTypes(component.getRefMappingCode());
         fieldNames.forEach(fieldName -> {
             // fullName: table.column
             String fullName = tableName + sql_key_separator + fieldName;
@@ -119,11 +121,11 @@ public class SourceComponent implements ComponentHandler {
     /**
      * 获取字段类型
      *
-     * @param componentCode 组件code
+     * @param mappingCode 映射code
      * @return
      */
-    private Map<String, String> getColumnTypes(String componentCode) {
-        List<TableField> tableFields = dbHandler.getTargetTableFields(componentCode);
+    private Map<String, String> getColumnTypes(String mappingCode) {
+        List<TableField> tableFields = dbHandler.getTargetTableFields(mappingCode);
         if (CollectionUtils.isEmpty(tableFields)) {
             return Maps.newHashMap();
         }

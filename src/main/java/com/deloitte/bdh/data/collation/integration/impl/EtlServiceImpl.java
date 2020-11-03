@@ -1,35 +1,38 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
-import com.deloitte.bdh.data.collation.database.DbSelector;
-
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.deloitte.bdh.data.collation.database.po.TableField;
-import com.deloitte.bdh.data.collation.enums.*;
-import com.deloitte.bdh.data.collation.model.*;
-import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.nifi.EtlProcess;
-import com.deloitte.bdh.data.collation.nifi.dto.*;
-import com.deloitte.bdh.data.collation.nifi.enums.MethodEnum;
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.service.*;
-import com.google.common.collect.Lists;
-
+import com.alibaba.druid.sql.SQLUtils;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.google.common.collect.Maps;
-
+import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
+import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.database.DbSelector;
+import com.deloitte.bdh.data.collation.database.dto.DbContext;
+import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.EtlService;
+import com.deloitte.bdh.data.collation.model.*;
+import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
+import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
+import com.deloitte.bdh.data.collation.nifi.EtlProcess;
+import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
+import com.deloitte.bdh.data.collation.nifi.enums.MethodEnum;
+import com.deloitte.bdh.data.collation.service.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,10 +75,12 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private DbSelector dbSelector;
 
+    @Autowired
+    private BiEtlModelHandleService biEtlModelHandleService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent joinResource(JoinComponentDto dto) throws Exception {
+    public BiComponent resource(ResourceComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
@@ -246,6 +251,178 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    public BiComponent join(JoinComponentDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+
+        // 保存组件信息
+        String componentCode = GenerateCodeUtil.getComponent();
+        BiComponent component = new BiComponent();
+        component.setCode(componentCode);
+        component.setName(componentCode);
+        component.setType(ComponentTypeEnum.JOIN.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
+        component.setRefModelCode(biEtlModel.getCode());
+        component.setVersion("1");
+        component.setPosition(dto.getPosition());
+        component.setCreateDate(LocalDateTime.now());
+        component.setCreateUser(ThreadLocalUtil.getOperator());
+        component.setTenantId(ThreadLocalUtil.getTenantId());
+        componentService.save(component);
+
+        // 保存字段及属性
+        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        fieldService.saveBatch(fields);
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.JOIN_PARAM_KEY_TABLES, JSON.toJSONString(dto.getTables()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent group(GroupComponentDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+
+        // 保存组件信息
+        String componentCode = GenerateCodeUtil.getComponent();
+        BiComponent component = new BiComponent();
+        component.setCode(componentCode);
+        component.setName(componentCode);
+        component.setType(ComponentTypeEnum.GROUP.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
+        component.setRefModelCode(biEtlModel.getCode());
+        component.setVersion("1");
+        component.setPosition(dto.getPosition());
+        component.setCreateDate(LocalDateTime.now());
+        component.setCreateUser(ThreadLocalUtil.getOperator());
+        component.setTenantId(ThreadLocalUtil.getTenantId());
+        componentService.save(component);
+
+        // 保存字段及属性
+        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        fieldService.saveBatch(fields);
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getModel()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent arrange(ArrangeComponentDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+
+        // 保存组件信息
+        String componentCode = GenerateCodeUtil.getComponent();
+        BiComponent component = new BiComponent();
+        component.setCode(componentCode);
+        component.setName(componentCode);
+        component.setType(ComponentTypeEnum.ARRANGE.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
+        component.setRefModelCode(biEtlModel.getCode());
+        component.setVersion("1");
+        component.setPosition(dto.getPosition());
+        component.setCreateDate(LocalDateTime.now());
+        component.setCreateUser(ThreadLocalUtil.getOperator());
+        component.setTenantId(ThreadLocalUtil.getTenantId());
+        componentService.save(component);
+
+        // 保存字段及属性
+        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        fieldService.saveBatch(fields);
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+//        params.put();
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public ComponentVo handle(ComponentPreviewDto dto) throws Exception {
+        String modelId = dto.getModelId();
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            throw new BizException("未找到模板信息！");
+        }
+
+        String componentId = dto.getComponentId();
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            throw new BizException("未找到组件信息！");
+        }
+
+        ComponentVo vo = new ComponentVo();
+        BeanUtils.copyProperties(component, vo);
+
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(
+                model.getCode(), component.getCode());
+        vo.setModel(componentModel);
+        return vo;
+    }
+
+    @Override
+    public ComponentPreviewVo previewData(ComponentPreviewDto dto) throws Exception {
+        String modelId = dto.getModelId();
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            throw new BizException("未找到模板信息！");
+        }
+
+        String componentId = dto.getComponentId();
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            throw new BizException("未找到组件信息！");
+        }
+
+        String modelCode = model.getCode();
+        String componentCode = component.getCode();
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        String querySql = componentModel.getQuerySql();
+        querySql += " LIMIT 10";
+        List<Map<String, Object>> rows = dbHandler.executeQuery(querySql);
+
+        ComponentPreviewVo previewVo = new ComponentPreviewVo();
+        previewVo.setRows(rows);
+        return previewVo;
+    }
+
+    @Override
+    public String previewSql(ComponentPreviewDto dto) throws Exception {
+        String modelId = dto.getModelId();
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            throw new BizException("未找到模板信息！");
+        }
+
+        String componentId = dto.getComponentId();
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            throw new BizException("未找到组件信息！");
+        }
+
+        String modelCode = model.getCode();
+        String componentCode = component.getCode();
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
+        return querySql;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void remove(String code) throws Exception {
         //获取组件信息，判断组件是否存在
@@ -398,7 +575,7 @@ public class EtlServiceImpl implements EtlService {
         return result;
     }
 
-    private ProcessorContext transferNifiSource(JoinComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+    private ProcessorContext transferNifiSource(ResourceComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
             biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
 
         switch (SourceTypeEnum.values(biEtlDatabaseInf.getType())) {
@@ -413,7 +590,7 @@ public class EtlServiceImpl implements EtlService {
         }
     }
 
-    private ProcessorContext transferNifiSourceRel(JoinComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+    private ProcessorContext transferNifiSourceRel(ResourceComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
             biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
         ProcessorContext context = new ProcessorContext();
 
@@ -454,7 +631,7 @@ public class EtlServiceImpl implements EtlService {
         return context;
     }
 
-    private void createFirstPlan(JoinComponentDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
+    private void createFirstPlan(ResourceComponentDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
         syncPlan.setCode(GenerateCodeUtil.generate());
         syncPlan.setGroupCode("0");

@@ -258,12 +258,12 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
-    public List<TableField> getTargetTableFields(String sourceComponentCode) {
-        if (StringUtils.isBlank(sourceComponentCode)) {
-            throw new BizException("数据源组件code不能为空！");
+    public List<TableField> getTargetTableFields(String mappingConfigCode) {
+        if (StringUtils.isBlank(mappingConfigCode)) {
+            throw new BizException("映射配置code不能为空！");
         }
         LambdaQueryWrapper<BiEtlMappingConfig> queryWrapper = new LambdaQueryWrapper();
-        queryWrapper.eq(BiEtlMappingConfig::getRefCode, sourceComponentCode);
+        queryWrapper.eq(BiEtlMappingConfig::getCode, mappingConfigCode);
         BiEtlMappingConfig mappingConfig = biEtlMappingConfigService.getOne(queryWrapper);
         if (mappingConfig == null) {
             throw new BizException("数据源组件配置信息未查询到！");

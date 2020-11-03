@@ -1,9 +1,12 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.component.model.GroupModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.google.common.collect.Lists;
@@ -15,6 +18,7 @@ import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -221,22 +225,33 @@ public class GroupComponent implements ComponentHandler {
     private Map<String, Set<String>> initGroupParams(ComponentModel component) {
         List<BiComponentParams> params = component.getParams();
         Map<String, Set<String>> result = Maps.newLinkedHashMap();
-        Set<String> keys = Sets.newHashSet(param_key_group, param_key_count, param_key_max,
-                param_key_min, param_key_sum, param_key_avg);
-        params.forEach(param -> {
-            String key = param.getParamKey();
-            if (!keys.contains(key)) {
-                throw new BizException("错误的参数名" + key + "，不在聚合组件参数范围内！");
+        if (CollectionUtils.isEmpty(params)) {
+            throw new BizException("未找到聚合组件参数，处理失败！");
+        }
+        BiComponentParams groupParam = null;
+        for (BiComponentParams componentParams : params) {
+            if (componentParams == null) {
+                continue;
             }
-            String value = param.getParamValue();
-            if (result.containsKey(key)) {
-                result.get(key).add(value);
-            } else {
-                Set<String> tempList = Sets.newLinkedHashSet();
-                tempList.add(value);
-                result.put(key, tempList);
+            if (ComponentCons.GROUP_PARAM_KEY_GROUPS.equals(componentParams.getParamKey())) {
+                groupParam = componentParams;
+                break;
             }
-        });
+        }
+
+        if (groupParam == null) {
+            throw new BizException("未找到聚合组件字段参数，处理失败！");
+        }
+
+        GroupModel model = JSON.parseObject(groupParam.getParamValue(), GroupModel.class);
+        result.put(param_key_group, Sets.newLinkedHashSet(model.getGroup()));
+        LinkedHashSet<String> countFields = Sets.newLinkedHashSet();
+        countFields.add(model.getCount());
+        result.put(param_key_count, countFields);
+        result.put(param_key_max, Sets.newLinkedHashSet(model.getMax()));
+        result.put(param_key_min, Sets.newLinkedHashSet(model.getMin()));
+        result.put(param_key_sum, Sets.newLinkedHashSet(model.getSum()));
+        result.put(param_key_avg, Sets.newLinkedHashSet(model.getAvg()));
         return result;
     }
 }

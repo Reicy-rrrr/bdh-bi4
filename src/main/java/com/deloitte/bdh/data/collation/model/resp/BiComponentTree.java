@@ -41,6 +41,9 @@ public class BiComponentTree implements Serializable {
     @ApiModelProperty(value = "所属模板code", example = "10")
     private String refModelCode;
 
+    @ApiModelProperty(value = "关联映射code（数据源组件）", example = "10")
+    private String refMappingCode;
+
     @ApiModelProperty(value = "版本号", example = "10")
     private String version;
 
