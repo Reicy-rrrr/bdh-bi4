@@ -97,6 +97,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         List<BiEtlParams> paramsList = null;
         if (MapUtils.isNotEmpty(component)) {
             paramsList = transferToParams(context, etlProcessor.getCode(), component, null, true);
+            logger.info("createParams:" + JsonUtil.obj2String(paramsList));
             paramsService.saveBatch(paramsList);
         }
         return paramsList;

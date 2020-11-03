@@ -48,7 +48,7 @@ public class QueryDatabaseTable extends AbstractProcessor {
         properties.put("Columns to Return", MapUtils.getString(context.getReq(), "Columns to Return"));
 
         if (null != context.getReq().get("db-fetch-where-clause")) {
-            properties.put("db-fetch-where-clause", MapUtils.getString(context.getReq(), "Additional WHERE clause"));
+            properties.put("db-fetch-where-clause", MapUtils.getString(context.getReq(), "db-fetch-where-clause"));
         }
         //自增字段
         properties.put("Maximum-value Columns", MapUtils.getString(context.getReq(), "Maximum-value Columns"));
