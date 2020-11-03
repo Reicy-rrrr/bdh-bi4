@@ -10,13 +10,18 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
+import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.GridComponentDataRequest;
-import com.deloitte.bdh.data.analyse.model.request.*;
-import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
+import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
+import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -41,6 +46,8 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
 
     @Resource
     BiUiAnalysePageMapper biUiAnalysePageMapper;
+    @Resource
+    BiUiDemoMapper biUiDemoMapper;
 
     @Override
     public PageResult<List<BiUiAnalysePage>> getAnalysePages(AnalysePageReq dto) {
@@ -127,6 +134,14 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         }
         return null;
     }
+
+    public List demoGridDemoRequest(GridDemoRequest data) {
+        String select = "select " + AnalyseUtils.join(",", data.getColumns());
+        String querySql = select + " from " + data.getTable();
+        List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
+        return result;
+    }
+
 
     public boolean checkBiUiAnalysePageByName(String name, String tenantId, String currentId) {
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();

@@ -21,7 +21,7 @@ public interface BiProcessorsService extends Service<BiProcessors> {
 
     void runState(String code, RunStatusEnum state, boolean isGroup) throws Exception;
 
-    void removeProcessors(String processorsCode) throws Exception;
+    void removeProcessors(String processorsCode, String dbId) throws Exception;
 
 
 
