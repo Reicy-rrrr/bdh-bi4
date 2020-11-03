@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.enums.ProcessorTypeEnum;
-import com.deloitte.bdh.data.collation.model.BiEtlDbRef;
 import com.deloitte.bdh.data.collation.model.BiEtlParams;
 import com.deloitte.bdh.data.collation.model.BiEtlProcessor;
 import com.deloitte.bdh.data.collation.nifi.dto.CreateProcessorDto;
@@ -84,8 +84,8 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         CreateProcessorDto createProcessorDto = new CreateProcessorDto();
         createProcessorDto.setName(processorType().getTypeDesc() + System.currentTimeMillis());
         createProcessorDto.setType(processorType().getType());
-        createProcessorDto.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        createProcessorDto.setTenantId(MapUtils.getString(context.getReq(), "tenantId"));
+        createProcessorDto.setCreateUser(ThreadLocalUtil.getOperator());
+        createProcessorDto.setTenantId(ThreadLocalUtil.getTenantId());
         createProcessorDto.setProcessors(context.getProcessors());
         createProcessorDto.setParams(component);
         createProcessorDto.setSequence(context.getProcessorSequ().toString());
@@ -97,6 +97,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
         List<BiEtlParams> paramsList = null;
         if (MapUtils.isNotEmpty(component)) {
             paramsList = transferToParams(context, etlProcessor.getCode(), component, null, true);
+            logger.info("createParams:" + JsonUtil.obj2String(paramsList));
             paramsService.saveBatch(paramsList);
         }
         return paramsList;
@@ -133,7 +134,7 @@ public abstract class AbstractProcessor extends AbstractCurdProcessor<ProcessorC
             params.setRelCode(processorCode);
             params.setRelProcessorsCode(context.getProcessors().getCode());
             params.setCreateDate(LocalDateTime.now());
-            params.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
+            params.setCreateUser(ThreadLocalUtil.getOperator());
             params.setTenantId(context.getProcessors().getTenantId());
             params.setParentCode(refParamCode);
             list.add(params);

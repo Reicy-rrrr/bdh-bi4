@@ -47,7 +47,7 @@ public class BiEtlModelController {
     @ApiOperation(value = "查看单个Model详情", notes = "查看单个Model详情")
     @PostMapping("/getModel")
     public RetResult<BiEtlModel> getModel(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(biEtlModelService.getModel(request.getData()));
+        return RetResponse.makeOKRsp(biEtlModelService.getById(request.getData()));
     }
 
     @ApiOperation(value = "新增Model", notes = "新增Model")

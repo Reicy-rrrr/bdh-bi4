@@ -2,9 +2,15 @@ package com.deloitte.bdh.common.interceptor;
 
 import com.alibaba.fastjson.JSON;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.common.util.UUIDUtil;
+
 import java.util.Arrays;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.collections4.MapUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -28,60 +34,74 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 public class WebLogAspect {
 
-	private static final Logger logger = LoggerFactory.getLogger(WebLogAspect.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebLogAspect.class);
 
-	@Pointcut("execution(public * com.deloitte.bdh..controller.*.*(..))"
-			+ "&& !@annotation(com.deloitte.bdh.common.annotation.NoLog)")
-	public void logPointCut() {
-	}
+    @Pointcut("execution(public * com.deloitte.bdh..controller.*.*(..))"
+            + "&& !@annotation(com.deloitte.bdh.common.annotation.NoLog)"
+            + "&& !@annotation(com.deloitte.bdh.common.annotation.NoLocal)")
+    public void logPointCut() {
+    }
 
-	@Pointcut("@annotation(com.deloitte.bdh.common.annotation.SystemLog)")
-	public void sysLogPointCut() {
-	}
+    @Pointcut("@annotation(com.deloitte.bdh.common.annotation.SystemLog)")
+    public void sysLogPointCut() {
+    }
 
-	/**
-	 * 在切入点开始处切入内容
-	 */
-	@Before("logPointCut()")
-	public void doBefore(JoinPoint joinPoint) throws Throwable {
-		// 接收到请求，记录请求内容
-		ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-				.getRequestAttributes();
-		HttpServletRequest request = attributes.getRequest();
-		String traceId = UUIDUtil.generate();
-		MDC.put("traceId", traceId);
-		// 记录下请求内容
-		logger.info("请求地址 : " + request.getRequestURL().toString());
-		logger.info("HTTP METHOD : " + request.getMethod());
-		logger.info("IP : " + request.getRemoteAddr());
-		logger.info("CLASS_METHOD : " + joinPoint.getSignature().getDeclaringTypeName() + "."
-				+ joinPoint.getSignature().getName());
+    /**
+     * 在切入点开始处切入内容
+     */
+    @Before("logPointCut()")
+    public void doBefore(JoinPoint joinPoint) throws Throwable {
+        // 接收到请求，记录请求内容
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
+                .getRequestAttributes();
+        HttpServletRequest request = attributes.getRequest();
+        String traceId = UUIDUtil.generate();
+        MDC.put("traceId", traceId);
+        // 记录下请求内容
+        logger.info("请求地址 : " + request.getRequestURL().toString());
+        logger.info("HTTP METHOD : " + request.getMethod());
+        logger.info("IP : " + request.getRemoteAddr());
+        logger.info("CLASS_METHOD : " + joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName());
 
-		if (joinPoint.getArgs().length == 0) {
-			logger.info("参数 : {} ", "");
-		} else if (request.getMethod().equals(HttpPost.METHOD_NAME)) {
-			logger.info(
-					"参数 : " + JSON.toJSONString(joinPoint.getArgs()[0]) + "");
-		} else {
-			logger.info("参数 : " + Arrays.toString(joinPoint.getArgs()));
-		}
-	}
+        if (joinPoint.getArgs().length == 0) {
+            logger.info("参数 : {} ", "");
+        } else if (request.getMethod().equals(HttpPost.METHOD_NAME)) {
+            logger.info("参数 : " + JSON.toJSONString(joinPoint.getArgs()[0]) + "");
+        } else {
+            logger.info("参数 : " + Arrays.toString(joinPoint.getArgs()));
+        }
+        //设置参数
+        if (joinPoint.getArgs().length > 0) {
+            Map<String, Object> params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
+            ThreadLocalUtil.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
+            if (null != MapUtils.getString(params, "tenantId")) {
+                ThreadLocalUtil.set("tenantId", MapUtils.getString(params, "tenantId"));
+            }
+            if (null != MapUtils.getString(params, "ip")) {
+                ThreadLocalUtil.set("ip", MapUtils.getString(params, "ip"));
+            }
+            if (null != MapUtils.getString(params, "operator")) {
+                ThreadLocalUtil.set("operator", MapUtils.getString(params, "operator"));
+            }
+        }
+    }
 
-	/**
-	 * 在切入点return内容之后切入内容
-	 *
-	 * @param ret returning的值和doAfterReturning的参数名一致
-	 */
-	@AfterReturning(returning = "ret", pointcut = "logPointCut()")
-	public void doAfterReturning(Object ret) throws Throwable {
-		// 处理完请求，返回内容
-		if (ret != null && ret instanceof RetResult) {
-			RetResult baseResult = (RetResult) ret;
-			String traceId = MDC.get("traceId");
-			baseResult.setTraceId(traceId);
-		}
-		logger.info("返回值 : " + JSON.toJSONStringWithDateFormat(ret, "yyyy-MM-dd HH:mm:ss"));
-		MDC.clear();
-	}
+    /**
+     * 在切入点return内容之后切入内容
+     *
+     * @param ret returning的值和doAfterReturning的参数名一致
+     */
+    @AfterReturning(returning = "ret", pointcut = "logPointCut()")
+    public void doAfterReturning(Object ret) throws Throwable {
+        // 处理完请求，返回内容
+        if (ret != null && ret instanceof RetResult) {
+            RetResult baseResult = (RetResult) ret;
+            String traceId = MDC.get("traceId");
+            baseResult.setTraceId(traceId);
+        }
+        logger.info("返回值 : " + JSON.toJSONStringWithDateFormat(ret, "yyyy-MM-dd HH:mm:ss"));
+        MDC.clear();
+        ThreadLocalUtil.clear();
+    }
 
 }

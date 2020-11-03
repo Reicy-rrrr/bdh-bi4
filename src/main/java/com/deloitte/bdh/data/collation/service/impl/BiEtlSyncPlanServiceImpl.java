@@ -15,7 +15,6 @@ import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,8 +41,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private BiProcessorsService processorsService;
     @Autowired
     private DbHandler dbHandler;
-    @Resource
-    private AsyncTaskExecutor executor;
     @Autowired
     private BiComponentService componentService;
     @Autowired
@@ -114,7 +111,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
                 plan.setProcessCount("0");
-                plan.setResultDesc(" ");
+                plan.setResultDesc(null);
             }
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -150,7 +147,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
                 plan.setProcessCount("0");
-                plan.setResultDesc(" ");
+                plan.setResultDesc(null);
             }
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -174,16 +171,10 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
-                String tenantCode = doHeader();
                 String processorsCode = getProcessorsCode(config);
-                executor.execute(() -> {
-                    try {
-                        processorsService.runStateAsync(tenantCode, processorsCode, RunStatusEnum.STOP, true);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                async(() -> {
+                    processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
                 });
-
             } else {
                 count++;
                 //基于条件实时查询 localCount
@@ -202,14 +193,9 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
-                    String tenantCode = doHeader();
                     String processorsCode = getProcessorsCode(config);
-                    executor.execute(() -> {
-                        try {
-                            processorsService.runStateAsync(tenantCode, processorsCode, RunStatusEnum.STOP, true);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    async(() -> {
+                        processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
                     });
 
                     //修改plan 执行状态

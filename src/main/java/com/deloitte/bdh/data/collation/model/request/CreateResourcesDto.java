@@ -17,10 +17,6 @@ import javax.validation.constraints.NotNull;
 @ToString
 public class CreateResourcesDto {
 
-    @ApiModelProperty(value = "tenantId", example = "123", required = true)
-    @NotNull(message = "租户id 不能为空")
-    private String tenantId;
-
     @ApiModelProperty(value = "数据源名称", example = "数据源名称", required = true)
     @NotNull(message = "数据源名称 不能为空")
     private String name;
@@ -51,7 +47,4 @@ public class CreateResourcesDto {
     @ApiModelProperty(value = "端口", example = "1", required = true)
     private String port;
 
-    @ApiModelProperty(value = "createUser", example = "1", required = true)
-    @NotNull(message = "createUser 不能为空")
-    private String createUser;
 }

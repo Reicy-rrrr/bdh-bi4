@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.deloitte.bdh.common.annotation.Header;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
@@ -112,23 +111,6 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     }
 
     @Override
-    public void runStateAsync(@Header String x, String code, RunStatusEnum state, boolean isGroup) throws Exception {
-        BiProcessors processors = processorsMapper.selectOne(new LambdaQueryWrapper<BiProcessors>()
-                .eq(BiProcessors::getCode, code)
-        );
-        nifiProcessService.runState(processors.getProcessGroupId(), state.getKey(), isGroup);
-        if (RunStatusEnum.STOP == state) {
-            List<BiEtlConnection> connectionList = biEtlConnectionService.list(
-                    new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, code)
-            );
-            //清空所有
-            for (BiEtlConnection var : connectionList) {
-                nifiProcessService.dropConnections(var.getConnectionId());
-            }
-        }
-    }
-
-    @Override
     public void removeProcessors(String processorsCode) throws Exception {
         BiProcessors processors = processorsMapper.selectOne(new LambdaQueryWrapper<BiProcessors>()
                 .eq(BiProcessors::getCode, processorsCode)
@@ -156,8 +138,6 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         }
 
         Map<String, Object> req = Maps.newHashMap();
-        req.put("createUser", processors.getCreateUser());
-        req.put("tenantId", processors.getTenantId());
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.getEnum(processors.getType()).includeProcessor(dbType));
         context.setMethod(MethodEnum.DELETE);

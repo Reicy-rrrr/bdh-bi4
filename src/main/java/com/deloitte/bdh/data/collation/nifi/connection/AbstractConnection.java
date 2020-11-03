@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.nifi.connection;
 
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.model.BiEtlConnection;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.nifi.dto.Nifi;
@@ -10,7 +11,6 @@ import com.deloitte.bdh.data.collation.nifi.processor.AbstractCurdProcessor;
 import com.deloitte.bdh.data.collation.service.BiEtlConnectionService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +58,8 @@ public abstract class AbstractConnection<T extends Nifi> extends AbstractCurdPro
 
     final protected BiEtlConnection createConnection(T context, String modelCode, BiProcessors processors, String fromCode, String toCode) throws Exception {
         CreateConnectionDto createConnectionDto = new CreateConnectionDto();
-        createConnectionDto.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
-        createConnectionDto.setTenantId(MapUtils.getString(context.getReq(), "tenantId"));
+        createConnectionDto.setCreateUser(ThreadLocalUtil.getOperator());
+        createConnectionDto.setTenantId(ThreadLocalUtil.getTenantId());
         createConnectionDto.setFromProcessorCode(fromCode);
         createConnectionDto.setToProcessorCode(toCode);
         createConnectionDto.setProcessors(processors);

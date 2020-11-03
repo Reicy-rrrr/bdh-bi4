@@ -22,7 +22,4 @@ public class EffectModelDto {
     @NotNull(message = "状态 不能为空")
     private String effect = EffectEnum.ENABLE.getKey();
 
-    @ApiModelProperty(value = "modifiedUser", example = "0", required = true)
-    @NotNull(message = "modifiedUser 不能为空")
-    private String modifiedUser;
 }

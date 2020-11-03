@@ -10,7 +10,7 @@ import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
-import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -73,65 +74,43 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private DbSelector dbSelector;
 
     @Override
-    public PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto) {
-        LambdaQueryWrapper<BiEtlDatabaseInf> fUOLamQW = new LambdaQueryWrapper();
-        if (!StringUtil.isEmpty(dto.getTenantId())) {
-            fUOLamQW.eq(BiEtlDatabaseInf::getTenantId, dto.getTenantId());
-        }
+    public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
+        LambdaQueryWrapper<BiEtlDatabaseInf> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiEtlDatabaseInf::getTenantId, ThreadLocalUtil.getTenantId());
         // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(dto.getName())) {
-            fUOLamQW.like(BiEtlDatabaseInf::getName, dto.getName());
+            lambdaQueryWrapper.like(BiEtlDatabaseInf::getName, dto.getName());
         }
         if (StringUtils.isNotBlank(dto.getEffect())) {
-            fUOLamQW.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
+            lambdaQueryWrapper.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
         }
-        fUOLamQW.orderByDesc(BiEtlDatabaseInf::getCreateDate);
-        PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo(this.list(fUOLamQW));
-        PageResult pageResult = new PageResult(pageInfo);
-        return pageResult;
+        lambdaQueryWrapper.orderByDesc(BiEtlDatabaseInf::getCreateDate);
+        PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo<>(this.list(lambdaQueryWrapper));
+        return new PageResult<>(pageInfo);
     }
 
     @Override
-    public BiEtlDatabaseInf getResource(String id) {
-        if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("查看单个resource 失败:id 不能为空");
-        }
-        return biEtlDatabaseInfMapper.selectById(id);
-    }
-
-
-    @Override
+    @Transactional
     public BiEtlDatabaseInf createResource(CreateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf inf = null;
         SourceTypeEnum typeEnum = SourceTypeEnum.values(dto.getType());
         switch (typeEnum) {
-            case Hana:
-                inf = createResourceFromDB(dto);
-                break;
             case File_Csv:
-                inf = createResourceFromFile(dto);
-                break;
             case File_Excel:
                 inf = createResourceFromFile(dto);
                 break;
             case Hive2:
-                inf = createResourceFromHive(dto);
-                break;
             case Hive:
                 inf = createResourceFromHive(dto);
                 break;
+            case Hana:
             case SQLServer:
-                inf = createResourceFromDB(dto);
-                break;
             case Oracle:
-                inf = createResourceFromDB(dto);
-                break;
             case Mysql:
                 inf = createResourceFromDB(dto);
                 break;
             default:
-                logger.error("未找到对应的数据模型的类型!");
-
+                throw new RuntimeException("未找到对应的数据模型的类型!");
         }
         return inf;
     }
@@ -165,7 +144,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         } else {
             createDto.setType(SourceTypeEnum.File_Excel.getType());
         }
-        createDto.setCreateUser(dto.getOperator());
         BiEtlDatabaseInf inf = createResource(createDto);
 
         // 根据数据源信息初始化mongodb集合名称
@@ -312,7 +290,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
             }
             inf.setEffect(dto.getEffect());
-            inf.setModifiedUser(dto.getModifiedUser());
+            inf.setModifiedUser(ThreadLocalUtil.getOperator());
             inf.setModifiedDate(LocalDateTime.now());
             biEtlDatabaseInfMapper.updateById(inf);
         }
@@ -413,6 +391,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         biEtlDatabaseInf.setTypeName(SourceTypeEnum.getNameByType(biEtlDatabaseInf.getType()));
         biEtlDatabaseInf.setEffect(EffectEnum.DISABLE.getKey());
         biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
+        biEtlDatabaseInf.setModifiedUser(ThreadLocalUtil.getOperator());
 
         //调用nifi
         Map<String, Object> properties = Maps.newHashMap();
@@ -444,6 +423,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, biEtlDatabaseInf);
         biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
+        biEtlDatabaseInf.setModifiedUser(ThreadLocalUtil.getOperator());
         biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
         return biEtlDatabaseInf;
     }
@@ -453,6 +433,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
         inf.setEffect(EffectEnum.DISABLE.getKey());
+        inf.setTenantId(ThreadLocalUtil.getTenantId());
+        inf.setCreateUser(ThreadLocalUtil.getOperator());
         inf.setCreateDate(LocalDateTime.now());
         inf.setModifiedDate(LocalDateTime.now());
 
@@ -462,64 +444,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setControllerServiceId(null);
         Map groupFlow = MapUtils.getMap(sourceMap, "processGroupFlow");
         inf.setRootGroupId(MapUtils.getString(groupFlow, "id"));
-        int insert = biEtlDatabaseInfMapper.insert(inf);
-
-        /*// 调用nifi 创建 AvroSchemaRegistry
-        Map<String, Object> createRegistryParams = Maps.newHashMap();
-        createRegistryParams.put("type", PoolTypeEnum.AvroSchemaRegistry.getKey());
-        createRegistryParams.put("name", PoolTypeEnum.AvroSchemaRegistry.getvalue() + System.currentTimeMillis());
-        createRegistryParams.put("avro-reg-validated-field-names", "true");
-        createRegistryParams.put("records", jsonTemplate);
-        Map<String, Object> registryMap = nifiProcessService.createOtherControllerService(createRegistryParams);
-
-        String registryId = MapUtils.getString(registryMap, "id");
-        BiEtlDbService registryCS = new BiEtlDbService();
-        registryCS.setServiceId(registryId);
-        registryCS.setDbId(inf.getId());
-        registryCS.setPropertyName("schema-registry");
-        registryCS.setTenantId(inf.getTenantId());
-        registryCS.setCreateDate(inf.getCreateDate());
-        registryCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(registryCS);
-
-        // 调用nifi 创建 CSVReader
-        Map<String, Object> createReaderParams = Maps.newHashMap();
-        createReaderParams.put("type", PoolTypeEnum.CSVReader.getKey());
-        createReaderParams.put("name", PoolTypeEnum.CSVReader.getvalue() + System.currentTimeMillis());
-        createReaderParams.put("schema-access-strategy", "schema-name");
-        createReaderParams.put("schema-registry", registryId);
-        // Treat First Line as Header
-        createReaderParams.put("Skip Header Line", "true");
-        // Ignore CSV Header Column Names
-        createReaderParams.put("ignore-csv-header", "false");
-
-        Map<String, Object> readerMap = nifiProcessService.createOtherControllerService(createReaderParams);
-
-        BiEtlDbService readerCS = new BiEtlDbService();
-        readerCS.setServiceId(MapUtils.getString(readerMap, "id"));
-        readerCS.setDbId(inf.getId());
-        readerCS.setPropertyName("record-reader");
-        readerCS.setTenantId(inf.getTenantId());
-        readerCS.setCreateDate(inf.getCreateDate());
-        readerCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(readerCS);
-
-        // 调用nifi 创建 JsonRecordSetWriter
-        Map<String, Object> createWriterParams = Maps.newHashMap();
-        createWriterParams.put("type", PoolTypeEnum.JsonRecordSetWriter.getKey());
-        createWriterParams.put("name", PoolTypeEnum.JsonRecordSetWriter.getvalue() + System.currentTimeMillis());
-        createWriterParams.put("schema-access-strategy", "schema-name");
-        createWriterParams.put("schema-registry", registryId);
-        Map<String, Object> writerMap = nifiProcessService.createOtherControllerService(createWriterParams);
-
-        BiEtlDbService writerCS = new BiEtlDbService();
-        writerCS.setServiceId(MapUtils.getString(writerMap, "id"));
-        writerCS.setDbId(inf.getId());
-        writerCS.setPropertyName("record-writer");
-        writerCS.setTenantId(inf.getTenantId());
-        writerCS.setCreateDate(inf.getCreateDate());
-        writerCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(writerCS);*/
+        biEtlDatabaseInfMapper.insert(inf);
         return inf;
     }
 
@@ -530,6 +455,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
+        inf.setCreateUser(ThreadLocalUtil.getOperator());
+        inf.setTenantId(ThreadLocalUtil.getTenantId());
         inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
         inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
@@ -583,6 +510,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setCreateDate(LocalDateTime.now());
         inf.setModifiedDate(LocalDateTime.now());
+        inf.setCreateUser(ThreadLocalUtil.getOperator());
+        inf.setTenantId(ThreadLocalUtil.getTenantId());
 
         // 调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.component.model.JoinFieldModel;
@@ -35,8 +36,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service("joinComponent")
 public class JoinComponent implements ComponentHandler {
-
-    private static final String param_key_tables = "tables";
 
     @Autowired
     private BiEtlMappingFieldService biEtlMappingFieldService;
@@ -70,7 +69,7 @@ public class JoinComponent implements ComponentHandler {
     private JoinModel buildJoinModel(String componentCode,
                                      Map<String, BiComponentParams> paramsMap) {
         BiComponentParams tablesParam =
-                (BiComponentParams) MapUtils.getObject(paramsMap, param_key_tables);
+                (BiComponentParams) MapUtils.getObject(paramsMap, ComponentCons.JOIN_PARAM_KEY_TABLES);
         if (tablesParam == null) {
             log.error("关联组件[{}]未查询到[tables]参数，处理组件失败！", componentCode);
             throw new BizException("关联组件的tables参数不能为空！");

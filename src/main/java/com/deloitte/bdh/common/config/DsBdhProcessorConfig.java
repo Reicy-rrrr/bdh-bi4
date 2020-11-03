@@ -3,15 +3,14 @@ package com.deloitte.bdh.common.config;
 
 import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
 import com.baomidou.dynamic.datasource.processor.DsProcessor;
-import com.deloitte.bdh.common.annotation.Header;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.DataSourceNotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.lang.annotation.Annotation;
 
 /**
  * @author Ashen
@@ -42,26 +40,14 @@ public class DsBdhProcessorConfig extends DsProcessor {
 
     @Override
     public String doDetermineDatasource(MethodInvocation invocation, String key) {
-        String tenantCode = local.get();
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        String tenantCode = ThreadLocalUtil.getTenantCode();
         if (null == tenantCode) {
+            RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
             if (null != attributes) {
                 HttpServletRequest request = ((ServletRequestAttributes) attributes).getRequest();
                 tenantCode = request.getHeader("x-bdh-tenant-code");
-            } else {
-                Object[] args = invocation.getArguments();
-                Annotation[][] parameterAnnotations = invocation.getMethod().getParameterAnnotations();
-                for (Annotation[] parameterAnnotation : parameterAnnotations) {
-                    int paramIndex = ArrayUtils.indexOf(parameterAnnotations, parameterAnnotation);
-                    for (Annotation annotation : parameterAnnotation) {
-                        if (annotation instanceof Header) {
-                            tenantCode = String.valueOf(args[paramIndex]);
-                            break;
-                        }
-                    }
-                }
             }
-            local.set(tenantCode);
+            ThreadLocalUtil.set("tenantCode", tenantCode);
         }
         String datasourceName = key;
         //去掉首字母#

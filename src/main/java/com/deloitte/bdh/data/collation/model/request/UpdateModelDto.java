@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Getter
 @ToString
-public class UpdateModelDto extends BaseRequest {
+public class UpdateModelDto {
 
     @ApiModelProperty(value = "id", example = "123", required = true)
     @NotNull(message = "id 不能为空")

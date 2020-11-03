@@ -14,5 +14,8 @@ public class ComponentCons {
     public static final String TO_TABLE_NAME = "toTableName";
     public static final String SQL_SELECT_QUERY = "sqlSelectQuery";
 
-
+    /** 关联组件参数 */
+    public static final String JOIN_PARAM_KEY_TABLES = "tables";
+    /** 聚合组件参数 */
+    public static final String GROUP_PARAM_KEY_GROUPS = "groups";
 }

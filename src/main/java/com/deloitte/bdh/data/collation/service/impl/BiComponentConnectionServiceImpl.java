@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.model.BiComponentConnection;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentConnectionMapper;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
@@ -46,8 +47,8 @@ public class BiComponentConnectionServiceImpl extends AbstractService<BiComponen
         connection.setRefModelCode(model.getCode());
         connection.setVersion("1");
         connection.setCreateDate(LocalDateTime.now());
-        connection.setCreateUser(dto.getOperator());
-        connection.setTenantId(dto.getTenantId());
+        connection.setCreateUser(ThreadLocalUtil.getOperator());
+        connection.setTenantId(ThreadLocalUtil.getTenantId());
         mapper.insert(connection);
         return connection;
     }

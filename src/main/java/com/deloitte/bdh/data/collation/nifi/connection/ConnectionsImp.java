@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.model.BiConnections;
 import com.deloitte.bdh.data.collation.model.BiEtlConnection;
 import com.deloitte.bdh.data.collation.model.BiEtlProcessor;
@@ -13,7 +14,6 @@ import com.deloitte.bdh.data.collation.nifi.dto.ConnectionsContext;
 import com.deloitte.bdh.data.collation.service.BiConnectionsService;
 import com.deloitte.bdh.data.collation.service.BiEtlProcessorService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +74,7 @@ public class ConnectionsImp extends AbstractConnection<ConnectionsContext> {
                 connections.setRelModelCode(context.getModel().getCode());
                 connections.setVersion("1");
                 connections.setCreateDate(LocalDateTime.now());
-                connections.setCreateUser(MapUtils.getString(context.getReq(), "createUser"));
+                connections.setCreateUser(ThreadLocalUtil.getOperator());
                 connections.setTenantId(context.getModel().getTenantId());
 
 //                BiEtlConnection biEtlConnection = super.createConnection(context, connections.getRelModelCode(),

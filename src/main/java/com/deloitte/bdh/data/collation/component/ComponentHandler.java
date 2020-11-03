@@ -10,6 +10,10 @@ import org.apache.commons.codec.digest.DigestUtils;
  * @date 2020/10/26
  */
 public interface ComponentHandler {
+    /**
+     * 别名前缀
+     */
+    String alias_prefix = "BI";
 
     String sql_key_select = "SELECT ";
     String sql_key_create = "CREATE TABLE IF NOT EXISTS ";
@@ -25,6 +29,13 @@ public interface ComponentHandler {
     String sql_key_group_by = "GROUP BY ";
     String sql_key_order_by = "ORDER BY ";
     String sql_key_having = "HAVING ";
+
+    String sql_key_count = "COUNT";
+    String sql_key_max = "MAX";
+    String sql_key_min = "MIN";
+    String sql_key_sum = "SUM";
+    String sql_key_avg = "AVG";
+
     String sql_key_blank = " ";
     String sql_key_comma = ",";
     String sql_key_separator = ".";
@@ -45,12 +56,12 @@ public interface ComponentHandler {
     void handle(ComponentModel component);
 
     /**
-     * 重命名字段
+     * 获取字段别名（对原字段名进行MD5加密并转大写，然后截取前16位后加上固定前缀）
      *
-     * @param columnName
+     * @param columnName 表名 + "." + 字段名 （example: tb_user.name）
      * @return
      */
-    default String renameColumn(String columnName) {
-        return "BI" + DigestUtils.md5Hex(columnName).toUpperCase().substring(0, 16);
+    default String getColumnAlias(String columnName) {
+        return alias_prefix + DigestUtils.md5Hex(columnName).toUpperCase().substring(0, 16);
     }
 }

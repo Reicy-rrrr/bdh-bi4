@@ -20,10 +20,6 @@ public class UpdateResourcesDto {
     @NotNull(message = "id 不能为空")
     private String id;
 
-    @ApiModelProperty(value = "modifiedUser", example = "1", required = true)
-    @NotNull(message = "modifiedUser 不能为空")
-    private String modifiedUser;
-
     @ApiModelProperty(value = "数据源名称", example = "数据源名称", required = true)
     @NotNull(message = "数据源名称 不能为空")
     private String name;
