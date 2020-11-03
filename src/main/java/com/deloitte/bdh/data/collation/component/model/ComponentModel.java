@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.component.model;
 
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,30 +23,37 @@ public class ComponentModel {
 
     /** 组件id */
     @ApiModelProperty(value = "ID", example = "10")
+    @JsonIgnore
     private String id;
 
     /** 组件code */
     @ApiModelProperty(value = "组件code", required = true)
+    @JsonIgnore
     private String code;
 
     /** 组件类型 */
     @ApiModelProperty(value = "组件类型", example = "10")
+    @JsonIgnore
     private String type;
 
     /** 所属模板code */
+    @JsonIgnore
     @ApiModelProperty(value = "所属模板code", example = "10")
     private String refModelCode;
 
     /** 关联映射code（源组件） */
     @ApiModelProperty(value = "关联映射code", example = "10")
+    @JsonIgnore
     private String refMappingCode;
 
     /** 从组件（上一个组件） */
     @ApiModelProperty(value = "从组件（上一个组件）")
+    @JsonIgnore
     private List<ComponentModel> from;
 
     /** 组件类型 */
     @ApiModelProperty(value = "组件类型", required = true)
+    @JsonIgnore
     private ComponentTypeEnum typeEnum;
 
     /** 字段映射：key-当前组件字段名称， value-原始表字段名称 */
@@ -64,23 +72,33 @@ public class ComponentModel {
     @ApiModelProperty(value = "组件输出查询sql")
     private String querySql;
 
-    /** 组件输出查询sql（输出组件） */
-    @ApiModelProperty(value = "组件输出查询sql")
+    /** 组件预览查询sql（所有组件） */
+    @ApiModelProperty(value = "组件预览查询sql")
+    @JsonIgnore
+    private String previewSql;
+
+    /** 组件输出建表查询sql（输出组件） */
+    @ApiModelProperty(value = "组件输出建表查询sql")
+    @JsonIgnore
     private String createSql;
 
-    /** 组件输出查询sql（输出组件） */
-    @ApiModelProperty(value = "组件输出查询sql")
+    /** 组件输出插入查询sql（输出组件） */
+    @JsonIgnore
+    @ApiModelProperty(value = "组件输出插入查询sql")
     private String insertSql;
 
     /** 组件是否处理 */
     @ApiModelProperty(value = "组件是否处理")
+    @JsonIgnore
     private boolean handled = false;
 
     /** 是否为最终结束节点 */
     @ApiModelProperty(value = "是否为最终结束节点")
+    @JsonIgnore
     private boolean last = false;
 
     /** 组件参数 */
+    @JsonIgnore
     @ApiModelProperty(value = "组件参数")
     private List<BiComponentParams> params;
 }

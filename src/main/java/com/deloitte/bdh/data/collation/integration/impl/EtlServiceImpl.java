@@ -11,6 +11,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
@@ -273,7 +274,7 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
@@ -307,12 +308,12 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getModel()));
+        params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getGroups()));
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
@@ -341,7 +342,7 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
@@ -392,12 +393,16 @@ public class EtlServiceImpl implements EtlService {
         String modelCode = model.getCode();
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
-        String querySql = componentModel.getQuerySql();
-        querySql += " LIMIT 10";
-        List<Map<String, Object>> rows = dbHandler.executeQuery(querySql);
+        biEtlModelHandleService.handlePreviewSql(componentModel);
+        List<Map<String, Object>> rows = dbHandler.executeQuery(componentModel.getPreviewSql());
 
         ComponentPreviewVo previewVo = new ComponentPreviewVo();
         previewVo.setRows(rows);
+
+        List<String> columns = componentModel.getFieldMappings().stream()
+                .map(FieldMappingModel::getFinalFieldName).collect(Collectors.toList());
+
+        previewVo.setColumns(columns);
         return previewVo;
     }
 
@@ -418,8 +423,8 @@ public class EtlServiceImpl implements EtlService {
         String modelCode = model.getCode();
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
-        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
-        return querySql;
+//        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
+        return componentModel.getQuerySql();
     }
 
     @Override
@@ -566,6 +571,25 @@ public class EtlServiceImpl implements EtlService {
             params.setCode(GenerateCodeUtil.generate());
             params.setFieldName(var.getName());
             params.setFieldType(var.getColumnType());
+            params.setRefCode(code);
+            params.setCreateDate(LocalDateTime.now());
+            params.setCreateUser(operator);
+            params.setTenantId(tenantId);
+            result.add(params);
+        }
+        return result;
+    }
+
+    private List<BiEtlMappingField> transferFieldsByName(String operator, String tenantId, String code, List<String> list) {
+        List<BiEtlMappingField> result = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(list)) {
+            return result;
+        }
+        for (String field : list) {
+            BiEtlMappingField params = new BiEtlMappingField();
+            params.setCode(GenerateCodeUtil.generate());
+            params.setFieldName(field);
+            params.setFieldType(null);
             params.setRefCode(code);
             params.setCreateDate(LocalDateTime.now());
             params.setCreateUser(operator);

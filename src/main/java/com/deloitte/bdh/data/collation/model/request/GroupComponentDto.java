@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.model.request;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.collation.component.model.GroupModel;
-import com.deloitte.bdh.data.collation.database.po.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -30,12 +29,12 @@ public class GroupComponentDto {
 
     @ApiModelProperty(value = "字段列表", example = "")
     @NotNull(message = " 字段列表 不能为空")
-    private List<TableField> fields;
+    private List<String> fields;
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();
 
     @ApiModelProperty(value = "聚合字段字段模型", example = "1")
     @NotNull(message = " 聚合字段 不能为空")
-    private GroupModel model;
+    private GroupModel groups;
 }

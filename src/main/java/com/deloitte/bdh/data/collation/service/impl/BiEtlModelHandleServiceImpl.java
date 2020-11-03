@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
@@ -93,6 +94,43 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         componentModel.setLast(true);
         handleComponent(componentModel);
         return componentModel;
+    }
+
+    @Override
+    public void handlePreviewSql(ComponentModel componentModel) {
+        if (!componentModel.isHandled()) {
+            throw new BizException("当前组件还未处理，不支持预览sql！");
+        }
+        ComponentTypeEnum type = componentModel.getTypeEnum();
+        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+            componentModel.setPreviewSql(componentModel.getQuerySql() + " LIMIT 10");
+            return;
+        }
+
+        List<FieldMappingModel> mappings = componentModel.getFieldMappings();
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(ComponentHandler.sql_key_select);
+        mappings.forEach(fieldMapping -> {
+            sqlBuilder.append(componentModel.getTableName());
+            sqlBuilder.append(ComponentHandler.sql_key_separator);
+            sqlBuilder.append(fieldMapping.getTempFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_as);
+            sqlBuilder.append(fieldMapping.getFinalFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_comma);
+        });
+        // 删除SELECT中最后多余的“,”
+        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+
+        sqlBuilder.append(ComponentHandler.sql_key_from);
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+        sqlBuilder.append(componentModel.getQuerySql() + " LIMIT 5");
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_as);
+        sqlBuilder.append(componentModel.getTableName());
+        componentModel.setPreviewSql(sqlBuilder.toString());
     }
 
     /**

@@ -25,7 +25,7 @@ public class ComponentPreviewVo implements Serializable {
 
     /** 字段列表 */
     @ApiModelProperty(value = "字段列表", example = "[]", required = true)
-    private List<FieldMappingModel> columns;
+    private List<String> columns;
 
     /** 数据列表 */
     @ApiModelProperty(value = "数据行(数组)", example = "[]", required = true)
