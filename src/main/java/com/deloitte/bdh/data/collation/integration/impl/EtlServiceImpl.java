@@ -123,15 +123,17 @@ public class EtlServiceImpl implements EtlService {
         component.setCreateDate(LocalDateTime.now());
         component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
+        component.setRefMappingCode(dto.getBelongMappingCode());
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-        params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
+//        params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             String mappingCode = GenerateCodeUtil.generate();
-            params.put(ComponentCons.BELONG_MAPPING_CODE, mappingCode);
+            component.setRefMappingCode(dto.getBelongMappingCode());
+//            params.put(ComponentCons.BELONG_MAPPING_CODE, mappingCode);
             dto.setBelongMappingCode(mappingCode);
 
             //step2.1:是独立副本，创建映射
@@ -285,15 +287,12 @@ public class EtlServiceImpl implements EtlService {
         }
 
         //独立副本时，该组件是否被其他模板的组件引用
-        String mappingCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.BELONG_MAPPING_CODE)).findAny().get().getParamValue();
-
-        List<BiComponentParams> refParamsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getParamKey, ComponentCons.BELONG_MAPPING_CODE)
-                .eq(BiComponentParams::getParamValue, mappingCode)
-                .ne(BiComponentParams::getRefComponentCode, component.getCode())
+        String mappingCode = component.getRefMappingCode();
+        List<BiComponent> sameRefList = componentService.list(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefMappingCode, mappingCode)
+                .ne(BiComponent::getCode, component.getCode())
         );
-        if (CollectionUtils.isNotEmpty(refParamsList)) {
+        if (CollectionUtils.isNotEmpty(sameRefList)) {
             //todo 待确定是否还能删除
             throw new RuntimeException("EtlServiceImpl.removeResource.error : 该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
         }
@@ -342,6 +341,16 @@ public class EtlServiceImpl implements EtlService {
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
         );
 
+        Optional<BiComponentParams> optionalProcessorsCode = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny();
+        if (optionalProcessorsCode.isPresent()) {
+            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue());
+        }
+
+        Optional<BiComponentParams> optionalTableName = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.TO_TABLE_NAME)).findAny();
+        optionalTableName.ifPresent(biComponentParams -> dbHandler.drop(biComponentParams.getParamValue()));
+
         componentService.removeById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
@@ -349,15 +358,6 @@ public class EtlServiceImpl implements EtlService {
         fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
                 .eq(BiEtlMappingField::getRefCode, component.getCode())
         );
-        Optional<BiComponentParams> optionalTableName = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.TO_TABLE_NAME)).findAny();
-        optionalTableName.ifPresent(biComponentParams -> dbHandler.drop(biComponentParams.getParamValue()));
-
-        Optional<BiComponentParams> optionalProcessorsCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny();
-        if (optionalProcessorsCode.isPresent()) {
-            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue());
-        }
     }
 
     private List<BiComponentParams> transferToParams(String operator, String tenantId, String code, Map<String, Object> source) {
