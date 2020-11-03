@@ -58,18 +58,12 @@ public class BiSourceController {
     @ApiOperation(value = "创建文件型数据源", notes = "创建文件型数据源")
     @PostMapping("/createFileResource")
     public RetResult<BiEtlDatabaseInf> createFileResource(@RequestBody @Validated RetRequest<CreateFileResourcesDto> request) throws Exception {
-        if (request.getData().getOperator() == null) {
-            request.getData().setOperator(request.getOperator());
-        }
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.createFileResource(request.getData()));
     }
 
     @ApiOperation(value = "追加文件型数据源", notes = "追加文件型数据源")
     @PostMapping("/appendFileResource")
     public RetResult<BiEtlDatabaseInf> appendFileResource(@RequestBody @Validated RetRequest<AppendFileResourcesDto> request) throws Exception {
-        if (request.getData().getOperator() == null) {
-            request.getData().setOperator(request.getOperator());
-        }
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.appendFileResource(request.getData()));
     }
 

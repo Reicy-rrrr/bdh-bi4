@@ -10,7 +10,6 @@ import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
-import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbSelector;
@@ -434,6 +433,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
         inf.setEffect(EffectEnum.DISABLE.getKey());
+        inf.setTenantId(ThreadLocalUtil.getTenantId());
+        inf.setCreateUser(ThreadLocalUtil.getOperator());
         inf.setCreateDate(LocalDateTime.now());
         inf.setModifiedDate(LocalDateTime.now());
 
@@ -443,64 +444,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setControllerServiceId(null);
         Map groupFlow = MapUtils.getMap(sourceMap, "processGroupFlow");
         inf.setRootGroupId(MapUtils.getString(groupFlow, "id"));
-        int insert = biEtlDatabaseInfMapper.insert(inf);
-
-        /*// 调用nifi 创建 AvroSchemaRegistry
-        Map<String, Object> createRegistryParams = Maps.newHashMap();
-        createRegistryParams.put("type", PoolTypeEnum.AvroSchemaRegistry.getKey());
-        createRegistryParams.put("name", PoolTypeEnum.AvroSchemaRegistry.getvalue() + System.currentTimeMillis());
-        createRegistryParams.put("avro-reg-validated-field-names", "true");
-        createRegistryParams.put("records", jsonTemplate);
-        Map<String, Object> registryMap = nifiProcessService.createOtherControllerService(createRegistryParams);
-
-        String registryId = MapUtils.getString(registryMap, "id");
-        BiEtlDbService registryCS = new BiEtlDbService();
-        registryCS.setServiceId(registryId);
-        registryCS.setDbId(inf.getId());
-        registryCS.setPropertyName("schema-registry");
-        registryCS.setTenantId(inf.getTenantId());
-        registryCS.setCreateDate(inf.getCreateDate());
-        registryCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(registryCS);
-
-        // 调用nifi 创建 CSVReader
-        Map<String, Object> createReaderParams = Maps.newHashMap();
-        createReaderParams.put("type", PoolTypeEnum.CSVReader.getKey());
-        createReaderParams.put("name", PoolTypeEnum.CSVReader.getvalue() + System.currentTimeMillis());
-        createReaderParams.put("schema-access-strategy", "schema-name");
-        createReaderParams.put("schema-registry", registryId);
-        // Treat First Line as Header
-        createReaderParams.put("Skip Header Line", "true");
-        // Ignore CSV Header Column Names
-        createReaderParams.put("ignore-csv-header", "false");
-
-        Map<String, Object> readerMap = nifiProcessService.createOtherControllerService(createReaderParams);
-
-        BiEtlDbService readerCS = new BiEtlDbService();
-        readerCS.setServiceId(MapUtils.getString(readerMap, "id"));
-        readerCS.setDbId(inf.getId());
-        readerCS.setPropertyName("record-reader");
-        readerCS.setTenantId(inf.getTenantId());
-        readerCS.setCreateDate(inf.getCreateDate());
-        readerCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(readerCS);
-
-        // 调用nifi 创建 JsonRecordSetWriter
-        Map<String, Object> createWriterParams = Maps.newHashMap();
-        createWriterParams.put("type", PoolTypeEnum.JsonRecordSetWriter.getKey());
-        createWriterParams.put("name", PoolTypeEnum.JsonRecordSetWriter.getvalue() + System.currentTimeMillis());
-        createWriterParams.put("schema-access-strategy", "schema-name");
-        createWriterParams.put("schema-registry", registryId);
-        Map<String, Object> writerMap = nifiProcessService.createOtherControllerService(createWriterParams);
-
-        BiEtlDbService writerCS = new BiEtlDbService();
-        writerCS.setServiceId(MapUtils.getString(writerMap, "id"));
-        writerCS.setDbId(inf.getId());
-        writerCS.setPropertyName("record-writer");
-        writerCS.setTenantId(inf.getTenantId());
-        writerCS.setCreateDate(inf.getCreateDate());
-        writerCS.setCreateUser(inf.getCreateUser());
-        biEtlDbCSService.insert(writerCS);*/
+        biEtlDatabaseInfMapper.insert(inf);
         return inf;
     }
 
