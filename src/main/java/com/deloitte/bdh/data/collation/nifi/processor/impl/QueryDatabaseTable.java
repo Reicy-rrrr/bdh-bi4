@@ -63,7 +63,7 @@ public class QueryDatabaseTable extends AbstractProcessor {
         //调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
         config.put("schedulingPeriod", "129600 min");
-        config.put("schedulingStrategy", "CRON_DRIVEN");
+        config.put("schedulingStrategy", "TIMER_DRIVEN");
         config.put("yieldDuration", "36000 sec");
 
         config.put("properties", properties);
