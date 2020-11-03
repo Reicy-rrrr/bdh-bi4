@@ -19,7 +19,6 @@ public class RetRequest<T> implements Serializable {
     @ApiModelProperty(value = "请求标识号")
     private String sid;
     @ApiModelProperty(value = "当前操作用户id")
-    @NotNull(message = " operator 不能为空")
     private String operator;
     @ApiModelProperty(value = "国际化语言标识", example = "cn")
     private String lang;
