@@ -6,10 +6,11 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
-import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,5 +74,11 @@ public class BiUiAnalysePageController {
     @PostMapping("/getComponentDta")
     public RetResult<BaseComponentDataResponse> getComponentDta(@RequestBody @Validated RetRequest<Map> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalysePageService.getComponentDta(request.getData()));
+    }
+
+    @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
+    @PostMapping("/demoGridDemoRequest")
+    public RetResult<List> demoGridDemoRequest(@RequestBody @Validated RetRequest<GridDemoRequest> request) {
+        return RetResponse.makeOKRsp(biUiAnalysePageService.demoGridDemoRequest(request.getData()));
     }
 }

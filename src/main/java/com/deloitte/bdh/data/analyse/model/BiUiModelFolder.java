@@ -45,7 +45,7 @@ public class BiUiModelFolder implements Serializable {
     private String name;
 
     /**
-     * 文件夹/报表
+     *
      */
     @TableField("TYPE")
     private String type;
