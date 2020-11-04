@@ -397,8 +397,8 @@ public class EtlServiceImpl implements EtlService {
         ComponentPreviewVo previewVo = new ComponentPreviewVo();
         previewVo.setRows(rows);
 
-        List<String> columns = componentModel.getFieldMappings().stream()
-                .map(FieldMappingModel::getFinalFieldName).collect(Collectors.toList());
+        List<TableField> columns = componentModel.getFieldMappings().stream()
+                .map(FieldMappingModel::getTableField).collect(Collectors.toList());
 
         previewVo.setColumns(columns);
         return previewVo;

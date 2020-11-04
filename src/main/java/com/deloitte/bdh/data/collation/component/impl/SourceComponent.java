@@ -74,14 +74,16 @@ public class SourceComponent implements ComponentHandler {
         }
 
         List<FieldMappingModel> fieldMappings = Lists.newArrayList();
-        Map<String, String> columnTypes = getColumnTypes(component.getRefMappingCode());
+        Map<String, TableField> columnTypes = getColumnTypes(component.getRefMappingCode());
         fieldNames.forEach(fieldName -> {
             // fullName: table.column
             String fullName = tableName + sql_key_separator + fieldName;
             // 使用全名进行编码获取到字段别名（全名可以避免重复）
             String tempName = getColumnAlias(fullName);
+            TableField tableField = MapUtils.getObject(columnTypes, fieldName);
+
             FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldName,
-                    tableName, MapUtils.getString(columnTypes, fieldName));
+                    tableName, tableField.getColumnType(), tableField);
             fieldMappings.add(mapping);
         });
 
@@ -124,13 +126,14 @@ public class SourceComponent implements ComponentHandler {
      * @param mappingCode 映射code
      * @return
      */
-    private Map<String, String> getColumnTypes(String mappingCode) {
+    private Map<String, TableField> getColumnTypes(String mappingCode) {
         List<TableField> tableFields = dbHandler.getTargetTableFields(mappingCode);
         if (CollectionUtils.isEmpty(tableFields)) {
             return Maps.newHashMap();
         }
-        Map<String, String> columnTypes = tableFields.stream()
-                .collect(Collectors.toMap(TableField::getName, tableField -> tableField.getColumnType()));
+
+        Map<String, TableField> columnTypes = tableFields.stream()
+                .collect(Collectors.toMap(TableField::getName, tableField -> tableField));
         return columnTypes;
     }
 }
