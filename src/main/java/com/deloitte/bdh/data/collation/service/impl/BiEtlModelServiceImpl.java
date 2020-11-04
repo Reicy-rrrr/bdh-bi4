@@ -270,6 +270,13 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
+        BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getName, dto.getName())
+                .eq(BiEtlModel::getTenantId, ThreadLocalUtil.getTenantId())
+        );
+        if (null != model) {
+            throw new RuntimeException("模板编码名字重复!");
+        }
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
         inf.setCode(modelCode);
