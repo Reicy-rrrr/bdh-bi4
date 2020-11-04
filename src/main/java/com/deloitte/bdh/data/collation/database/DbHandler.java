@@ -111,4 +111,11 @@ public interface DbHandler {
      * @return
      */
     List<TableField> getTargetTableFields(String sourceComponentCode);
+
+    /**
+     * 查询表数据量
+     *
+     * @return
+     */
+    long getCountLocal(String query);
 }
