@@ -55,6 +55,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
 
     @Resource
     BiUiAnalysePageMapper biUiAnalysePageMapper;
+
     @Resource
     BiUiDemoMapper biUiDemoMapper;
 
