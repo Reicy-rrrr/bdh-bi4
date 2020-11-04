@@ -438,11 +438,11 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     .eq(BiEtlMappingConfig::getRefComponentCode, component.getCode()));
             //判断是否归属当前模板
             if (null == config) {
-                return;
+                continue;
             }
             //直连返回
             if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())) {
-                return;
+                continue;
             }
             RunPlan runPlan = RunPlan.builder().groupCode(groupCode).planType("0")
                     .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).mappingConfigCode(config)
