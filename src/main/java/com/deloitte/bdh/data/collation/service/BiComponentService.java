@@ -35,5 +35,7 @@ public interface BiComponentService extends Service<BiComponent> {
      */
     void stopComponents(String modelCode);
 
+    void validate(String modelCode);
+
 
 }

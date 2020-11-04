@@ -224,18 +224,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (StringUtil.isEmpty(biEtlModel.getCornExpression())) {
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
         }
-
-        //获取模板下所有的组件
-        List<BiComponent> components = componentService.list(new LambdaQueryWrapper<BiComponent>()
-                .eq(BiComponent::getRefModelCode, modelCode)
-        );
-        if (CollectionUtils.isEmpty(components)) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置组件信息");
-        }
-        components.forEach(s -> {
-
-        });
-
+        componentService.validate(modelCode);
     }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {

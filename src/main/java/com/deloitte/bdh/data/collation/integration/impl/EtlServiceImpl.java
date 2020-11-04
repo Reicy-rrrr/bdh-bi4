@@ -162,6 +162,12 @@ public class EtlServiceImpl implements EtlService {
                 if (StringUtils.isBlank(dto.getOffsetField())) {
                     throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段不能为空");
                 }
+
+                Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
+                if (!field.isPresent()) {
+                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段必须再同步的字段列表以内");
+                }
+
                 //同步都涉及 偏移字段，方便同步
                 String processorsCode = GenerateCodeUtil.genProcessors();
                 mappingConfig.setOffsetField(dto.getOffsetField());
