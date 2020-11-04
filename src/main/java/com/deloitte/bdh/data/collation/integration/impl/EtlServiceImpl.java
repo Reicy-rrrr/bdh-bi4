@@ -502,6 +502,7 @@ public class EtlServiceImpl implements EtlService {
         );
         if (StringUtils.isBlank(syncPlan.getPlanResult())) {
             syncPlan.setPlanResult(PlanResultEnum.CANCEL.getKey());
+            syncPlan.setResultDesc(PlanResultEnum.CANCEL.getValue());
             syncPlanService.updateById(syncPlan);
         }
         processorsService.runState(processorsCodeParam.getParamValue(), RunStatusEnum.STOP, true);

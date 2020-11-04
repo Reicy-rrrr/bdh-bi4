@@ -452,6 +452,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
+        BiEtlDatabaseInf exitDb = biEtlDatabaseInfMapper.selectOne(new LambdaQueryWrapper<BiEtlDatabaseInf>()
+                .eq(BiEtlDatabaseInf::getName, dto.getName())
+                .eq(BiEtlDatabaseInf::getTenantId, ThreadLocalUtil.getTenantId())
+        );
+        if (null != exitDb) {
+            throw new RuntimeException("模板数据源名字重复!");
+        }
 
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
