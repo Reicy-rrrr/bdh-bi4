@@ -13,8 +13,6 @@ import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.database.DbSelector;
-import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.EtlService;
@@ -73,8 +71,7 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private DbHandler dbHandler;
-    @Autowired
-    private DbSelector dbSelector;
+
 
     @Autowired
     private BiEtlModelHandleService biEtlModelHandleService;
@@ -178,6 +175,12 @@ public class EtlServiceImpl implements EtlService {
                 String toTableName = componentCode + "_" + dto.getTableName();
                 mappingConfig.setToTableName(toTableName);
 
+                //step2.1.0：获取数据源的count
+                RunPlan runPlan = RunPlan.builder()
+                        .groupCode("0").planType("0")
+                        .first(YesOrNoEnum.YES.getKey()).modelCode(biEtlModel.getCode())
+                        .mappingConfigCode(mappingConfig).synCount();
+
                 //step2.1.1:创建 字段列表,此处为映射编码
                 List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), mappingCode, dto.getFields());
                 fieldService.saveBatch(fields);
@@ -188,8 +191,8 @@ public class EtlServiceImpl implements EtlService {
                 //step 2.1.3:创建目标表
                 dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
 
-                //step2.1.4 生成第一次的调度计划
-                createFirstPlan(dto, biEtlModel, biEtlDatabaseInf, mappingConfig);
+                //step2.1.4 生成同步的第一次的调度计划
+                syncPlanService.createFirstPlan(runPlan);
 
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
@@ -229,7 +232,6 @@ public class EtlServiceImpl implements EtlService {
         component.setCreateDate(LocalDateTime.now());
         component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
-        componentService.save(component);
 
         //创建最终表,表名默认为模板编码
         String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
@@ -237,7 +239,6 @@ public class EtlServiceImpl implements EtlService {
 
         //保存字段及属性
         List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
-        fieldService.saveBatch(fields);
 
         //设置组件参数
         Map<String, Object> params = Maps.newHashMap();
@@ -247,11 +248,14 @@ public class EtlServiceImpl implements EtlService {
         params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
-        componentParamsService.saveBatch(biComponentParams);
 
-        dbHandler.createTable(tableName, dto.getFields());
         //NIFI创建 etl processors
         transferNifiOut(dto, params, biEtlModel);
+
+        dbHandler.createTable(tableName, dto.getFields());
+        componentService.save(component);
+        fieldService.saveBatch(fields);
+        componentParamsService.saveBatch(biComponentParams);
         return component;
     }
 
@@ -661,36 +665,6 @@ public class EtlServiceImpl implements EtlService {
         return context;
     }
 
-    private void createFirstPlan(ResourceComponentDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
-        BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
-        syncPlan.setCode(GenerateCodeUtil.generate());
-        syncPlan.setGroupCode("0");
-        //0数据同步、1数据整理
-        syncPlan.setPlanType("0");
-        syncPlan.setRefMappingCode(mappingConfig.getCode());
-        syncPlan.setPlanStage(PlanStageEnum.TO_EXECUTE.getKey());
-        syncPlan.setSqlLocalCount("0");
-        syncPlan.setCreateDate(LocalDateTime.now());
-        syncPlan.setRefModelCode(biEtlModel.getCode());
-        syncPlan.setCreateDate(LocalDateTime.now());
-        syncPlan.setCreateUser(ThreadLocalUtil.getOperator());
-        syncPlan.setTenantId(ThreadLocalUtil.getTenantId());
-        syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
-        //设置已处理初始值为0
-        syncPlan.setProcessCount("0");
-        syncPlan.setPlanResult(null);
-        //基于条件，获取元数据的总数，该执行效率较低下，建议 由配置时去执行
-        DbContext context = new DbContext();
-        context.setDbId(biEtlDatabaseInf.getId());
-        context.setTableName(mappingConfig.getFromTableName());
-        if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-            String condition = "'" + dto.getOffsetField() + "' > =" + "'" + dto.getOffsetValue() + "'";
-            context.setCondition(condition);
-        }
-        syncPlan.setSqlCount(String.valueOf(dbSelector.getTableCount(context)));
-        syncPlanService.save(syncPlan);
-    }
-
     private ProcessorContext transferNifiOut(OutComponentDto dto, Map<String, Object> params, BiEtlModel biEtlModel) throws Exception {
         ProcessorContext context = new ProcessorContext();
 
@@ -715,7 +689,7 @@ public class EtlServiceImpl implements EtlService {
         reqNifi.put("sqlSelectQuery", MapUtils.getString(params, ComponentCons.SQL_SELECT_QUERY));
         //PutDatabaseRecord
         reqNifi.put("toTableName", MapUtils.getString(params, ComponentCons.TO_TABLE_NAME));
-        context.setEnumList(BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(null));
+        context.setEnumList(BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null));
         context.setReq(reqNifi);
         context.setMethod(MethodEnum.SAVE);
         context.setModel(biEtlModel);

@@ -29,7 +29,7 @@ public class BiEtlSyncPlanController {
     @GetMapping("/sync")
     @NoLocal
     public RetResult<Void> sync(String tenantCode) throws Exception {
-        ThreadLocalUtil.set("tenantCode",tenantCode);
+        ThreadLocalUtil.set("tenantCode", tenantCode);
         planService.sync();
         return RetResponse.makeOKRsp();
     }
@@ -38,7 +38,7 @@ public class BiEtlSyncPlanController {
     @GetMapping("/etl")
     @NoLocal
     public RetResult<Void> etl(String tenantCode) throws Exception {
-        ThreadLocalUtil.set("tenantCode",tenantCode);
+        ThreadLocalUtil.set("tenantCode", tenantCode);
         planService.etl();
         return RetResponse.makeOKRsp();
     }
@@ -46,9 +46,11 @@ public class BiEtlSyncPlanController {
     @ApiOperation(value = "模板调度处理", notes = "模板")
     @GetMapping("/model")
     @NoLocal
-    public RetResult<Void> model(String modelCode) throws Exception {
-        ThreadLocalUtil.set("tenantCode",modelCode);
-        planService.etl();
+    public RetResult<Void> model(String modelCode, String tenantCode, String tenantId, String operator) throws Exception {
+        ThreadLocalUtil.set("tenantCode", tenantCode);
+        ThreadLocalUtil.set("tenantId", tenantId);
+        ThreadLocalUtil.set("operator", operator);
+        planService.model(modelCode);
         return RetResponse.makeOKRsp();
     }
 }

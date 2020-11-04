@@ -2,14 +2,14 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
-import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
-import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
-import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
+import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
 import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -45,7 +46,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private BiComponentService componentService;
     @Autowired
     private BiComponentParamsService componentParamsService;
-
+    @Autowired
+    private BiEtlModelService modelService;
 
     @Override
     public void sync() throws Exception {
@@ -189,20 +191,24 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     plan.setSqlLocalCount(localCount);
                 } else {
                     //已同步完成
-                    plan.setSqlLocalCount(localCount);
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
                     String processorsCode = getProcessorsCode(config);
-                    async(() -> {
-                        processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
-                    });
+                    async(() -> processorsService.runState(processorsCode, RunStatusEnum.STOP, true));
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
                     plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
-                    //todo 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE
+
+                    //获取停止nifi后的本地最新的数据count
+                    nowCount = dbHandler.getCount(config.getToTableName(), condition);
+                    plan.setSqlLocalCount(localCount);
+                    // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
+                    config.setLocalCount(String.valueOf(nowCount));
+//                    config.setOffsetValue();
+                    configService.save(config);
 
                     //设置Component 状态为可用
                     BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
@@ -259,4 +265,83 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     public void etl() {
         //todo 生成调度计划
     }
+
+    @Override
+    public void model(String modelCode) throws Exception {
+        //查询model信息，生成执行集计划
+        BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, modelCode)
+        );
+        if (!"1".equals(model.getValidate()) || EffectEnum.DISABLE.getKey().equals(model.getEffect())
+                || RunStatusEnum.STOP.getKey().equals(model.getStatus())) {
+            return;
+        }
+        //首先获取模板下的数据源组件
+        List<BiComponent> components = componentService.list(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefModelCode, modelCode)
+                .and(wrapper -> wrapper
+                        .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
+                        .or()
+                        .eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey())
+                )
+        );
+
+        final String groupCode = GenerateCodeUtil.generate();
+        List<RunPlan> runPlans = Lists.newArrayList();
+
+        //database
+        List<BiComponent> dbComponents = components.stream()
+                .filter(s -> s.getType().equals(ComponentTypeEnum.DATASOURCE.getKey())).collect(Collectors.toList());
+        for (BiComponent component : dbComponents) {
+            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                    .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode())
+                    .eq(BiEtlMappingConfig::getRefComponentCode, component.getCode()));
+            //判断是否归属当前模板
+            if (null == config) {
+                return;
+            }
+            //直连返回
+            if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())) {
+                return;
+            }
+            RunPlan runPlan = RunPlan.builder().groupCode(groupCode).planType("0")
+                    .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode)
+                    .mappingConfigCode(config).synCount();
+            runPlans.add(runPlan);
+        }
+
+
+        //out
+        BiComponent outComponent = components.stream()
+                .filter(s -> s.getType().equals(ComponentTypeEnum.OUT.getKey())).findAny().get();
+        RunPlan outPlan = RunPlan.builder().groupCode(groupCode).planType("1")
+                .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).refCode(outComponent.getCode());
+        runPlans.add(outPlan);
+
+        runPlans.forEach(this::createFirstPlan);
+    }
+
+
+    @Override
+    public void createFirstPlan(RunPlan plan) {
+        BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
+        syncPlan.setCode(GenerateCodeUtil.generate());
+        syncPlan.setGroupCode(plan.getGroupCode());
+        //0数据同步、1数据整理
+        syncPlan.setPlanType(plan.getPlanType());
+        syncPlan.setRefMappingCode(plan.getRefCode());
+        syncPlan.setPlanStage(PlanStageEnum.TO_EXECUTE.getKey());
+        syncPlan.setSqlLocalCount("0");
+        syncPlan.setRefModelCode(plan.getModelCode());
+        syncPlan.setCreateDate(LocalDateTime.now());
+        syncPlan.setCreateUser(ThreadLocalUtil.getOperator());
+        syncPlan.setTenantId(ThreadLocalUtil.getTenantId());
+        syncPlan.setIsFirst(plan.getFirst());
+        //设置已处理初始值为0
+        syncPlan.setProcessCount("0");
+        syncPlan.setPlanResult(null);
+        syncPlan.setSqlCount(plan.getCount());
+        syncPlanMapper.insert(syncPlan);
+    }
+
 }

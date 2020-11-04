@@ -91,6 +91,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         }
         BiComponent out = componentOptional.get();
         validate(out, components, connections);
+        //todo 待完善
     }
 
 
