@@ -23,7 +23,7 @@ public enum YesOrNoEnum {
      * @param key 环境key
      * @return String
      */
-    public static YesOrNoEnum getValue(String key) {
+    public static YesOrNoEnum getEnum(String key) {
         YesOrNoEnum[] enums = YesOrNoEnum.values();
         for (YesOrNoEnum anEnum : enums) {
             if (StringUtils.equals(key, anEnum.getKey())) {

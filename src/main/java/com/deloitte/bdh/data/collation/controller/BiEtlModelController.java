@@ -47,7 +47,7 @@ public class BiEtlModelController {
     @ApiOperation(value = "查看单个Model详情", notes = "查看单个Model详情")
     @PostMapping("/getModel")
     public RetResult<BiEtlModel> getModel(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(biEtlModelService.getModel(request.getData()));
+        return RetResponse.makeOKRsp(biEtlModelService.getById(request.getData()));
     }
 
     @ApiOperation(value = "新增Model", notes = "新增Model")
@@ -56,7 +56,7 @@ public class BiEtlModelController {
         return RetResponse.makeOKRsp(biEtlModelService.createModel(request.getData()));
     }
 
-    @ApiOperation(value = "启用/停用 Model的状态", notes = "启用/停用 Model")
+    @ApiOperation(value = "改变 Model的状态", notes = "有效/无效")
     @PostMapping("/effectModel")
     public RetResult<BiEtlModel> effectModel(@RequestBody @Validated RetRequest<EffectModelDto> request) throws Exception {
         return RetResponse.makeOKRsp(biEtlModelService.effectModel(request.getData()));
@@ -75,4 +75,18 @@ public class BiEtlModelController {
         return RetResponse.makeOKRsp(biEtlModelService.updateModel(request.getData()));
     }
 
+
+    @ApiOperation(value = "运行/停止 model", notes = "运行/停止 Model")
+    @PostMapping("/run")
+    public RetResult<Void> run(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        biEtlModelService.runModel(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "validate model", notes = "validate Model")
+    @PostMapping("/validate")
+    public RetResult<Void> validate(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        biEtlModelService.validate(request.getData());
+        return RetResponse.makeOKRsp();
+    }
 }

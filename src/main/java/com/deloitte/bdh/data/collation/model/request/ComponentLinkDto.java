@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.model.request;
 
 
+import com.deloitte.bdh.common.util.NifiProcessUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Getter
 @ToString
-public class ComponentLinkDto extends BaseRequest {
+public class ComponentLinkDto {
 
     @ApiModelProperty(value = "模板id", example = "0", required = true)
     @NotNull(message = " 模板id 不能为空")
@@ -26,4 +27,7 @@ public class ComponentLinkDto extends BaseRequest {
     @ApiModelProperty(value = "被关联组件编码", example = "0", required = true)
     @NotNull(message = " 被关联组件编码 不能为空")
     private String toComponentCode;
+
+    @ApiModelProperty(value = "坐标", example = "1")
+    private String position = NifiProcessUtil.randPosition();
 }

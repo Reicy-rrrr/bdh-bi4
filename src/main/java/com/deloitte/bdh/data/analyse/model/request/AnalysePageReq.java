@@ -21,6 +21,6 @@ public class AnalysePageReq extends PageDto {
     @ApiModelProperty(value = "名称")
     private String name;
 
-    @ApiModelProperty(value = "已发布,所有")
+    @ApiModelProperty(value = "已发布,所有,PUBLISH,EDIT")
     private String type;
 }

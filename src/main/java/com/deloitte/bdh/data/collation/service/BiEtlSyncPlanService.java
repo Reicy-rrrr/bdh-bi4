@@ -1,7 +1,9 @@
 package com.deloitte.bdh.data.collation.service;
 
+import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.collation.model.RunPlan;
 
 /**
  * <p>
@@ -20,7 +22,7 @@ public interface BiEtlSyncPlanService extends Service<BiEtlSyncPlan> {
      * @param
      * @return
      */
-    void process() throws Exception;
+    void sync() throws Exception;
 
     /**
      * process
@@ -29,5 +31,16 @@ public interface BiEtlSyncPlanService extends Service<BiEtlSyncPlan> {
      * @return
      */
     void etl() throws Exception;
+
+    /**
+     * process
+     *
+     * @param
+     * @return
+     */
+    void model(String modelCode) throws Exception;
+
+
+    void createFirstPlan(RunPlan plan);
 
 }

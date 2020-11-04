@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.model.request;
 
 
+import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
@@ -17,7 +18,7 @@ import java.util.List;
 @Setter
 @Getter
 @ToString
-public class OutComponentDto extends BaseRequest {
+public class OutComponentDto {
 
     @ApiModelProperty(value = "modelId", example = "0", required = true)
     @NotNull(message = " 模板id 不能为空")
@@ -33,4 +34,7 @@ public class OutComponentDto extends BaseRequest {
     @ApiModelProperty(value = "sqlSelectQuery", example = "0")
     @NotNull(message = " sqlSelectQuery 不能为空")
     private String sqlSelectQuery;
+
+    @ApiModelProperty(value = "坐标", example = "1")
+    private String position = NifiProcessUtil.randPosition();
 }

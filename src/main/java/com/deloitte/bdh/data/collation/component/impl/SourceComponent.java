@@ -3,11 +3,13 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -48,7 +50,7 @@ public class SourceComponent implements ComponentHandler {
         String componentCode = component.getCode();
         // 查询配置映射（表名）
         LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
-        configWrapper.eq(BiEtlMappingConfig::getRefCode, componentCode);
+        configWrapper.eq(BiEtlMappingConfig::getCode, component.getRefMappingCode());
         List<BiEtlMappingConfig> configs = biEtlMappingConfigService.list(configWrapper);
         if (CollectionUtils.isEmpty(configs)) {
             throw new BizException("源表组件配置映射信息不能为空！");
@@ -70,19 +72,23 @@ public class SourceComponent implements ComponentHandler {
             List<TableColumn> columns = dbHandler.getColumns(tableName);
             fieldNames = columns.stream().map(TableColumn::getName).collect(Collectors.toList());
         }
-        component.setFields(fieldNames);
 
         List<FieldMappingModel> fieldMappings = Lists.newArrayList();
-        Map<String, String> columnTypes = getColumnTypes(componentCode);
+        Map<String, TableField> columnTypes = getColumnTypes(component.getRefMappingCode());
         fieldNames.forEach(fieldName -> {
             // fullName: table.column
             String fullName = tableName + sql_key_separator + fieldName;
             // 使用全名进行编码获取到字段别名（全名可以避免重复）
-            String tempName = renameColumn(fullName);
+            String tempName = getColumnAlias(fullName);
+            TableField tableField = MapUtils.getObject(columnTypes, fieldName);
+
             FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldName,
-                    tableName, MapUtils.getString(columnTypes, fieldName));
+                    tableName, tableField.getColumnType(), tableField);
             fieldMappings.add(mapping);
         });
+
+        List<String> tempFields = fieldMappings.stream().map(FieldMappingModel::getTempFieldName).collect(Collectors.toList());
+        component.setFields(tempFields);
         component.setFieldMappings(fieldMappings);
         buildQuerySql(component);
     }
@@ -117,16 +123,17 @@ public class SourceComponent implements ComponentHandler {
     /**
      * 获取字段类型
      *
-     * @param componentCode 组件code
+     * @param mappingCode 映射code
      * @return
      */
-    private Map<String, String> getColumnTypes(String componentCode) {
-        List<TableField> tableFields = dbHandler.getTargetTableFields(componentCode);
+    private Map<String, TableField> getColumnTypes(String mappingCode) {
+        List<TableField> tableFields = dbHandler.getTargetTableFields(mappingCode);
         if (CollectionUtils.isEmpty(tableFields)) {
             return Maps.newHashMap();
         }
-        Map<String, String> columnTypes = tableFields.stream()
-                .collect(Collectors.toMap(TableField::getName, tableField -> tableField.getColumnType()));
+
+        Map<String, TableField> columnTypes = tableFields.stream()
+                .collect(Collectors.toMap(TableField::getName, tableField -> tableField));
         return columnTypes;
     }
 }

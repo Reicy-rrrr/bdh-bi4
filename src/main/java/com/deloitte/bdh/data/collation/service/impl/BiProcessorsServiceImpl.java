@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.deloitte.bdh.common.annotation.Header;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
@@ -100,7 +99,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         );
         nifiProcessService.runState(processors.getProcessGroupId(), state.getKey(), isGroup);
         if (RunStatusEnum.STOP == state) {
-            //清空所有 这里该走异步 todo
+            //清空所有 这里该走异步
             List<BiEtlConnection> connectionList = biEtlConnectionService.list(
                     new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, code)
             );
@@ -112,24 +111,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     }
 
     @Override
-    public void runStateAsync(@Header String x, String code, RunStatusEnum state, boolean isGroup) throws Exception {
-        BiProcessors processors = processorsMapper.selectOne(new LambdaQueryWrapper<BiProcessors>()
-                .eq(BiProcessors::getCode, code)
-        );
-        nifiProcessService.runState(processors.getProcessGroupId(), state.getKey(), isGroup);
-        if (RunStatusEnum.STOP == state) {
-            List<BiEtlConnection> connectionList = biEtlConnectionService.list(
-                    new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, code)
-            );
-            //清空所有
-            for (BiEtlConnection var : connectionList) {
-                nifiProcessService.dropConnections(var.getConnectionId());
-            }
-        }
-    }
-
-    @Override
-    public void removeProcessors(String processorsCode) throws Exception {
+    public void removeProcessors(String processorsCode, String dbId) throws Exception {
         BiProcessors processors = processorsMapper.selectOne(new LambdaQueryWrapper<BiProcessors>()
                 .eq(BiProcessors::getCode, processorsCode)
         );
@@ -141,23 +123,14 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         List<BiEtlConnection> connectionList = biEtlConnectionService.list(new LambdaQueryWrapper<BiEtlConnection>()
                 .eq(BiEtlConnection::getRelProcessorsCode, processors.getCode()));
 
-        BiComponentParams biComponentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
-                .eq(BiComponentParams::getParamValue, processors.getCode())
-        );
 
         //获取数据源类型，用于回滚，当为数据源组件 肯定有值
         String dbType = null;
-        if (null != biComponentParams) {
-            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                    .eq(BiEtlMappingConfig::getCode, biComponentParams.getParamValue())
-            );
-            dbType = databaseInfService.getById(config.getRefSourceId()).getType();
+        if (null != dbId) {
+            dbType = databaseInfService.getById(dbId).getType();
         }
 
         Map<String, Object> req = Maps.newHashMap();
-        req.put("createUser", processors.getCreateUser());
-        req.put("tenantId", processors.getTenantId());
         ProcessorContext context = new ProcessorContext();
         context.setEnumList(BiProcessorsTypeEnum.getEnum(processors.getType()).includeProcessor(dbType));
         context.setMethod(MethodEnum.DELETE);

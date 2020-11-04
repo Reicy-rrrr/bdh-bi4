@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,14 +12,22 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
+import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
+import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.model.datamodel.GridComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,6 +39,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -45,6 +55,8 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
 
     @Resource
     BiUiAnalysePageMapper biUiAnalysePageMapper;
+    @Resource
+    BiUiDemoMapper biUiDemoMapper;
 
     @Resource
     BiUiAnalysePageConfigMapper pageConfigMapper;
@@ -64,6 +76,12 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
          */
         if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(dto.getType())) {
             query.isNotNull(BiUiAnalysePage::getPublishId);
+        }
+        /**
+         * 没有发布过的页面
+         */
+        if (AnalyseConstants.PAGE_CONFIG_EDIT.equals(dto.getType())) {
+            query.isNull(BiUiAnalysePage::getPublishId);
         }
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         PageInfo<BiUiAnalysePage> pageInfo = new PageInfo(this.list(query));
@@ -144,6 +162,25 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             throw new Exception("已存在相同名称的文件夹");
         }
     }
+
+    @Override
+    public BaseComponentDataResponse getComponentDta(Map data) {
+        String type = (String) data.get("type");
+        if (AnalyseTypeConstants.GRID.equals(type)) {
+            GridComponentDataRequest request = JSONObject.parseObject(JSONObject.toJSONString(data), GridComponentDataRequest.class);
+            DataConfig dataConfig = request.getDataConfig();
+            DataModel dataModel = dataConfig.getDataModel();
+        }
+        return null;
+    }
+
+    public List demoGridDemoRequest(GridDemoRequest data) {
+        String select = "select " + AnalyseUtils.join(",", data.getColumns());
+        String querySql = select + " from " + data.getTable();
+        List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
+        return result;
+    }
+
 
     public boolean checkBiUiAnalysePageByName(String name, String tenantId, String currentId) {
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();

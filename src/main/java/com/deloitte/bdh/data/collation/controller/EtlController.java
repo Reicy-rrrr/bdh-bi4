@@ -7,13 +7,14 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
+import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -33,14 +34,32 @@ public class EtlController {
 
     @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
     @PostMapping("/resource/join")
-    public RetResult<BiComponent> joinResource(@RequestBody @Validated RetRequest<JoinComponentDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.joinResource(request.getData()));
+    public RetResult<BiComponent> resource(@RequestBody @Validated RetRequest<ResourceComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.resource(request.getData()));
     }
 
     @ApiOperation(value = "引入输出组件", notes = "引入输出组件")
     @PostMapping("/out/join")
     public RetResult<BiComponent> out(@RequestBody @Validated RetRequest<OutComponentDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.out(request.getData()));
+    }
+
+    @ApiOperation(value = "引入关联组件", notes = "引入关联组件")
+    @PostMapping("/join/join")
+    public RetResult<BiComponent> join(@RequestBody @Validated RetRequest<JoinComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.join(request.getData()));
+    }
+
+    @ApiOperation(value = "引入聚合组件", notes = "引入聚合组件")
+    @PostMapping("/group/join")
+    public RetResult<BiComponent> group(@RequestBody @Validated RetRequest<GroupComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.group(request.getData()));
+    }
+
+    @ApiOperation(value = "引入整理组件", notes = "引入整理组件")
+    @PostMapping("/arrange/join")
+    public RetResult<BiComponent> arrange(@RequestBody @Validated RetRequest<ArrangeComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData()));
     }
 
     @ApiOperation(value = "移除组件", notes = "移除组件")
@@ -50,4 +69,21 @@ public class EtlController {
         return RetResponse.makeOKRsp();
     }
 
+    @ApiOperation(value = "处理组件", notes = "处理组件")
+    @PostMapping("/component/handle")
+    public RetResult<ComponentVo> handle(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.handle(request.getData()));
+    }
+
+    @ApiOperation(value = "预览组件", notes = "预览组件")
+    @PostMapping("/component/data/preview")
+    public RetResult<ComponentPreviewVo> previewData(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.previewData(request.getData()));
+    }
+
+    @ApiOperation(value = "查看sql", notes = "查看sql")
+    @PostMapping("/component/sql/preview")
+    public RetResult<String> previewSql(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.previewSql(request.getData()));
+    }
 }

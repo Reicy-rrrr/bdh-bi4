@@ -29,14 +29,6 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
     PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto);
 
     /**
-     * 查看单个 Model
-     *
-     * @param id
-     * @return
-     */
-    BiEtlModel getModel(String id);
-
-    /**
      * 创建数据源
      *
      * @param dto
@@ -67,4 +59,21 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @return
      */
     BiEtlModel updateModel(UpdateModelDto dto) throws Exception;
+
+    /**
+     * 运行/停止 Model
+     *
+     * @param modelCode
+     * @return
+     */
+    void runModel(String modelCode) throws Exception;
+
+    /**
+     * 检查当前模板是否配置成功
+     *
+     * @param
+     * @return
+     */
+    void validate(String modelCode);
+
 }

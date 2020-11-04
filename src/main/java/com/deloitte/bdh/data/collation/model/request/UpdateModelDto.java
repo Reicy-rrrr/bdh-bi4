@@ -19,17 +19,13 @@ public class UpdateModelDto {
     @NotNull(message = "id 不能为空")
     private String id;
 
-    @ApiModelProperty(value = "modifiedUser", example = "1", required = true)
-    @NotNull(message = "modifiedUser 不能为空")
-    private String modifiedUser;
-
-    @ApiModelProperty(value = "数据源名称", example = "数据源名称")
+    @ApiModelProperty(value = "模型名称", example = "数据源名称")
     private String name;
 
     @ApiModelProperty(value = "描述", example = "描述")
     private String comments;
 
-
-
+    @ApiModelProperty(value = "cron 表达式", example = "表达式")
+    private String cronExpression;
 
 }

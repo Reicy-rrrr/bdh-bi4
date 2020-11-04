@@ -19,22 +19,24 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TableColumnTree {
+    @ApiModelProperty(value = "主键")
+    private String id;
     /**
      * 字段类型
      */
-    @ApiModelProperty(value = "字段类型", example = "String", required = true)
+    @ApiModelProperty(value = "字段类型")
     private String type;
 
     /**
      * 字段名称
      */
-    @ApiModelProperty(value = "字段名称", example = "name", required = true)
+    @ApiModelProperty(value = "字段名称", example = "name")
     private String name;
 
     /**
      * 字段描述
      */
-    @ApiModelProperty(value = "字段描述", example = "名称", required = true)
+    @ApiModelProperty(value = "字段描述", example = "名称")
     private String desc;
 
     /**

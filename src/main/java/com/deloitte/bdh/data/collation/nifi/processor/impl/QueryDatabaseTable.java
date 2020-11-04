@@ -48,7 +48,7 @@ public class QueryDatabaseTable extends AbstractProcessor {
         properties.put("Columns to Return", MapUtils.getString(context.getReq(), "Columns to Return"));
 
         if (null != context.getReq().get("db-fetch-where-clause")) {
-            properties.put("db-fetch-where-clause", MapUtils.getString(context.getReq(), "Additional WHERE clause"));
+            properties.put("db-fetch-where-clause", MapUtils.getString(context.getReq(), "db-fetch-where-clause"));
         }
         //自增字段
         properties.put("Maximum-value Columns", MapUtils.getString(context.getReq(), "Maximum-value Columns"));
@@ -62,8 +62,10 @@ public class QueryDatabaseTable extends AbstractProcessor {
 
         //调度相关的默认值
         Map<String, Object> config = Maps.newHashMap();
-        config.put("schedulingPeriod", "0 0 0 3 3 ? 2090");
-        config.put("schedulingStrategy", "CRON_DRIVEN");
+        config.put("schedulingPeriod", "129600 min");
+        config.put("schedulingStrategy", "TIMER_DRIVEN");
+        config.put("yieldDuration", "36000 sec");
+
         config.put("properties", properties);
 
         //processor 公共的

@@ -13,7 +13,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-10-26
+ * @since 2020-11-03
  */
 @TableName("BI_COMPONENT")
 public class BiComponent implements Serializable {
@@ -52,6 +52,12 @@ public class BiComponent implements Serializable {
      */
     @TableField("REF_MODEL_CODE")
     private String refModelCode;
+
+    /**
+     * 关联映射code（数据源组件）
+     */
+    @TableField("REF_MAPPING_CODE")
+    private String refMappingCode;
 
     /**
      * 版本号
@@ -125,6 +131,13 @@ public class BiComponent implements Serializable {
     public void setRefModelCode(String refModelCode) {
         this.refModelCode = refModelCode;
     }
+    public String getRefMappingCode() {
+        return refMappingCode;
+    }
+
+    public void setRefMappingCode(String refMappingCode) {
+        this.refMappingCode = refMappingCode;
+    }
     public String getVersion() {
         return version;
     }
@@ -191,6 +204,7 @@ public class BiComponent implements Serializable {
         ", type=" + type +
         ", effect=" + effect +
         ", refModelCode=" + refModelCode +
+        ", refMappingCode=" + refMappingCode +
         ", version=" + version +
         ", position=" + position +
         ", createDate=" + createDate +

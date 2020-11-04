@@ -169,7 +169,7 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public void drop(String tableName) {
-        String deleteSql = "DROP FROM " + tableName;
+        String deleteSql = "DROP TABLE " + tableName;
         biEtlDbMapper.truncateTable(deleteSql);
     }
 
@@ -224,7 +224,7 @@ public class DbHandlerImpl implements DbHandler {
      */
     private String buildCreateTableSql(String tableName, List<TableField> allFields, List<String> targetColumns) {
         StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("CREATE TABLE ").append(tableName).append("(");
+        sqlBuilder.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append("(");
         for (int index = 0; index < allFields.size(); index++) {
             TableField field = allFields.get(index);
             String fieldName = field.getName();
@@ -258,12 +258,12 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
-    public List<TableField> getTargetTableFields(String sourceComponentCode) {
-        if (StringUtils.isBlank(sourceComponentCode)) {
-            throw new BizException("数据源组件code不能为空！");
+    public List<TableField> getTargetTableFields(String mappingConfigCode) {
+        if (StringUtils.isBlank(mappingConfigCode)) {
+            throw new BizException("映射配置code不能为空！");
         }
         LambdaQueryWrapper<BiEtlMappingConfig> queryWrapper = new LambdaQueryWrapper();
-        queryWrapper.eq(BiEtlMappingConfig::getRefCode, sourceComponentCode);
+        queryWrapper.eq(BiEtlMappingConfig::getCode, mappingConfigCode);
         BiEtlMappingConfig mappingConfig = biEtlMappingConfigService.getOne(queryWrapper);
         if (mappingConfig == null) {
             throw new BizException("数据源组件配置信息未查询到！");

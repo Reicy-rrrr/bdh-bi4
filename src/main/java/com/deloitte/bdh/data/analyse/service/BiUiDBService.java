@@ -1,7 +1,8 @@
 package com.deloitte.bdh.data.analyse.service;
 
-import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BiUiDBService {
@@ -22,5 +23,5 @@ public interface BiUiDBService {
      * @param tableName
      * @return
      */
-    public List<TableColumn> getAllColumns(String tableName,String tenantId);
+    Collection<DataModelFieldTree> getAllColumns(String tableName, String tenantId);
 }

@@ -4,6 +4,8 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 
+import java.util.List;
+
 /**
  * <p>
  * 服务类
@@ -24,5 +26,16 @@ public interface BiComponentService extends Service<BiComponent> {
      * @return
      */
     BiComponentTree selectTree(String modelCode, String componentCode);
+
+    /**
+     * 基于模板编码停止运行
+     *
+     * @param modelCode
+     * @return
+     */
+    void stopComponents(String modelCode);
+
+    void validate(String modelCode);
+
 
 }

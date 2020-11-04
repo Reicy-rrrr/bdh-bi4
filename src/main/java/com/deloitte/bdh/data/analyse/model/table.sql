@@ -111,21 +111,6 @@ create table BI_UI_ANALYSE_PAGE_CONFIG
 );
 
 -- auto-generated definition
-create table BI_UI_DATA_MODEL
-(
-    ID                  int auto_increment
-        primary key,
-    PAGE_ID int NOT NULL  comment '报表ID',
-    CONTENT json null comment 'json配置内容',
-    CREATE_DATE         timestamp(6) not null,
-    CREATE_USER         varchar(50)  not null,
-    MODIFIED_DATE       timestamp(6) null,
-    MODIFIED_USER       varchar(50)  null,
-    IP                  varchar(40)  null,
-    TENANT_ID           varchar(50)  not null
-);
-
--- auto-generated definition
 create table BI_UI_ANALYSE_DEMO_SALE_DETAIL
 (
     ID                  int auto_increment

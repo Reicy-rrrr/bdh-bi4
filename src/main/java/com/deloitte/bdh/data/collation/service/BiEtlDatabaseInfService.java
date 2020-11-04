@@ -25,15 +25,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dto
      * @return
      */
-    PageResult<List<BiEtlDatabaseInf>> getResources(GetResourcesDto dto);
-
-    /**
-     * 查看单个resource
-     *
-     * @param id
-     * @return
-     */
-    BiEtlDatabaseInf getResource(String id);
+    PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto);
 
     /**
      * 创建数据源
