@@ -173,7 +173,6 @@ public class GroupComponent implements ComponentHandler {
                     sqlBuilder.append(field);
                 }
                 sqlBuilder.append(sql_key_bracket_right);
-                sqlBuilder.append(sql_key_blank);
                 sqlBuilder.append(sql_key_as);
                 sqlBuilder.append(newTempName);
                 sqlBuilder.append(sql_key_comma);
@@ -209,7 +208,6 @@ public class GroupComponent implements ComponentHandler {
             sqlBuilder.append(sql_key_bracket_left);
             sqlBuilder.append(fromComponent.getQuerySql());
             sqlBuilder.append(sql_key_bracket_right);
-            sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(sql_key_as);
             sqlBuilder.append(fromComponent.getTableName());
         }

@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
-import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -8,6 +7,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
@@ -421,8 +421,9 @@ public class EtlServiceImpl implements EtlService {
         String modelCode = model.getCode();
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+//        System.out.println(new SQLFormatterUtil().format(componentModel.getQuerySql()));
 //        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
-        return componentModel.getQuerySql();
+        return SqlFormatUtil.format(componentModel.getQuerySql());
     }
 
     @Override

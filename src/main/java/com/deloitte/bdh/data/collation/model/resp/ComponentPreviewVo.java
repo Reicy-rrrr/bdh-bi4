@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.collation.model.resp;
 
-import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
