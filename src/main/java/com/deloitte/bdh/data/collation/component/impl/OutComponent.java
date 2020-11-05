@@ -150,7 +150,7 @@ public class OutComponent implements ComponentHandler {
             List<String> setFields = setMappingFields.stream().map(BiEtlMappingField::getFieldName)
                     .collect(Collectors.toList());
             currMappings = fromMappings.stream()
-                    .filter(fromMapping -> setFields.contains(fromMapping.getTempFieldName()))
+                    .filter(fromMapping -> setFields.contains(fromMapping.getFinalFieldName()))
                     .collect(Collectors.toList());
         }
 

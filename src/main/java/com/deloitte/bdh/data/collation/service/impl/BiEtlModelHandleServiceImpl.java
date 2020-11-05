@@ -171,6 +171,9 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
                         .collect(Collectors.toList());
                 untreatedModel.setParams(currParams);
                 componentHandler.handle(untreatedModel);
+                untreatedModel.getFieldMappings().forEach(fieldMapping -> {
+                    fieldMapping.getTableField().setName(fieldMapping.getFinalFieldName());
+                });
                 untreatedModel.setHandled(true);
             }
             untreatedModels.clear();
