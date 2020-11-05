@@ -132,6 +132,12 @@ public class NifiController {
         return RetResponse.makeOKRsp(nifiProcessService.getMax(request.getData()));
     }
 
+    @ApiOperation(value = "getProcessGroupFull", notes = "getProcessGroupFull")
+    @PostMapping("/getProcessGroupFull")
+    public RetResult<Object> getProcessGroupFull(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.getProcessGroupFull(request.getData()));
+    }
+
     @ApiOperation(value = "getIp", notes = "previewConnction")
     @PostMapping("/getIp")
     public RetResult<String> getIp() throws Exception {

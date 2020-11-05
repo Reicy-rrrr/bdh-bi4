@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
+import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
@@ -48,6 +49,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private BiComponentParamsService componentParamsService;
     @Autowired
     private BiEtlModelService modelService;
+    @Autowired
+    private BiEtlModelHandleService modelHandleService;
 
     @Override
     public void sync() throws Exception {
@@ -281,6 +284,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         }
     }
 
+
     private void etlToExecuteTask(BiEtlSyncPlan plan) {
         try {
             //查看所属组是否都已经同步完成
@@ -301,16 +305,12 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 }
             }
             //同步任务已经执行完成，开始etl
-            List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                    .eq(BiComponentParams::getRefComponentCode, plan.getRefMappingCode())
-            );
-            String processorsCode = paramsList.stream()
-                    .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
-            String tableName = paramsList.stream()
-                    .filter(p -> p.getParamKey().equals(ComponentCons.TO_TABLE_NAME)).findAny().get().getParamValue();
-            String query = paramsList.stream()
-                    .filter(p -> p.getParamKey().equals(ComponentCons.SQL_SELECT_QUERY)).findAny().get().getParamValue();
+            ComponentModel componentModel = modelHandleService.handleModel(plan.getRefModelCode());
 
+            //etl组件对应的就是processorsCode
+            String processorsCode = plan.getRefMappingCode();
+            String tableName = componentModel.getTableName();
+            String query = componentModel.getQuerySql();
             String count = String.valueOf(dbHandler.getCountLocal(query));
             //清空
             dbHandler.truncateTable(tableName);
@@ -348,16 +348,9 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
     private void etlExecutingTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
-        List<BiComponentParams> params = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefComponentCode, plan.getRefMappingCode())
-
-        );
-        String processorsCode = params.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
-        String tableName = params.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.TO_TABLE_NAME)).findAny().get().getParamValue();
-        BiComponentParams countParam = params.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.LOCAL_COUNT)).findAny().get();
+        ComponentModel componentModel = modelHandleService.handleModel(plan.getRefModelCode());
+        String processorsCode = plan.getRefMappingCode();
+        String tableName = componentModel.getTableName();
         try {
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
@@ -392,10 +385,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     //获取停止nifi后的本地最新的数据count
                     nowCount = dbHandler.getCount(tableName, null);
                     plan.setSqlLocalCount(String.valueOf(nowCount));
-
-                    //component 参数增加本地同步的数量
-                    countParam.setParamValue(String.valueOf(nowCount));
-                    componentParamsService.updateById(countParam);
                 }
             }
         } catch (Exception e1) {
@@ -418,13 +407,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             return;
         }
         //首先获取模板下的数据源组件
+        //DATASOURCE
         List<BiComponent> components = componentService.list(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getRefModelCode, modelCode)
-                .and(wrapper -> wrapper
-                        .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
-                        .or()
-                        .eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey())
-                )
+                .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
+        );
+
+        BiProcessors out = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getRelModelCode, modelCode)
+                .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
         );
 
         final String groupCode = GenerateCodeUtil.generate();
@@ -453,10 +444,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
 
         //out 当前未count
-        BiComponent outComponent = components.stream()
-                .filter(s -> s.getType().equals(ComponentTypeEnum.OUT.getKey())).findAny().get();
         RunPlan outPlan = RunPlan.builder().groupCode(groupCode).planType("1")
-                .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).refCode(outComponent.getCode());
+                .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).refCode(out.getCode());
         runPlans.add(outPlan);
 
         runPlans.forEach(this::createFirstPlan);

@@ -41,6 +41,13 @@ public interface NifiProcessService {
     Map<String, Object> getProcessGroup(String id) throws Exception;
 
     /**
+     * function:查询 processGroup
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> getProcessGroupFull(String id) throws Exception;
+
+    /**
      * function:删除 processGroup
      *
      * @return Map<String, Object>

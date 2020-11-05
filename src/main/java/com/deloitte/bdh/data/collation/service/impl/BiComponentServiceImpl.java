@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
+import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
@@ -51,10 +52,12 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     public void stopComponents(String modelCode) throws Exception {
         List<BiComponent> components = biComponentMapper.selectList(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getRefModelCode, modelCode)
-                .and(wrapper -> wrapper.eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
-                        .or()
-                        .eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey())
-                )
+                .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
+        );
+
+        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getRelModelCode, modelCode)
+                .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
         );
 
         //调用nifi 停止与清空
@@ -62,6 +65,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             String processorsCode = getProcessorsCode(s.getCode());
             processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
         }
+        processorsService.runState(processors.getCode(), RunStatusEnum.STOP, true);
+        processorsService.removeProcessors(processors.getCode(), null);
     }
 
     @Override

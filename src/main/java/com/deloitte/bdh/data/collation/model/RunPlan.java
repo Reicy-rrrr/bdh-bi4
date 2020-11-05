@@ -19,6 +19,7 @@ public class RunPlan {
     private String count;
 
     private String tableName;
+    //数据源为mappingCode ,etl为processorsCode
     private String refCode;
 
     public static RunPlan builder() {
