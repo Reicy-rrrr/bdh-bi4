@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import com.deloitte.bdh.data.collation.database.po.TableSchema;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ import java.util.Map;
 public interface DbHandler {
 
     /**
-     * 创建表
+     * 创建表（如果表已存在，先删除）
      *
      * @param dto
      * @return
@@ -26,7 +25,7 @@ public interface DbHandler {
     void createTable(CreateTableDto dto) throws Exception;
 
     /**
-     * 创建表
+     * 创建表（如果表已存在，先删除）
      *
      * @param dbId            数据源id
      * @param targetTableName 目标表名
@@ -37,7 +36,7 @@ public interface DbHandler {
     void createTable(String dbId, String targetTableName, List<TableField> targetFields) throws Exception;
 
     /**
-     * 创建表
+     * 创建表（如果表已存在，先删除）
      *
      * @param targetTableName 目标表名
      * @param targetFields    目标字段

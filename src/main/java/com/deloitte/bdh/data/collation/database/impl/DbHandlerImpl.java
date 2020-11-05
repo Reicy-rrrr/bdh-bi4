@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
@@ -15,9 +16,13 @@ import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
-import com.deloitte.bdh.data.collation.model.*;
+import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
+import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
+import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +86,8 @@ public class DbHandlerImpl implements DbHandler {
 
         List<String> targetColumns = dto.getFields();
         String createTableSql = buildCreateTableSql(tableName, allFields, targetColumns);
+
+        drop(tableName);
         biEtlDbMapper.createTable(createTableSql);
     }
 
@@ -90,32 +97,25 @@ public class DbHandlerImpl implements DbHandler {
         // 转换表字段
         dbConvertor.convertFieldType(targetFields, context);
         String createTableSql = buildCreateTableSql(targetTableName, targetFields, Lists.newArrayList());
+
+        drop(targetTableName);
         biEtlDbMapper.createTable(createTableSql);
     }
 
     @Override
     public void createTable(String targetTableName, List<TableField> targetFields) throws Exception {
         String createTableSql = buildCreateTableSql(targetTableName, targetFields, Lists.newArrayList());
+
+        drop(targetTableName);
         biEtlDbMapper.createTable(createTableSql);
     }
 
     @Override
     public List<String> getTables() {
-        // TODO: 暂无数据，临时表测试
-        if (true) {
-            return Lists.newArrayList("ORDERS_USCA_BI");
-        }
-        // 查询当前租户下面所有模板
-        List<BiEtlModel> models = biEtlModelService.list();
-        if (CollectionUtils.isEmpty(models)) {
-            return Lists.newArrayList();
-        }
-        List<String> modelCodes = models.stream().map(BiEtlModel::getCode).collect(Collectors.toList());
-
-        // 查询所有模板下面的输出组件
+        // 查询所有输出组件
         LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
-        componentQuery.in(BiComponent::getRefModelCode, modelCodes);
         componentQuery.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
+        componentQuery.eq(BiComponent::getEffect, EffectEnum.ENABLE.getKey());
         List<BiComponent> components = biComponentService.list(componentQuery);
         if (CollectionUtils.isEmpty(components)) {
             return Lists.newArrayList();
@@ -124,9 +124,8 @@ public class DbHandlerImpl implements DbHandler {
 
         // 根据输出组件查询组件参数中的表名
         LambdaQueryWrapper<BiComponentParams> paramQuery = new LambdaQueryWrapper();
-        paramQuery.in(BiComponentParams::getCode, componentCodes);
-        // todo:需要修改成根据常量定义的参数查询
-        paramQuery.eq(BiComponentParams::getParamKey, "table");
+        paramQuery.in(BiComponentParams::getRefComponentCode, componentCodes);
+        paramQuery.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
         List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
         if (CollectionUtils.isEmpty(params)) {
             return Lists.newArrayList();
@@ -169,7 +168,7 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public void drop(String tableName) {
-        String deleteSql = "DROP TABLE " + tableName;
+        String deleteSql = "DROP TABLE IF EXISTS " + tableName;
         biEtlDbMapper.truncateTable(deleteSql);
     }
 
@@ -304,7 +303,7 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public long getCountLocal(String query) {
-        String querySql = "SELECT COUNT(1) FROM (" + query + " )";
+        String querySql = "SELECT COUNT(1) FROM (" + query + " ) count_temp";
         return biEtlDbMapper.selectCount(querySql);
     }
 
