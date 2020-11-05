@@ -188,9 +188,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
         } else {
             // 1：校验 model validae 状态，
-            if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
-                throw new RuntimeException("EtlServiceImpl.runModel.error : 未校验无法发布");
-            }
+//            if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
+//                throw new RuntimeException("EtlServiceImpl.runModel.error : 未校验无法发布");
+//            }
             //2：调用校验
             validate(modelCode);
             //3：启动模板 ，启动xxjob，有job去生成执行计划
