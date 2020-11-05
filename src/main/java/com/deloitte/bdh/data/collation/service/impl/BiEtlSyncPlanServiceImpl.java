@@ -294,6 +294,11 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     throw new RuntimeException("依赖的同步任务失败:" + syncPlan.getCode());
                 }
                 //todo 取消状态呢？
+
+                //有任务正在运行中，直接返回待下次处理
+                if (null == syncPlan.getPlanResult()) {
+                    return;
+                }
             }
             //同步任务已经执行完成，开始etl
             List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
