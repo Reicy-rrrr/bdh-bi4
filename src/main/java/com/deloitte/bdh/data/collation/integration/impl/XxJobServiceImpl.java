@@ -56,14 +56,14 @@ public class XxJobServiceImpl implements XxJobService {
     @Override
     public void start(String modelCode) throws Exception {
         logger.info("XxJobServiceImpl.start, modelCode:{} ", modelCode);
-        String path = getRequestPath(REMOVE_PATH, modelCode);
+        String path = getRequestPath(START_PATH, modelCode);
         HttpClientUtil.get(IP + path, null, null);
     }
 
     @Override
     public void stop(String modelCode) throws Exception {
         logger.info("XxJobServiceImpl.stop, modelCode:{} ", modelCode);
-        String path = getRequestPath(REMOVE_PATH, modelCode);
+        String path = getRequestPath(STOP_PATH, modelCode);
         HttpClientUtil.get(IP + path, null, null);
     }
 

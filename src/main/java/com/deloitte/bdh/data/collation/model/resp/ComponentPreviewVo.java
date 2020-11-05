@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.model.resp;
 
-import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,7 +25,7 @@ public class ComponentPreviewVo implements Serializable {
 
     /** 字段列表 */
     @ApiModelProperty(value = "字段列表", example = "[]", required = true)
-    private List<FieldMappingModel> columns;
+    private List<TableField> columns;
 
     /** 数据列表 */
     @ApiModelProperty(value = "数据行(数组)", example = "[]", required = true)

@@ -111,7 +111,7 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
     }
 
     @Override
-    public void removeProcessors(String processorsCode) throws Exception {
+    public void removeProcessors(String processorsCode, String dbId) throws Exception {
         BiProcessors processors = processorsMapper.selectOne(new LambdaQueryWrapper<BiProcessors>()
                 .eq(BiProcessors::getCode, processorsCode)
         );
@@ -123,18 +123,11 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         List<BiEtlConnection> connectionList = biEtlConnectionService.list(new LambdaQueryWrapper<BiEtlConnection>()
                 .eq(BiEtlConnection::getRelProcessorsCode, processors.getCode()));
 
-        BiComponentParams biComponentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
-                .eq(BiComponentParams::getParamValue, processors.getCode())
-        );
 
         //获取数据源类型，用于回滚，当为数据源组件 肯定有值
         String dbType = null;
-        if (null != biComponentParams) {
-            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                    .eq(BiEtlMappingConfig::getCode, biComponentParams.getParamValue())
-            );
-            dbType = databaseInfService.getById(config.getRefSourceId()).getType();
+        if (null != dbId) {
+            dbType = databaseInfService.getById(dbId).getType();
         }
 
         Map<String, Object> req = Maps.newHashMap();

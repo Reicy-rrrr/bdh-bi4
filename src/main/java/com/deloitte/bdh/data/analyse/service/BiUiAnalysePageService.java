@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
+import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
@@ -53,6 +54,14 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     void delAnalysePage(String id) throws Exception;
+
+    /**
+     * 批量删除页面
+     *
+     * @param request
+     * @return
+     */
+    void batchDelAnalysePage(BatchDelAnalysePageReq request);
 
     /**
      * 修改页面

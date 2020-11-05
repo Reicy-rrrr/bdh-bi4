@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.component.model;
 
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,6 +34,9 @@ public class FieldMappingModel implements Cloneable {
     /** 原始字段是否为索引 */
     @ApiModelProperty(value = "原始字段是否为索引", example = "true")
     private boolean isIndex = false;
+    /** 表字段 */
+    @ApiModelProperty(value = "表字段", example = "")
+    private TableField tableField;
 
     public FieldMappingModel(String tempFieldName, String finalFieldName, String originalFieldName, String originalTableName, String originalColumnType) {
         this.tempFieldName = tempFieldName;
@@ -40,5 +44,14 @@ public class FieldMappingModel implements Cloneable {
         this.originalFieldName = originalFieldName;
         this.originalTableName = originalTableName;
         this.originalColumnType = originalColumnType;
+    }
+
+    public FieldMappingModel(String tempFieldName, String finalFieldName, String originalFieldName, String originalTableName, String originalColumnType, TableField tableField) {
+        this.tempFieldName = tempFieldName;
+        this.finalFieldName = finalFieldName;
+        this.originalFieldName = originalFieldName;
+        this.originalTableName = originalTableName;
+        this.originalColumnType = originalColumnType;
+        this.tableField = tableField;
     }
 }

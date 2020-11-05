@@ -12,18 +12,23 @@ import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.datamodel.*;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.GridComponentDataRequest;
-import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.model.datamodel.GridComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
+import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,8 +50,12 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
 
     @Resource
     BiUiAnalysePageMapper biUiAnalysePageMapper;
+
     @Resource
     BiUiDemoMapper biUiDemoMapper;
+
+    @Resource
+    BiUiAnalysePageConfigMapper pageConfigMapper;
 
     @Override
     public PageResult<List<BiUiAnalysePage>> getAnalysePages(AnalysePageReq dto) {
@@ -107,6 +116,33 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             throw new Exception("默认文件夹不能删除");
         }
         biUiAnalysePageMapper.deleteById(id);
+    }
+
+    @Override
+    public void batchDelAnalysePage(BatchDelAnalysePageReq request) {
+        List<BiUiAnalysePage> pageList = biUiAnalysePageMapper.selectBatchIds(request.getIds());
+        if (CollectionUtils.isNotEmpty(pageList)) {
+            List<String> pageIds = Lists.newArrayList();
+            for (BiUiAnalysePage page : pageList) {
+                if (StringUtils.equals(AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT, page.getInitType())) {
+                    throw new BizException("默认文件夹不能删除");
+                }
+                pageIds.add(page.getId());
+            }
+            for (BiUiAnalysePage page : pageList) {
+                QueryWrapper<BiUiAnalysePageConfig> queryWrapper = new QueryWrapper<>();
+                queryWrapper.eq("PAGE_ID", page.getId());
+                List<BiUiAnalysePageConfig> configList = pageConfigMapper.selectList(queryWrapper);
+                if (CollectionUtils.isNotEmpty(configList)) {
+                    List<String> configIds = Lists.newArrayList();
+                    for (BiUiAnalysePageConfig pageConfig : configList) {
+                        configIds.add(pageConfig.getId());
+                    }
+                    pageConfigMapper.deleteBatchIds(configIds);
+                }
+            }
+            biUiAnalysePageMapper.deleteBatchIds(pageIds);
+        }
     }
 
     @Override

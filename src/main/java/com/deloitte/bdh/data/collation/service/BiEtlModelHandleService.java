@@ -26,4 +26,12 @@ public interface BiEtlModelHandleService {
      * @return ComponentModel
      */
     ComponentModel handleModel(String modelCode);
+
+    /**
+     * 处理组件预览sql（只有在处理完以后的组件才能处理预览sql）
+     *
+     * @param componentModel 组件模型
+     * @return ComponentModel
+     */
+    void handlePreviewSql(ComponentModel componentModel);
 }

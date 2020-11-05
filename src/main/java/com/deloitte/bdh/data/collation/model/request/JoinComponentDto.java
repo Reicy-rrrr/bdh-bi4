@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.model.request;
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.collation.component.model.JoinModel;
-import com.deloitte.bdh.data.collation.database.po.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -30,7 +29,7 @@ public class JoinComponentDto {
 
     @ApiModelProperty(value = "字段列表", example = "0")
     @NotNull(message = " 字段列表 不能为空")
-    private List<TableField> fields;
+    private List<String> fields;
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();

@@ -302,6 +302,12 @@ public class DbHandlerImpl implements DbHandler {
         }
     }
 
+    @Override
+    public long getCountLocal(String query) {
+        String querySql = "SELECT COUNT(1) FROM (" + query + " )";
+        return biEtlDbMapper.selectCount(querySql);
+    }
+
     private List<TableField> getTableFieldFromMysql(List<Map<String, Object>> results) {
         List<TableField> columns = Lists.newArrayList();
         results.forEach(columnMap -> {

@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
-import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -8,12 +7,12 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
+import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.database.DbSelector;
-import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.EtlService;
@@ -72,8 +71,7 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private DbHandler dbHandler;
-    @Autowired
-    private DbSelector dbSelector;
+
 
     @Autowired
     private BiEtlModelHandleService biEtlModelHandleService;
@@ -132,13 +130,11 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-//        params.put(ComponentCons.BELONG_MAPPING_CODE, dto.getBelongMappingCode());
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             String mappingCode = GenerateCodeUtil.generate();
-            component.setRefMappingCode(dto.getBelongMappingCode());
-//            params.put(ComponentCons.BELONG_MAPPING_CODE, mappingCode);
+            component.setRefMappingCode(mappingCode);
             dto.setBelongMappingCode(mappingCode);
 
             //step2.1:是独立副本，创建映射
@@ -163,6 +159,12 @@ public class EtlServiceImpl implements EtlService {
                 if (StringUtils.isBlank(dto.getOffsetField())) {
                     throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段不能为空");
                 }
+
+                Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
+                if (!field.isPresent()) {
+                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段必须再同步的字段列表以内");
+                }
+
                 //同步都涉及 偏移字段，方便同步
                 String processorsCode = GenerateCodeUtil.genProcessors();
                 mappingConfig.setOffsetField(dto.getOffsetField());
@@ -172,6 +174,12 @@ public class EtlServiceImpl implements EtlService {
                 //表名：组件编码+源表名
                 String toTableName = componentCode + "_" + dto.getTableName();
                 mappingConfig.setToTableName(toTableName);
+
+                //step2.1.0：获取数据源的count
+                RunPlan runPlan = RunPlan.builder()
+                        .groupCode("0").planType("0")
+                        .first(YesOrNoEnum.YES.getKey()).modelCode(biEtlModel.getCode())
+                        .mappingConfigCode(mappingConfig).synCount();
 
                 //step2.1.1:创建 字段列表,此处为映射编码
                 List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), mappingCode, dto.getFields());
@@ -183,8 +191,8 @@ public class EtlServiceImpl implements EtlService {
                 //step 2.1.3:创建目标表
                 dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
 
-                //step2.1.4 生成第一次的调度计划
-                createFirstPlan(dto, biEtlModel, biEtlDatabaseInf, mappingConfig);
+                //step2.1.4 生成同步的第一次的调度计划
+                syncPlanService.createFirstPlan(runPlan);
 
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
@@ -224,7 +232,6 @@ public class EtlServiceImpl implements EtlService {
         component.setCreateDate(LocalDateTime.now());
         component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
-        componentService.save(component);
 
         //创建最终表,表名默认为模板编码
         String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
@@ -232,7 +239,6 @@ public class EtlServiceImpl implements EtlService {
 
         //保存字段及属性
         List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
-        fieldService.saveBatch(fields);
 
         //设置组件参数
         Map<String, Object> params = Maps.newHashMap();
@@ -242,11 +248,14 @@ public class EtlServiceImpl implements EtlService {
         params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
-        componentParamsService.saveBatch(biComponentParams);
 
-        dbHandler.createTable(tableName, dto.getFields());
         //NIFI创建 etl processors
         transferNifiOut(dto, params, biEtlModel);
+
+        dbHandler.createTable(tableName, dto.getFields());
+        componentService.save(component);
+        fieldService.saveBatch(fields);
+        componentParamsService.saveBatch(biComponentParams);
         return component;
     }
 
@@ -273,7 +282,7 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
@@ -307,12 +316,12 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getModel()));
+        params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getGroups()));
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
@@ -341,7 +350,7 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
@@ -392,12 +401,16 @@ public class EtlServiceImpl implements EtlService {
         String modelCode = model.getCode();
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
-        String querySql = componentModel.getQuerySql();
-        querySql += " LIMIT 10";
-        List<Map<String, Object>> rows = dbHandler.executeQuery(querySql);
+        biEtlModelHandleService.handlePreviewSql(componentModel);
+        List<Map<String, Object>> rows = dbHandler.executeQuery(componentModel.getPreviewSql());
 
         ComponentPreviewVo previewVo = new ComponentPreviewVo();
         previewVo.setRows(rows);
+
+        List<TableField> columns = componentModel.getFieldMappings().stream()
+                .map(FieldMappingModel::getTableField).collect(Collectors.toList());
+
+        previewVo.setColumns(columns);
         return previewVo;
     }
 
@@ -418,8 +431,9 @@ public class EtlServiceImpl implements EtlService {
         String modelCode = model.getCode();
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
-        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
-        return querySql;
+//        System.out.println(new SQLFormatterUtil().format(componentModel.getQuerySql()));
+//        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
+        return SqlFormatUtil.format(componentModel.getQuerySql());
     }
 
     @Override
@@ -489,8 +503,8 @@ public class EtlServiceImpl implements EtlService {
         //当前是 "非直连"
         //不管当前是 第一次同步还是定时调度，是待同步还是同步中还是同步完成，都一致操作
         //1：若当前调度计划未完成，2： 停止清空NIFI，修改状态为取消，3：删除本地表，4：删除本地组件配置，5： 删除NIFI配置
-        String processorsCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
+        BiComponentParams processorsCodeParam = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get();
         BiEtlSyncPlan syncPlan = syncPlanService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getRefMappingCode, mappingCode)
                 .orderByDesc(BiEtlSyncPlan::getCreateDate)
@@ -498,10 +512,11 @@ public class EtlServiceImpl implements EtlService {
         );
         if (StringUtils.isBlank(syncPlan.getPlanResult())) {
             syncPlan.setPlanResult(PlanResultEnum.CANCEL.getKey());
+            syncPlan.setResultDesc(PlanResultEnum.CANCEL.getValue());
             syncPlanService.updateById(syncPlan);
         }
-        processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
-        processorsService.removeProcessors(processorsCode);
+        processorsService.runState(processorsCodeParam.getParamValue(), RunStatusEnum.STOP, true);
+        processorsService.removeProcessors(processorsCodeParam.getParamValue(), config.getRefSourceId());
         dbHandler.drop(config.getToTableName());
         componentService.removeById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
@@ -521,7 +536,7 @@ public class EtlServiceImpl implements EtlService {
         Optional<BiComponentParams> optionalProcessorsCode = paramsList.stream()
                 .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny();
         if (optionalProcessorsCode.isPresent()) {
-            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue());
+            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue(), null);
         }
 
         Optional<BiComponentParams> optionalTableName = paramsList.stream()
@@ -566,6 +581,25 @@ public class EtlServiceImpl implements EtlService {
             params.setCode(GenerateCodeUtil.generate());
             params.setFieldName(var.getName());
             params.setFieldType(var.getColumnType());
+            params.setRefCode(code);
+            params.setCreateDate(LocalDateTime.now());
+            params.setCreateUser(operator);
+            params.setTenantId(tenantId);
+            result.add(params);
+        }
+        return result;
+    }
+
+    private List<BiEtlMappingField> transferFieldsByName(String operator, String tenantId, String code, List<String> list) {
+        List<BiEtlMappingField> result = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(list)) {
+            return result;
+        }
+        for (String field : list) {
+            BiEtlMappingField params = new BiEtlMappingField();
+            params.setCode(GenerateCodeUtil.generate());
+            params.setFieldName(field);
+            params.setFieldType(null);
             params.setRefCode(code);
             params.setCreateDate(LocalDateTime.now());
             params.setCreateUser(operator);
@@ -631,36 +665,6 @@ public class EtlServiceImpl implements EtlService {
         return context;
     }
 
-    private void createFirstPlan(ResourceComponentDto dto, BiEtlModel biEtlModel, BiEtlDatabaseInf biEtlDatabaseInf, BiEtlMappingConfig mappingConfig) throws Exception {
-        BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
-        syncPlan.setCode(GenerateCodeUtil.generate());
-        syncPlan.setGroupCode("0");
-        //0数据同步、1数据整理
-        syncPlan.setPlanType("0");
-        syncPlan.setRefMappingCode(mappingConfig.getCode());
-        syncPlan.setPlanStage(PlanStageEnum.TO_EXECUTE.getKey());
-        syncPlan.setSqlLocalCount("0");
-        syncPlan.setCreateDate(LocalDateTime.now());
-        syncPlan.setRefModelCode(biEtlModel.getCode());
-        syncPlan.setCreateDate(LocalDateTime.now());
-        syncPlan.setCreateUser(ThreadLocalUtil.getOperator());
-        syncPlan.setTenantId(ThreadLocalUtil.getTenantId());
-        syncPlan.setIsFirst(YesOrNoEnum.YES.getKey());
-        //设置已处理初始值为0
-        syncPlan.setProcessCount("0");
-        syncPlan.setPlanResult(null);
-        //基于条件，获取元数据的总数，该执行效率较低下，建议 由配置时去执行
-        DbContext context = new DbContext();
-        context.setDbId(biEtlDatabaseInf.getId());
-        context.setTableName(mappingConfig.getFromTableName());
-        if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-            String condition = "'" + dto.getOffsetField() + "' > =" + "'" + dto.getOffsetValue() + "'";
-            context.setCondition(condition);
-        }
-        syncPlan.setSqlCount(String.valueOf(dbSelector.getTableCount(context)));
-        syncPlanService.save(syncPlan);
-    }
-
     private ProcessorContext transferNifiOut(OutComponentDto dto, Map<String, Object> params, BiEtlModel biEtlModel) throws Exception {
         ProcessorContext context = new ProcessorContext();
 
@@ -685,7 +689,7 @@ public class EtlServiceImpl implements EtlService {
         reqNifi.put("sqlSelectQuery", MapUtils.getString(params, ComponentCons.SQL_SELECT_QUERY));
         //PutDatabaseRecord
         reqNifi.put("toTableName", MapUtils.getString(params, ComponentCons.TO_TABLE_NAME));
-        context.setEnumList(BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(null));
+        context.setEnumList(BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null));
         context.setReq(reqNifi);
         context.setMethod(MethodEnum.SAVE);
         context.setModel(biEtlModel);

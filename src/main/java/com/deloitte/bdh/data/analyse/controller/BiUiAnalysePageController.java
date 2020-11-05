@@ -8,6 +8,7 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
+import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
@@ -61,6 +62,13 @@ public class BiUiAnalysePageController {
     @PostMapping("/delAnalysePage")
     public RetResult<Void> delAnalysePage(@RequestBody @Validated RetRequest<String> request) throws Exception {
         biUiAnalysePageService.delAnalysePage(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "批量删除页面", notes = "批量删除页面")
+    @PostMapping("/batchDelAnalysePage")
+    public RetResult<Void> batchDelAnalysePage(@RequestBody @Validated RetRequest<BatchDelAnalysePageReq> request) throws Exception {
+        biUiAnalysePageService.batchDelAnalysePage(request.getData());
         return RetResponse.makeOKRsp();
     }
 
