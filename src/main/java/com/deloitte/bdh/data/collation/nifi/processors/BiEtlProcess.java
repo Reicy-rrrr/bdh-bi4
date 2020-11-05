@@ -53,6 +53,8 @@ public class BiEtlProcess extends AbStractProcessors<ProcessorContext> {
                     context.getHasDelProcessorList().add(context.getTempProcessor());
                     context.removeProcessorTemp();
                 }
+                //处理processors的 processGroupId
+                nifiProcessService.delProcessGroup(context.getProcessors().getProcessGroupId());
                 break;
             case UPDATE:
                 for (ProcessorTypeEnum typeEnum : context.getEnumList()) {
