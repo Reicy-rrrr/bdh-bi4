@@ -102,10 +102,17 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             throw new BizException("当前组件还未处理，不支持预览sql！");
         }
 
+        ComponentTypeEnum type = componentModel.getTypeEnum();
+        // 输出组件直接使用查询语句
+        if (ComponentTypeEnum.OUT.equals(type)) {
+            componentModel.setPreviewSql(componentModel.getQuerySql() + " LIMIT 10");
+            return;
+        }
+
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(ComponentHandler.sql_key_select);
 
-        ComponentTypeEnum type = componentModel.getTypeEnum();
+
         List<FieldMappingModel> mappings = componentModel.getFieldMappings();
         mappings.forEach(fieldMapping -> {
             if (ComponentTypeEnum.DATASOURCE.equals(type)) {
