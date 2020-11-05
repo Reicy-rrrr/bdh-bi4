@@ -12,6 +12,7 @@ public class ComponentCons {
     //以下为输出组件参数
     public static final String TO_TABLE_NAME = "toTableName";
     public static final String SQL_SELECT_QUERY = "sqlSelectQuery";
+    public static final String LOCAL_COUNT = "localCount";
 
     /** 关联组件参数 */
     public static final String JOIN_PARAM_KEY_TABLES = "tables";

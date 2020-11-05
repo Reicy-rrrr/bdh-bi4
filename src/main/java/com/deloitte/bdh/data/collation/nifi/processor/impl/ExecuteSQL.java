@@ -50,6 +50,7 @@ public class ExecuteSQL extends AbstractProcessor {
         config.put("schedulingPeriod", "129600 min");
         config.put("schedulingStrategy", "TIMER_DRIVEN");
         config.put("yieldDuration", "36000 sec");
+        config.put("executionNode", "PRIMARY");
 
         config.put("properties", properties);
 
