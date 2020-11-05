@@ -48,7 +48,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     }
 
     @Override
-    public void stopComponents(String modelCode) {
+    public void stopComponents(String modelCode) throws Exception {
         List<BiComponent> components = biComponentMapper.selectList(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getRefModelCode, modelCode)
                 .and(wrapper -> wrapper.eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
@@ -58,12 +58,10 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         );
 
         //调用nifi 停止与清空
-        components.forEach(s -> {
+        for (BiComponent s : components) {
             String processorsCode = getProcessorsCode(s.getCode());
-            async(() -> {
-                processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
-            });
-        });
+            processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+        }
     }
 
     @Override

@@ -137,14 +137,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                         .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
                 );
-
+                String processorsCode = getProcessorsCode(config);
                 SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
+                //第一次执行时，当为全量则清空，增量不处理
                 if (0 == count && SyncTypeEnum.FULL == typeEnum) {
-                    //全量则清空
                     dbHandler.truncateTable(config.getToTableName());
+                    processorsService.clearRequest(processorsCode);
                 }
                 //启动NIFI
-                processorsService.runState(getProcessorsCode(config), RunStatusEnum.RUNNING, true);
+                processorsService.runState(processorsCode, RunStatusEnum.RUNNING, true);
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
@@ -174,9 +175,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
                 String processorsCode = getProcessorsCode(config);
-                async(() -> {
-                    processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
-                });
+                processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+                //判断是全量还是增量，是否清空表与 nifi偏移量？todo
             } else {
                 count++;
                 //基于条件实时查询 localCount
@@ -195,7 +195,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
                     //调用nifi 停止与清空
                     String processorsCode = getProcessorsCode(config);
-                    async(() -> processorsService.runState(processorsCode, RunStatusEnum.STOP, true));
+                    processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
@@ -208,7 +208,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
                     config.setLocalCount(String.valueOf(nowCount));
 //                    config.setOffsetValue();
-                    configService.save(config);
+                    configService.updateById(config);
 
                     //设置Component 状态为可用
                     BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
@@ -359,7 +359,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
                 String processorsCode = getProcessorsCode(config);
-                async(() -> processorsService.runState(processorsCode, RunStatusEnum.STOP, true));
+                processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
             } else {
                 count++;
                 //基于条件实时查询 localCount
@@ -378,7 +378,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
                     //调用nifi 停止与清空
                     String processorsCode = getProcessorsCode(config);
-                    async(() -> processorsService.runState(processorsCode, RunStatusEnum.STOP, true));
+                    processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());

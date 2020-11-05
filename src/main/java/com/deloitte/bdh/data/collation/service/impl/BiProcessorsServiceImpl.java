@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
+import com.deloitte.bdh.data.collation.enums.ProcessorTypeEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
@@ -103,10 +103,21 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
             List<BiEtlConnection> connectionList = biEtlConnectionService.list(
                     new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, code)
             );
-            //清空所有
-            for (BiEtlConnection var : connectionList) {
-                nifiProcessService.dropConnections(var.getConnectionId());
-            }
+            async(() -> {
+                for (BiEtlConnection var : connectionList) {
+                    nifiProcessService.dropConnections(var.getConnectionId());
+                }
+            });
+
+            //终止所有
+            List<BiEtlProcessor> processorList = processorService.list(new LambdaQueryWrapper<BiEtlProcessor>()
+                    .eq(BiEtlProcessor::getRelProcessorsCode, code)
+            );
+            async(() -> {
+                for (BiEtlProcessor var : processorList) {
+                    nifiProcessService.terminate(var.getProcessId());
+                }
+            });
         }
     }
 
@@ -141,6 +152,17 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
         context.setReq(req);
         etlProcess.operateProcessorGroup(context);
         processorsMapper.deleteById(processors.getId());
+    }
+
+    @Override
+    public void clearRequest(String processorsCode) throws Exception {
+        BiEtlProcessor queryDatabaseTable = processorService.getOne(new LambdaQueryWrapper<BiEtlProcessor>()
+                .eq(BiEtlProcessor::getRelProcessorsCode, processorsCode)
+                .eq(BiEtlProcessor::getType, ProcessorTypeEnum.QueryDatabaseTable.getType())
+        );
+        if (null != queryDatabaseTable) {
+            nifiProcessService.clearRequest(queryDatabaseTable.getProcessId());
+        }
     }
 
     private Set<String> preProcessorChain(List<BiConnections> list, Set<String> set, String processorsCode) {
