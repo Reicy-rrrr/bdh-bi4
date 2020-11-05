@@ -3,11 +3,7 @@ package com.deloitte.bdh.data.analyse.service;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
-import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
-import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
-import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 
 import java.util.List;
@@ -46,6 +42,14 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     BiUiAnalysePage createAnalysePage(CreateAnalysePageDto dto) throws Exception;
+
+    /**
+     * 复制页面
+     *
+     * @param request
+     * @return
+     */
+    BiUiAnalysePage copyAnalysePage(CopyAnalysePageRequest request);
 
     /**
      * del页面
