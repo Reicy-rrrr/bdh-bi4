@@ -204,7 +204,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
                     //获取停止nifi后的本地最新的数据count
                     nowCount = dbHandler.getCount(config.getToTableName(), condition);
-                    plan.setSqlLocalCount(localCount);
+                    plan.setSqlLocalCount(String.valueOf(nowCount));
                     // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
                     config.setLocalCount(String.valueOf(nowCount));
 //                    config.setOffsetValue();
@@ -348,23 +348,28 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
 
     private void etlExecutingTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
-        BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
-        );
+        List<BiComponentParams> params = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, plan.getRefMappingCode())
 
+        );
+        String processorsCode = params.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
+        String tableName = params.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.TO_TABLE_NAME)).findAny().get().getParamValue();
+        BiComponentParams countParam = params.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.LOCAL_COUNT)).findAny().get();
         try {
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
-                String processorsCode = getProcessorsCode(config);
                 processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
             } else {
                 count++;
                 //基于条件实时查询 localCount
 //                String condition = assemblyCondition(plan.getIsFirst(), config);
-                long nowCount = dbHandler.getCount(config.getToTableName(), null);
+                long nowCount = dbHandler.getCount(tableName, null);
 
                 //判断目标数据库与源数据库的表count
                 String sqlCount = plan.getSqlCount();
@@ -377,7 +382,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
-                    String processorsCode = getProcessorsCode(config);
                     processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
 
                     //修改plan 执行状态
@@ -386,24 +390,16 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                     plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
 
                     //获取停止nifi后的本地最新的数据count
-                    nowCount = dbHandler.getCount(config.getToTableName(), null);
-                    plan.setSqlLocalCount(localCount);
-                    // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
-                    config.setLocalCount(String.valueOf(nowCount));
-//                    config.setOffsetValue();
-                    configService.save(config);
+                    nowCount = dbHandler.getCount(tableName, null);
+                    plan.setSqlLocalCount(String.valueOf(nowCount));
 
-                    //设置Component 状态为可用
-                    BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
-                            .eq(BiComponent::getCode, config.getRefComponentCode())
-                    );
-                    component.setEffect(EffectEnum.ENABLE.getKey());
-                    component.setModifiedDate(LocalDateTime.now());
-                    componentService.updateById(component);
+                    //component 参数增加本地同步的数量
+                    countParam.setParamValue(String.valueOf(nowCount));
+                    componentParamsService.updateById(countParam);
                 }
             }
         } catch (Exception e1) {
-            log.error("sync.etlExecutingTask:" + e1);
+            log.error("etl.etlExecutingTask:" + e1);
             plan.setResultDesc(e1.getMessage());
         } finally {
             plan.setProcessCount(String.valueOf(count));
