@@ -12,10 +12,9 @@ import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
-import com.deloitte.bdh.data.analyse.model.datamodel.GridComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.*;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.GridComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;
@@ -131,6 +130,16 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             GridComponentDataRequest request = JSONObject.parseObject(JSONObject.toJSONString(data), GridComponentDataRequest.class);
             DataConfig dataConfig = request.getDataConfig();
             DataModel dataModel = dataConfig.getDataModel();
+            List<DataModelField> x = dataModel.getX();
+            Integer limit = dataModel.getLimit();
+            String tableName = dataModel.getTableName();
+            String[] fields = new String[x.size()];
+            for (int i = 0; i < x.size(); i++) {
+                fields[i] = x.get(i).getId();
+            }
+            String select = "select " + AnalyseUtils.join(",", fields);
+            String querySql = select + " from " + tableName + " limit " + limit;
+            List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
         }
         return null;
     }

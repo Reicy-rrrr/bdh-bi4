@@ -6,7 +6,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.request.GridDemoRequest;

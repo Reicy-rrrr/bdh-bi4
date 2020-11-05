@@ -1,5 +1,7 @@
-package com.deloitte.bdh.data.analyse.model.datamodel;
+package com.deloitte.bdh.data.analyse.model.datamodel.request;
 
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataRequestConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -63,4 +65,6 @@ public class BaseComponentDataRequest extends BaseComponentDataRequestConfig {
     DataConfig dataConfig;
     String resourceHash;
     String pageHash;
+
+    Boolean isDebug;
 }

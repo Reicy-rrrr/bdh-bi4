@@ -9,6 +9,7 @@ public class DataModel extends BaseComponentDataRequestConfig {
     /**
      * x轴相关配置
      */
+    String tableName;
     List<DataModelField> x;
     Integer limit = 10000;
     Boolean tableNotAggregate = false;
