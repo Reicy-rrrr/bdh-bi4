@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.component.model;
 
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,7 +35,6 @@ public class FieldMappingModel implements Cloneable {
     @ApiModelProperty(value = "原始字段是否为索引", example = "true")
     private boolean isIndex = false;
     /** 表字段 */
-    @JsonIgnore
     @ApiModelProperty(value = "表字段", example = "")
     private TableField tableField;
 
