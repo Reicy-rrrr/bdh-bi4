@@ -290,7 +290,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             );
 
             for (BiEtlSyncPlan syncPlan : synclist) {
-                if (syncPlan.getPlanResult().equals(PlanResultEnum.FAIL.getKey())) {
+                if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
                     throw new RuntimeException("依赖的同步任务失败:" + syncPlan.getCode());
                 }
                 //todo 取消状态呢？
