@@ -30,7 +30,9 @@ public abstract class ArrangeComponent implements ComponentHandler {
     private ComponentHandler componentHandler;
 
     @Override
-    public abstract void handle(ComponentModel component);
+    public void handle(ComponentModel component) {
+
+    }
 
     /**
      * 移除字段（基于从组件操作）

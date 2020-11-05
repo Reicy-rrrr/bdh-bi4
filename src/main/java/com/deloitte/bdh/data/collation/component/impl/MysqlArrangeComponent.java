@@ -17,7 +17,7 @@ import java.util.List;
  * @date 2020/10/26
  */
 @Slf4j
-@Service("mysql")
+//@Service("mysql")
 public abstract class MysqlArrangeComponent extends ArrangeComponent {
 
     @Override
