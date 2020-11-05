@@ -103,12 +103,6 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
             List<BiEtlConnection> connectionList = biEtlConnectionService.list(
                     new LambdaQueryWrapper<BiEtlConnection>().eq(BiEtlConnection::getRelProcessorsCode, code)
             );
-            async(() -> {
-                for (BiEtlConnection var : connectionList) {
-                    nifiProcessService.dropConnections(var.getConnectionId());
-                }
-            });
-
             //终止所有
             List<BiEtlProcessor> processorList = processorService.list(new LambdaQueryWrapper<BiEtlProcessor>()
                     .eq(BiEtlProcessor::getRelProcessorsCode, code)
@@ -116,6 +110,9 @@ public class BiProcessorsServiceImpl extends AbstractService<BiProcessorsMapper,
             async(() -> {
                 for (BiEtlProcessor var : processorList) {
                     nifiProcessService.terminate(var.getProcessId());
+                }
+                for (BiEtlConnection var : connectionList) {
+                    nifiProcessService.dropConnections(var.getConnectionId());
                 }
             });
         }
