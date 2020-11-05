@@ -58,6 +58,8 @@ public class OutComponent implements ComponentHandler {
         buildQuerySql(component);
         buildCreateSql(component, targetTableName);
         buildInsertSql(component, targetTableName);
+        // 输出组件处理完成后，设置目标表
+        component.setTableName(targetTableName);
     }
 
     /**

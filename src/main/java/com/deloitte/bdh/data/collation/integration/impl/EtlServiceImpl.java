@@ -71,7 +71,6 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private DbHandler dbHandler;
 
-
     @Autowired
     private BiEtlModelHandleService biEtlModelHandleService;
 
@@ -223,7 +222,7 @@ public class EtlServiceImpl implements EtlService {
         component.setCode(componentCode);
         component.setName(ComponentTypeEnum.OUT.getValue());
         component.setType(ComponentTypeEnum.OUT.getKey());
-        //输出组件默认是成功
+        // 输出组件默认启用
         component.setEffect(EffectEnum.ENABLE.getKey());
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
@@ -231,30 +230,24 @@ public class EtlServiceImpl implements EtlService {
         component.setCreateDate(LocalDateTime.now());
         component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
+        componentService.save(component);
 
-        //创建最终表,表名默认为模板编码
+        // 保存字段及属性
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        fieldService.saveBatch(fields);
+
+        // 设置组件参数：创建最终表,表名默认为模板编码
         String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
-        String processorsCode = GenerateCodeUtil.genProcessors();
-
-        //保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
-
-        //设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
-        //关联组件与processors
-        params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
-        params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
-
-        componentService.save(component);
-        fieldService.saveBatch(fields);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BiComponent join(JoinComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
@@ -289,6 +282,7 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BiComponent group(GroupComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
@@ -323,6 +317,7 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BiComponent arrange(ArrangeComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
