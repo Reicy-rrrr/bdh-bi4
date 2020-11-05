@@ -238,32 +238,25 @@ public class EtlServiceImpl implements EtlService {
         String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
         String processorsCode = GenerateCodeUtil.genProcessors();
 
-
+        //保存字段及属性
+        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
 
         //设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
         //关联组件与processors
         params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
-//        params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
+        params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
 
         //NIFI创建 etl processors
         transferNifiOut(dto, params, biEtlModel);
 
+        dbHandler.createTable(tableName, dto.getFields());
         componentService.save(component);
-        componentParamsService.saveBatch(biComponentParams);
-
-        // 处理组件
-        ComponentModel componentModel = biEtlModelHandleService.handleComponent(biEtlModel.getCode(), componentCode);
-        List<TableField> tableFields = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField).collect(Collectors.toList());
-
-        //保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, tableFields);
         fieldService.saveBatch(fields);
-
-        dbHandler.createTable(tableName, tableFields);
+        componentParamsService.saveBatch(biComponentParams);
         return component;
     }
 

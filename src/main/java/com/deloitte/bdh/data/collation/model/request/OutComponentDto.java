@@ -27,13 +27,13 @@ public class OutComponentDto {
     @ApiModelProperty(value = "tableName", example = "0")
     private String tableName;
 
-//    @ApiModelProperty(value = "字段列表", example = "0")
-//    @NotNull(message = " 字段列表 不能为空")
-//    private List<TableField> fields;
-//
-//    @ApiModelProperty(value = "sqlSelectQuery", example = "0")
-//    @NotNull(message = " sqlSelectQuery 不能为空")
-//    private String sqlSelectQuery;
+    @ApiModelProperty(value = "字段列表", example = "0")
+    @NotNull(message = " 字段列表 不能为空")
+    private List<TableField> fields;
+
+    @ApiModelProperty(value = "sqlSelectQuery", example = "0")
+    @NotNull(message = " sqlSelectQuery 不能为空")
+    private String sqlSelectQuery;
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();
