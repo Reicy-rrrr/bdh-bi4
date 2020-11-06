@@ -37,5 +37,9 @@ public interface BiComponentService extends Service<BiComponent> {
 
     void validate(String modelCode);
 
+    void removeResourceComponent(BiComponent component) throws Exception;
 
+    void removeOut(BiComponent component);
+
+    void remove(BiComponent component);
 }

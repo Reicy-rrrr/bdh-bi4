@@ -5,7 +5,7 @@ import com.deloitte.bdh.common.annotation.NoLocal;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.ThreadLocalUtil;
-import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
+import com.deloitte.bdh.data.collation.integration.SyncService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/biEtlSyncPlan")
 public class BiEtlSyncPlanController {
     @Autowired
-    private BiEtlSyncPlanService planService;
+    private SyncService sync;
 
     @ApiOperation(value = "同步调度处理", notes = "数据同步")
     @GetMapping("/sync")
     @NoLocal
     public RetResult<Void> sync(String tenantCode) throws Exception {
         ThreadLocalUtil.set("tenantCode", tenantCode);
-        planService.sync();
+        sync.sync();
         return RetResponse.makeOKRsp();
     }
 
@@ -39,7 +39,7 @@ public class BiEtlSyncPlanController {
     @NoLocal
     public RetResult<Void> etl(String tenantCode) throws Exception {
         ThreadLocalUtil.set("tenantCode", tenantCode);
-        planService.etl();
+        sync.etl();
         return RetResponse.makeOKRsp();
     }
 
@@ -50,7 +50,7 @@ public class BiEtlSyncPlanController {
         ThreadLocalUtil.set("tenantCode", tenantCode);
         ThreadLocalUtil.set("tenantId", tenantId);
         ThreadLocalUtil.set("operator", operator);
-        planService.model(modelCode);
+        sync.model(modelCode);
         return RetResponse.makeOKRsp();
     }
 }

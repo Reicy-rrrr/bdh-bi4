@@ -4,16 +4,15 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
-import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
-import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
+import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentMapper;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +41,14 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private BiComponentParamsService componentParamsService;
     @Autowired
     private BiComponentConnectionService connectionService;
+    @Autowired
+    private BiEtlMappingConfigService configService;
+    @Autowired
+    private BiEtlSyncPlanService planService;
+    @Autowired
+    private DbHandler dbHandler;
+    @Autowired
+    private BiEtlMappingFieldService fieldService;
 
     @Override
     public BiComponentTree selectTree(String modelCode, String componentCode) {
@@ -97,6 +104,94 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         //todo 待完善
     }
 
+    @Override
+    public void removeResourceComponent(BiComponent component) throws Exception {
+        //获取组件参数
+        List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, component.getCode())
+        );
+
+        //是否独立的数据源组件
+        String dulicate = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.DULICATE)).findAny().get().getParamValue();
+        if (YesOrNoEnum.NO.getKey().equals(dulicate)) {
+            //非独立副本可以直接删除返回
+            biComponentMapper.deleteById(component.getId());
+            componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
+                    .eq(BiComponentParams::getRefComponentCode, component.getCode())
+            );
+            return;
+        }
+
+        //独立副本时，该组件是否被其他模板的组件引用
+        String mappingCode = component.getRefMappingCode();
+        List<BiComponent> sameRefList = biComponentMapper.selectList(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefMappingCode, mappingCode)
+                .ne(BiComponent::getCode, component.getCode())
+        );
+        if (CollectionUtils.isNotEmpty(sameRefList)) {
+            //todo 待确定是否还能删除
+            throw new RuntimeException("EtlServiceImpl.removeResource.error : 该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
+        }
+
+        //判断当前组件同步类型，"直连" 则直接删除
+        BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getCode, mappingCode)
+        );
+        if (SyncTypeEnum.DIRECT.getKey().toString().equals(config.getType())) {
+            biComponentMapper.deleteById(component.getId());
+            componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
+                    .eq(BiComponentParams::getRefComponentCode, component.getCode())
+            );
+            configService.removeById(config.getId());
+        }
+
+        //当前是 "非直连"
+        //不管当前是 第一次同步还是定时调度，是待同步还是同步中还是同步完成，都一致操作
+        //1：若当前调度计划未完成，2： 停止清空NIFI，修改状态为取消，3：删除本地表，4：删除本地组件配置，5： 删除NIFI配置
+        BiComponentParams processorsCodeParam = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get();
+        BiEtlSyncPlan syncPlan = planService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getRefMappingCode, mappingCode)
+                .orderByDesc(BiEtlSyncPlan::getCreateDate)
+                .last("limit 1")
+        );
+        if (StringUtils.isBlank(syncPlan.getPlanResult())) {
+            syncPlan.setPlanResult(PlanResultEnum.CANCEL.getKey());
+            syncPlan.setResultDesc(PlanResultEnum.CANCEL.getValue());
+            planService.updateById(syncPlan);
+        }
+        processorsService.runState(processorsCodeParam.getParamValue(), RunStatusEnum.STOP, true);
+        processorsService.removeProcessors(processorsCodeParam.getParamValue(), config.getRefSourceId());
+        dbHandler.drop(config.getToTableName());
+        biComponentMapper.deleteById(component.getId());
+        componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, component.getCode())
+        );
+        configService.removeById(config.getId());
+        fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
+                .eq(BiEtlMappingField::getRefCode, config.getCode())
+        );
+    }
+
+    @Override
+    public void removeOut(BiComponent component) {
+        biComponentMapper.deleteById(component.getId());
+        componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, component.getCode())
+        );
+        fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
+                .eq(BiEtlMappingField::getRefCode, component.getCode())
+        );
+    }
+
+    @Override
+    public void remove(BiComponent component) {
+        biComponentMapper.deleteById(component.getId());
+        componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, component.getCode())
+        );
+    }
 
     private String getProcessorsCode(String code) {
         BiComponentParams componentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()

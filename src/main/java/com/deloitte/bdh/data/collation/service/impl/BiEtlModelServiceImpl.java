@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -111,15 +112,40 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
+    @Transactional
     public void delModel(String id) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(id);
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行状态下,不允许删除");
         }
 
+        ComponentModel componentModel = modelHandleService.handleModel(inf.getCode());
+
+        //获取模板下的组件集合
+        List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefModelCode, inf.getCode())
+        );
+
+        for (BiComponent component : componentList) {
+            switch (ComponentTypeEnum.values(component.getType())) {
+                case DATASOURCE:
+                    componentService.removeResourceComponent(component);
+                    break;
+                case OUT:
+                    componentService.removeOut(component);
+                    break;
+                default:
+                    componentService.remove(component);
+            }
+        }
+
+        //删除model
         String processGroupId = inf.getProcessGroupId();
         Map<String, Object> sourceMap = nifiProcessService.delProcessGroup(processGroupId);
-        //todo 待删除的东西比较多
+
+        //删除最终表
+        dbHandler.drop(componentModel.getTableName());
+
         jobService.remove(inf.getCode());
         biEtlModelMapper.deleteById(id);
         logger.info("删除数据成功:{}", JsonUtil.obj2String(sourceMap));
