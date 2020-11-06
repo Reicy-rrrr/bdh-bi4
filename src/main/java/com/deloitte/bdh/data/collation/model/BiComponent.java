@@ -69,19 +69,19 @@ public class BiComponent implements Serializable {
     @TableField("POSITION")
     private String position;
 
-    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
 
-    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT_UPDATE)
     private String createUser;
 
-    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT)
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime modifiedDate;
 
-    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT)
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT_UPDATE)
     private String modifiedUser;
 
-    @TableField(value = "IP", fill = FieldFill.INSERT)
+    @TableField(value = "IP", fill = FieldFill.INSERT_UPDATE)
     private String ip;
 
     @TableField("TENANT_ID")
