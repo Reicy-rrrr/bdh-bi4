@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.NifiEnum;
 import com.deloitte.bdh.data.collation.nifi.exception.NifiException;
 import com.google.common.collect.Maps;
@@ -270,7 +271,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         NifiProcessUtil.checkPermissions(prcessorMap);
         //请求参数设置
         Map<String, Object> req = NifiProcessUtil.postParam(null, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
-        req.put("state", state);
+        String controllerServiceState = EffectEnum.ENABLE.getKey().equals(state) ? "ENABLED" : "DISABLED";
+        req.put("state", controllerServiceState);
         String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_CONTROLLER_SERVICE.getKey(), id);
         logger.info("NifiProcessServiceImpl.runControllerService, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);

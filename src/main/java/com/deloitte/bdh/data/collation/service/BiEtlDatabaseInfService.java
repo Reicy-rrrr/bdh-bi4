@@ -65,7 +65,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dto
      * @return
      */
-    BiEtlDatabaseInf runResource(RunResourcesDto dto) throws Exception;
+    BiEtlDatabaseInf runResource(String id, String effect) throws Exception;
 
     /**
      * del数据源

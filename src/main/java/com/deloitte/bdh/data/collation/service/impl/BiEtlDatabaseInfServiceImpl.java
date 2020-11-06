@@ -163,6 +163,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 修改文件状态为已读
         dbFile.setReadFlag(0);
         biEtlDbFileService.updateById(dbFile);
+        async(() -> runResource(inf.getId(), EffectEnum.ENABLE.getKey()));
         return inf;
     }
 
@@ -281,15 +282,15 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public BiEtlDatabaseInf runResource(RunResourcesDto dto) throws Exception {
-        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
-        if (!dto.getEffect().equals(inf.getEffect())) {
+    public BiEtlDatabaseInf runResource(String id, String effect) throws Exception {
+        BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
+        if (!effect.equals(inf.getEffect())) {
             if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
                 String controllerServiceId = inf.getControllerServiceId();
-                Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, inf.getEffect());
+                Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, effect);
                 inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
             }
-            inf.setEffect(dto.getEffect());
+            inf.setEffect(effect);
             biEtlDatabaseInfMapper.updateById(inf);
         }
         return inf;

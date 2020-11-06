@@ -79,7 +79,8 @@ public class BiSourceController {
     @ApiOperation(value = "启用/禁用数据源", notes = "启用/禁用数据源")
     @PostMapping("/runResource")
     public RetResult<BiEtlDatabaseInf> runResource(@RequestBody @Validated RetRequest<RunResourcesDto> request) throws Exception {
-        return RetResponse.makeOKRsp(biEtlDatabaseInfService.runResource(request.getData()));
+        RunResourcesDto dto = request.getData();
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.runResource(dto.getId(), dto.getEffect()));
     }
 
     @ApiOperation(value = "删除数据源", notes = "删除数据源")
