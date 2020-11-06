@@ -290,8 +290,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
             }
             inf.setEffect(dto.getEffect());
-            inf.setModifiedUser(ThreadLocalUtil.getOperator());
-            inf.setModifiedDate(LocalDateTime.now());
             biEtlDatabaseInfMapper.updateById(inf);
         }
         return inf;
@@ -390,8 +388,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
         biEtlDatabaseInf.setTypeName(SourceTypeEnum.getNameByType(biEtlDatabaseInf.getType()));
         biEtlDatabaseInf.setEffect(EffectEnum.DISABLE.getKey());
-        biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
-        biEtlDatabaseInf.setModifiedUser(ThreadLocalUtil.getOperator());
 
         //调用nifi
         Map<String, Object> properties = Maps.newHashMap();
@@ -422,8 +418,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         }
         BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, biEtlDatabaseInf);
-        biEtlDatabaseInf.setModifiedDate(LocalDateTime.now());
-        biEtlDatabaseInf.setModifiedUser(ThreadLocalUtil.getOperator());
         biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
         return biEtlDatabaseInf;
     }
@@ -434,9 +428,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
         inf.setEffect(EffectEnum.DISABLE.getKey());
         inf.setTenantId(ThreadLocalUtil.getTenantId());
-        inf.setCreateUser(ThreadLocalUtil.getOperator());
-        inf.setCreateDate(LocalDateTime.now());
-        inf.setModifiedDate(LocalDateTime.now());
 
         // 调用nifi 创建 获取rootgroupid
         Map<String, Object> sourceMap = nifiProcessService.getRootGroupInfo();
@@ -462,7 +453,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
-        inf.setCreateUser(ThreadLocalUtil.getOperator());
         inf.setTenantId(ThreadLocalUtil.getTenantId());
         inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
         inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
@@ -479,8 +469,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             inf.setDriverLocations("/data/hana/ngdbc-2.3.56.jar");
         }
         inf.setEffect(EffectEnum.DISABLE.getKey());
-        inf.setCreateDate(LocalDateTime.now());
-        inf.setModifiedDate(LocalDateTime.now());
 
         //调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();
@@ -515,9 +503,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
 
         inf.setEffect(EffectEnum.DISABLE.getKey());
-        inf.setCreateDate(LocalDateTime.now());
-        inf.setModifiedDate(LocalDateTime.now());
-        inf.setCreateUser(ThreadLocalUtil.getOperator());
         inf.setTenantId(ThreadLocalUtil.getTenantId());
 
         // 调用nifi 创建 controllerService

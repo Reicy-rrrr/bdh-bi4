@@ -1,15 +1,13 @@
 package com.deloitte.bdh.data.collation.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
@@ -83,19 +81,19 @@ public class BiProcessors implements Serializable {
     @TableField("VERSION")
     private String version;
 
-    @TableField("CREATE_DATE")
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
-    @TableField("CREATE_USER")
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
     private String createUser;
 
-    @TableField("MODIFIED_DATE")
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT)
     private LocalDateTime modifiedDate;
 
-    @TableField("MODIFIED_USER")
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT)
     private String modifiedUser;
 
-    @TableField("IP")
+    @TableField(value = "IP", fill = FieldFill.INSERT)
     private String ip;
 
     @TableField("TENANT_ID")
@@ -114,6 +112,7 @@ public class BiProcessors implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getCode() {
         return code;
     }
@@ -121,6 +120,7 @@ public class BiProcessors implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
+
     public String getName() {
         return name;
     }
@@ -128,6 +128,7 @@ public class BiProcessors implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
     public String getType() {
         return type;
     }
@@ -135,6 +136,7 @@ public class BiProcessors implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
+
     public String getTypeDesc() {
         return typeDesc;
     }
@@ -142,6 +144,7 @@ public class BiProcessors implements Serializable {
     public void setTypeDesc(String typeDesc) {
         this.typeDesc = typeDesc;
     }
+
     public String getStatus() {
         return status;
     }
@@ -149,6 +152,7 @@ public class BiProcessors implements Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
+
     public String getEffect() {
         return effect;
     }
@@ -156,6 +160,7 @@ public class BiProcessors implements Serializable {
     public void setEffect(String effect) {
         this.effect = effect;
     }
+
     public String getValidate() {
         return validate;
     }
@@ -163,6 +168,7 @@ public class BiProcessors implements Serializable {
     public void setValidate(String validate) {
         this.validate = validate;
     }
+
     public String getValidateMessage() {
         return validateMessage;
     }
@@ -170,6 +176,7 @@ public class BiProcessors implements Serializable {
     public void setValidateMessage(String validateMessage) {
         this.validateMessage = validateMessage;
     }
+
     public String getRelModelCode() {
         return relModelCode;
     }
@@ -177,6 +184,7 @@ public class BiProcessors implements Serializable {
     public void setRelModelCode(String relModelCode) {
         this.relModelCode = relModelCode;
     }
+
     public String getVersion() {
         return version;
     }
@@ -184,6 +192,7 @@ public class BiProcessors implements Serializable {
     public void setVersion(String version) {
         this.version = version;
     }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -191,6 +200,7 @@ public class BiProcessors implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
     public String getCreateUser() {
         return createUser;
     }
@@ -198,6 +208,7 @@ public class BiProcessors implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
+
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -205,6 +216,7 @@ public class BiProcessors implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -212,6 +224,7 @@ public class BiProcessors implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
+
     public String getIp() {
         return ip;
     }
@@ -219,6 +232,7 @@ public class BiProcessors implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -226,6 +240,7 @@ public class BiProcessors implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+
     public String getProcessGroupId() {
         return processGroupId;
     }
@@ -237,24 +252,24 @@ public class BiProcessors implements Serializable {
     @Override
     public String toString() {
         return "BiProcessors{" +
-        "id=" + id +
-        ", code=" + code +
-        ", name=" + name +
-        ", type=" + type +
-        ", typeDesc=" + typeDesc +
-        ", status=" + status +
-        ", effect=" + effect +
-        ", validate=" + validate +
-        ", validateMessage=" + validateMessage +
-        ", relModelCode=" + relModelCode +
-        ", version=" + version +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        ", processGroupId=" + processGroupId +
-        "}";
+                "id=" + id +
+                ", code=" + code +
+                ", name=" + name +
+                ", type=" + type +
+                ", typeDesc=" + typeDesc +
+                ", status=" + status +
+                ", effect=" + effect +
+                ", validate=" + validate +
+                ", validateMessage=" + validateMessage +
+                ", relModelCode=" + relModelCode +
+                ", version=" + version +
+                ", createDate=" + createDate +
+                ", createUser=" + createUser +
+                ", modifiedDate=" + modifiedDate +
+                ", modifiedUser=" + modifiedUser +
+                ", ip=" + ip +
+                ", tenantId=" + tenantId +
+                ", processGroupId=" + processGroupId +
+                "}";
     }
 }

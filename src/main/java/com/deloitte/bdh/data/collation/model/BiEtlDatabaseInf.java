@@ -1,15 +1,13 @@
 package com.deloitte.bdh.data.collation.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
@@ -101,19 +99,19 @@ public class BiEtlDatabaseInf implements Serializable {
     @TableField("EFFECT")
     private String effect;
 
-    @TableField("CREATE_DATE")
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
-    @TableField("CREATE_USER")
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
     private String createUser;
 
-    @TableField("MODIFIED_DATE")
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT)
     private LocalDateTime modifiedDate;
 
-    @TableField("MODIFIED_USER")
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT)
     private String modifiedUser;
 
-    @TableField("IP")
+    @TableField(value = "IP", fill = FieldFill.INSERT)
     private String ip;
 
     @TableField("TENANT_ID")
@@ -144,6 +142,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getName() {
         return name;
     }
@@ -151,6 +150,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
     public String getComments() {
         return comments;
     }
@@ -158,6 +158,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setComments(String comments) {
         this.comments = comments;
     }
+
     public String getType() {
         return type;
     }
@@ -165,6 +166,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
+
     public String getTypeName() {
         return typeName;
     }
@@ -172,6 +174,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setTypeName(String typeName) {
         this.typeName = typeName;
     }
+
     public String getPoolType() {
         return poolType;
     }
@@ -179,6 +182,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setPoolType(String poolType) {
         this.poolType = poolType;
     }
+
     public String getDbName() {
         return dbName;
     }
@@ -186,6 +190,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setDbName(String dbName) {
         this.dbName = dbName;
     }
+
     public String getDbUser() {
         return dbUser;
     }
@@ -193,6 +198,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setDbUser(String dbUser) {
         this.dbUser = dbUser;
     }
+
     public String getDbPassword() {
         return dbPassword;
     }
@@ -200,6 +206,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setDbPassword(String dbPassword) {
         this.dbPassword = dbPassword;
     }
+
     public String getAddress() {
         return address;
     }
@@ -207,6 +214,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setAddress(String address) {
         this.address = address;
     }
+
     public String getPort() {
         return port;
     }
@@ -214,6 +222,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setPort(String port) {
         this.port = port;
     }
+
     public String getDriverName() {
         return driverName;
     }
@@ -221,6 +230,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setDriverName(String driverName) {
         this.driverName = driverName;
     }
+
     public String getDriverLocations() {
         return driverLocations;
     }
@@ -228,6 +238,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setDriverLocations(String driverLocations) {
         this.driverLocations = driverLocations;
     }
+
     public String getEffect() {
         return effect;
     }
@@ -235,6 +246,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setEffect(String effect) {
         this.effect = effect;
     }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -242,6 +254,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
     public String getCreateUser() {
         return createUser;
     }
@@ -249,6 +262,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
+
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -256,6 +270,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -263,6 +278,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
+
     public String getIp() {
         return ip;
     }
@@ -270,6 +286,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -277,6 +294,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+
     public String getControllerServiceId() {
         return controllerServiceId;
     }
@@ -284,6 +302,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setControllerServiceId(String controllerServiceId) {
         this.controllerServiceId = controllerServiceId;
     }
+
     public String getRootGroupId() {
         return rootGroupId;
     }
@@ -291,6 +310,7 @@ public class BiEtlDatabaseInf implements Serializable {
     public void setRootGroupId(String rootGroupId) {
         this.rootGroupId = rootGroupId;
     }
+
     public String getVersion() {
         return version;
     }
@@ -302,29 +322,29 @@ public class BiEtlDatabaseInf implements Serializable {
     @Override
     public String toString() {
         return "BiEtlDatabaseInf{" +
-        "id=" + id +
-        ", name=" + name +
-        ", comments=" + comments +
-        ", type=" + type +
-        ", typeName=" + typeName +
-        ", poolType=" + poolType +
-        ", dbName=" + dbName +
-        ", dbUser=" + dbUser +
-        ", dbPassword=" + dbPassword +
-        ", address=" + address +
-        ", port=" + port +
-        ", driverName=" + driverName +
-        ", driverLocations=" + driverLocations +
-        ", effect=" + effect +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        ", controllerServiceId=" + controllerServiceId +
-        ", rootGroupId=" + rootGroupId +
-        ", version=" + version +
-        "}";
+                "id=" + id +
+                ", name=" + name +
+                ", comments=" + comments +
+                ", type=" + type +
+                ", typeName=" + typeName +
+                ", poolType=" + poolType +
+                ", dbName=" + dbName +
+                ", dbUser=" + dbUser +
+                ", dbPassword=" + dbPassword +
+                ", address=" + address +
+                ", port=" + port +
+                ", driverName=" + driverName +
+                ", driverLocations=" + driverLocations +
+                ", effect=" + effect +
+                ", createDate=" + createDate +
+                ", createUser=" + createUser +
+                ", modifiedDate=" + modifiedDate +
+                ", modifiedUser=" + modifiedUser +
+                ", ip=" + ip +
+                ", tenantId=" + tenantId +
+                ", controllerServiceId=" + controllerServiceId +
+                ", rootGroupId=" + rootGroupId +
+                ", version=" + version +
+                "}";
     }
 }

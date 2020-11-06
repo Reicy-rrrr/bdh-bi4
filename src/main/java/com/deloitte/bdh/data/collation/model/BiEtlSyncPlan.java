@@ -98,19 +98,19 @@ public class BiEtlSyncPlan implements Serializable {
     @TableField("SQL_LOCAL_COUNT")
     private String sqlLocalCount;
 
-    @TableField("CREATE_DATE")
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
-    @TableField("CREATE_USER")
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
     private String createUser;
 
-    @TableField("MODIFIED_DATE")
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT)
     private LocalDateTime modifiedDate;
 
-    @TableField("MODIFIED_USER")
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT)
     private String modifiedUser;
 
-    @TableField("IP")
+    @TableField(value = "IP", fill = FieldFill.INSERT)
     private String ip;
 
     @TableField("TENANT_ID")

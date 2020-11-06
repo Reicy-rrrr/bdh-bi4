@@ -46,8 +46,6 @@ public class BiComponentConnectionServiceImpl extends AbstractService<BiComponen
         connection.setToComponentCode(dto.getToComponentCode());
         connection.setRefModelCode(model.getCode());
         connection.setVersion("1");
-        connection.setCreateDate(LocalDateTime.now());
-        connection.setCreateUser(ThreadLocalUtil.getOperator());
         connection.setTenantId(ThreadLocalUtil.getTenantId());
         mapper.insert(connection);
         return connection;

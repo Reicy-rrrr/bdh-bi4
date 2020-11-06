@@ -106,8 +106,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             throw new RuntimeException("运行中的模板，不允许启、停操作");
         }
         biEtlModel.setEffect(dto.getEffect());
-        biEtlModel.setModifiedUser(ThreadLocalUtil.getOperator());
-        biEtlModel.setModifiedDate(LocalDateTime.now());
         biEtlModelMapper.updateById(biEtlModel);
         return biEtlModel;
     }
@@ -130,8 +128,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public BiEtlModel updateModel(UpdateModelDto dto) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(dto.getId());
-        inf.setModifiedDate(LocalDateTime.now());
-        inf.setModifiedUser(ThreadLocalUtil.getOperator());
         //运行中的模板 不允许修改
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行中的 model 不允许修改");
@@ -178,8 +174,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             throw new RuntimeException("EtlServiceImpl.runModel.error : 失效状态下无法发布");
         }
 
-        biEtlModel.setModifiedDate(LocalDateTime.now());
-        biEtlModel.setModifiedUser(ThreadLocalUtil.getOperator());
         RunStatusEnum runStatusEnum = RunStatusEnum.getEnum(biEtlModel.getStatus());
         if (RunStatusEnum.RUNNING == runStatusEnum) {
             // 停止数据源组nifi 、停止与删除etl NIFI
@@ -192,10 +186,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                     .isNull(BiEtlSyncPlan::getPlanResult)
             );
             if (CollectionUtils.isNotEmpty(planList)) {
-                planList.forEach(s -> {
-                    s.setPlanResult(PlanResultEnum.CANCEL.getValue());
-                    s.setModifiedDate(LocalDateTime.now());
-                });
+                planList.forEach(s -> s.setPlanResult(PlanResultEnum.CANCEL.getValue()));
                 syncPlanService.updateBatchById(planList);
             }
             biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
@@ -268,8 +259,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             }
             inf.setName(dto.getName());
             inf.setComments(dto.getComments());
-            inf.setCreateUser(ThreadLocalUtil.getOperator());
-            inf.setCreateDate(LocalDateTime.now());
             inf.setTenantId(ThreadLocalUtil.getTenantId());
             inf.setVersion("0");
             inf.setEffect(EffectEnum.ENABLE.getKey());
@@ -299,7 +288,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         inf.setEffect(EffectEnum.ENABLE.getKey());
         //初始化 为未运行状态 对应nifi stopped RUNNIG
         inf.setStatus(RunStatusEnum.STOP.getKey());
-        inf.setCreateDate(LocalDateTime.now());
         // 设置 validate
         inf.setValidate(YesOrNoEnum.NO.getKey());
 
@@ -324,7 +312,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
         inf.setProcessGroupId(MapUtils.getString(sourceMap, "id"));
         inf.setTenantId(ThreadLocalUtil.getTenantId());
-        inf.setCreateUser(ThreadLocalUtil.getOperator());
         inf.setId(ThreadLocalUtil.getIp());
         biEtlModelMapper.insert(inf);
         return inf;
@@ -343,8 +330,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         processors.setValidate(YesOrNoEnum.NO.getKey());
         processors.setRelModelCode(biEtlModel.getCode());
         processors.setVersion("1");
-        processors.setCreateDate(LocalDateTime.now());
-        processors.setCreateUser(ThreadLocalUtil.getOperator());
         processors.setTenantId(ThreadLocalUtil.getTenantId());
 
         //调用NIFI准备

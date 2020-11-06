@@ -103,8 +103,6 @@ public class EtlServiceImpl implements EtlService {
             dbRef.setCode(refCode);
             dbRef.setSourceId(dto.getSourceId());
             dbRef.setModelCode(biEtlModel.getCode());
-            dbRef.setCreateDate(LocalDateTime.now());
-            dbRef.setCreateUser(ThreadLocalUtil.getOperator());
             dbRef.setTenantId(ThreadLocalUtil.getTenantId());
             refService.save(dbRef);
         } else {
@@ -121,8 +119,6 @@ public class EtlServiceImpl implements EtlService {
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
-        component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
         component.setRefMappingCode(dto.getBelongMappingCode());
 
@@ -143,8 +139,6 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setRefSourceId(biEtlDatabaseInf.getId());
             mappingConfig.setFromTableName(dto.getTableName());
             mappingConfig.setToTableName(dto.getTableName());
-            mappingConfig.setCreateDate(LocalDateTime.now());
-            mappingConfig.setCreateUser(ThreadLocalUtil.getOperator());
             mappingConfig.setTenantId(ThreadLocalUtil.getTenantId());
             mappingConfig.setRefComponentCode(componentCode);
 
@@ -227,8 +221,6 @@ public class EtlServiceImpl implements EtlService {
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
-        component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
         componentService.save(component);
 
@@ -264,8 +256,6 @@ public class EtlServiceImpl implements EtlService {
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
-        component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
         componentService.save(component);
 
@@ -299,8 +289,6 @@ public class EtlServiceImpl implements EtlService {
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
-        component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
         componentService.save(component);
 
@@ -334,8 +322,6 @@ public class EtlServiceImpl implements EtlService {
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
-        component.setCreateDate(LocalDateTime.now());
-        component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
         componentService.save(component);
 
@@ -558,8 +544,6 @@ public class EtlServiceImpl implements EtlService {
             params.setFieldName(var.getName());
             params.setFieldType(var.getColumnType());
             params.setRefCode(code);
-            params.setCreateDate(LocalDateTime.now());
-            params.setCreateUser(operator);
             params.setTenantId(tenantId);
             result.add(params);
         }
@@ -577,8 +561,6 @@ public class EtlServiceImpl implements EtlService {
             params.setFieldName(field);
             params.setFieldType(null);
             params.setRefCode(code);
-            params.setCreateDate(LocalDateTime.now());
-            params.setCreateUser(operator);
             params.setTenantId(tenantId);
             result.add(params);
         }
@@ -614,8 +596,6 @@ public class EtlServiceImpl implements EtlService {
         processors.setValidate(YesOrNoEnum.NO.getKey());
         processors.setRelModelCode(biEtlModel.getCode());
         processors.setVersion("1");
-        processors.setCreateDate(LocalDateTime.now());
-        processors.setCreateUser(ThreadLocalUtil.getOperator());
         processors.setTenantId(ThreadLocalUtil.getTenantId());
 
         //调用NIFI准备

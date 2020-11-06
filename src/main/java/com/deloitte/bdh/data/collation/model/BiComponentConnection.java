@@ -1,15 +1,13 @@
 package com.deloitte.bdh.data.collation.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
@@ -53,19 +51,19 @@ public class BiComponentConnection implements Serializable {
     @TableField("VERSION")
     private String version;
 
-    @TableField("CREATE_DATE")
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
-    @TableField("CREATE_USER")
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
     private String createUser;
 
-    @TableField("MODIFIED_DATE")
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT)
     private LocalDateTime modifiedDate;
 
-    @TableField("MODIFIED_USER")
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT)
     private String modifiedUser;
 
-    @TableField("IP")
+    @TableField(value = "IP", fill = FieldFill.INSERT)
     private String ip;
 
     @TableField("TENANT_ID")
@@ -78,6 +76,7 @@ public class BiComponentConnection implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getCode() {
         return code;
     }
@@ -85,6 +84,7 @@ public class BiComponentConnection implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
+
     public String getFromComponentCode() {
         return fromComponentCode;
     }
@@ -92,6 +92,7 @@ public class BiComponentConnection implements Serializable {
     public void setFromComponentCode(String fromComponentCode) {
         this.fromComponentCode = fromComponentCode;
     }
+
     public String getToComponentCode() {
         return toComponentCode;
     }
@@ -99,6 +100,7 @@ public class BiComponentConnection implements Serializable {
     public void setToComponentCode(String toComponentCode) {
         this.toComponentCode = toComponentCode;
     }
+
     public String getRefModelCode() {
         return refModelCode;
     }
@@ -106,6 +108,7 @@ public class BiComponentConnection implements Serializable {
     public void setRefModelCode(String refModelCode) {
         this.refModelCode = refModelCode;
     }
+
     public String getVersion() {
         return version;
     }
@@ -113,6 +116,7 @@ public class BiComponentConnection implements Serializable {
     public void setVersion(String version) {
         this.version = version;
     }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -120,6 +124,7 @@ public class BiComponentConnection implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
     public String getCreateUser() {
         return createUser;
     }
@@ -127,6 +132,7 @@ public class BiComponentConnection implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
+
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -134,6 +140,7 @@ public class BiComponentConnection implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -141,6 +148,7 @@ public class BiComponentConnection implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
+
     public String getIp() {
         return ip;
     }
@@ -148,6 +156,7 @@ public class BiComponentConnection implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -159,18 +168,18 @@ public class BiComponentConnection implements Serializable {
     @Override
     public String toString() {
         return "BiComponentConnection{" +
-        "id=" + id +
-        ", code=" + code +
-        ", fromComponentCode=" + fromComponentCode +
-        ", toComponentCode=" + toComponentCode +
-        ", refModelCode=" + refModelCode +
-        ", version=" + version +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        "}";
+                "id=" + id +
+                ", code=" + code +
+                ", fromComponentCode=" + fromComponentCode +
+                ", toComponentCode=" + toComponentCode +
+                ", refModelCode=" + refModelCode +
+                ", version=" + version +
+                ", createDate=" + createDate +
+                ", createUser=" + createUser +
+                ", modifiedDate=" + modifiedDate +
+                ", modifiedUser=" + modifiedUser +
+                ", ip=" + ip +
+                ", tenantId=" + tenantId +
+                "}";
     }
 }

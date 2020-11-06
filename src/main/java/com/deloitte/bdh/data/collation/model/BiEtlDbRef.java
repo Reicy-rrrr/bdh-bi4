@@ -1,15 +1,13 @@
 package com.deloitte.bdh.data.collation.model;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
@@ -41,19 +39,19 @@ public class BiEtlDbRef implements Serializable {
     @TableField("MODEL_CODE")
     private String modelCode;
 
-    @TableField("CREATE_DATE")
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
-    @TableField("CREATE_USER")
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
     private String createUser;
 
-    @TableField("MODIFIED_DATE")
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT)
     private LocalDateTime modifiedDate;
 
-    @TableField("MODIFIED_USER")
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT)
     private String modifiedUser;
 
-    @TableField("IP")
+    @TableField(value = "IP", fill = FieldFill.INSERT)
     private String ip;
 
     @TableField("TENANT_ID")
@@ -66,6 +64,7 @@ public class BiEtlDbRef implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getCode() {
         return code;
     }
@@ -73,6 +72,7 @@ public class BiEtlDbRef implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
+
     public String getSourceId() {
         return sourceId;
     }
@@ -80,6 +80,7 @@ public class BiEtlDbRef implements Serializable {
     public void setSourceId(String sourceId) {
         this.sourceId = sourceId;
     }
+
     public String getModelCode() {
         return modelCode;
     }
@@ -87,6 +88,7 @@ public class BiEtlDbRef implements Serializable {
     public void setModelCode(String modelCode) {
         this.modelCode = modelCode;
     }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -94,6 +96,7 @@ public class BiEtlDbRef implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
     public String getCreateUser() {
         return createUser;
     }
@@ -101,6 +104,7 @@ public class BiEtlDbRef implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
+
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -108,6 +112,7 @@ public class BiEtlDbRef implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -115,6 +120,7 @@ public class BiEtlDbRef implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
+
     public String getIp() {
         return ip;
     }
@@ -122,6 +128,7 @@ public class BiEtlDbRef implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -133,16 +140,16 @@ public class BiEtlDbRef implements Serializable {
     @Override
     public String toString() {
         return "BiEtlDbRef{" +
-        "id=" + id +
-        ", code=" + code +
-        ", sourceId=" + sourceId +
-        ", modelCode=" + modelCode +
-        ", createDate=" + createDate +
-        ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
-        "}";
+                "id=" + id +
+                ", code=" + code +
+                ", sourceId=" + sourceId +
+                ", modelCode=" + modelCode +
+                ", createDate=" + createDate +
+                ", createUser=" + createUser +
+                ", modifiedDate=" + modifiedDate +
+                ", modifiedUser=" + modifiedUser +
+                ", ip=" + ip +
+                ", tenantId=" + tenantId +
+                "}";
     }
 }

@@ -218,7 +218,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                             .eq(BiComponent::getCode, config.getRefComponentCode())
                     );
                     component.setEffect(EffectEnum.ENABLE.getKey());
-                    component.setModifiedDate(LocalDateTime.now());
                     componentService.updateById(component);
                 }
             }
@@ -327,7 +326,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             plan.setResultDesc(e.getMessage());
         } finally {
-            plan.setModifiedDate(LocalDateTime.now());
             syncPlanMapper.updateById(plan);
         }
 
@@ -462,8 +460,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         syncPlan.setPlanStage(PlanStageEnum.TO_EXECUTE.getKey());
         syncPlan.setSqlLocalCount("0");
         syncPlan.setRefModelCode(plan.getModelCode());
-        syncPlan.setCreateDate(LocalDateTime.now());
-        syncPlan.setCreateUser(ThreadLocalUtil.getOperator());
         syncPlan.setTenantId(ThreadLocalUtil.getTenantId());
         syncPlan.setIsFirst(plan.getFirst());
         //设置已处理初始值为0
