@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
 
@@ -81,7 +82,7 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @param data
      * @return
      */
-    BaseComponentDataResponse getComponentDta(Map data);
+    BaseComponentDataResponse getComponentData(BaseComponentDataRequest data);
 
     List demoGridDemoRequest(GridDemoRequest data);
 }

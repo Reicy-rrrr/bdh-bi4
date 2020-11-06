@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,7 +18,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.GridComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
@@ -33,8 +32,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * <p>
@@ -194,10 +195,10 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     }
 
     @Override
-    public BaseComponentDataResponse getComponentDta(Map data) {
-        String type = (String) data.get("type");
-        if (AnalyseTypeConstants.GRID.equals(type)) {
-            GridComponentDataRequest request = JSONObject.parseObject(JSONObject.toJSONString(data), GridComponentDataRequest.class);
+    public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) {
+        String type = request.getType();
+        if (AnalyseTypeConstants.TABLE.equals(type)) {
+//            GridComponentDataRequest request = JSONObject.parseObject(JSONObject.toJSONString(data), GridComponentDataRequest.class);
             DataConfig dataConfig = request.getDataConfig();
             DataModel dataModel = dataConfig.getDataModel();
             List<DataModelField> x = dataModel.getX();
@@ -205,11 +206,20 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             String tableName = dataModel.getTableName();
             String[] fields = new String[x.size()];
             for (int i = 0; i < x.size(); i++) {
-                fields[i] = x.get(i).getId();
+                fields[i] = x.get(i).getId().replace("O_", "")+ " as "+ x.get(i).getId();
             }
             String select = "select " + AnalyseUtils.join(",", fields);
-            String querySql = select + " from " + tableName + " limit " + limit;
+            String querySql = select + " from " + tableName + " limit " + 20;
             List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
+            result.forEach(item->{
+                item.put("key", UUID.randomUUID().toString());
+            });
+            BaseComponentDataResponse response = new BaseComponentDataResponse();
+            response.setSql(select);
+            Map rdata = new HashMap();
+            rdata.put("rows", result);
+            response.setData(rdata);
+            return response;
         }
         return null;
     }

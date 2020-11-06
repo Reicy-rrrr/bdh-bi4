@@ -2,6 +2,8 @@ package com.deloitte.bdh.data.analyse.model.datamodel.response;
 
 import lombok.Data;
 
+import java.util.Map;
+
 /**
  * {
  * 	"status": 0,
@@ -66,5 +68,6 @@ import lombok.Data;
  */
 @Data
 public class BaseComponentDataResponse {
-
+    String sql;
+    Map data;
 }

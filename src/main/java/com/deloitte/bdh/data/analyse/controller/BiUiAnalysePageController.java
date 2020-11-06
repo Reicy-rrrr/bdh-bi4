@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
@@ -81,9 +82,9 @@ public class BiUiAnalysePageController {
     }
 
     @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
-    @PostMapping("/getComponentDta")
-    public RetResult<BaseComponentDataResponse> getComponentDta(@RequestBody @Validated RetRequest<Map> request) throws Exception {
-        return RetResponse.makeOKRsp(biUiAnalysePageService.getComponentDta(request.getData()));
+    @PostMapping("/getComponentData")
+    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) throws Exception {
+        return RetResponse.makeOKRsp(biUiAnalysePageService.getComponentData(request.getData()));
     }
 
     @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
