@@ -211,6 +211,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             String select = "select " + AnalyseUtils.join(",", fields);
             String querySql = select + " from " + tableName + " limit " + 20;
             List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
+            //todo 需要知道那个列是主键,然后加到上面的sql中作为一定查询的列 as key
             result.forEach(item->{
                 item.put("key", UUID.randomUUID().toString());
             });
