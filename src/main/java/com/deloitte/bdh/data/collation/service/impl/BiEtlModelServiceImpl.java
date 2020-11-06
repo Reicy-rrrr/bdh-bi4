@@ -211,7 +211,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             //启动模板 ，启动xxjob，有job去生成执行计划
             jobService.start(modelCode);
             biEtlModel.setStatus(RunStatusEnum.RUNNING.getKey());
-            biEtlModel.setValidate("1");
+            biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
         }
         biEtlModelMapper.updateById(biEtlModel);
     }
@@ -245,9 +245,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
         }
         componentService.validate(modelCode);
-
-        biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
-        biEtlModelMapper.updateById(biEtlModel);
     }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
