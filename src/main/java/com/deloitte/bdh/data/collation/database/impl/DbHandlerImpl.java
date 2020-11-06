@@ -112,6 +112,9 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public List<String> getTables() {
+        if (true) {
+            return Lists.newArrayList("ORDERS_USCA_BI");
+        }
         // 查询所有输出组件
         LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
         componentQuery.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
