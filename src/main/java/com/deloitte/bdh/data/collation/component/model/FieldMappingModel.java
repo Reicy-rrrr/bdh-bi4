@@ -54,4 +54,16 @@ public class FieldMappingModel implements Cloneable {
         this.originalColumnType = originalColumnType;
         this.tableField = tableField;
     }
+
+    @Override
+    public FieldMappingModel clone(){
+        FieldMappingModel model = null;
+        try {
+            model = (FieldMappingModel) super.clone();
+            model.setTableField(this.tableField.clone());
+        } catch (CloneNotSupportedException e) {
+
+        }
+        return model;
+    }
 }

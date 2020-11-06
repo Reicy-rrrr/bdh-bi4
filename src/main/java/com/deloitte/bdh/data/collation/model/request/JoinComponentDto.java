@@ -16,7 +16,7 @@ import java.util.List;
  * 关联组件请求参数
  *
  * @author chenghzhang
- * @date  2020-11-03
+ * @date 2020-11-03
  */
 @ApiModel(description = "关联组件请求参数")
 @Data
@@ -31,10 +31,10 @@ public class JoinComponentDto {
     @NotNull(message = " 字段列表 不能为空")
     private List<String> fields;
 
-    @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
-
     @ApiModelProperty(value = "tables", example = "")
     @NotNull(message = " tables 不能为空")
     private List<JoinModel> tables;
+
+    @ApiModelProperty(value = "坐标", example = "1")
+    private String position = NifiProcessUtil.randPosition();
 }

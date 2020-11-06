@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -10,17 +11,16 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
+import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.GridComponentDataRequest;
-import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.GridComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
@@ -112,6 +112,37 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     }
 
     @Override
+    public BiUiAnalysePage copyAnalysePage(CopyAnalysePageRequest request) {
+        if (!checkBiUiAnalysePageByName(request.getName(), request.getTenantId(), null)) {
+            throw new BizException("已存在同名报表");
+        }
+        BiUiAnalysePage fromPage = biUiAnalysePageMapper.selectById(request.getFromPageId());
+        if (null == fromPage) {
+            throw new BizException("源报表不存在");
+        }
+        //复制page
+        BiUiAnalysePage insertPage = new BiUiAnalysePage();
+        BeanUtils.copyProperties(request, insertPage);
+        insertPage.setCreateDate(LocalDateTime.now());
+        biUiAnalysePageMapper.insert(insertPage);
+
+        //复制page config
+        BiUiAnalysePageConfig fromPageConfig = pageConfigMapper.selectById(fromPage.getEditId());
+        if (null != fromPageConfig) {
+            BiUiAnalysePageConfig insertConfig = new BiUiAnalysePageConfig();
+            insertConfig.setPageId(insertPage.getId());
+            insertConfig.setContent(fromPageConfig.getContent());
+            insertConfig.setTenantId(request.getTenantId());
+            insertConfig.setCreateUser(request.getCreateUser());
+            insertConfig.setCreateDate(LocalDateTime.now());
+            pageConfigMapper.insert(insertConfig);
+            insertPage.setEditId(insertConfig.getId());
+            biUiAnalysePageMapper.updateById(insertPage);
+        }
+        return insertPage;
+    }
+
+    @Override
     public void delAnalysePage(String id) throws Exception {
         BiUiAnalysePage category = biUiAnalysePageMapper.selectById(id);
         if (category == null) {
@@ -125,6 +156,9 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
 
     @Override
     public void batchDelAnalysePage(BatchDelAnalysePageReq request) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
+            throw new BizException("请选择要删除的报表");
+        }
         List<BiUiAnalysePage> pageList = biUiAnalysePageMapper.selectBatchIds(request.getIds());
         if (CollectionUtils.isNotEmpty(pageList)) {
             List<String> pageIds = Lists.newArrayList();

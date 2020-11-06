@@ -113,6 +113,31 @@ public class NifiController {
         return RetResponse.makeOKRsp(nifiProcessService.preview(request.getData()));
     }
 
+
+    @ApiOperation(value = "terminate", notes = "terminate")
+    @PostMapping("/terminate")
+    public RetResult<Object> terminate(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.terminate(request.getData()));
+    }
+
+    @ApiOperation(value = "clearRequest", notes = "clearRequest")
+    @PostMapping("/clearRequest")
+    public RetResult<Object> clearRequest(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.clearRequest(request.getData()));
+    }
+
+    @ApiOperation(value = "getMax", notes = "getMax")
+    @PostMapping("/getMax")
+    public RetResult<Object> getMax(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.getMax(request.getData()));
+    }
+
+    @ApiOperation(value = "getProcessGroupFull", notes = "getProcessGroupFull")
+    @PostMapping("/getProcessGroupFull")
+    public RetResult<Object> getProcessGroupFull(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.getProcessGroupFull(request.getData()));
+    }
+
     @ApiOperation(value = "getIp", notes = "previewConnction")
     @PostMapping("/getIp")
     public RetResult<String> getIp() throws Exception {

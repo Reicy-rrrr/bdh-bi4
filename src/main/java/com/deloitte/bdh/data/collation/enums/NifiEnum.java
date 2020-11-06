@@ -65,6 +65,26 @@ public enum NifiEnum {
     PROCESSORS("/nifi-api/processors/" + NifiProcessUtil.TEMP, "查询 PROCESSOR"),
 
     /**
+     * TERMINATE PROCESSOR
+     */
+    TERMINATE("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/threads", "终止"),
+
+    /**
+     * run-processor
+     */
+    RUN_PROCESSOR("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
+
+    /**
+     * clear-request
+     */
+    CLEAR_REQUEST("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/state/clear-requests", "CLEAR_REQUEST"),
+
+    /**
+     * GET_MAX
+     */
+    GET_MAX("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/state", "GET_MAX"),
+
+    /**
      * 创建 connections
      */
     CREATE_CONNECTIONS("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/connections", "创建 connections"),
@@ -78,11 +98,6 @@ public enum NifiEnum {
      * 查看/删除 connections
      */
     CONNECTIONS("/nifi-api/connections/" + NifiProcessUtil.TEMP, "查看/删除 connections"),
-
-    /**
-     * run-processor
-     */
-    RUN_PROCESSOR("/nifi-api/processors/" + NifiProcessUtil.TEMP + "/run-status", "run-status"),
 
     /**
      * run-processGroup

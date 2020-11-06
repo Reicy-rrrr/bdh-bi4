@@ -27,7 +27,6 @@ import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,6 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private DbHandler dbHandler;
-
 
     @Autowired
     private BiEtlModelHandleService biEtlModelHandleService;
@@ -224,7 +222,7 @@ public class EtlServiceImpl implements EtlService {
         component.setCode(componentCode);
         component.setName(ComponentTypeEnum.OUT.getValue());
         component.setType(ComponentTypeEnum.OUT.getKey());
-        //输出组件默认是成功
+        // 输出组件默认启用
         component.setEffect(EffectEnum.ENABLE.getKey());
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
@@ -232,34 +230,24 @@ public class EtlServiceImpl implements EtlService {
         component.setCreateDate(LocalDateTime.now());
         component.setCreateUser(ThreadLocalUtil.getOperator());
         component.setTenantId(ThreadLocalUtil.getTenantId());
+        componentService.save(component);
 
-        //创建最终表,表名默认为模板编码
+        // 保存字段及属性
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        fieldService.saveBatch(fields);
+
+        // 设置组件参数：创建最终表,表名默认为模板编码
         String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
-        String processorsCode = GenerateCodeUtil.genProcessors();
-
-        //保存字段及属性
-        List<BiEtlMappingField> fields = transferToFields(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
-
-        //设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
-        //关联组件与processors
-        params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
-        params.put(ComponentCons.SQL_SELECT_QUERY, dto.getSqlSelectQuery());
 
         List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
-
-        //NIFI创建 etl processors
-        transferNifiOut(dto, params, biEtlModel);
-
-        dbHandler.createTable(tableName, dto.getFields());
-        componentService.save(component);
-        fieldService.saveBatch(fields);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BiComponent join(JoinComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
@@ -294,6 +282,7 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BiComponent group(GroupComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
@@ -328,6 +317,7 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public BiComponent arrange(ArrangeComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
@@ -529,20 +519,6 @@ public class EtlServiceImpl implements EtlService {
     }
 
     private void removeOut(BiComponent component) throws Exception {
-        List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefComponentCode, component.getCode())
-        );
-
-        Optional<BiComponentParams> optionalProcessorsCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny();
-        if (optionalProcessorsCode.isPresent()) {
-            processorsService.removeProcessors(optionalProcessorsCode.get().getParamValue(), null);
-        }
-
-        Optional<BiComponentParams> optionalTableName = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.TO_TABLE_NAME)).findAny();
-        optionalTableName.ifPresent(biComponentParams -> dbHandler.drop(biComponentParams.getParamValue()));
-
         componentService.removeById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
@@ -664,39 +640,4 @@ public class EtlServiceImpl implements EtlService {
         processorsService.save(context.getProcessors());
         return context;
     }
-
-    private ProcessorContext transferNifiOut(OutComponentDto dto, Map<String, Object> params, BiEtlModel biEtlModel) throws Exception {
-        ProcessorContext context = new ProcessorContext();
-
-        BiProcessors processors = new BiProcessors();
-        processors.setCode(MapUtils.getString(params, ComponentCons.REF_PROCESSORS_CDOE));
-        processors.setType(BiProcessorsTypeEnum.ETL_SOURCE.getType());
-        processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()) + System.currentTimeMillis());
-        processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
-        processors.setStatus(YesOrNoEnum.NO.getKey());
-        processors.setEffect(EffectEnum.ENABLE.getKey());
-        processors.setValidate(YesOrNoEnum.NO.getKey());
-        processors.setRelModelCode(biEtlModel.getCode());
-        processors.setVersion("1");
-        processors.setCreateDate(LocalDateTime.now());
-        processors.setCreateUser(ThreadLocalUtil.getOperator());
-        processors.setTenantId(ThreadLocalUtil.getTenantId());
-
-        //调用NIFI准备
-        Map<String, Object> reqNifi = Maps.newHashMap();
-        //ExecuteSQL
-//        reqNifi.put("fromControllerServiceId", null);
-        reqNifi.put("sqlSelectQuery", MapUtils.getString(params, ComponentCons.SQL_SELECT_QUERY));
-        //PutDatabaseRecord
-        reqNifi.put("toTableName", MapUtils.getString(params, ComponentCons.TO_TABLE_NAME));
-        context.setEnumList(BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null));
-        context.setReq(reqNifi);
-        context.setMethod(MethodEnum.SAVE);
-        context.setModel(biEtlModel);
-        context.setProcessors(processors);
-        etlProcess.operateProcessorGroup(context);
-        processorsService.save(context.getProcessors());
-        return context;
-    }
-
 }

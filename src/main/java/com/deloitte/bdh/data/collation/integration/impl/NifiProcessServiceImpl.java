@@ -74,6 +74,18 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
+    public Map<String, Object> getProcessGroupFull(String id) throws Exception {
+        if (StringUtil.isEmpty(id)) {
+            throw new NifiException("查询单个ProcessGroup 失败:id不能为空");
+        }
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.RUN_PROCESSGROUP.getKey(), id);
+        logger.info("NifiProcessServiceImpl.getProcessGroup, URL:{}", url);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
     public Map<String, Object> delProcessGroup(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
             throw new NifiException("delProcessGroup:id不能为空");
@@ -135,6 +147,43 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         }
         logger.info("NifiProcessServiceImpl.runState, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
+    public Map<String, Object> clearRequest(String processorsId) throws Exception {
+        if (StringUtil.isEmpty(processorsId)) {
+            throw new NifiException("clearRequest 失败 : 参数不能为空");
+        }
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CLEAR_REQUEST.getKey(), processorsId);
+        logger.info("NifiProcessServiceImpl.clearRequest, URL:{} ,REQUEST:{}", url, null);
+        String response = HttpClientUtil.post(url, super.setHeaderAuthorization(), null);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
+    public Map<String, Object> terminate(String processorId) throws Exception {
+        if (StringUtil.isEmpty(processorId)) {
+            throw new NifiException("terminate 失败 : 参数不能为空");
+        }
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.TERMINATE.getKey(), processorId);
+        //请求参数设置
+        logger.info("NifiProcessServiceImpl.terminate, URL:{} ", url);
+        String response = HttpClientUtil.delete(url, super.setHeaderAuthorization());
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
+    }
+
+    @Override
+    public Map<String, Object> getMax(String processorsId) throws Exception {
+        if (StringUtil.isEmpty(processorsId)) {
+            throw new NifiException("NifiProcessServiceImpl.getMax 失败 : 参数不能为空");
+        }
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.GET_MAX.getKey(), processorsId);
+        logger.info("NifiProcessServiceImpl.getMax, URL:{} ", url);
+        String response = HttpClientUtil.get(url, super.setHeaderAuthorization(), null);
         return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
         });
     }

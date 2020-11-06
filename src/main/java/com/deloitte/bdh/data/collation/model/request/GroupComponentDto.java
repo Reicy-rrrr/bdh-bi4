@@ -31,10 +31,10 @@ public class GroupComponentDto {
     @NotNull(message = " 字段列表 不能为空")
     private List<String> fields;
 
-    @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
-
     @ApiModelProperty(value = "聚合字段字段模型", example = "1")
     @NotNull(message = " 聚合字段 不能为空")
     private GroupModel groups;
+
+    @ApiModelProperty(value = "坐标", example = "1")
+    private String position = NifiProcessUtil.randPosition();
 }

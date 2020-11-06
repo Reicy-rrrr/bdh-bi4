@@ -58,6 +58,8 @@ public class OutComponent implements ComponentHandler {
         buildQuerySql(component);
         buildCreateSql(component, targetTableName);
         buildInsertSql(component, targetTableName);
+        // 输出组件处理完成后，设置目标表
+        component.setTableName(targetTableName);
     }
 
     /**
@@ -150,7 +152,7 @@ public class OutComponent implements ComponentHandler {
             List<String> setFields = setMappingFields.stream().map(BiEtlMappingField::getFieldName)
                     .collect(Collectors.toList());
             currMappings = fromMappings.stream()
-                    .filter(fromMapping -> setFields.contains(fromMapping.getTempFieldName()))
+                    .filter(fromMapping -> setFields.contains(fromMapping.getFinalFieldName()))
                     .collect(Collectors.toList());
         }
 
@@ -159,9 +161,10 @@ public class OutComponent implements ComponentHandler {
         List<FieldMappingModel> finalMappings = Lists.newArrayList();
         currMappings.forEach(fieldMapping -> {
             String fieldName = fieldMapping.getFinalFieldName();
-            if (uniqueFields.add(fieldName)) {
-                finalMappings.add(fieldMapping);
+            if (!uniqueFields.add(fieldName)) {
+                fieldMapping.setFinalFieldName(fieldMapping.getOriginalTableName() + "_" + fieldName);
             }
+            finalMappings.add(fieldMapping);
         });
         component.setFieldMappings(finalMappings);
         // 最终字段

@@ -6,7 +6,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.BatchDelAnalysePageReq;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
@@ -56,6 +56,12 @@ public class BiUiAnalysePageController {
     @PostMapping("/createAnalysePage")
     public RetResult<BiUiAnalysePage> createAnalysePage(@RequestBody @Validated RetRequest<CreateAnalysePageDto> request) throws Exception {
         return RetResponse.makeOKRsp(biUiAnalysePageService.createAnalysePage(request.getData()));
+    }
+
+    @ApiOperation(value = "复制页面", notes = "复制页面")
+    @PostMapping("/copyAnalysePage")
+    public RetResult<BiUiAnalysePage> copyAnalysePage(@RequestBody @Validated RetRequest<CopyAnalysePageRequest> request) throws Exception {
+        return RetResponse.makeOKRsp(biUiAnalysePageService.copyAnalysePage(request.getData()));
     }
 
     @ApiOperation(value = "删除页面", notes = "删除页面")

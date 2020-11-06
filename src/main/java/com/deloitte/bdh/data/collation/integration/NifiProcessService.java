@@ -41,6 +41,13 @@ public interface NifiProcessService {
     Map<String, Object> getProcessGroup(String id) throws Exception;
 
     /**
+     * function:查询 processGroup
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> getProcessGroupFull(String id) throws Exception;
+
+    /**
      * function:删除 processGroup
      *
      * @return Map<String, Object>
@@ -60,6 +67,27 @@ public interface NifiProcessService {
      * @return Map<String, Object>
      */
     Map<String, Object> runState(String id, String state, boolean isGroup) throws Exception;
+
+    /**
+     * function:  清除组件计数器
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> clearRequest(String processorId) throws Exception;
+
+    /**
+     * function:  终止
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> terminate(String processorId) throws Exception;
+
+    /**
+     * function:  获取当前最大值
+     *
+     * @return Map<String, Object>
+     */
+    Map<String, Object> getMax(String processorsId) throws Exception;
 
     /**
      * function:创建 ControllerService

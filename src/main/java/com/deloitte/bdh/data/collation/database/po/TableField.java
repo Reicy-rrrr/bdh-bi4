@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TableField {
+public class TableField implements Cloneable {
     /** 字段类型 */
     @ApiModelProperty(value = "字段类型", example = "String", required = true)
     private String type;
@@ -40,4 +40,13 @@ public class TableField {
     /** 字段数据范围 */
     @ApiModelProperty(value = "字段数据范围", example = "10,4")
     private String dataScope;
+
+    @Override
+    public TableField clone() {
+        try {
+            return (TableField) super.clone();
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
+    }
 }

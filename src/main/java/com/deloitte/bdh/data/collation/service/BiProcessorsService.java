@@ -23,6 +23,7 @@ public interface BiProcessorsService extends Service<BiProcessors> {
 
     void removeProcessors(String processorsCode, String dbId) throws Exception;
 
+    void clearRequest(String processorsCode) throws Exception;
 
 
 }
