@@ -202,17 +202,21 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             DataConfig dataConfig = request.getDataConfig();
             DataModel dataModel = dataConfig.getDataModel();
             List<DataModelField> x = dataModel.getX();
-            Integer limit = dataModel.getLimit();
+            Integer pageIndex = dataModel.getPageIndex();
+            Integer pageSize = dataModel.getPageSize();
             String tableName = dataModel.getTableName();
             String[] fields = new String[x.size()];
             for (int i = 0; i < x.size(); i++) {
-                fields[i] = x.get(i).getId().replace("O_", "")+ " as "+ x.get(i).getId();
+                fields[i] = x.get(i).getId().replace("O_", "") + " as " + x.get(i).getId();
             }
             String select = "select " + AnalyseUtils.join(",", fields);
-            String querySql = select + " from " + tableName + " limit " + 20;
+            String querySql = select + " from " + tableName;
+            if (pageIndex != null && pageSize != null && pageSize > 0) {
+                querySql = querySql + " limit " + (pageIndex - 1) * pageSize + "," + pageIndex * pageSize;
+            }
             List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
             //todo 需要知道那个列是主键,然后加到上面的sql中作为一定查询的列 as key
-            result.forEach(item->{
+            result.forEach(item -> {
                 item.put("key", UUID.randomUUID().toString());
             });
             BaseComponentDataResponse response = new BaseComponentDataResponse();
