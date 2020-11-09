@@ -75,6 +75,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
         LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
+        fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
         if (!StringUtil.isEmpty(ThreadLocalUtil.getTenantId())) {
             fUOLamQW.eq(BiEtlModel::getTenantId, ThreadLocalUtil.getTenantId());
         }
@@ -164,6 +165,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         if (!StringUtil.isEmpty(dto.getComments())) {
             inf.setComments(dto.getComments());
+        }
+        if (!StringUtil.isEmpty(dto.getContent())) {
+            inf.setContent(dto.getContent());
         }
         if (!StringUtil.isEmpty(dto.getCronExpression())) {
             inf.setCornExpression(dto.getCronExpression());

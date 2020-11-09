@@ -117,6 +117,12 @@ public class BiEtlModel implements Serializable {
     @TableField("CORN_EXPRESSION")
     private String cornExpression;
 
+    /**
+     * 模型内容：大json
+     */
+    @TableField(value = "CONTENT")
+    private String content;
+
     public String getId() {
         return id;
     }
@@ -277,6 +283,14 @@ public class BiEtlModel implements Serializable {
         this.cornExpression = cornExpression;
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     @Override
     public String toString() {
         return "BiEtlModel{" +
@@ -300,6 +314,7 @@ public class BiEtlModel implements Serializable {
                 ", tenantId=" + tenantId +
                 ", processGroupId=" + processGroupId +
                 ", cornExpression=" + cornExpression +
+                ", content=" + content +
                 "}";
     }
 }

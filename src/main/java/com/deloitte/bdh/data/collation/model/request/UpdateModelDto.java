@@ -28,4 +28,6 @@ public class UpdateModelDto {
     @ApiModelProperty(value = "cron 表达式", example = "表达式")
     private String cronExpression;
 
+    @ApiModelProperty(value = "模型内容", example = "模型内容")
+    private String content;
 }
