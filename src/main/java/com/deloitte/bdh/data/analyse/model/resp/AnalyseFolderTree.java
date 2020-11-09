@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.model.resp;
 
-import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

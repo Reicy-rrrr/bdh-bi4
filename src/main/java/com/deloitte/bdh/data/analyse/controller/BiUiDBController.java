@@ -6,7 +6,8 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
 import com.deloitte.bdh.data.analyse.model.request.DBTableColumnReq;
 import com.deloitte.bdh.data.analyse.model.request.DBTableReq;
-import com.deloitte.bdh.data.analyse.model.request.DataTreeRequest;
+import com.deloitte.bdh.data.analyse.model.request.GetDataTreeRequest;
+import com.deloitte.bdh.data.analyse.model.request.SaveDataTreeRequest;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.BiUiDBService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFieldService;
@@ -53,8 +54,15 @@ public class BiUiDBController {
 
     @ApiOperation(value = "获取数据树状结构", notes = "获取数据树状结构")
     @PostMapping("/getDataTree")
-    public RetResult<List<AnalyseFolderTree>> getDataTree(@RequestBody @Validated RetRequest<DataTreeRequest> request) {
+    public RetResult<List<AnalyseFolderTree>> getDataTree(@RequestBody @Validated RetRequest<GetDataTreeRequest> request) {
         return RetResponse.makeOKRsp(biUiDBService.getDataTree(request));
+    }
+
+    @ApiOperation(value = "保存数据树状结构", notes = "保存数据树状结构")
+    @PostMapping("/saveDataTree")
+    public RetResult<Void> saveDataTree(@RequestBody @Validated RetRequest<List<AnalyseFolderTree>> request) {
+        biUiDBService.saveDataTree(request);
+        return RetResponse.makeOKRsp();
     }
 
 }
