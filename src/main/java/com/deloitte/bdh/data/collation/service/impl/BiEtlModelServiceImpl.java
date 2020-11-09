@@ -2,28 +2,33 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.*;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.*;
-import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
+import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
+import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
+import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
+import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.nifi.EtlProcess;
 import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
 import com.deloitte.bdh.data.collation.nifi.enums.MethodEnum;
 import com.deloitte.bdh.data.collation.service.*;
-import com.deloitte.bdh.common.base.AbstractService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -32,7 +37,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,6 +63,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private XxJobService jobService;
     @Autowired
     private BiComponentService componentService;
+    @Autowired
+    private BiComponentParamsService componentParamsService;
     @Autowired
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
@@ -113,26 +119,36 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void delModel(String id) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(id);
+        if (inf == null) {
+            return;
+        }
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行状态下,不允许删除");
         }
-
-        ComponentModel componentModel = modelHandleService.handleModel(inf.getCode());
 
         //获取模板下的组件集合
         List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getRefModelCode, inf.getCode())
         );
 
+        // 最终表名
+        String finalTableName = null;
         for (BiComponent component : componentList) {
             switch (ComponentTypeEnum.values(component.getType())) {
                 case DATASOURCE:
                     componentService.removeResourceComponent(component);
                     break;
                 case OUT:
+                    LambdaQueryWrapper<BiComponentParams> paramWrapper = new LambdaQueryWrapper();
+                    paramWrapper.eq(BiComponentParams::getRefComponentCode, component.getCode());
+                    paramWrapper.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
+                    BiComponentParams param = componentParamsService.getOne(paramWrapper);
+                    if (param != null && StringUtils.isNotBlank(param.getParamValue())) {
+                        finalTableName = param.getParamValue();
+                    }
                     componentService.removeOut(component);
                     break;
                 default:
@@ -145,7 +161,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         Map<String, Object> sourceMap = nifiProcessService.delProcessGroup(processGroupId);
 
         //删除最终表
-        dbHandler.drop(componentModel.getTableName());
+        if (StringUtils.isNotBlank(finalTableName)) {
+            dbHandler.drop(finalTableName);
+        }
 
         jobService.remove(inf.getCode());
         biEtlModelMapper.deleteById(id);
