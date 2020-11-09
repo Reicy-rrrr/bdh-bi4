@@ -1,6 +1,8 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
+import com.deloitte.bdh.data.analyse.model.request.DataTreeRequest;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 
 import java.util.Collection;
@@ -26,6 +28,6 @@ public interface BiUiDBService {
      */
     Collection<DataModelFieldTree> getAllColumns(String tableName, String tenantId);
 
-    List<AnalyseFolderTree> getDataTree(String pageId, String tableName);
+    List<AnalyseFolderTree> getDataTree(RetRequest<DataTreeRequest> request);
 
 }

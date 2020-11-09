@@ -71,8 +71,8 @@ public class BiUiModelField implements Serializable {
     /**
      * 字段描述
      */
-    @TableField("DESC")
-    private String desc;
+    @TableField("FIELD_DESC")
+    private String fieldDesc;
 
     /**
      * 是否隐藏

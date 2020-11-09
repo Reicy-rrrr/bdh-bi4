@@ -5,22 +5,26 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiModelField">
         <id column="ID" property="id" />
+        <result column="PARENT_ID" property="parentId" />
+        <result column="PAGE_ID" property="pageId" />
         <result column="MODEL_ID" property="modelId" />
         <result column="FOLDER_ID" property="folderId" />
         <result column="ALIAS_NAME" property="aliasName" />
-        <result column="SOURCE_FIELD" property="sourceField" />
-        <result column="IS_HIDDEN" property="isHidden" />
-        <result column="SORT_ORDER" property="sortOrder" />
+        <result column="NAME" property="name" />
+        <result column="TYPE" property="type" />
+        <result column="FIELD_DESC" property="fieldDesc" />
         <result column="DATA_TYPE" property="dataType" />
+        <result column="SORT_ORDER" property="sortOrder" />
+        <result column="IS_HIDDEN" property="isHidden" />
         <result column="IS_DIMENTION" property="isDimention" />
         <result column="IS_MENSURE" property="isMensure" />
         <result column="GEO_INFO_TYPE" property="geoInfoType" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />
         <result column="MODIFIED_USER" property="modifiedUser" />
-        <result column="IP" property="ip" />
-        <result column="TENANT_ID" property="tenantId" />
     </resultMap>
 
 </mapper>

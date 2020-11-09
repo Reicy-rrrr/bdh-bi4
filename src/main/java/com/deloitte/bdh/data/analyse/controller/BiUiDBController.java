@@ -54,8 +54,7 @@ public class BiUiDBController {
     @ApiOperation(value = "获取数据树状结构", notes = "获取数据树状结构")
     @PostMapping("/getDataTree")
     public RetResult<List<AnalyseFolderTree>> getDataTree(@RequestBody @Validated RetRequest<DataTreeRequest> request) {
-        DataTreeRequest req = request.getData();
-        return RetResponse.makeOKRsp(biUiDBService.getDataTree(req.getPageId(), req.getTableName()));
+        return RetResponse.makeOKRsp(biUiDBService.getDataTree(request));
     }
 
 }

@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -12,6 +13,7 @@ import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
+import com.deloitte.bdh.data.analyse.model.request.DataTreeRequest;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.BiUiDBService;
@@ -26,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -167,8 +170,10 @@ public class BiUiDBServiceImpl implements BiUiDBService {
         return top.getChildren();
     }
 
-    public List<AnalyseFolderTree> getDataTree(String pageId, String tableName) {
-        Map<String, Object> result = getHistoryData(pageId, tableName);
+    @Transactional
+    @Override
+    public List<AnalyseFolderTree> getDataTree(RetRequest<DataTreeRequest> request) {
+        Map<String, Object> result = getHistoryData(request);
 
         List<BiUiModelFolder> folderList = (List<BiUiModelFolder>) result.get("folder");
 
@@ -198,33 +203,38 @@ public class BiUiDBServiceImpl implements BiUiDBService {
 
     /**
      * 获取历史数据
-     * @param pageId
-     * @param tableName
+     * @param request
      * @return
      */
-    private Map<String, Object> getHistoryData(String pageId, String tableName) {
+    private Map<String, Object> getHistoryData(RetRequest<DataTreeRequest> request) {
         QueryWrapper<BiUiModelFolder> folderQueryWrapper = new QueryWrapper<>();
-        folderQueryWrapper.eq("PAGE_ID", pageId);
+        folderQueryWrapper.eq("PAGE_ID", request.getData().getPageId());
         List<BiUiModelFolder> folderList = folderMapper.selectList(folderQueryWrapper);
         String wdId = null;
         if (CollectionUtils.isEmpty(folderList)) {
             folderList = Lists.newArrayList();
             //初始化维度数据
             BiUiModelFolder wd = new BiUiModelFolder();
+            wd.setPageId(request.getData().getPageId());
             wd.setParentId("0");
             wd.setName(FolderTypeEnum.WD.getDesc());
             wd.setType(FolderTypeEnum.WD.getType());
-            wd.setCreateUser("0");
+            wd.setTenantId(request.getTenantId());
+            wd.setIp(request.getIp());
+            wd.setCreateUser(request.getOperator());
             wd.setCreateDate(LocalDateTime.now());
             folderMapper.insert(wd);
             wdId = wd.getId();
 
             //初始化度量数据
             BiUiModelFolder dl = new BiUiModelFolder();
+            dl.setPageId(request.getData().getPageId());
             dl.setParentId("0");
             dl.setName(FolderTypeEnum.DL.getDesc());
             dl.setType(FolderTypeEnum.DL.getType());
-            dl.setCreateUser("0");
+            dl.setIp(request.getIp());
+            dl.setTenantId(request.getTenantId());
+            dl.setCreateUser(request.getOperator());
             dl.setCreateDate(LocalDateTime.now());
             folderMapper.insert(dl);
 
@@ -233,18 +243,21 @@ public class BiUiDBServiceImpl implements BiUiDBService {
         }
 
         QueryWrapper<BiUiModelField> fieldQueryWrapper = new QueryWrapper<>();
-        fieldQueryWrapper.eq("PAGE_ID", pageId);
+        fieldQueryWrapper.eq("PAGE_ID", request.getData().getPageId());
         List<BiUiModelField> fieldList = fieldMapper.selectList(fieldQueryWrapper);
         if (CollectionUtils.isEmpty(fieldList)) {
-            List<TableColumn> columns = dbHandler.getColumns(tableName);
+            List<TableColumn> columns = dbHandler.getColumns(request.getData().getTableName());
             //初始化字段数据
             for (TableColumn column : columns) {
                 BiUiModelField field = new BiUiModelField();
                 BeanUtils.copyProperties(column, field);
+                field.setFieldDesc(column.getDesc());
                 field.setParentId("0");
-                field.setPageId(pageId);
+                field.setPageId(request.getData().getPageId());
                 field.setFolderId(wdId);
                 field.setIsDimention(YnTypeEnum.YES.getName());
+                field.setTenantId(request.getTenantId());
+                field.setIp(request.getIp());
                 field.setCreateUser("0");
                 field.setCreateDate(LocalDateTime.now());
                 fieldMapper.insert(field);
@@ -262,6 +275,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
         for (BiUiModelField field : fieldList) {
             AnalyseFieldTree analyseFieldTree = new AnalyseFieldTree();
             BeanUtils.copyProperties(field, analyseFieldTree);
+            analyseFieldTree.setDesc(field.getFieldDesc());
             if (parentId.equals(analyseFieldTree.getParentId())) {
                 analyseFieldTree.setChildren(buildFieldTree(fieldList, analyseFieldTree.getId()));
                 treeDataModels.add(analyseFieldTree);
