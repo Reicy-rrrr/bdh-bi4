@@ -15,5 +15,6 @@ public class DataConfig {
     @ApiModelProperty(value = "数据模型相关配置")
     DataModel dataModel;
 
+    @ApiModelProperty(value = "是否聚合", notes = "true,sql需要根据维度groupby 得到度量的合计值")
     Boolean tableNotAggregate = false;
 }

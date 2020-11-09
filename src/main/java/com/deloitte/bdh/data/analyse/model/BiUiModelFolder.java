@@ -26,6 +26,9 @@ public class BiUiModelFolder implements Serializable {
     @TableId(value = "ID", type = IdType.AUTO)
     private String id;
 
+    @TableField("PAGE_ID")
+    private String pageId;
+
     /**
      * 数据模型id
      */
@@ -53,6 +56,12 @@ public class BiUiModelFolder implements Serializable {
     @TableField("SORT_ORDER")
     private Integer sortOrder;
 
+    @TableField("IP")
+    private String ip;
+
+    @TableField("TENANT_ID")
+    private String tenantId;
+
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
 
@@ -65,9 +74,4 @@ public class BiUiModelFolder implements Serializable {
     @TableField("MODIFIED_USER")
     private String modifiedUser;
 
-    @TableField("IP")
-    private String ip;
-
-    @TableField("TENANT_ID")
-    private String tenantId;
 }

@@ -6,7 +6,8 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelFieldTree;
 import com.deloitte.bdh.data.analyse.model.request.DBTableColumnReq;
 import com.deloitte.bdh.data.analyse.model.request.DBTableReq;
-import com.deloitte.bdh.data.analyse.model.resp.TableColumnTree;
+import com.deloitte.bdh.data.analyse.model.request.DataTreeRequest;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.BiUiDBService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFieldService;
 import com.deloitte.bdh.data.analyse.service.BiUiModelFolderService;
@@ -48,6 +49,12 @@ public class BiUiDBController {
     public RetResult<Collection<DataModelFieldTree>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
         DBTableColumnReq req = request.getData();
         return RetResponse.makeOKRsp(biUiDBService.getAllColumns(req.getTableName(), req.getTenantId()));
+    }
+
+    @ApiOperation(value = "获取数据树状结构", notes = "获取数据树状结构")
+    @PostMapping("/getDataTree")
+    public RetResult<List<AnalyseFolderTree>> getDataTree(@RequestBody @Validated RetRequest<DataTreeRequest> request) {
+        return RetResponse.makeOKRsp(biUiDBService.getDataTree(request));
     }
 
 }

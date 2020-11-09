@@ -2,25 +2,23 @@ package com.deloitte.bdh.data.analyse.model.resp;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * TableColumn
- *
- * @author chenghzhang
- * @date 2020/10/27
- */
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class TableColumnTree {
+public class AnalyseFieldTree {
+
     @ApiModelProperty(value = "主键")
     private String id;
+
+    /**
+     * 上级ID
+     */
+    @ApiModelProperty(value = "上级ID")
+    private String parentId;
+
     /**
      * 字段类型
      */
@@ -95,9 +93,5 @@ public class TableColumnTree {
      * 树状展开需要字段
      */
     @ApiModelProperty(value = "下级数据")
-    List<TableColumnTree> children = new ArrayList<>();
-
-    public void addChildren(TableColumnTree child) {
-        children.add(child);
-    }
+    List<AnalyseFieldTree> children;
 }

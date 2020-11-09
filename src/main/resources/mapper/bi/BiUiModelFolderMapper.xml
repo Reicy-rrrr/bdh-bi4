@@ -6,15 +6,16 @@
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiModelFolder">
         <id column="ID" property="id" />
         <result column="MODEL_ID" property="modelId" />
+        <result column="PAGE_ID" property="pageId" />
         <result column="PARENT_ID" property="parentId" />
         <result column="NAME" property="name" />
         <result column="TYPE" property="type" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />
         <result column="MODIFIED_USER" property="modifiedUser" />
-        <result column="IP" property="ip" />
-        <result column="TENANT_ID" property="tenantId" />
     </resultMap>
 
 </mapper>
