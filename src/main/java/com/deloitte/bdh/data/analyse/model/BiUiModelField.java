@@ -26,6 +26,12 @@ public class BiUiModelField implements Serializable {
     @TableId(value = "ID", type = IdType.AUTO)
     private String id;
 
+    @TableField("PARENT_ID")
+    private String parentId;
+
+    @TableField("PAGE_ID")
+    private String pageId;
+
     /**
      * 数据模型id
      */
@@ -47,8 +53,26 @@ public class BiUiModelField implements Serializable {
     /**
      * 物理字段名
      */
-    @TableField("SOURCE_FIELD")
-    private String sourceField;
+    @TableField("NAME")
+    private String name;
+
+    /**
+     * 字段类型
+     */
+    @TableField("TYPE")
+    private String type;
+
+    /**
+     * 数据类型
+     */
+    @TableField("DATA_TYPE")
+    private String dataType;
+
+    /**
+     * 字段描述
+     */
+    @TableField("DESC")
+    private String desc;
 
     /**
      * 是否隐藏
@@ -61,12 +85,6 @@ public class BiUiModelField implements Serializable {
      */
     @TableField("SORT_ORDER")
     private String sortOrder;
-
-    /**
-     * 数据类型
-     */
-    @TableField("DATA_TYPE")
-    private String dataType;
 
     /**
      * 是否维度
@@ -86,6 +104,12 @@ public class BiUiModelField implements Serializable {
     @TableField("GEO_INFO_TYPE")
     private String geoInfoType;
 
+    @TableField("IP")
+    private String ip;
+
+    @TableField("TENANT_ID")
+    private String tenantId;
+
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
 
@@ -98,9 +122,4 @@ public class BiUiModelField implements Serializable {
     @TableField("MODIFIED_USER")
     private String modifiedUser;
 
-    @TableField("IP")
-    private String ip;
-
-    @TableField("TENANT_ID")
-    private String tenantId;
 }
