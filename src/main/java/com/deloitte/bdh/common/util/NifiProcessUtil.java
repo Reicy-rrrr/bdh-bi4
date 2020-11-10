@@ -209,21 +209,10 @@ public class NifiProcessUtil {
      * 随机获取positions json
      */
     public static String randPosition() {
-        Random r = new Random();
         Map<String, Object> position = Maps.newHashMap();
-        position.put("x", r.nextInt(3000));
-        position.put("y", -1 * r.nextInt(1000));
+        position.put("x", (int)(Math.random()*3000 + 1));
+        position.put("y", -1 *(int)(Math.random()*1000 + 1));
         return JsonUtil.obj2String(position);
     }
 
-    public static void main(String[] args) {
-//        String str1 =assemblyUrl( "https://10.81.128.4:9443", NifiEnum.ROOT_GROUP_INFO.getKey());
-//        System.out.println(str1);
-//
-//        String str2 =assemblyUrl( "https://10.81.128.4:9443", NifiEnum.CREATE_PROCSS_GROUP.getKey(),"id");
-//        System.out.println(str2);
-//
-//        String str3 =assemblyUrl( "https://10.81.128.4:9443", NifiEnum.LISTING_FLOWFILE_IDS.getKey(),"id1","id2");
-//        System.out.println(str3);
-    }
 }

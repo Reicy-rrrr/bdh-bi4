@@ -17,13 +17,5 @@ import java.util.List;
  */
 public interface BiProcessorsService extends Service<BiProcessors> {
 
-    List<BiProcessors> getPreChain(String processorsCode);
-
-    void runState(String code, RunStatusEnum state, boolean isGroup) throws Exception;
-
-    void removeProcessors(String processorsCode, String dbId) throws Exception;
-
-    void clearRequest(String processorsCode) throws Exception;
-
 
 }

@@ -358,17 +358,35 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     }
 
     @Override
-    public Map<String, Object> updateProcessor(Map<String, Object> map) throws Exception {
-        NifiProcessUtil.validateRequestMap(map, "id");
-
-        //processor id
-        String id = MapUtils.getString(map, "id");
-        Map<String, Object> prcessorMap = this.getProcessor(id);
+    public Map<String, Object> updateProcessor(String processorId, Map<String, Object> map) throws Exception {
+        if (StringUtil.isEmpty(processorId)) {
+            throw new NifiException("updateProcessor:processorId不能为空");
+        }
+        Map<String, Object> prcessorMap = this.getProcessor(processorId);
         // 校验权限
         NifiProcessUtil.checkPermissions(prcessorMap);
+
         //请求参数设置
-        Map<String, Object> req = NifiProcessUtil.postParam(map, (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision"));
-        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), id);
+        // {
+        ////        "revision":{
+            ////        "version":"0"
+            ////        },
+        ////        "id":"9fdef751-51d6-38ba-bf17-7b1bb0ebf55f",
+        ////        "component":{
+        ////        },
+        ////        "disconnectedNodeAcknowledged":false
+        ////        }
+        Map<String, Object> req = Maps.newHashMap();
+        req.put("disconnectedNodeAcknowledged", false);
+        req.put("component", map);
+        req.put("id", processorId);
+        Map<String, Object> revision = (Map<String, Object>) MapUtils.getMap(prcessorMap, "revision");
+        if (null != revision) {
+            revision.remove("clientId");
+            req.put("revision", revision);
+        }
+
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.PROCESSORS.getKey(), processorId);
         logger.info("NifiProcessServiceImpl.updateProcessor, URL:{} ,REQUEST:{}", url, JsonUtil.obj2String(req));
         String response = HttpClientUtil.put(url, super.setHeaderAuthorization(), req);
         return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
@@ -531,6 +549,18 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         String uuid = MapUtils.getString(flowFileSummaries.get(0), "uuid");
         String clusterNodeId = MapUtils.getString(flowFileSummaries.get(0), "clusterNodeId");
         return getFlowFileContent(connectionId, uuid, clusterNodeId);
+    }
+
+    @Override
+    public Map<String, Object> createByTemplate(String processGroupId, String json) throws Exception {
+        if (StringUtil.isEmpty(processGroupId)) {
+            throw new NifiException("createByTemplate error: processGroupId");
+        }
+        String url = NifiProcessUtil.assemblyUrl(URL, NifiEnum.CREATE_BY_TEMPLATE.getKey(), processGroupId);
+        logger.info("NifiProcessServiceImpl.createConnections, URL:{} ,REQUEST:{}", url, json);
+        String response = HttpClientUtil.postJson(url, super.setHeaderAuthorization(), json);
+        return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
+        });
     }
 
 

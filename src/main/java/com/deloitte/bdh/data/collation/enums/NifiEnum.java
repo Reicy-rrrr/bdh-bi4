@@ -119,6 +119,11 @@ public enum NifiEnum {
      */
     LISTING_FLOWFILE_CONTENT("/nifi-api/flowfile-queues/" + NifiProcessUtil.TEMP + "/flowfiles/" + NifiProcessUtil.TEMP + "/content", "查看FlowFiles content"),
 
+    /**
+     * 基于模板创建
+     */
+    CREATE_BY_TEMPLATE("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/template-instance", "基于模板创建"),
+
     ;
 
     private String key;

@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.service;
 
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 
 import java.util.List;
@@ -42,4 +43,7 @@ public interface BiComponentService extends Service<BiComponent> {
     void removeOut(BiComponent component);
 
     void remove(BiComponent component);
+
+    String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception;
+
 }

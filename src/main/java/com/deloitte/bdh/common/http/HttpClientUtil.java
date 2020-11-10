@@ -136,6 +136,32 @@ public class HttpClientUtil {
     }
 
     /**
+     * function:post以JSON格式发送
+     *
+     * @param url     地址
+     * @param headers 头信息
+     * @param json    参数
+     * @return String
+     */
+    public static String postJson(String url, Map<String, Object> headers, String json) throws IOException {
+        HttpPost httpPost = new HttpPost(url);
+        if (MapUtils.isNotEmpty(headers)) {
+            for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
+                httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
+            }
+        }
+
+        try {
+            httpPost.setEntity(new StringEntity(json, "UTF-8"));
+        } catch (UnsupportedCharsetException e) {
+            e.printStackTrace();
+            throw e;
+        }
+        httpPost.setHeader("Content-Type", "application/json; charset=UTF-8");
+        return getResult(httpPost);
+    }
+
+    /**
      * function:put以JSON格式发送
      *
      * @param url     地址

@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.SyncService;
 import com.deloitte.bdh.data.collation.model.*;
+import com.deloitte.bdh.data.collation.nifi.template.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +42,8 @@ public class SyncServiceImpl implements SyncService {
     private BiEtlModelService modelService;
     @Autowired
     private BiEtlModelHandleService modelHandleService;
+    @Autowired
+    private Transfer transfer;
 
     @Override
     public void sync() {
@@ -99,9 +102,9 @@ public class SyncServiceImpl implements SyncService {
                     dbHandler.truncateTable(config.getToTableName());
                 }
                 //获取归属组件信息
-                String processorsCode = getProcessorsCode(config);
+                String processorsGroupId = getProcessorsGroupId(config);
                 //启动NIFI
-                processorsService.runState(processorsCode, RunStatusEnum.RUNNING, true);
+                transfer.run(processorsGroupId);
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
@@ -130,15 +133,15 @@ public class SyncServiceImpl implements SyncService {
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                         .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
                 );
-                String processorsCode = getProcessorsCode(config);
+                String processorsGroupId = getProcessorsGroupId(config);
                 SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
                 //第一次执行时，当为全量则清空，增量不处理
                 if (0 == count && SyncTypeEnum.FULL == typeEnum) {
                     dbHandler.truncateTable(config.getToTableName());
-                    processorsService.clearRequest(processorsCode);
+                    transfer.clear(processorsGroupId);
                 }
                 //启动NIFI
-                processorsService.runState(processorsCode, RunStatusEnum.RUNNING, true);
+                transfer.run(processorsGroupId);
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
                 //重置
@@ -167,8 +170,9 @@ public class SyncServiceImpl implements SyncService {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
-                String processorsCode = getProcessorsCode(config);
-                processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+                String processorsGroupId = getProcessorsGroupId(config);
+                transfer.stop(processorsGroupId);
+
                 //判断是全量还是增量，是否清空表与 nifi偏移量？todo
             } else {
                 count++;
@@ -187,8 +191,8 @@ public class SyncServiceImpl implements SyncService {
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
-                    String processorsCode = getProcessorsCode(config);
-                    processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+                    String processorsGroupId = getProcessorsGroupId(config);
+                    transfer.stop(processorsGroupId);
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
@@ -236,21 +240,24 @@ public class SyncServiceImpl implements SyncService {
         return condition;
     }
 
-    private String getProcessorsCode(BiEtlMappingConfig config) {
+    private String getProcessorsGroupId(BiEtlMappingConfig config) {
         BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getCode, config.getRefComponentCode())
         );
         if (null == component) {
-            throw new RuntimeException("EtlServiceImpl.getProcessorsCode.error : 未找到目标 组件");
+            throw new RuntimeException("EtlServiceImpl.getProcessorsGroupId.error : 未找到目标 组件");
         }
         BiComponentParams componentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
                 .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
         );
         if (null == componentParams) {
-            throw new RuntimeException("EtlServiceImpl.getProcessorsCode.error : 未找到目标组件 参数");
+            throw new RuntimeException("EtlServiceImpl.getProcessorsGroupId.error : 未找到目标组件 参数");
         }
-        return componentParams.getParamValue();
+        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, componentParams.getParamValue())
+        );
+        return processors.getProcessGroupId();
     }
 
     @Override
@@ -304,7 +311,10 @@ public class SyncServiceImpl implements SyncService {
             //清空
             dbHandler.truncateTable(tableName);
             //启动NIFI
-            processorsService.runState(processorsCode, RunStatusEnum.RUNNING, true);
+            BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                    .eq(BiProcessors::getCode, processorsCode)
+            );
+            transfer.run(processors.getProcessGroupId());
             //修改plan 执行状态
             plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
             plan.setSqlCount(count);
@@ -345,7 +355,10 @@ public class SyncServiceImpl implements SyncService {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
-                processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+                BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                        .eq(BiProcessors::getCode, processorsCode)
+                );
+                transfer.stop(processors.getProcessGroupId());
             } else {
                 count++;
                 //基于条件实时查询 localCount
@@ -363,7 +376,10 @@ public class SyncServiceImpl implements SyncService {
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
-                    processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+                    BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                            .eq(BiProcessors::getCode, processorsCode)
+                    );
+                    transfer.run(processors.getProcessGroupId());
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());

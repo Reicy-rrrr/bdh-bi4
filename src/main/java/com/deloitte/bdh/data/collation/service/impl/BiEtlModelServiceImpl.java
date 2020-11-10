@@ -20,9 +20,7 @@ import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.collation.nifi.EtlProcess;
-import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
-import com.deloitte.bdh.data.collation.nifi.enums.MethodEnum;
+import com.deloitte.bdh.data.collation.nifi.template.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
@@ -71,12 +69,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlDbRefService refService;
     @Autowired
     private DbHandler dbHandler;
-    @Resource
-    private EtlProcess etlProcess;
-    @Autowired
-    private BiProcessorsService processorsService;
     @Autowired
     private BiEtlModelHandleService modelHandleService;
+
 
     @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
@@ -244,7 +239,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
             //创建nifi 配置
-            transferNifiOut(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
+            componentService.addOutComponent(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
             //创建表
             dbHandler.createTable(componentModel.getTableName(), columns);
             //启动模板 ，启动xxjob，有job去生成执行计划
@@ -364,38 +359,4 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         biEtlModelMapper.insert(inf);
         return inf;
     }
-
-
-    private ProcessorContext transferNifiOut(String query, String tableName, BiEtlModel biEtlModel) throws Exception {
-        ProcessorContext context = new ProcessorContext();
-        BiProcessors processors = new BiProcessors();
-        processors.setCode(GenerateCodeUtil.genProcessors());
-        processors.setType(BiProcessorsTypeEnum.ETL_SOURCE.getType());
-        processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()) + System.currentTimeMillis());
-        processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
-        processors.setStatus(YesOrNoEnum.NO.getKey());
-        processors.setEffect(EffectEnum.ENABLE.getKey());
-        processors.setValidate(YesOrNoEnum.NO.getKey());
-        processors.setRelModelCode(biEtlModel.getCode());
-        processors.setVersion("1");
-        processors.setTenantId(ThreadLocalUtil.getTenantId());
-
-        //调用NIFI准备
-        Map<String, Object> reqNifi = Maps.newHashMap();
-        //ExecuteSQL
-//        reqNifi.put("fromControllerServiceId", null);
-        reqNifi.put("sqlSelectQuery", query);
-        //PutDatabaseRecord
-        reqNifi.put("toTableName", tableName);
-        context.setEnumList(BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null));
-        context.setReq(reqNifi);
-        context.setMethod(MethodEnum.SAVE);
-        context.setModel(biEtlModel);
-        context.setProcessors(processors);
-        etlProcess.operateProcessorGroup(context);
-        processorsService.save(context.getProcessors());
-        return context;
-    }
-
-
 }

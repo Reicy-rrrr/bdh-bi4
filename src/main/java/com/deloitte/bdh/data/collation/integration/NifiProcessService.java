@@ -150,7 +150,7 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> updateProcessor(Map<String, Object> map) throws Exception;
+    Map<String, Object> updateProcessor(String processorId, Map<String, Object> map) throws Exception;
 
     /**
      * function:删除 delProcessor
@@ -214,4 +214,12 @@ public interface NifiProcessService {
      * @return Map<String, Object>
      */
     String preview(String connectionId) throws Exception;
+
+    /**
+     * function:创建 createByTemplate
+     *
+     * @return json
+     */
+    Map<String, Object> createByTemplate(String id, String json) throws Exception;
+
 }

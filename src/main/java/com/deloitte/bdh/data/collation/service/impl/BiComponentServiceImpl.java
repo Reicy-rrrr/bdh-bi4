@@ -3,12 +3,17 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentMapper;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
+import com.deloitte.bdh.data.collation.nifi.template.TemplateEnum;
+import com.deloitte.bdh.data.collation.nifi.template.Transfer;
+import com.deloitte.bdh.data.collation.nifi.template.config.OutSql;
 import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,6 +54,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private DbHandler dbHandler;
     @Autowired
     private BiEtlMappingFieldService fieldService;
+    @Autowired
+    private Transfer transfer;
 
     @Override
     public BiComponentTree selectTree(String modelCode, String componentCode) {
@@ -67,13 +74,14 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
         );
 
-        //调用nifi 停止与清空
+        //数据源组件只停止
         for (BiComponent s : components) {
-            String processorsCode = getProcessorsCode(s.getCode());
-            processorsService.runState(processorsCode, RunStatusEnum.STOP, true);
+            String processorsGroupId = getProcessorsGroupId(s.getCode());
+            transfer.stop(processorsGroupId);
         }
-        processorsService.runState(processors.getCode(), RunStatusEnum.STOP, true);
-        processorsService.removeProcessors(processors.getCode(), null);
+        //输出组件要删除
+        transfer.del(processors.getProcessGroupId());
+        processorsService.removeById(processors.getId());
     }
 
     @Override
@@ -161,8 +169,14 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             syncPlan.setResultDesc(PlanResultEnum.CANCEL.getValue());
             planService.updateById(syncPlan);
         }
-        processorsService.runState(processorsCodeParam.getParamValue(), RunStatusEnum.STOP, true);
-        processorsService.removeProcessors(processorsCodeParam.getParamValue(), config.getRefSourceId());
+
+        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, processorsCodeParam.getParamValue())
+        );
+
+        transfer.del(processors.getProcessGroupId());
+        processorsService.removeById(processors.getId());
+
         dbHandler.drop(config.getToTableName());
         biComponentMapper.deleteById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
@@ -193,7 +207,35 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         );
     }
 
-    private String getProcessorsCode(String code) {
+    @Override
+    public String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception {
+        String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), TemplateEnum.OUT_SQL.getKey(), () -> {
+            OutSql sql = new OutSql();
+            sql.setDttDatabaseServieId("a5b9fc8e-0174-1000-0000-000039bf90cc");
+            sql.setDttSqlQuery(querySql);
+            sql.setDttPutReader("a5994ef0-0174-1000-0000-00006d114be3");
+            sql.setDttPutServiceId("a5b9fc8e-0174-1000-0000-000039bf90cc");
+            sql.setDttPutTableName(tableName);
+            sql.setDttComponentName("输出组件");
+            return sql;
+        });
+        BiProcessors processors = new BiProcessors();
+        processors.setCode(GenerateCodeUtil.genProcessors());
+        processors.setType(BiProcessorsTypeEnum.ETL_SOURCE.getType());
+        processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()) + System.currentTimeMillis());
+        processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
+        processors.setStatus(YesOrNoEnum.NO.getKey());
+        processors.setEffect(EffectEnum.ENABLE.getKey());
+        processors.setValidate(YesOrNoEnum.NO.getKey());
+        processors.setRelModelCode(biEtlModel.getCode());
+        processors.setVersion("1");
+        processors.setTenantId(ThreadLocalUtil.getTenantId());
+        processors.setProcessGroupId(processGroupId);
+        processorsService.save(processors);
+        return processGroupId;
+    }
+
+    private String getProcessorsGroupId(String code) {
         BiComponentParams componentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, code)
                 .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
@@ -201,7 +243,10 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         if (null == componentParams) {
             return null;
         }
-        return componentParams.getParamValue();
+        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, componentParams.getParamValue())
+        );
+        return processors.getProcessGroupId();
     }
 
     private void validate(BiComponent component, List<BiComponent> components, List<BiComponentConnection> connections) {

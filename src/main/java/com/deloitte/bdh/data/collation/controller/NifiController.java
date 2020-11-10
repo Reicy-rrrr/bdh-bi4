@@ -79,7 +79,7 @@ public class NifiController {
     @ApiOperation(value = "updateProcessor", notes = "updateProcessor")
     @PostMapping("/updateProcessor")
     public RetResult<Object> updateProcessor(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
-        return RetResponse.makeOKRsp(nifiProcessService.updateProcessor(request.getData()));
+        return RetResponse.makeOKRsp(nifiProcessService.updateProcessor(null,request.getData()));
     }
 
     @ApiOperation(value = "createConnections", notes = "createConnections")

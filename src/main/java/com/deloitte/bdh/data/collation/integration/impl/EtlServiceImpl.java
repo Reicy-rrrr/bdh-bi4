@@ -20,16 +20,14 @@ import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
 import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
-import com.deloitte.bdh.data.collation.nifi.EtlProcess;
-import com.deloitte.bdh.data.collation.nifi.dto.ProcessorContext;
-import com.deloitte.bdh.data.collation.nifi.enums.MethodEnum;
+import com.deloitte.bdh.data.collation.nifi.template.TemplateEnum;
+import com.deloitte.bdh.data.collation.nifi.template.Transfer;
+import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,17 +43,13 @@ import java.util.stream.Collectors;
 @Service
 @DS(DSConstant.BI_DB)
 public class EtlServiceImpl implements EtlService {
-    private static final Logger logger = LoggerFactory.getLogger(EtlServiceImpl.class);
 
     @Autowired
     private BiEtlDatabaseInfService databaseInfService;
     @Autowired
     private BiEtlModelService biEtlModelService;
-    @Resource
-    private EtlProcess etlProcess;
     @Autowired
     private BiProcessorsService processorsService;
-
     @Autowired
     private BiComponentService componentService;
     @Autowired
@@ -70,9 +64,10 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private DbHandler dbHandler;
-
     @Autowired
     private BiEtlModelHandleService biEtlModelHandleService;
+    @Resource
+    private Transfer transfer;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -488,7 +483,7 @@ public class EtlServiceImpl implements EtlService {
         return result;
     }
 
-    private ProcessorContext transferNifiSource(ResourceComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+    private void transferNifiSource(ResourceComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
             biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
 
         switch (SourceTypeEnum.values(biEtlDatabaseInf.getType())) {
@@ -496,17 +491,17 @@ public class EtlServiceImpl implements EtlService {
             case Oracle:
             case SQLServer:
             case Hana:
-                return transferNifiSourceRel(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
+                transferNifiSourceRel(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
+                break;
             case Hive:
             default:
                 throw new RuntimeException("暂不支持的类型");
         }
     }
 
-    private ProcessorContext transferNifiSourceRel(ResourceComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
-            biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
-        ProcessorContext context = new ProcessorContext();
 
+    private void transferNifiSourceRel(ResourceComponentDto dto, BiEtlMappingConfig mappingConfig, BiEtlDatabaseInf
+            biEtlDatabaseInf, BiEtlModel biEtlModel, String processorsCode) throws Exception {
         BiProcessors processors = new BiProcessors();
         processors.setCode(processorsCode);
         processors.setType(BiProcessorsTypeEnum.SYNC_SOURCE.getType());
@@ -519,26 +514,24 @@ public class EtlServiceImpl implements EtlService {
         processors.setVersion("1");
         processors.setTenantId(ThreadLocalUtil.getTenantId());
 
-        //调用NIFI准备
-        Map<String, Object> reqNifi = Maps.newHashMap();
-        //QueryDatabaseTable
-        reqNifi.put("fromControllerServiceId", biEtlDatabaseInf.getControllerServiceId());
-        reqNifi.put("fromTableName", mappingConfig.getFromTableName());
-        String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
-        reqNifi.put("Columns to Return", JsonUtil.obj2String(fileds));
-        if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-            reqNifi.put("db-fetch-where-clause", dto.getOffsetField() + " > " + dto.getOffsetValue());
-        }
-        reqNifi.put("Maximum-value Columns", mappingConfig.getOffsetField());
-        //PutDatabaseRecord
-        reqNifi.put("toTableName", mappingConfig.getToTableName());
-        context.setEnumList(BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(biEtlDatabaseInf.getType()));
-        context.setReq(reqNifi);
-        context.setMethod(MethodEnum.SAVE);
-        context.setModel(biEtlModel);
-        context.setProcessors(processors);
-        etlProcess.operateProcessorGroup(context);
-        processorsService.save(context.getProcessors());
-        return context;
+        String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), TemplateEnum.SYNC_SQL.getKey(), () -> {
+            SyncSql syncSql = new SyncSql();
+            syncSql.setDttComponentName(dto.getComponentName());
+            syncSql.setDttDatabaseServieId(biEtlDatabaseInf.getControllerServiceId());
+            syncSql.setDttTableName(mappingConfig.getFromTableName());
+            String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
+            syncSql.setDttColumnsToReturn(JsonUtil.obj2String(fileds));
+            if (StringUtils.isNotBlank(dto.getOffsetValue())) {
+                syncSql.setDttWhereClause(dto.getOffsetField() + " > " + dto.getOffsetValue());
+            }
+            syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
+            syncSql.setDttPutReader("a5994ef0-0174-1000-0000-00006d114be3");
+            syncSql.setDttPutServiceId("a5b9fc8e-0174-1000-0000-000039bf90cc");
+            syncSql.setDttPutTableName(mappingConfig.getToTableName());
+            return syncSql;
+        });
+        processors.setProcessGroupId(processGroupId);
+        processorsService.save(processors);
     }
+
 }
