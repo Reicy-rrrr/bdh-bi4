@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.analyse.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
@@ -10,7 +9,6 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
@@ -21,6 +19,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
 import com.github.pagehelper.PageInfo;
@@ -50,13 +49,10 @@ import java.util.UUID;
 public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMapper, BiUiAnalysePage> implements BiUiAnalysePageService {
 
     @Resource
-    BiUiAnalysePageMapper biUiAnalysePageMapper;
+    BiUiAnalysePageConfigService configService;
 
     @Resource
     BiUiDemoMapper biUiDemoMapper;
-
-    @Resource
-    BiUiAnalysePageConfigMapper pageConfigMapper;
 
     @Override
     public PageResult<List<BiUiAnalysePage>> getAnalysePages(AnalysePageReq dto) {
@@ -91,7 +87,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (StringUtil.isEmpty(id)) {
             throw new RuntimeException("查看单个resource 失败:id 不能为空");
         }
-        return biUiAnalysePageMapper.selectById(id);
+        return this.getById(id);
     }
 
     @Override
@@ -100,7 +96,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             BiUiAnalysePage entity = new BiUiAnalysePage();
             BeanUtils.copyProperties(dto, entity);
             entity.setCreateDate(LocalDateTime.now());
-            biUiAnalysePageMapper.insert(entity);
+            this.save(entity);
             return entity;
         } else {
             throw new Exception("已存在相同名称的文件夹");
@@ -112,7 +108,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (!checkBiUiAnalysePageByName(request.getName(), request.getTenantId(), null)) {
             throw new BizException("已存在同名报表");
         }
-        BiUiAnalysePage fromPage = biUiAnalysePageMapper.selectById(request.getFromPageId());
+        BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
         if (null == fromPage) {
             throw new BizException("源报表不存在");
         }
@@ -120,10 +116,10 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
         BeanUtils.copyProperties(request, insertPage);
         insertPage.setCreateDate(LocalDateTime.now());
-        biUiAnalysePageMapper.insert(insertPage);
+        this.save(insertPage);
 
         //复制page config
-        BiUiAnalysePageConfig fromPageConfig = pageConfigMapper.selectById(fromPage.getEditId());
+        BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getEditId());
         if (null != fromPageConfig) {
             BiUiAnalysePageConfig insertConfig = new BiUiAnalysePageConfig();
             insertConfig.setPageId(insertPage.getId());
@@ -131,23 +127,23 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             insertConfig.setTenantId(request.getTenantId());
             insertConfig.setCreateUser(request.getCreateUser());
             insertConfig.setCreateDate(LocalDateTime.now());
-            pageConfigMapper.insert(insertConfig);
+            configService.save(insertConfig);
             insertPage.setEditId(insertConfig.getId());
-            biUiAnalysePageMapper.updateById(insertPage);
+            this.updateById(insertPage);
         }
         return insertPage;
     }
 
     @Override
     public void delAnalysePage(String id) throws Exception {
-        BiUiAnalysePage category = biUiAnalysePageMapper.selectById(id);
+        BiUiAnalysePage category = this.getById(id);
         if (category == null) {
             throw new Exception("错误的id");
         }
         if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getInitType())) {
             throw new Exception("默认文件夹不能删除");
         }
-        biUiAnalysePageMapper.deleteById(id);
+        this.removeById(id);
     }
 
     @Override
@@ -155,7 +151,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         if (CollectionUtils.isEmpty(request.getIds())) {
             throw new BizException("请选择要删除的报表");
         }
-        List<BiUiAnalysePage> pageList = biUiAnalysePageMapper.selectBatchIds(request.getIds());
+        List<BiUiAnalysePage> pageList = this.listByIds(request.getIds());
         if (CollectionUtils.isNotEmpty(pageList)) {
             List<String> pageIds = Lists.newArrayList();
             for (BiUiAnalysePage page : pageList) {
@@ -164,30 +160,24 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
                 }
                 pageIds.add(page.getId());
             }
-            for (BiUiAnalysePage page : pageList) {
-                QueryWrapper<BiUiAnalysePageConfig> queryWrapper = new QueryWrapper<>();
-                queryWrapper.eq("PAGE_ID", page.getId());
-                List<BiUiAnalysePageConfig> configList = pageConfigMapper.selectList(queryWrapper);
-                if (CollectionUtils.isNotEmpty(configList)) {
-                    List<String> configIds = Lists.newArrayList();
-                    for (BiUiAnalysePageConfig pageConfig : configList) {
-                        configIds.add(pageConfig.getId());
-                    }
-                    pageConfigMapper.deleteBatchIds(configIds);
-                }
-            }
-            biUiAnalysePageMapper.deleteBatchIds(pageIds);
+            //删除config
+            LambdaQueryWrapper<BiUiAnalysePageConfig> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
+            configService.remove(queryWrapper);
+
+            //删除page
+            this.removeByIds(pageIds);
         }
     }
 
     @Override
     public BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto) throws Exception {
-        BiUiAnalysePage entity = biUiAnalysePageMapper.selectById(dto.getId());
+        BiUiAnalysePage entity = this.getById(dto.getId());
         if (checkBiUiAnalysePageByName(dto.getName(), entity.getTenantId(), entity.getId())) {
             entity.setName(dto.getName());
             entity.setDes(dto.getDes());
             entity.setModifiedDate(LocalDateTime.now());
-            biUiAnalysePageMapper.updateById(entity);
+            this.updateById(entity);
             return entity;
         } else {
             throw new Exception("已存在相同名称的文件夹");

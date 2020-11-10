@@ -18,6 +18,7 @@ import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseDefaultCategoryService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -89,6 +90,9 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             }
             BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
             BeanUtils.copyProperties(dto, entity);
+            if (entity.getParentId() == null) {
+                entity.setParentId("0");
+            }
             entity.setCreateDate(LocalDateTime.now());
             entity.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_CUSTOMER);
             entity.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
@@ -96,7 +100,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
              * 创建的自定义文件夹都在我的分析下面
              */
             entity.setParentId(parent.getId());
-            biuiAnalyseCategoryMapper.insert(entity);
+            this.save(entity);
             return entity;
         } else {
             throw new Exception("已存在相同名称的文件夹");
@@ -104,12 +108,11 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     private BiUiAnalyseCategory getCustomerTop(String tenantId) {
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
         query.eq(BiUiAnalyseCategory::getInitType, AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
         query.eq(BiUiAnalyseCategory::getName, AnalyseConstants.CATEGORY_MY_ANALYSE);
-        List<BiUiAnalyseCategory> customerTops = list(query);
-        return customerTops.size() > 0 ? customerTops.get(0) : null;
+        return getOne(query);
     }
 
     @Override
@@ -155,7 +158,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
 
     @Override
     public List<AnalyseCategoryTree> getTree(AnalyseCategoryReq dto) {
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         if (!StringUtil.isEmpty(dto.getTenantId())) {
             query.eq(BiUiAnalyseCategory::getTenantId, dto.getTenantId());
         }
@@ -184,7 +187,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         }
         for (BiUiAnalyseCategory page : contents) {
             AnalyseCategoryTree tree = treeMap.get(page.getId());
-            if (page.getParentId() != null) {
+            if (!StringUtils.equals(page.getParentId(), "0")) {
                 AnalyseCategoryTree parent = treeMap.get(page.getParentId());
                 if (parent != null) {
                     parent.getChildren().add(tree);
@@ -227,7 +230,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
                 category.setModifiedDate(null);
                 category.setTenantId(data.getTenantId());
                 category.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
-                biuiAnalyseCategoryMapper.insert(category);
+                this.save(category);
                 tenantCategoryMap.put(name, category);
                 newCategories.add(category);
             }
@@ -238,7 +241,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             BiUiAnalyseDefaultCategory defaultCategory = defaultCategoryParentNameMap.get(category.getName());
             //parentId
             String parentId = defaultCategory.getParentId();
-            if (parentId != null) {
+            if (!StringUtils.equals(parentId, "0")) {
                 //默认的parent
                 BiUiAnalyseDefaultCategory defaultParent = defaultCategoryParentIdMap.get(parentId);
                 String parentName = defaultParent.getName();
@@ -300,9 +303,28 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         return true;
     }
 
-    public List<BiUiAnalyseCategory> getTenantAnalyseCategories(String tenantId) {
+    private List<BiUiAnalyseCategory> getTenantAnalyseCategories(String tenantId) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
         return this.list(query);
+    }
+
+    /**
+     * 递归转换成树
+     * @param categoryList
+     * @param parentId
+     * @return
+     */
+    private List<AnalyseCategoryTree> buildCategoryTree(List<BiUiAnalyseCategory> categoryList, String parentId) {
+        List<AnalyseCategoryTree> treeDataModels = Lists.newArrayList();
+        for (BiUiAnalyseCategory category : categoryList) {
+            AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
+            BeanUtils.copyProperties(category, categoryTree);
+            if (parentId.equals(categoryTree.getParentId())) {
+                categoryTree.setChildren(buildCategoryTree(categoryList, categoryTree.getId()));
+                treeDataModels.add(categoryTree);
+            }
+        }
+        return treeDataModels;
     }
 }

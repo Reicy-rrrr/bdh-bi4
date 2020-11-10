@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
@@ -217,10 +218,10 @@ public class BiUiDBServiceImpl implements BiUiDBService {
      * @return
      */
     private Map<String, Object> getHistoryData(RetRequest<GetDataTreeRequest> request) {
-        QueryWrapper<BiUiModelFolder> folderQueryWrapper = new QueryWrapper<>();
-        folderQueryWrapper.eq("PAGE_ID", request.getData().getPageId());
-        folderQueryWrapper.eq("MODEL_ID", request.getData().getModelId());
-        folderQueryWrapper.orderByAsc("SORT_ORDER");
+        LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
+        folderQueryWrapper.eq(BiUiModelFolder::getPageId, request.getData().getPageId());
+        folderQueryWrapper.eq(BiUiModelFolder::getModelId, request.getData().getModelId());
+        folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
         if (CollectionUtils.isEmpty(folderList)) {
@@ -256,10 +257,10 @@ public class BiUiDBServiceImpl implements BiUiDBService {
             folderList.add(dl);
         }
 
-        QueryWrapper<BiUiModelField> fieldQueryWrapper = new QueryWrapper<>();
-        fieldQueryWrapper.eq("PAGE_ID", request.getData().getPageId());
-        fieldQueryWrapper.eq("MODEL_ID", request.getData().getModelId());
-        fieldQueryWrapper.orderByAsc("SORT_ORDER");
+        LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
+        fieldQueryWrapper.eq(BiUiModelField::getPageId, request.getData().getPageId());
+        fieldQueryWrapper.eq(BiUiModelField::getModelId, request.getData().getModelId());
+        fieldQueryWrapper.orderByAsc(BiUiModelField::getSortOrder);
         List<BiUiModelField> fieldList = fieldService.list(fieldQueryWrapper);
         if (CollectionUtils.isEmpty(fieldList)) {
             List<TableColumn> columns = dbHandler.getColumns(request.getData().getModelId());

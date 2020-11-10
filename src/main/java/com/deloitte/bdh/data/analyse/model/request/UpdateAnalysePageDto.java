@@ -5,20 +5,12 @@ import lombok.Data;
 
 @Data
 public class UpdateAnalysePageDto {
+
     private String id;
 
-    /**
-     * 报表编码
-     */
     @ApiModelProperty(value = "报表编码")
     private String code;
 
-    /**
-     * 报表名称
-     */
-    /**
-     * 报表名称
-     */
     @ApiModelProperty(value = "报表名称")
     private String name;
 
