@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
@@ -36,8 +35,6 @@ public class SyncServiceImpl implements SyncService {
     private DbHandler dbHandler;
     @Autowired
     private BiComponentService componentService;
-    @Autowired
-    private BiComponentParamsService componentParamsService;
     @Autowired
     private BiEtlModelService modelService;
     @Autowired
@@ -102,7 +99,7 @@ public class SyncServiceImpl implements SyncService {
                     dbHandler.truncateTable(config.getToTableName());
                 }
                 //获取归属组件信息
-                String processorsGroupId = getProcessorsGroupId(config);
+                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
                 //启动NIFI
                 transfer.run(processorsGroupId);
                 //修改plan 执行状态
@@ -133,7 +130,7 @@ public class SyncServiceImpl implements SyncService {
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                         .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
                 );
-                String processorsGroupId = getProcessorsGroupId(config);
+                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
                 SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
                 //第一次执行时，当为全量则清空，增量不处理
                 if (0 == count && SyncTypeEnum.FULL == typeEnum) {
@@ -170,7 +167,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
-                String processorsGroupId = getProcessorsGroupId(config);
+                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
                 transfer.stop(processorsGroupId);
 
                 //判断是全量还是增量，是否清空表与 nifi偏移量？todo
@@ -191,7 +188,7 @@ public class SyncServiceImpl implements SyncService {
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                     //调用nifi 停止与清空
-                    String processorsGroupId = getProcessorsGroupId(config);
+                    String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
                     transfer.stop(processorsGroupId);
 
                     //修改plan 执行状态
@@ -238,26 +235,6 @@ public class SyncServiceImpl implements SyncService {
             }
         }
         return condition;
-    }
-
-    private String getProcessorsGroupId(BiEtlMappingConfig config) {
-        BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
-                .eq(BiComponent::getCode, config.getRefComponentCode())
-        );
-        if (null == component) {
-            throw new RuntimeException("EtlServiceImpl.getProcessorsGroupId.error : 未找到目标 组件");
-        }
-        BiComponentParams componentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefComponentCode, component.getCode())
-                .eq(BiComponentParams::getParamKey, ComponentCons.REF_PROCESSORS_CDOE)
-        );
-        if (null == componentParams) {
-            throw new RuntimeException("EtlServiceImpl.getProcessorsGroupId.error : 未找到目标组件 参数");
-        }
-        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                .eq(BiProcessors::getCode, componentParams.getParamValue())
-        );
-        return processors.getProcessGroupId();
     }
 
     @Override

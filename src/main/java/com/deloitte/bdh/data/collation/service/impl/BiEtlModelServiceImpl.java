@@ -129,20 +129,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         );
 
         // 最终表名
-        String finalTableName = null;
         for (BiComponent component : componentList) {
             switch (ComponentTypeEnum.values(component.getType())) {
                 case DATASOURCE:
                     componentService.removeResourceComponent(component);
                     break;
                 case OUT:
-                    LambdaQueryWrapper<BiComponentParams> paramWrapper = new LambdaQueryWrapper();
-                    paramWrapper.eq(BiComponentParams::getRefComponentCode, component.getCode());
-                    paramWrapper.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
-                    BiComponentParams param = componentParamsService.getOne(paramWrapper);
-                    if (param != null && StringUtils.isNotBlank(param.getParamValue())) {
-                        finalTableName = param.getParamValue();
-                    }
                     componentService.removeOut(component);
                     break;
                 default:
@@ -153,11 +145,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         //删除model
         String processGroupId = inf.getProcessGroupId();
         Map<String, Object> sourceMap = nifiProcessService.delProcessGroup(processGroupId);
-
-        //删除最终表
-        if (StringUtils.isNotBlank(finalTableName)) {
-            dbHandler.drop(finalTableName);
-        }
 
         jobService.remove(inf.getCode());
         biEtlModelMapper.deleteById(id);
@@ -219,7 +206,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         RunStatusEnum runStatusEnum = RunStatusEnum.getEnum(biEtlModel.getStatus());
         if (RunStatusEnum.RUNNING == runStatusEnum) {
             // 停止数据源组nifi 、停止与删除etl NIFI
-            componentService.stopComponents(modelCode);
+            componentService.stopAndDelComponents(modelCode);
             // 停止 job
             jobService.stop(modelCode);
             //判断是否有执行计划正在执行中，有则取消
@@ -337,7 +324,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         Map<String, Object> reqNifi = Maps.newHashMap();
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
-        reqNifi.put("position", JsonUtil.string2Obj(inf.getPosition(), Map.class));
+        reqNifi.put("position", JsonUtil.string2Obj(NifiProcessUtil.randPosition(), Map.class));
         Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
 
         if (!StringUtil.isEmpty(dto.getCronExpression())) {

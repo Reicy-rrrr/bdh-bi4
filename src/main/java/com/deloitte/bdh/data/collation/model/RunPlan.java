@@ -75,13 +75,13 @@ public class RunPlan {
         return this;
     }
 
-    public RunPlan etlCount(String tableName) throws Exception {
-        DbHandler handler = SpringUtil.getBean("dbHandler", DbHandler.class);
-        long nowCount = handler.getCount(tableName, null);
-        this.count = String.valueOf(nowCount);
-        this.tableName = tableName;
-        return this;
-    }
+//    public RunPlan etlCount(String tableName) throws Exception {
+//        DbHandler handler = SpringUtil.getBean("dbHandler", DbHandler.class);
+//        long nowCount = handler.getCount(tableName, null);
+//        this.count = String.valueOf(nowCount);
+//        this.tableName = tableName;
+//        return this;
+//    }
 
 
 }

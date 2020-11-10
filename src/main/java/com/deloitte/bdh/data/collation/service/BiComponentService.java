@@ -5,7 +5,6 @@ import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 
-import java.util.List;
 
 /**
  * <p>
@@ -29,12 +28,12 @@ public interface BiComponentService extends Service<BiComponent> {
     BiComponentTree selectTree(String modelCode, String componentCode);
 
     /**
-     * 基于模板编码停止运行
+     * 基于模板编码停止运行 停止同步，删除etl
      *
      * @param modelCode
      * @return
      */
-    void stopComponents(String modelCode) throws Exception;
+    void stopAndDelComponents(String modelCode) throws Exception;
 
     void validate(String modelCode);
 
@@ -45,5 +44,7 @@ public interface BiComponentService extends Service<BiComponent> {
     void remove(BiComponent component);
 
     String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception;
+
+    String getProcessorsGroupId(String componentCode);
 
 }

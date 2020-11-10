@@ -119,6 +119,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
+        params.put(ComponentCons.REF_CODE, refCode);
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
