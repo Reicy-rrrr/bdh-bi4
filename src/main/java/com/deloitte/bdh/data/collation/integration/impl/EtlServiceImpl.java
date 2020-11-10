@@ -242,26 +242,16 @@ public class EtlServiceImpl implements EtlService {
         }
 
         // 保存组件信息
-        String componentCode = GenerateCodeUtil.getComponent();
-        BiComponent component = new BiComponent();
-        component.setCode(componentCode);
-        component.setName(componentCode);
-        component.setType(ComponentTypeEnum.JOIN.getKey());
-        component.setEffect(EffectEnum.ENABLE.getKey());
-        component.setRefModelCode(biEtlModel.getCode());
-        component.setVersion("1");
-        component.setPosition(dto.getPosition());
-        component.setTenantId(ThreadLocalUtil.getTenantId());
-        componentService.save(component);
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.JOIN, dto.getPosition());
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.JOIN_PARAM_KEY_TABLES, JSON.toJSONString(dto.getTables()));
-        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -275,26 +265,16 @@ public class EtlServiceImpl implements EtlService {
         }
 
         // 保存组件信息
-        String componentCode = GenerateCodeUtil.getComponent();
-        BiComponent component = new BiComponent();
-        component.setCode(componentCode);
-        component.setName(componentCode);
-        component.setType(ComponentTypeEnum.GROUP.getKey());
-        component.setEffect(EffectEnum.ENABLE.getKey());
-        component.setRefModelCode(biEtlModel.getCode());
-        component.setVersion("1");
-        component.setPosition(dto.getPosition());
-        component.setTenantId(ThreadLocalUtil.getTenantId());
-        componentService.save(component);
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.GROUP, dto.getPosition());
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getGroups()));
-        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -308,26 +288,106 @@ public class EtlServiceImpl implements EtlService {
         }
 
         // 保存组件信息
-        String componentCode = GenerateCodeUtil.getComponent();
-        BiComponent component = new BiComponent();
-        component.setCode(componentCode);
-        component.setName(componentCode);
-        component.setType(ComponentTypeEnum.ARRANGE.getKey());
-        component.setEffect(EffectEnum.ENABLE.getKey());
-        component.setRefModelCode(biEtlModel.getCode());
-        component.setVersion("1");
-        component.setPosition(dto.getPosition());
-        component.setTenantId(ThreadLocalUtil.getTenantId());
-        componentService.save(component);
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
 
         // 保存字段及属性
-        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, dto.getFields());
+        List<BiEtlMappingField> fields = transferFieldsByName(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), dto.getFields());
         fieldService.saveBatch(fields);
 
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
 //        params.put();
-        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent arrangeSplit(ArrangeSplitDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("type", ArrangeTypeEnum.SPLIT.getType());
+        params.put("context", JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent arrangeRemove(ArrangeRemoveDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("type", ArrangeTypeEnum.REMOVE.getType());
+        params.put("context", JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent arrangeReplace(ArrangeReplaceDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("type", ArrangeTypeEnum.REPLACE.getType());
+        params.put("context", JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent arrangeCombine(ArrangeCombineDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("type", ArrangeTypeEnum.COMBINE.getType());
+        params.put("context", JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    public BiComponent arrangeNonNull(ArrangeNonNullDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("type", ArrangeTypeEnum.NON_NULL.getType());
+        params.put("context", JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(ThreadLocalUtil.getOperator(), ThreadLocalUtil.getTenantId(), component.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -534,4 +594,26 @@ public class EtlServiceImpl implements EtlService {
         processorsService.save(processors);
     }
 
+    /**
+     * 保存组件信息
+     *
+     * @param modelCode
+     * @param type
+     * @param position
+     * @return
+     */
+    private BiComponent saveComponent(String modelCode, ComponentTypeEnum type, String position) {
+        String componentCode = GenerateCodeUtil.getComponent();
+        BiComponent component = new BiComponent();
+        component.setCode(componentCode);
+        component.setName(componentCode);
+        component.setType(type.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
+        component.setRefModelCode(modelCode);
+        component.setVersion("1");
+        component.setPosition(position);
+        component.setTenantId(ThreadLocalUtil.getTenantId());
+        componentService.save(component);
+        return component;
+    }
 }

@@ -62,7 +62,8 @@ public class SourceComponent implements ComponentHandler {
 
         // 查询映射字段
         LambdaQueryWrapper<BiEtlMappingField> fieldWrapper = new LambdaQueryWrapper();
-        fieldWrapper.eq(BiEtlMappingField::getRefCode, componentCode);
+        fieldWrapper.eq(BiEtlMappingField::getRefCode, component.getRefMappingCode());
+        fieldWrapper.orderByAsc(BiEtlMappingField::getId);
         List<BiEtlMappingField> fields = biEtlMappingFieldService.list(fieldWrapper);
         List<String> fieldNames = null;
         // 如果映射字段为空，直接查询表结构中的所有字段

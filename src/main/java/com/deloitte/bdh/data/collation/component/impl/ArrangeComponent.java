@@ -1,18 +1,27 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
+import com.alibaba.fastjson.JSONArray;
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.SpringUtil;
+import com.deloitte.bdh.data.collation.component.ArrangerSelector;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
-import com.deloitte.bdh.data.collation.component.model.ComponentModel;
-import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -23,121 +32,338 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service("arrangeComponent")
-public abstract class ArrangeComponent implements ComponentHandler {
+public class ArrangeComponent implements ComponentHandler {
+
+    private static final String param_key_type = "type";
+
+    private static final String param_key_context = "context";
+
+    private static final String split_type_separator = "separator";
+
+    private static final String split_type_length = "length";
 
     private DbHandler dbHandler;
 
     private ComponentHandler componentHandler;
 
+    private ArrangerSelector arranger;
+
     @Override
     public void handle(ComponentModel component) {
+        String componentCode = component.getCode();
+        List<ComponentModel> fromComponents = component.getFrom();
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(fromComponents)) {
+            log.error("组件[{}]未查询到上层组件，处理失败！", componentCode);
+            throw new BizException("整理组件不能单独存在，处理失败！");
+        }
+        if (fromComponents.size() > 1) {
+            log.error("组件[{}]查询到[{}]个上层组件，处理失败！", componentCode, fromComponents.size());
+            throw new BizException("整理组件有且只能有一个上层组件，处理失败！");
+        }
 
+        // todo: 获取数据库类型
+        SourceTypeEnum dbType = SourceTypeEnum.Mysql;
+        arranger = SpringUtil.getBean(dbType.getTypeName() + "Arranger", ArrangerSelector.class);
+
+        component.setTableName(component.getCode());
+        component.setTableName(componentCode);
+        Map<String, BiComponentParams> params = component.getParams().stream().collect(Collectors.toMap(BiComponentParams::getParamKey, param -> param));
+
+        BiComponentParams typeParam = MapUtils.getObject(params, param_key_type);
+        if (typeParam == null) {
+            log.error("整理组件[{}]未查询到[type]参数，处理失败！", componentCode);
+            throw new BizException("Arrange component handle error: 未查询到type参数！");
+        }
+
+        BiComponentParams contextParam = MapUtils.getObject(params, param_key_context);
+        if (contextParam == null) {
+            log.error("整理组件[{}]未查询到[context]参数，处理失败！", componentCode);
+            throw new BizException("Arrange component handle error: 未查询到context参数！");
+        }
+
+        build(component, ArrangeTypeEnum.get(typeParam.getParamValue()), contextParam.getParamValue());
+    }
+
+    private void build(ComponentModel component, ArrangeTypeEnum arrangeType, String context) {
+        List<ArrangeResultModel> arrangeCases = Lists.newArrayList();
+        List<String> whereCases = Lists.newArrayList();
+        Set<String> excludeFields = Sets.newHashSet();
+        switch (arrangeType) {
+            case REMOVE:
+                excludeFields.addAll(remove(context));
+                break;
+            case SPLIT:
+                arrangeCases.addAll(split(component, context));
+                break;
+            case COMBINE:
+                arrangeCases.add(combine(component, context));
+                break;
+            case NON_NULL:
+                whereCases.addAll(nonNull(component, context));
+                break;
+            case CONVERT_TYPE:
+                System.out.println("CONVERT_TYPE");
+                break;
+            case RENAME:
+                System.out.println("RENAME");
+                break;
+            case GROUP:
+                group(component, context);
+                break;
+            case UPPERCASE:
+                toUpperCase(component, context);
+                break;
+            case LOWERCASE:
+                toLowerCase(component, context);
+                break;
+            case TRIM:
+                trim(component, context);
+                break;
+            case REPLACE:
+                replace(component, context);
+                break;
+            case FILL:
+                System.out.println("FILL");
+                break;
+            case CALCULATE:
+                System.out.println("CALCULATE");
+                break;
+            case SYNC_STRUCTURE:
+                System.out.println("SYNC_STRUCTURE");
+                break;
+            case CONVERT_STRUCTURE:
+                System.out.println("CONVERT_STRUCTURE");
+                break;
+            default:
+                throw new BizException("Arrange component handle error: 暂不支持的整理组件类型！");
+        }
+
+        ComponentModel fromComponent = component.getFrom().get(0);
+        List<FieldMappingModel> currMappings = Lists.newArrayList();
+
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(buildSelect(fromComponent, arrangeCases, currMappings, excludeFields));
+        sqlBuilder.append(buildFrom(fromComponent));
+        if (CollectionUtils.isEmpty(whereCases)) {
+            sqlBuilder.append(buildWhere(whereCases));
+        }
+
+        component.setQuerySql(sqlBuilder.toString());
+        List<String> finalFields = currMappings.stream()
+                .map(FieldMappingModel::getTempFieldName).collect(Collectors.toList());
+        component.setFields(finalFields);
+        component.setFieldMappings(currMappings);
+    }
+
+    private StringBuilder buildSelect(ComponentModel fromComponent, List<ArrangeResultModel> arrangeCases,
+                                      List<FieldMappingModel> currMappings, Set<String> excludeFields) {
+        String fromTableName = fromComponent.getTableName();
+        ComponentTypeEnum fromType = fromComponent.getTypeEnum();
+        List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
+
+        Map<String, Boolean> newFlags = arrangeCases.stream()
+                .collect(Collectors.toMap(ArrangeResultModel::getField, resultModel -> resultModel.getIsNew()));
+        StringBuilder selectBuilder = new StringBuilder();
+        selectBuilder.append(sql_key_select);
+
+        for (FieldMappingModel fromMapping : fromMappings) {
+            // 要排除的字段不查询
+            if (excludeFields.contains(fromMapping.getTempFieldName())) {
+                continue;
+            }
+            // 如果在原字段进行整理（转大小写等），则查询语句使用整理后的
+            if (newFlags.containsKey(fromMapping.getTempFieldName())
+                    && !newFlags.get(fromMapping.getTempFieldName())) {
+                continue;
+            }
+
+            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+                selectBuilder.append(fromMapping.getOriginalFieldName());
+                selectBuilder.append(sql_key_blank);
+                selectBuilder.append(sql_key_as);
+                selectBuilder.append(fromMapping.getTempFieldName());
+                selectBuilder.append(sql_key_comma);
+            } else {
+                selectBuilder.append(fromTableName);
+                selectBuilder.append(sql_key_separator);
+                selectBuilder.append(fromMapping.getTempFieldName());
+                selectBuilder.append(sql_key_comma);
+            }
+
+            FieldMappingModel clone = fromMapping.clone();
+            currMappings.add(clone);
+        }
+
+        arrangeCases.forEach(field -> {
+            currMappings.add(field.getMapping());
+            selectBuilder.append(field.getSegment());
+            selectBuilder.append(sql_key_comma);
+        });
+        // 删除SELECT中最后多余的“,”
+        selectBuilder.deleteCharAt(selectBuilder.lastIndexOf(sql_key_comma));
+        selectBuilder.append(sql_key_blank);
+        return selectBuilder;
+    }
+
+    private StringBuilder buildFrom(ComponentModel fromComponent) {
+        String fromTableName = fromComponent.getTableName();
+        ComponentTypeEnum fromType = fromComponent.getTypeEnum();
+
+        StringBuilder fromBuilder = new StringBuilder();
+        fromBuilder.append(sql_key_from);
+        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            fromBuilder.append(fromTableName);
+        } else {
+            fromBuilder.append(sql_key_bracket_left);
+            fromBuilder.append(fromComponent.getQuerySql());
+            fromBuilder.append(sql_key_bracket_right);
+            fromBuilder.append(sql_key_as);
+            fromBuilder.append(fromTableName);
+        }
+        return fromBuilder;
+    }
+
+    private StringBuilder buildWhere(List<String> whereCases) {
+        StringBuilder whereBuilder = new StringBuilder();
+        if (CollectionUtils.isEmpty(whereCases)) {
+            return whereBuilder;
+        }
+        whereBuilder.append(sql_key_where);
+        for (int i = 0; i < whereCases.size(); i++) {
+            if (i == 0) {
+                whereBuilder.append(whereCases.get(i));
+                whereBuilder.append(sql_key_blank);
+                continue;
+            }
+
+            if (i >= 1) {
+                whereBuilder.append(sql_key_and);
+                whereBuilder.append(whereCases.get(i));
+                whereBuilder.append(sql_key_blank);
+            }
+        }
+        return whereBuilder;
     }
 
     /**
      * 移除字段（基于从组件操作）
      *
-     * @param component
-     * @param fields
+     * @param context 移除字段
      */
-    protected void remove(ComponentModel component, List<String> fields) {
-        if (CollectionUtils.isEmpty(fields)) {
-            return;
-        }
-        List<ComponentModel> froms = component.getFrom();
-        if (CollectionUtils.isEmpty(froms) || froms.size() > 1) {
-            return;
-        }
-        ComponentModel fromComponent = froms.get(0);
-        List<FieldMappingModel> originalMappings = fromComponent.getFieldMappings();
-        List<FieldMappingModel> finalMappings = Lists.newArrayList();
-        originalMappings.forEach(fieldMapping -> {
-            if (!fields.contains(fieldMapping.getTempFieldName())) {
-                finalMappings.add(fieldMapping);
-            }
-        });
-
-        List<String> finalFields = finalMappings.stream().map(FieldMappingModel::getTempFieldName).collect(Collectors.toList());
-        component.setFieldMappings(finalMappings);
-        component.setFields(finalFields);
+    private Set<String> remove(String context) {
+        List<String> fields = JSONArray.parseArray(context, String.class);
+        return Sets.newHashSet(fields);
     }
 
     /**
-     * 根据分隔符拆分字段
+     * 拆分字段
      *
-     * @param fieldMapping 字段映射
-     * @param separator    分隔符
-     * @return List
-     */
-    abstract List<Pair<String, FieldMappingModel>> split(FieldMappingModel fieldMapping, String separator, ComponentTypeEnum type);
-
-    /**
-     * 根据长度拆分字段
-     *
-     * @param fieldMapping 字段映射
-     * @param length       拆分长度
-     * @return List
-     */
-    abstract List<Pair<String, FieldMappingModel>> split(FieldMappingModel fieldMapping, int length, ComponentTypeEnum type);
-
-    /**
-     * 替换字段内容
-     *
-     * @param fieldMapping 字段映射
-     * @param source       替换内容
-     * @param target       替换目标
+     * @param component 整理组件
+     * @param context   拆分内容
      * @return
      */
-    abstract String replace(FieldMappingModel fieldMapping, String source, String target, ComponentTypeEnum type);
+    private List<ArrangeResultModel> split(ComponentModel component, String context) {
+        List<ArrangeSplitModel> splitCases = JSONArray.parseArray(context, ArrangeSplitModel.class);
+        if (CollectionUtils.isEmpty(splitCases)) {
+            throw new BizException("Arrange component split error: 拆分内容不能为空！");
+        }
 
-    /**
-     * 合并字段
-     *
-     * @param fieldMappings 字段映射
-     * @return Pair
-     */
-    abstract Pair<String, FieldMappingModel> combine(List<FieldMappingModel> fieldMappings, ComponentTypeEnum type);
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        String fromTableName = fromComponent.getTableName();
+        ComponentTypeEnum fromType = fromComponent.getTypeEnum();
+        List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
 
-    /**
-     * 字段排空
-     *
-     * @param fieldMappings 字段映射
-     * @return List
-     */
-    abstract List<String> nonNull(List<FieldMappingModel> fieldMappings, ComponentTypeEnum type);
+        Map<String, FieldMappingModel> fromMappingMap = fromMappings.stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        splitCases.forEach(splitModel -> {
+            String splitField = splitModel.getName();
+            String splitType = splitModel.getType();
+            String splitValue = splitModel.getValue();
+            FieldMappingModel originalMapping = MapUtils.getObject(fromMappingMap, splitField);
+            if (split_type_length.equals(splitType)) {
+                resultModels.addAll(arranger.split(originalMapping, Integer.valueOf(splitValue), fromTableName, fromType));
+            } else {
+                resultModels.addAll(arranger.split(originalMapping, splitValue, fromTableName, fromType));
+            }
+        });
 
-    /**
-     * 转大写
-     *
-     * @param fieldMappings 字段映射
-     * @return List
-     */
-    abstract List<String> toUpperCase(List<FieldMappingModel> fieldMappings, ComponentTypeEnum type);
+        return resultModels;
+    }
 
-    /**
-     * 转小写
-     *
-     * @param fieldMappings 字段映射
-     * @return List
-     */
-    abstract List<String> toLowerCase(List<FieldMappingModel> fieldMappings, ComponentTypeEnum type);
+    private List<ArrangeResultModel> replace(ComponentModel component, String context) {
+        List<ArrangeReplaceModel> replaceCases = JSONArray.parseArray(context, ArrangeReplaceModel.class);
+        if (CollectionUtils.isEmpty(replaceCases)) {
+            throw new BizException("Arrange component replace error: 替换内容不能为空！");
+        }
 
-    /**
-     * 去除前后空格
-     *
-     * @param fieldMappings 字段映射
-     * @return List
-     */
-    abstract List<String> trim(List<FieldMappingModel> fieldMappings, ComponentTypeEnum type);
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        String fromTableName = fromComponent.getTableName();
+        ComponentTypeEnum fromType = fromComponent.getTypeEnum();
+        List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
 
-    /**
-     * 字段分组（新增字段）
-     *
-     * @param fieldMapping
-     * @param values
-     * @return
-     */
-    abstract Pair<String, FieldMappingModel> group(FieldMappingModel fieldMapping, List<Object> values, ComponentTypeEnum type);
+        Map<String, FieldMappingModel> fromMappingMap = fromMappings.stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        replaceCases.forEach(replaceCase -> {
+            String fieldName = replaceCase.getName();
+
+            String source = replaceCase.getSource();
+            String target = replaceCase.getTarget();
+
+            FieldMappingModel fromMapping = MapUtils.getObject(fromMappingMap, fieldName);
+            ArrangeResultModel resultModel = arranger.replace(fromMapping, source, target, fromTableName, fromType);
+            resultModels.add(resultModel);
+        });
+        return resultModels;
+    }
+
+    private ArrangeResultModel combine(ComponentModel component, String context) {
+        List<String> combineFields = JSONArray.parseArray(context, String.class);
+        if (CollectionUtils.isEmpty(combineFields)) {
+            throw new BizException("Arrange component combine error: 合并字段不能为空！");
+        }
+
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        List<FieldMappingModel> combineMappings = fromComponent.getFieldMappings().stream()
+                .filter(mappingModel -> combineFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
+        ArrangeResultModel resultModel = arranger.combine(combineMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
+        return resultModel;
+    }
+
+    private List<String> nonNull(ComponentModel component, String context) {
+        List<String> nonNullFields = JSONArray.parseArray(context, String.class);
+        if (CollectionUtils.isEmpty(nonNullFields)) {
+            throw new BizException("Arrange component non null error: 排空字段不能为空！");
+        }
+
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        List<FieldMappingModel> combineMappings = fromComponent.getFieldMappings().stream()
+                .filter(mappingModel -> nonNullFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
+        List<String> result = arranger.nonNull(combineMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
+        return result;
+    }
+
+    private void toUpperCase(ComponentModel component, String context) {
+
+    }
+
+    private void toLowerCase(ComponentModel component, String context) {
+
+    }
+
+    private void trim(ComponentModel component, String context) {
+
+    }
+
+    private void group(ComponentModel component, String context) {
+
+    }
 
     @Autowired
     public void setDbHandler(DbHandler dbHandler) {

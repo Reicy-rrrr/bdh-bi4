@@ -56,10 +56,40 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.group(request.getData()));
     }
 
-    @ApiOperation(value = "引入整理组件", notes = "引入整理组件")
-    @PostMapping("/arrange/join")
-    public RetResult<BiComponent> arrange(@RequestBody @Validated RetRequest<ArrangeComponentDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrange(request.getData()));
+//    @ApiOperation(value = "引入整理组件", notes = "引入整理组件")
+//    @PostMapping("/arrange/join")
+//    public RetResult<BiComponent> arrange(@RequestBody @Validated RetRequest<ArrangeComponentDto> request) throws Exception {
+//        return RetResponse.makeOKRsp(etlService.arrange(request.getData()));
+//    }
+
+    @ApiOperation(value = "引入整理组件(拆分)", notes = "引入整理组件(拆分)")
+    @PostMapping("/arrange/split/join")
+    public RetResult<BiComponent> arrangeSplit(@RequestBody @Validated RetRequest<ArrangeSplitDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeSplit(request.getData()));
+    }
+
+    @ApiOperation(value = "引入整理组件(移除)", notes = "引入整理组件(移除)")
+    @PostMapping("/arrange/remove/join")
+    public RetResult<BiComponent> arrangeRemove(@RequestBody @Validated RetRequest<ArrangeRemoveDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeRemove(request.getData()));
+    }
+
+    @ApiOperation(value = "引入整理组件(替换)", notes = "引入整理组件(替换)")
+    @PostMapping("/arrange/replace/join")
+    public RetResult<BiComponent> arrangeReplace(@RequestBody @Validated RetRequest<ArrangeReplaceDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeReplace(request.getData()));
+    }
+
+    @ApiOperation(value = "引入整理组件(合并)", notes = "引入整理组件(合并)")
+    @PostMapping("/arrange/combine/join")
+    public RetResult<BiComponent> arrangeCombine(@RequestBody @Validated RetRequest<ArrangeCombineDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeCombine(request.getData()));
+    }
+
+    @ApiOperation(value = "引入整理组件(排空)", notes = "引入整理组件(排空)")
+    @PostMapping("/arrange/nonnull/join")
+    public RetResult<BiComponent> arrangeNonNull(@RequestBody @Validated RetRequest<ArrangeNonNullDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeNonNull(request.getData()));
     }
 
     @ApiOperation(value = "移除组件", notes = "移除组件")
