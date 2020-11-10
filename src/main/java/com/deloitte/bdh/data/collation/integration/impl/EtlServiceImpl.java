@@ -21,7 +21,7 @@ import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
 import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
 import com.deloitte.bdh.data.collation.nifi.template.TemplateEnum;
-import com.deloitte.bdh.data.collation.nifi.template.Transfer;
+import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
@@ -514,7 +514,7 @@ public class EtlServiceImpl implements EtlService {
         processors.setVersion("1");
         processors.setTenantId(ThreadLocalUtil.getTenantId());
 
-        String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), TemplateEnum.SYNC_SQL.getKey(), () -> {
+        String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), BiProcessorsTypeEnum.SYNC_SOURCE.includeProcessor(biEtlDatabaseInf.getType()).getKey(), () -> {
             SyncSql syncSql = new SyncSql();
             syncSql.setDttComponentName(dto.getComponentName());
             syncSql.setDttDatabaseServieId(biEtlDatabaseInf.getControllerServiceId());

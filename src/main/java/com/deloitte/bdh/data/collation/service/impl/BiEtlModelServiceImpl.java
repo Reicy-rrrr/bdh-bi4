@@ -20,7 +20,6 @@ import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.collation.nifi.template.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;

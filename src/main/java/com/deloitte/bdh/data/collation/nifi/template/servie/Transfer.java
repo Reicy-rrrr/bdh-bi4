@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.nifi.template;
+package com.deloitte.bdh.data.collation.nifi.template.servie;
 
 import com.deloitte.bdh.data.collation.nifi.template.config.Template;
 

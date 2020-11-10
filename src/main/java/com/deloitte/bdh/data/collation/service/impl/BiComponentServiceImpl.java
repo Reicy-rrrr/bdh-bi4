@@ -12,7 +12,7 @@ import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentMapper;
 import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 import com.deloitte.bdh.data.collation.nifi.template.TemplateEnum;
-import com.deloitte.bdh.data.collation.nifi.template.Transfer;
+import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.nifi.template.config.OutSql;
 import com.deloitte.bdh.data.collation.service.*;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -209,7 +209,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
     @Override
     public String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception {
-        String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), TemplateEnum.OUT_SQL.getKey(), () -> {
+        String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null).getKey(), () -> {
             OutSql sql = new OutSql();
             sql.setDttDatabaseServieId("a5b9fc8e-0174-1000-0000-000039bf90cc");
             sql.setDttSqlQuery(querySql);

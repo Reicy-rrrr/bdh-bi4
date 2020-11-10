@@ -1,9 +1,9 @@
-package com.deloitte.bdh.data.collation.nifi.template;
+package com.deloitte.bdh.data.collation.nifi.template.servie.impl;
 
 
 import com.beust.jcommander.internal.Lists;
-import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
 import org.codehaus.jackson.type.TypeReference;
