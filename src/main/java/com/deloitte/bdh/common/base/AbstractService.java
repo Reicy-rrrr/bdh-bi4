@@ -8,12 +8,10 @@ import com.deloitte.bdh.common.util.StringUtil;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Map;
 
 /**
  * @author dahpeng
@@ -40,23 +38,5 @@ public abstract class AbstractService<M extends Mapper<T>, T> extends ServiceImp
         String sequenceValue = baseMapper.selectSequence();
         return tenantCode + "-" + sequenceValue;
     }
-
-    protected void async(Async async) {
-        Map<String, Object> local = ThreadLocalUtil.getThreadLocal();
-        executor.execute(() -> {
-            ThreadLocalUtil.set(local);
-            try {
-                async.invoke();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            ThreadLocalUtil.clear();
-        });
-    }
-
-    protected interface Async {
-        void invoke() throws Exception;
-    }
-
 
 }

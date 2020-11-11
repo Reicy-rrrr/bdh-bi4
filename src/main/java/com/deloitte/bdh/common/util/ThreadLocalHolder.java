@@ -1,9 +1,11 @@
 package com.deloitte.bdh.common.util;
 
+import org.springframework.core.task.AsyncTaskExecutor;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class ThreadLocalUtil {
+public final class ThreadLocalHolder {
     private static final ThreadLocal<Map<String, Object>> threadLocal = ThreadLocal.withInitial(() -> new ConcurrentHashMap<String, Object>(4) {
     });
 
@@ -81,5 +83,23 @@ public final class ThreadLocalUtil {
 
     public static void clear() {
         threadLocal.remove();
+    }
+
+    public static void async(Async async) {
+        AsyncTaskExecutor executor = SpringUtil.getBean("taskExecutor", AsyncTaskExecutor.class);
+        Map<String, Object> local = getThreadLocal();
+        executor.execute(() -> {
+            ThreadLocalHolder.set(local);
+            try {
+                async.invoke();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            ThreadLocalHolder.clear();
+        });
+    }
+
+    public interface Async {
+        void invoke() throws Exception;
     }
 }

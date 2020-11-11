@@ -9,7 +9,7 @@ import com.deloitte.bdh.common.exception.DataSourceNotFoundException;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +26,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Configuration
 @Component
 public class DsBdhProcessorConfig extends DsProcessor {
-    private static ThreadLocal<String> local = new ThreadLocal<>();
 
     @Autowired
     private DataSource dataSource;
@@ -40,14 +39,14 @@ public class DsBdhProcessorConfig extends DsProcessor {
 
     @Override
     public String doDetermineDatasource(MethodInvocation invocation, String key) {
-        String tenantCode = ThreadLocalUtil.getTenantCode();
+        String tenantCode = ThreadLocalHolder.getTenantCode();
         if (null == tenantCode) {
             RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
             if (null != attributes) {
                 HttpServletRequest request = ((ServletRequestAttributes) attributes).getRequest();
                 tenantCode = request.getHeader("x-bdh-tenant-code");
             }
-            ThreadLocalUtil.set("tenantCode", tenantCode);
+            ThreadLocalHolder.set("tenantCode", tenantCode);
         }
         String datasourceName = key;
         //去掉首字母#

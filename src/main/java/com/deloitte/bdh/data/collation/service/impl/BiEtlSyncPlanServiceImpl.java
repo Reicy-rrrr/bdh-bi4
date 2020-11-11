@@ -3,7 +3,7 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
@@ -39,7 +39,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         syncPlan.setPlanStage(PlanStageEnum.TO_EXECUTE.getKey());
         syncPlan.setSqlLocalCount("0");
         syncPlan.setRefModelCode(plan.getModelCode());
-        syncPlan.setTenantId(ThreadLocalUtil.getTenantId());
+        syncPlan.setTenantId(ThreadLocalHolder.getTenantId());
         syncPlan.setIsFirst(plan.getFirst());
         //设置已处理初始值为0
         syncPlan.setProcessCount("0");

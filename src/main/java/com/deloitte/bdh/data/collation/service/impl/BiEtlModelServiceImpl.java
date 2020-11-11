@@ -72,8 +72,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
         LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
         fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
-        if (!StringUtil.isEmpty(ThreadLocalUtil.getTenantId())) {
-            fUOLamQW.eq(BiEtlModel::getTenantId, ThreadLocalUtil.getTenantId());
+        if (!StringUtil.isEmpty(ThreadLocalHolder.getTenantId())) {
+            fUOLamQW.eq(BiEtlModel::getTenantId, ThreadLocalHolder.getTenantId());
         }
         fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
         PageInfo<BiEtlModel> pageInfo = new PageInfo(this.list(fUOLamQW));
@@ -169,9 +169,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             //调用xxjob 设置调度任务
             Map<String, String> params = Maps.newHashMap();
             params.put("modelCode", inf.getCode());
-            params.put("tenantCode", ThreadLocalUtil.getTenantCode());
-            params.put("tenantId", ThreadLocalUtil.getTenantId());
-            params.put("operator", ThreadLocalUtil.getOperator());
+            params.put("tenantCode", ThreadLocalHolder.getTenantCode());
+            params.put("tenantId", ThreadLocalHolder.getTenantId());
+            params.put("operator", ThreadLocalHolder.getOperator());
             jobService.update(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
                     dto.getCronExpression(), params);
         }
@@ -284,7 +284,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             }
             inf.setName(dto.getName());
             inf.setComments(dto.getComments());
-            inf.setTenantId(ThreadLocalUtil.getTenantId());
+            inf.setTenantId(ThreadLocalHolder.getTenantId());
             inf.setVersion("0");
             inf.setEffect(EffectEnum.ENABLE.getKey());
             biEtlModelMapper.insert(inf);
@@ -295,7 +295,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
         BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getName, dto.getName())
-                .eq(BiEtlModel::getTenantId, ThreadLocalUtil.getTenantId())
+                .eq(BiEtlModel::getTenantId, ThreadLocalHolder.getTenantId())
         );
         if (null != model) {
             throw new RuntimeException("模板编码名字重复!");
@@ -326,9 +326,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (!StringUtil.isEmpty(dto.getCronExpression())) {
             Map<String, String> params = Maps.newHashMap();
             params.put("modelCode", inf.getCode());
-            params.put("tenantCode", ThreadLocalUtil.getTenantCode());
-            params.put("tenantId", ThreadLocalUtil.getTenantId());
-            params.put("operator", ThreadLocalUtil.getOperator());
+            params.put("tenantCode", ThreadLocalHolder.getTenantCode());
+            params.put("tenantId", ThreadLocalHolder.getTenantId());
+            params.put("operator", ThreadLocalHolder.getOperator());
             jobService.add(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
                     dto.getCronExpression(), params);
         }
@@ -336,8 +336,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         //nifi 返回后设置补充dto
         inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
         inf.setProcessGroupId(MapUtils.getString(sourceMap, "id"));
-        inf.setTenantId(ThreadLocalUtil.getTenantId());
-        inf.setId(ThreadLocalUtil.getIp());
+        inf.setTenantId(ThreadLocalHolder.getTenantId());
+        inf.setId(ThreadLocalHolder.getIp());
         biEtlModelMapper.insert(inf);
         return inf;
     }

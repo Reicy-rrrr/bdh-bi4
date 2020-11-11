@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.deloitte.bdh.common.util.StringUtil;
 import java.time.LocalDateTime;
 
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import org.apache.ibatis.reflection.MetaObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class BaseModelMetaObjectHandler implements MetaObjectHandler {
 
 	@Override
 	public void insertFill(MetaObject metaObject) {
-		String operator = ThreadLocalUtil.getOperator();
+		String operator = ThreadLocalHolder.getOperator();
 		setFieldValByName("createDate", LocalDateTime.now(), metaObject);
 		setFieldValByName("createUser", operator, metaObject);
 		setFieldValByName("ip", getIp(), metaObject);
@@ -28,7 +28,7 @@ public class BaseModelMetaObjectHandler implements MetaObjectHandler {
 
 	@Override
 	public void updateFill(MetaObject metaObject) {
-		String operator = ThreadLocalUtil.getOperator();
+		String operator = ThreadLocalHolder.getOperator();
 		setFieldValByName("modifiedDate", LocalDateTime.now(), metaObject);
 		if(!StringUtil.isEmpty(operator)){
 			setFieldValByName("modifiedUser", operator, metaObject);
@@ -38,7 +38,7 @@ public class BaseModelMetaObjectHandler implements MetaObjectHandler {
 	}
 
 	private String getIp() {
-		String ip = ThreadLocalUtil.getIp();
+		String ip = ThreadLocalHolder.getIp();
 		return StringUtil.isEmpty(ip) ? "" : ip;
 	}
 

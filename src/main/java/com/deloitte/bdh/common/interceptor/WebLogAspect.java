@@ -3,7 +3,7 @@ package com.deloitte.bdh.common.interceptor;
 import com.alibaba.fastjson.JSON;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 
 import java.util.Arrays;
@@ -73,15 +73,15 @@ public class WebLogAspect {
         //设置参数
         if (joinPoint.getArgs().length > 0) {
             Map<String, Object> params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
-            ThreadLocalUtil.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
+            ThreadLocalHolder.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
             if (null != MapUtils.getString(params, "tenantId")) {
-                ThreadLocalUtil.set("tenantId", MapUtils.getString(params, "tenantId"));
+                ThreadLocalHolder.set("tenantId", MapUtils.getString(params, "tenantId"));
             }
             if (null != MapUtils.getString(params, "ip")) {
-                ThreadLocalUtil.set("ip", MapUtils.getString(params, "ip"));
+                ThreadLocalHolder.set("ip", MapUtils.getString(params, "ip"));
             }
             if (null != MapUtils.getString(params, "operator")) {
-                ThreadLocalUtil.set("operator", MapUtils.getString(params, "operator"));
+                ThreadLocalHolder.set("operator", MapUtils.getString(params, "operator"));
             }
         }
     }
@@ -101,7 +101,7 @@ public class WebLogAspect {
         }
         logger.info("返回值 : " + JSON.toJSONStringWithDateFormat(ret, "yyyy-MM-dd HH:mm:ss"));
         MDC.clear();
-        ThreadLocalUtil.clear();
+        ThreadLocalHolder.clear();
     }
 
 }

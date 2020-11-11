@@ -3,7 +3,7 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.model.BiComponentConnection;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentConnectionMapper;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -46,7 +45,7 @@ public class BiComponentConnectionServiceImpl extends AbstractService<BiComponen
         connection.setToComponentCode(dto.getToComponentCode());
         connection.setRefModelCode(model.getCode());
         connection.setVersion("1");
-        connection.setTenantId(ThreadLocalUtil.getTenantId());
+        connection.setTenantId(ThreadLocalHolder.getTenantId());
         mapper.insert(connection);
         return connection;
     }

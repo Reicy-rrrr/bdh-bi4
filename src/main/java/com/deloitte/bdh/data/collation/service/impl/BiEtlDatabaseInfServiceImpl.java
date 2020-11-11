@@ -10,7 +10,7 @@ import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
         LambdaQueryWrapper<BiEtlDatabaseInf> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BiEtlDatabaseInf::getTenantId, ThreadLocalUtil.getTenantId());
+        lambdaQueryWrapper.eq(BiEtlDatabaseInf::getTenantId, ThreadLocalHolder.getTenantId());
         // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(dto.getName())) {
             lambdaQueryWrapper.like(BiEtlDatabaseInf::getName, dto.getName());
@@ -163,7 +162,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 修改文件状态为已读
         dbFile.setReadFlag(0);
         biEtlDbFileService.updateById(dbFile);
-        async(() -> runResource(inf.getId(), EffectEnum.ENABLE.getKey()));
+        ThreadLocalHolder.async(() -> runResource(inf.getId(), EffectEnum.ENABLE.getKey()));
         return inf;
     }
 
@@ -428,7 +427,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
         inf.setEffect(EffectEnum.DISABLE.getKey());
-        inf.setTenantId(ThreadLocalUtil.getTenantId());
+        inf.setTenantId(ThreadLocalHolder.getTenantId());
 
         // 调用nifi 创建 获取rootgroupid
         Map<String, Object> sourceMap = nifiProcessService.getRootGroupInfo();
@@ -446,7 +445,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         }
         BiEtlDatabaseInf exitDb = biEtlDatabaseInfMapper.selectOne(new LambdaQueryWrapper<BiEtlDatabaseInf>()
                 .eq(BiEtlDatabaseInf::getName, dto.getName())
-                .eq(BiEtlDatabaseInf::getTenantId, ThreadLocalUtil.getTenantId())
+                .eq(BiEtlDatabaseInf::getTenantId, ThreadLocalHolder.getTenantId())
         );
         if (null != exitDb) {
             throw new RuntimeException("模板数据源名字重复!");
@@ -454,7 +453,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
-        inf.setTenantId(ThreadLocalUtil.getTenantId());
+        inf.setTenantId(ThreadLocalHolder.getTenantId());
         inf.setPoolType(PoolTypeEnum.DBCPConnectionPool.getKey());
         inf.setDriverName(SourceTypeEnum.getDriverNameByType(inf.getType()));
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
@@ -504,7 +503,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
 
         inf.setEffect(EffectEnum.DISABLE.getKey());
-        inf.setTenantId(ThreadLocalUtil.getTenantId());
+        inf.setTenantId(ThreadLocalHolder.getTenantId());
 
         // 调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();

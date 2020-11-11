@@ -4,7 +4,7 @@ package com.deloitte.bdh.data.collation.controller;
 import com.deloitte.bdh.common.annotation.NoLocal;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.integration.SyncService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class BiEtlSyncPlanController {
     @GetMapping("/sync")
     @NoLocal
     public RetResult<Void> sync(String tenantCode) throws Exception {
-        ThreadLocalUtil.set("tenantCode", tenantCode);
+        ThreadLocalHolder.set("tenantCode", tenantCode);
         sync.sync();
         return RetResponse.makeOKRsp();
     }
@@ -38,7 +38,7 @@ public class BiEtlSyncPlanController {
     @GetMapping("/etl")
     @NoLocal
     public RetResult<Void> etl(String tenantCode) throws Exception {
-        ThreadLocalUtil.set("tenantCode", tenantCode);
+        ThreadLocalHolder.set("tenantCode", tenantCode);
         sync.etl();
         return RetResponse.makeOKRsp();
     }
@@ -47,9 +47,9 @@ public class BiEtlSyncPlanController {
     @GetMapping("/model")
     @NoLocal
     public RetResult<Void> model(String modelCode, String tenantCode, String tenantId, String operator) throws Exception {
-        ThreadLocalUtil.set("tenantCode", tenantCode);
-        ThreadLocalUtil.set("tenantId", tenantId);
-        ThreadLocalUtil.set("operator", operator);
+        ThreadLocalHolder.set("tenantCode", tenantCode);
+        ThreadLocalHolder.set("tenantId", tenantId);
+        ThreadLocalHolder.set("operator", operator);
         sync.model(modelCode);
         return RetResponse.makeOKRsp();
     }

@@ -4,7 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.ThreadLocalUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
@@ -235,7 +235,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         processors.setValidate(YesOrNoEnum.NO.getKey());
         processors.setRelModelCode(biEtlModel.getCode());
         processors.setVersion("1");
-        processors.setTenantId(ThreadLocalUtil.getTenantId());
+        processors.setTenantId(ThreadLocalHolder.getTenantId());
         processors.setProcessGroupId(processGroupId);
         processorsService.save(processors);
         return processGroupId;
