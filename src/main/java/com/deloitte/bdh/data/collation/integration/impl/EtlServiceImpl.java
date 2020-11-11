@@ -83,6 +83,9 @@ public class EtlServiceImpl implements EtlService {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 数据源状态不合法");
         }
 
+        if (StringUtils.isBlank(dto.getComponentName())) {
+            dto.setComponentName(ComponentTypeEnum.DATASOURCE.getValue() + System.currentTimeMillis());
+        }
         //step1:新建数据源组件与参数
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
