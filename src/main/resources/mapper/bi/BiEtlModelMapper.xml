@@ -15,6 +15,7 @@
         <result column="IS_FILE" property="isFile" />
         <result column="EFFECT" property="effect" />
         <result column="STATUS" property="status" />
+        <result column="SYNC_STATUS" property="syncStatus" />
         <result column="VALIDATE" property="validate" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
@@ -24,6 +25,7 @@
         <result column="TENANT_ID" property="tenantId" />
         <result column="PROCESS_GROUP_ID" property="processGroupId" />
         <result column="CORN_EXPRESSION" property="cornExpression" />
+        <result column="CONTENT" property="content" />
     </resultMap>
 
 </mapper>

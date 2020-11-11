@@ -326,9 +326,16 @@ public class SyncServiceImpl implements SyncService {
         ComponentModel componentModel = modelHandleService.handleModel(plan.getRefModelCode());
         String processorsCode = plan.getRefMappingCode();
         String tableName = componentModel.getTableName();
+
+        BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, plan.getRefModelCode())
+        );
+
+        boolean syncStatus = false;
         try {
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
+                syncStatus = true;
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
@@ -349,6 +356,7 @@ public class SyncServiceImpl implements SyncService {
                     // 等待下次再查询
                     plan.setSqlLocalCount(localCount);
                 } else {
+                    syncStatus = true;
                     //已同步完成
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
@@ -374,6 +382,11 @@ public class SyncServiceImpl implements SyncService {
         } finally {
             plan.setProcessCount(String.valueOf(count));
             syncPlanService.updateById(plan);
+            if (syncStatus) {
+                //改变model状态
+                model.setSyncStatus(YesOrNoEnum.NO.getKey());
+                modelService.updateById(model);
+            }
         }
     }
 
@@ -383,8 +396,8 @@ public class SyncServiceImpl implements SyncService {
         BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, modelCode)
         );
-        if (!"1".equals(model.getValidate()) || EffectEnum.DISABLE.getKey().equals(model.getEffect())
-                || RunStatusEnum.STOP.getKey().equals(model.getStatus())) {
+        if (YesOrNoEnum.NO.getKey().equals(model.getValidate()) || EffectEnum.DISABLE.getKey().equals(model.getEffect())
+                || RunStatusEnum.STOP.getKey().equals(model.getStatus()) || YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
             return;
         }
         //首先获取模板下的数据源组件
@@ -430,5 +443,9 @@ public class SyncServiceImpl implements SyncService {
         runPlans.add(outPlan);
 
         runPlans.forEach(s -> syncPlanService.createFirstPlan(s));
+
+        //状态变为正在同步中
+        model.setSyncStatus(YesOrNoEnum.YES.getKey());
+        modelService.updateById(model);
     }
 }

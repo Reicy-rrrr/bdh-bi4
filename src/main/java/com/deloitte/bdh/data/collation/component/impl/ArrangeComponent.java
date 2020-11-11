@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
@@ -34,13 +35,7 @@ import java.util.stream.Collectors;
 @Service("arrangeComponent")
 public class ArrangeComponent implements ComponentHandler {
 
-    private static final String param_key_type = "type";
-
-    private static final String param_key_context = "context";
-
-    private static final String split_type_separator = "separator";
-
-    private static final String split_type_length = "length";
+    private static final String arranger_bean_suffix = "Arranger";
 
     private DbHandler dbHandler;
 
@@ -63,19 +58,19 @@ public class ArrangeComponent implements ComponentHandler {
 
         // todo: 获取数据库类型
         SourceTypeEnum dbType = SourceTypeEnum.Mysql;
-        arranger = SpringUtil.getBean(dbType.getTypeName() + "Arranger", ArrangerSelector.class);
+        arranger = SpringUtil.getBean(dbType.getTypeName() + arranger_bean_suffix, ArrangerSelector.class);
 
         component.setTableName(component.getCode());
         component.setTableName(componentCode);
         Map<String, BiComponentParams> params = component.getParams().stream().collect(Collectors.toMap(BiComponentParams::getParamKey, param -> param));
 
-        BiComponentParams typeParam = MapUtils.getObject(params, param_key_type);
+        BiComponentParams typeParam = MapUtils.getObject(params, ComponentCons.ARRANGE_PARAM_KEY_TYPE);
         if (typeParam == null) {
             log.error("整理组件[{}]未查询到[type]参数，处理失败！", componentCode);
             throw new BizException("Arrange component handle error: 未查询到type参数！");
         }
 
-        BiComponentParams contextParam = MapUtils.getObject(params, param_key_context);
+        BiComponentParams contextParam = MapUtils.getObject(params, ComponentCons.ARRANGE_PARAM_KEY_CONTEXT);
         if (contextParam == null) {
             log.error("整理组件[{}]未查询到[context]参数，处理失败！", componentCode);
             throw new BizException("Arrange component handle error: 未查询到context参数！");
@@ -108,19 +103,16 @@ public class ArrangeComponent implements ComponentHandler {
                 System.out.println("RENAME");
                 break;
             case GROUP:
-                group(component, context);
+                arrangeCases.addAll(group(component, context));
                 break;
-            case UPPERCASE:
-                toUpperCase(component, context);
-                break;
-            case LOWERCASE:
-                toLowerCase(component, context);
+            case CONVERT_CASE:
+                arrangeCases.addAll(caseConvert(component, context));
                 break;
             case TRIM:
-                trim(component, context);
+                arrangeCases.addAll(trim(component, context));
                 break;
             case REPLACE:
-                replace(component, context);
+                arrangeCases.addAll(replace(component, context));
                 break;
             case FILL:
                 System.out.println("FILL");
@@ -282,7 +274,7 @@ public class ArrangeComponent implements ComponentHandler {
             String splitType = splitModel.getType();
             String splitValue = splitModel.getValue();
             FieldMappingModel originalMapping = MapUtils.getObject(fromMappingMap, splitField);
-            if (split_type_length.equals(splitType)) {
+            if (ComponentCons.ARRANGE_PARAM_KEY_SPLIT_LENGTH.equals(splitType)) {
                 resultModels.addAll(arranger.split(originalMapping, Integer.valueOf(splitValue), fromTableName, fromType));
             } else {
                 resultModels.addAll(arranger.split(originalMapping, splitValue, fromTableName, fromType));
@@ -343,26 +335,81 @@ public class ArrangeComponent implements ComponentHandler {
 
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
-        List<FieldMappingModel> combineMappings = fromComponent.getFieldMappings().stream()
+        List<FieldMappingModel> nonNullMappings = fromComponent.getFieldMappings().stream()
                 .filter(mappingModel -> nonNullFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
-        List<String> result = arranger.nonNull(combineMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
+        List<String> result = arranger.nonNull(nonNullMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
         return result;
     }
 
-    private void toUpperCase(ComponentModel component, String context) {
+    private List<ArrangeResultModel> caseConvert(ComponentModel component, String context) {
+        List<ArrangeCaseConvertModel> convertCases = JSONArray.parseArray(context, ArrangeCaseConvertModel.class);
+        if (CollectionUtils.isEmpty(convertCases)) {
+            throw new BizException("Arrange component case convert error: 转换字段不能为空！");
+        }
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
 
+        // 转大写字段
+        List<FieldMappingModel> toUpperCaseMappings = Lists.newArrayList();
+        // 转小写字段
+        List<FieldMappingModel> toLowerCaseMappings = Lists.newArrayList();
+        convertCases.forEach(convertCase -> {
+            String fieldName = convertCase.getName();
+            String type = convertCase.getType();
+            FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
+            if (ComponentCons.ARRANGE_PARAM_KEY_CASE_UPPER.equals(type)) {
+                toUpperCaseMappings.add(mapping);
+            } else {
+                toLowerCaseMappings.add(mapping);
+            }
+        });
+
+        if (!CollectionUtils.isEmpty(toUpperCaseMappings)) {
+            resultModels.addAll(arranger.toUpperCase(toUpperCaseMappings, fromComponent.getTableName(), fromComponent.getTypeEnum()));
+        }
+        if (!CollectionUtils.isEmpty(toLowerCaseMappings)) {
+            resultModels.addAll(arranger.toLowerCase(toLowerCaseMappings, fromComponent.getTableName(), fromComponent.getTypeEnum()));
+        }
+        return resultModels;
     }
 
-    private void toLowerCase(ComponentModel component, String context) {
+    private List<ArrangeResultModel> trim(ComponentModel component, String context) {
+        List<String> trimFields = JSONArray.parseArray(context, String.class);
+        if (CollectionUtils.isEmpty(trimFields)) {
+            throw new BizException("Arrange component trim error: 前后去空格字段不能为空！");
+        }
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        List<FieldMappingModel> trimMappings = fromComponent.getFieldMappings().stream()
+                .filter(mappingModel -> trimFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
 
+        List<ArrangeResultModel> resultModels = arranger.trim(trimMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
+        return resultModels;
     }
 
-    private void trim(ComponentModel component, String context) {
+    private List<ArrangeResultModel> group(ComponentModel component, String context) {
+        List<ArrangeGroupModel> groupModels = JSONArray.parseArray(context, ArrangeGroupModel.class);
+        if (CollectionUtils.isEmpty(groupModels)) {
+            throw new BizException("Arrange component group error: 分组字段不能为空！");
+        }
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
 
-    }
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        groupModels.forEach(groupModel -> {
+            String fieldName = groupModel.getName();
+            List<ArrangeGroupFieldModel> groups = groupModel.getGroups();
 
-    private void group(ComponentModel component, String context) {
-
+            FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
+            ArrangeResultModel resultModel = arranger.group(mapping, groups, fromComponent.getTableName(), fromComponent.getTypeEnum());
+            resultModels.add(resultModel);
+        });
+        return resultModels;
     }
 
     @Autowired

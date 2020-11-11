@@ -86,20 +86,20 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     public BiEtlModel createModel(CreateModelDto dto) throws Exception {
         String modelCode = GenerateCodeUtil.genModel();
         //处理文件夹
-        BiEtlModel inf = doFile(modelCode, dto);
-        if (!StringUtil.isEmpty(inf.getCode())) {
-            return inf;
+        if (YesOrNoEnum.YES.getKey().equals(dto.getIsFile())) {
+            return doFile(modelCode, dto);
         }
-
         //处理模板
-        inf = doModel(modelCode, dto);
-        return inf;
+        return doModel(modelCode, dto);
     }
 
     @Override
     public BiEtlModel effectModel(EffectModelDto dto) throws Exception {
         //此次启用、停用 不调用nifi，只是bi来空则，但操作状态前提是未运行状态
         BiEtlModel biEtlModel = biEtlModelMapper.selectById(dto.getId());
+        if (YesOrNoEnum.YES.getKey().equals(biEtlModel.getSyncStatus())) {
+            throw new RuntimeException("当前正在执行同步任务，不允许启、停操作");
+        }
         if (RunStatusEnum.RUNNING.getKey().equals(biEtlModel.getStatus())) {
             throw new RuntimeException("运行中的模板，不允许启、停操作");
         }
@@ -150,7 +150,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public BiEtlModel updateModel(UpdateModelDto dto) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(dto.getId());
-        //运行中的模板 不允许修改
+        if (YesOrNoEnum.YES.getKey().equals(inf.getSyncStatus())) {
+            throw new RuntimeException("当前正在执行同步任务，不允许修改");
+        }
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
             throw new RuntimeException("运行中的 model 不允许修改");
         }
@@ -265,9 +267,28 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public void trigger(String modelCode) throws Exception {
-        //todo 运行后才能促发，且当前没有正在执行的调度计划
+        //运行后才能促发，且当前没有正在执行的调度计划
+        BiEtlModel biEtlModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, modelCode)
+        );
 
-        jobService.trigger(modelCode);
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.trigger.error : 未找到目标 模型");
+        }
+        if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
+            throw new RuntimeException("EtlServiceImpl.trigger.error : 失效状态下无法执行");
+        }
+        if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
+            throw new RuntimeException("EtlServiceImpl.trigger.error : 校验失败下无法执行");
+        }
+        if (RunStatusEnum.STOP.getKey().equals(biEtlModel.getStatus())) {
+            throw new RuntimeException("EtlServiceImpl.trigger.error : 未运行状态下无法执行");
+        }
+        //未执行任务才执行
+        if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getSyncStatus())) {
+            jobService.trigger(modelCode);
+        }
+
     }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
@@ -302,7 +323,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
         BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getName, dto.getName())
-                .eq(BiEtlModel::getTenantId, ThreadLocalHolder.getTenantId())
         );
         if (null != model) {
             throw new RuntimeException("模板编码名字重复!");
@@ -322,6 +342,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         inf.setStatus(RunStatusEnum.STOP.getKey());
         // 设置 validate
         inf.setValidate(YesOrNoEnum.NO.getKey());
+        inf.setSyncStatus(YesOrNoEnum.NO.getKey());
 
         //调用NIFI 创建模板
         Map<String, Object> reqNifi = Maps.newHashMap();
