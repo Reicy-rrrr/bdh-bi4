@@ -229,7 +229,7 @@ public class MysqlArranger implements ArrangerSelector {
         // 遍历生成条件
         groups.forEach(group -> {
             String target = group.getTarget();
-            List<String> source = group.getSource();
+            List<String> source = group.getSources();
             source.forEach(s -> {
                 fieldBuilder.append("WHEN ");
                 fieldBuilder.append(s);

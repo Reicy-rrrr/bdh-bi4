@@ -17,4 +17,17 @@ public class ComponentCons {
     public static final String JOIN_PARAM_KEY_TABLES = "tables";
     /** 聚合组件参数 */
     public static final String GROUP_PARAM_KEY_GROUPS = "groups";
+
+    /** 整理组件参数：type */
+    public static final String ARRANGE_PARAM_KEY_TYPE = "type";
+    /** 整理组件参数：context */
+    public static final String ARRANGE_PARAM_KEY_CONTEXT = "context";
+    /** 整理组件(拆分)参数：length */
+    public static final String ARRANGE_PARAM_KEY_SPLIT_LENGTH = "length";
+    /** 整理组件(拆分)参数：separator */
+    public static final String ARRANGE_PARAM_KEY_SPLIT_SEPARATOR = "separator";
+    /** 整理组件(转换大小写)参数：upper */
+    public static final String ARRANGE_PARAM_KEY_CASE_UPPER = "upper";
+    /** 整理组件(转换大小写)参数：lower */
+    public static final String ARRANGE_PARAM_KEY_CASE_LOWER = "lower";
 }
