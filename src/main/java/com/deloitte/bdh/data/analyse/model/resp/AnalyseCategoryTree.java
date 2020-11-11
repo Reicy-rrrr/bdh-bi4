@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -40,6 +39,12 @@ public class AnalyseCategoryTree implements Serializable {
     private String initType;
 
     /**
+     * 系统初始化,自建
+     */
+    @ApiModelProperty(value = "下级数据类型")
+    private String childrenType;
+
+    /**
      * 上级id
      */
     @ApiModelProperty(value = "PARENT_ID")
@@ -63,9 +68,4 @@ public class AnalyseCategoryTree implements Serializable {
     @ApiModelProperty(value = "下级数据")
     List<AnalyseCategoryTree> children;
 
-    /**
-     * 页面数据
-     */
-    @ApiModelProperty(value = "页面数据")
-    List<AnalysePageDto> pageList;
 }

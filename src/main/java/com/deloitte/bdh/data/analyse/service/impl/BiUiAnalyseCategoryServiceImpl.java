@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
+import com.deloitte.bdh.data.analyse.enums.CategoryPageTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
@@ -316,11 +317,27 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         for (BiUiAnalyseCategory category : categoryList) {
             AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
             BeanUtils.copyProperties(category, categoryTree);
-            categoryTree.setPageList(pageDtoMap.get(category.getId()));
+//            categoryTree.setPageList(pageDtoMap.get(category.getId()));
 
             if (parentId.equals(categoryTree.getParentId())) {
                 categoryTree.setChildren(buildCategoryTree(categoryList, pageDtoMap, categoryTree.getId()));
+                categoryTree.setChildrenType(CategoryPageTypeEnum.CATEGORY.getName());
                 treeDataModels.add(categoryTree);
+
+                //将页面和文件夹放到同一个children，通过children type区分
+                List<AnalysePageDto> pageDtoList = pageDtoMap.get(category.getId());
+                List<AnalyseCategoryTree> pageList = Lists.newArrayList();
+                if (CollectionUtils.isNotEmpty(pageDtoList)) {
+                    for (AnalysePageDto dto : pageDtoList) {
+                        AnalyseCategoryTree tree = new AnalyseCategoryTree();
+                        BeanUtils.copyProperties(dto, tree);
+                        tree.setChildrenType(CategoryPageTypeEnum.PAGE.getName());
+                        pageList.add(tree);
+                    }
+                    if (CollectionUtils.isNotEmpty(categoryTree.getChildren())) {
+                        categoryTree.getChildren().addAll(pageList);
+                    }
+                }
             }
         }
         return treeDataModels;
