@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 /**
  * <p>
- *
+ * 
  * </p>
  *
  * @author lw
- * @since 2020-10-26
+ * @since 2020-11-11
  */
 @TableName("BI_ETL_MODEL")
 public class BiEtlModel implements Serializable {
@@ -82,6 +82,12 @@ public class BiEtlModel implements Serializable {
     private String status;
 
     /**
+     * 同步状态（0，1）
+     */
+    @TableField("SYNC_STATUS")
+    private String syncStatus;
+
+    /**
      * 校验状态
      */
     @TableField("VALIDATE")
@@ -130,7 +136,6 @@ public class BiEtlModel implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
-
     public String getCode() {
         return code;
     }
@@ -138,7 +143,6 @@ public class BiEtlModel implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-
     public String getName() {
         return name;
     }
@@ -146,7 +150,6 @@ public class BiEtlModel implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
     public String getComments() {
         return comments;
     }
@@ -154,7 +157,6 @@ public class BiEtlModel implements Serializable {
     public void setComments(String comments) {
         this.comments = comments;
     }
-
     public String getVersion() {
         return version;
     }
@@ -162,7 +164,6 @@ public class BiEtlModel implements Serializable {
     public void setVersion(String version) {
         this.version = version;
     }
-
     public String getPosition() {
         return position;
     }
@@ -170,7 +171,6 @@ public class BiEtlModel implements Serializable {
     public void setPosition(String position) {
         this.position = position;
     }
-
     public String getParentCode() {
         return parentCode;
     }
@@ -178,7 +178,6 @@ public class BiEtlModel implements Serializable {
     public void setParentCode(String parentCode) {
         this.parentCode = parentCode;
     }
-
     public String getRootCode() {
         return rootCode;
     }
@@ -186,7 +185,6 @@ public class BiEtlModel implements Serializable {
     public void setRootCode(String rootCode) {
         this.rootCode = rootCode;
     }
-
     public String getIsFile() {
         return isFile;
     }
@@ -194,7 +192,6 @@ public class BiEtlModel implements Serializable {
     public void setIsFile(String isFile) {
         this.isFile = isFile;
     }
-
     public String getEffect() {
         return effect;
     }
@@ -202,7 +199,6 @@ public class BiEtlModel implements Serializable {
     public void setEffect(String effect) {
         this.effect = effect;
     }
-
     public String getStatus() {
         return status;
     }
@@ -210,7 +206,13 @@ public class BiEtlModel implements Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
+    public String getSyncStatus() {
+        return syncStatus;
+    }
 
+    public void setSyncStatus(String syncStatus) {
+        this.syncStatus = syncStatus;
+    }
     public String getValidate() {
         return validate;
     }
@@ -218,7 +220,6 @@ public class BiEtlModel implements Serializable {
     public void setValidate(String validate) {
         this.validate = validate;
     }
-
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -226,7 +227,6 @@ public class BiEtlModel implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
-
     public String getCreateUser() {
         return createUser;
     }
@@ -234,7 +234,6 @@ public class BiEtlModel implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
-
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -242,7 +241,6 @@ public class BiEtlModel implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
-
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -250,7 +248,6 @@ public class BiEtlModel implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
-
     public String getIp() {
         return ip;
     }
@@ -258,7 +255,6 @@ public class BiEtlModel implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
-
     public String getTenantId() {
         return tenantId;
     }
@@ -266,7 +262,6 @@ public class BiEtlModel implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
-
     public String getProcessGroupId() {
         return processGroupId;
     }
@@ -274,7 +269,6 @@ public class BiEtlModel implements Serializable {
     public void setProcessGroupId(String processGroupId) {
         this.processGroupId = processGroupId;
     }
-
     public String getCornExpression() {
         return cornExpression;
     }
@@ -282,7 +276,6 @@ public class BiEtlModel implements Serializable {
     public void setCornExpression(String cornExpression) {
         this.cornExpression = cornExpression;
     }
-
     public String getContent() {
         return content;
     }
@@ -294,27 +287,28 @@ public class BiEtlModel implements Serializable {
     @Override
     public String toString() {
         return "BiEtlModel{" +
-                "id=" + id +
-                ", code=" + code +
-                ", name=" + name +
-                ", comments=" + comments +
-                ", version=" + version +
-                ", position=" + position +
-                ", parentCode=" + parentCode +
-                ", rootCode=" + rootCode +
-                ", isFile=" + isFile +
-                ", effect=" + effect +
-                ", status=" + status +
-                ", validate=" + validate +
-                ", createDate=" + createDate +
-                ", createUser=" + createUser +
-                ", modifiedDate=" + modifiedDate +
-                ", modifiedUser=" + modifiedUser +
-                ", ip=" + ip +
-                ", tenantId=" + tenantId +
-                ", processGroupId=" + processGroupId +
-                ", cornExpression=" + cornExpression +
-                ", content=" + content +
-                "}";
+        "id=" + id +
+        ", code=" + code +
+        ", name=" + name +
+        ", comments=" + comments +
+        ", version=" + version +
+        ", position=" + position +
+        ", parentCode=" + parentCode +
+        ", rootCode=" + rootCode +
+        ", isFile=" + isFile +
+        ", effect=" + effect +
+        ", status=" + status +
+        ", syncStatus=" + syncStatus +
+        ", validate=" + validate +
+        ", createDate=" + createDate +
+        ", createUser=" + createUser +
+        ", modifiedDate=" + modifiedDate +
+        ", modifiedUser=" + modifiedUser +
+        ", ip=" + ip +
+        ", tenantId=" + tenantId +
+        ", processGroupId=" + processGroupId +
+        ", cornExpression=" + cornExpression +
+        ", content=" + content +
+        "}";
     }
 }
