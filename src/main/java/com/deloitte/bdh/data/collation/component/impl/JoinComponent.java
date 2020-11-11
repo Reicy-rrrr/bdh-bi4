@@ -242,7 +242,7 @@ public class JoinComponent implements ComponentHandler {
                 sqlBuilder.append(sql_key_equal);
                 sqlBuilder.append(rightComponent.getTableName());
                 sqlBuilder.append(sql_key_separator);
-                if (ComponentTypeEnum.DATASOURCE.equals(currComponent.getTypeEnum())) {
+                if (ComponentTypeEnum.DATASOURCE.equals(rightComponent.getTypeEnum())) {
                     sqlBuilder.append(rightMappings.get(joinField.getRightField()).getOriginalFieldName());
                 } else {
                     sqlBuilder.append(joinField.getRightField());
