@@ -16,19 +16,23 @@ public interface XxJobService {
     /**
      * REMOVE
      */
-    String REMOVE_PATH = "/bdh-job-admin/bdhJob/remove?jobDesc=#";
+    String REMOVE_PATH = "/bdh-job-admin/bdhJob/remove?jobDesc=";
 
     /**
      * START
      */
-    String START_PATH = "/bdh-job-admin/bdhJob/start?jobDesc=#";
+    String START_PATH = "/bdh-job-admin/bdhJob/start?jobDesc=";
 
 
     /**
      * STOP
      */
-    String STOP_PATH = "/bdh-job-admin/bdhJob/stop?jobDesc=#";
+    String STOP_PATH = "/bdh-job-admin/bdhJob/stop?jobDesc=";
 
+    /**
+     * trigger
+     */
+    String TRIGGER_PATH = "/bdh-job-admin/bdhJob/trigger?jobDesc=";
 
     /**
      * add
@@ -73,5 +77,12 @@ public interface XxJobService {
      */
     void stop(String modelCode) throws Exception;
 
+    /**
+     * trigger
+     *
+     * @param
+     * @return
+     */
+    void trigger(String modelCode) throws Exception;
 
 }

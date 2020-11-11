@@ -7,11 +7,13 @@ import com.deloitte.bdh.data.collation.enums.NifiEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
 public abstract class AbstractNifiProcess implements NifiProcessService {
-    protected static final String URL = "https://10.81.128.4:9443";
+    @Value("${nifi.url}")
+    protected String URL;
     private static final Integer expiredTime = 60 * 24 * 7;
 
     @Autowired

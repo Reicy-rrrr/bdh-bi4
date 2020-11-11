@@ -3,74 +3,62 @@ package com.deloitte.bdh.data.collation.integration.impl;
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Service
+@Slf4j
 public class XxJobServiceImpl implements XxJobService {
-    private static final Logger logger = LoggerFactory.getLogger(XxJobServiceImpl.class);
-    private static final String IP = "http://10.81.128.246:9092";
+    @Value("${xxjob.ip}")
+    private String ip;
 
     @Override
     public void add(String modelCode, String callBackAddress, String cron, Map<String, String> params) throws Exception {
-//        {
-//            "jobDesc":"1223",
-//                "callBackAddress":"2132131:1111",
-//                "cron":"5 0/3 * * * ?",
-//                "params":{
-//            "jobDesc":"1223",
-//                    "callBackAddress":"2132131:1111",
-//                    "cron":"5 0/3 * * * ?"
-//        }
-//        }
-        logger.info("XxJobServiceImpl.add, modelCode:{} ", modelCode);
+        log.info("XxJobServiceImpl.add, modelCode:{} ", modelCode);
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("callBackAddress", callBackAddress);
         reqXxJob.put("cron", cron);
         reqXxJob.put("params", params);
-        HttpClientUtil.post(IP + ADD_PATH, null, reqXxJob);
+        HttpClientUtil.post(ip + ADD_PATH, null, reqXxJob);
     }
 
     @Override
     public void update(String modelCode, String callBackAddress, String cron, Map<String, String> params) throws Exception {
-        logger.info("XxJobServiceImpl.update, modelCode:{} ", modelCode);
+        log.info("XxJobServiceImpl.update, modelCode:{} ", modelCode);
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("callBackAddress", callBackAddress);
         reqXxJob.put("cron", cron);
         reqXxJob.put("params", params);
-        HttpClientUtil.post(IP + UPDATE_PATH, null, reqXxJob);
+        HttpClientUtil.post(ip + UPDATE_PATH, null, reqXxJob);
     }
 
     @Override
     public void remove(String modelCode) throws Exception {
-        logger.info("XxJobServiceImpl.remove, modelCode:{} ", modelCode);
-        String path = getRequestPath(REMOVE_PATH, modelCode);
-        HttpClientUtil.get(IP + path, null, null);
+        log.info("XxJobServiceImpl.remove, modelCode:{} ", modelCode);
+        HttpClientUtil.get(ip + REMOVE_PATH + modelCode);
     }
 
     @Override
     public void start(String modelCode) throws Exception {
-        logger.info("XxJobServiceImpl.start, modelCode:{} ", modelCode);
-        String path = getRequestPath(START_PATH, modelCode);
-        HttpClientUtil.get(IP + path, null, null);
+        log.info("XxJobServiceImpl.start, modelCode:{} ", modelCode);
+        HttpClientUtil.get(ip + START_PATH + modelCode);
     }
 
     @Override
     public void stop(String modelCode) throws Exception {
-        logger.info("XxJobServiceImpl.stop, modelCode:{} ", modelCode);
-        String path = getRequestPath(STOP_PATH, modelCode);
-        HttpClientUtil.get(IP + path, null, null);
+        log.info("XxJobServiceImpl.stop, modelCode:{} ", modelCode);
+        HttpClientUtil.get(ip + STOP_PATH + modelCode);
     }
 
-    private String getRequestPath(String url, String... params) {
-        for (String param : params) {
-            url = url.replaceFirst("#", param);
-        }
-        return url;
+    @Override
+    public void trigger(String modelCode) throws Exception {
+        log.info("XxJobServiceImpl.trigger, modelCode:{} ", modelCode);
+        HttpClientUtil.get(ip + TRIGGER_PATH + modelCode);
     }
+
 }

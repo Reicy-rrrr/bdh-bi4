@@ -58,6 +58,16 @@ public class HttpClientUtil {
         return getResult(httpGet);
     }
 
+    /**
+     * function:发送get请求
+     *
+     * @param url     请求地址
+     * @return String
+     */
+    public static String get(String url) throws IOException {
+        return get(url, null, null);
+    }
+
 
     /**
      * function:创建带参数的URL
@@ -191,7 +201,6 @@ public class HttpClientUtil {
      *
      * @param url     地址
      * @param headers 头信息
-     * @param params  参数
      * @return String
      */
     public static String delete(String url, Map<String, Object> headers) throws IOException {
@@ -201,71 +210,6 @@ public class HttpClientUtil {
         }
         httpDelete.setHeader("Content-Type", "application/json; charset=UTF-8");
         return getResult(httpDelete);
-    }
-
-
-    /**
-     * post以JSON格式发送,返回 HTTPResponse
-     *
-     * @param url
-     * @param headers
-     * @param jsonParam
-     * @return
-     */
-    public static CloseableHttpResponse httpPostRequestByJsonAndReturnResponse(String url, Map<String, Object> headers,
-                                                                               String jsonParam) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
-            httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
-        }
-        try {
-            httpPost.setEntity(new StringEntity(jsonParam, "UTF-8"));
-        } catch (UnsupportedCharsetException e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return getResponseResult(httpPost);
-    }
-
-    /**
-     * @param url
-     * @param headers
-     * @return
-     */
-    public static CloseableHttpResponse httpGetRequestWithHeadersAndReturnResponse(String url, Map<String, Object> headers) throws IOException {
-        HttpGet httpGet = new HttpGet(url);
-        for (Map.Entry<String, Object> param : headers.entrySet()) {
-            httpGet.addHeader(param.getKey(), String.valueOf(param.getValue()));
-        }
-        return getResponseResult(httpGet);
-    }
-
-    /**
-     * function:post以JSON格式发送
-     *
-     * @param url     地址
-     * @param headers 头信息
-     * @param params  参数
-     * @return HttpResponse
-     */
-    public static CloseableHttpResponse httpPostRequestByJsonAndReturnResponse(String url,
-                                                                               Map<String, Object> headers,
-                                                                               Map<String, Object> params) throws IOException {
-        HttpPost httpPost = new HttpPost(url);
-        if (!CollectionUtils.isEmpty(headers)) {
-            for (Map.Entry<String, Object> headerParam : headers.entrySet()) {
-                httpPost.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
-            }
-        }
-
-        try {
-            String json = JsonUtil.readMapToJson(params);
-            httpPost.setEntity(new StringEntity(json, "UTF-8"));
-        } catch (UnsupportedCharsetException e) {
-            e.printStackTrace();
-            throw e;
-        }
-        return getResponseResult(httpPost);
     }
 
     /**
@@ -281,7 +225,6 @@ public class HttpClientUtil {
         }
         return pairs;
     }
-
 
     /**
      * 执行 HTTP请求
