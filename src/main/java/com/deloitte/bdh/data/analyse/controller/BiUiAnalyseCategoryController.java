@@ -11,7 +11,6 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
-import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,14 +38,14 @@ public class BiUiAnalyseCategoryController {
     @ApiOperation(value = "基于租户查询报表的树状结构", notes = "基于租户查询报表的树状结构")
     @PostMapping("/getCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
-        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request.getData()));
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getTree(request));
     }
 
     @ApiOperation(value = "预定义报表", notes = "预定义报表")
     @PostMapping("/getDefaultCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getDefaultCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         request.getData().setType(AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED);
-        List<AnalyseCategoryTree> tree = biUiAnalyseCategoryService.getTree(request.getData());
+        List<AnalyseCategoryTree> tree = biUiAnalyseCategoryService.getTree(request);
         if (!tree.isEmpty()) {
             return RetResponse.makeOKRsp(tree.get(0).getChildren());
         }
@@ -57,7 +56,7 @@ public class BiUiAnalyseCategoryController {
     @PostMapping("/getCustomerCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
         request.getData().setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
-        List<AnalyseCategoryTree> tree = biUiAnalyseCategoryService.getTree(request.getData());
+        List<AnalyseCategoryTree> tree = biUiAnalyseCategoryService.getTree(request);
         if (!tree.isEmpty()) {
             return RetResponse.makeOKRsp(tree.get(0).getChildren());
         }
@@ -66,9 +65,8 @@ public class BiUiAnalyseCategoryController {
 
     @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
     @PostMapping("/getAnalyseCategorys")
-    public RetResult<PageResult> getAnalyseCategorys(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
-        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
-        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategories(request.getData()));
+    public RetResult<PageResult<List<BiUiAnalyseCategory>>> getAnalyseCategoryList(@RequestBody @Validated RetRequest<AnalyseCategoryReq> request) {
+        return RetResponse.makeOKRsp(biUiAnalyseCategoryService.getAnalyseCategoryList(request));
     }
 
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
@@ -79,18 +77,18 @@ public class BiUiAnalyseCategoryController {
 
     @ApiOperation(value = "新增文件夹", notes = "新增文件夹")
     @PostMapping("/createAnalyseCategory")
-    public RetResult<BiUiAnalyseCategory> createAnalyseCategory(@RequestBody @Validated RetRequest<CreateAnalyseCategoryDto> request) throws Exception {
+    public RetResult<BiUiAnalyseCategory> createAnalyseCategory(@RequestBody @Validated RetRequest<CreateAnalyseCategoryDto> request) {
         return RetResponse.makeOKRsp(biUiAnalyseCategoryService.createAnalyseCategory(request.getData()));
     }
 
     @ApiOperation(value = "删除文件夹", notes = "删除文件夹")
     @PostMapping("/delAnalyseCategory")
-    public RetResult<Void> delAnalyseCategory(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    public RetResult<Void> delAnalyseCategory(@RequestBody @Validated RetRequest<String> request) {
         biUiAnalyseCategoryService.delAnalyseCategory(request.getData());
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "删除文件夹", notes = "删除文件夹")
+    @ApiOperation(value = "批量删除文件夹", notes = "批量删除文件夹")
     @PostMapping("/batchDelAnalyseCategories")
     public RetResult<Void> batchDelAnalyseCategories(@RequestBody @Validated RetRequest<BatchAnalyseCategoryDelReq> request) throws Exception {
         biUiAnalyseCategoryService.batchDelAnalyseCategories(request.getData());
@@ -106,7 +104,7 @@ public class BiUiAnalyseCategoryController {
 
     @ApiOperation(value = "初始化租户目录", notes = "初始化租户目录")
     @PostMapping("/initTenantAnalyse")
-    public RetResult initTenantAnalyse(@RequestBody @Validated RetRequest<InitTenantReq> request) throws Exception {
+    public RetResult<Void> initTenantAnalyse(@RequestBody @Validated RetRequest<InitTenantReq> request) throws Exception {
         biUiAnalyseCategoryService.initTenantAnalyse(request.getData());
         return RetResponse.makeOKRsp();
     }

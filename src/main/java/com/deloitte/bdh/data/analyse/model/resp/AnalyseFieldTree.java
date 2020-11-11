@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 public class AnalyseFieldTree {
 
+    private static final long serialVersionUID = 1L;
+
     @ApiModelProperty(value = "主键")
     private String id;
 

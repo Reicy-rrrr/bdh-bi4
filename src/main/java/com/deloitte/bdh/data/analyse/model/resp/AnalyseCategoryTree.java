@@ -1,17 +1,16 @@
 package com.deloitte.bdh.data.analyse.model.resp;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class AnalyseCategoryTree extends BiUiAnalyseCategory {
+public class AnalyseCategoryTree implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "ID")
     private String id;
@@ -62,5 +61,11 @@ public class AnalyseCategoryTree extends BiUiAnalyseCategory {
      * 下级数据
      */
     @ApiModelProperty(value = "下级数据")
-    List<AnalyseCategoryTree> children = new ArrayList<>();
+    List<AnalyseCategoryTree> children;
+
+    /**
+     * 页面数据
+     */
+    @ApiModelProperty(value = "页面数据")
+    List<AnalysePageDto> pageList;
 }

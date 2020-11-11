@@ -28,28 +28,11 @@ import java.util.List;
 public class BiUiDBController {
     @Resource
     BiUiDBService biUiDBService;
-    @Resource
-    BiUiModelFolderService biUiModelFolderService;
-    @Resource
-    BiUiModelFieldService biUiModelFieldService;
-
-    @ApiOperation(value = "获取所有表", notes = "获取所有表")
-    @PostMapping("/getAllDataSource")
-    public RetResult<List<String>> getAllDataSource() {
-        return RetResponse.makeOKRsp(biUiDBService.getAllDataSource());
-    }
 
     @ApiOperation(value = "获取所有表", notes = "获取所有表")
     @PostMapping("/getAllTable")
     public RetResult<List<String>> getAllTable(@RequestBody @Validated RetRequest<DBTableReq> request) {
         return RetResponse.makeOKRsp(biUiDBService.getAllTable());
-    }
-
-    @ApiOperation(value = "获取所有表列", notes = "获取所有表列")
-    @PostMapping("/getAllColumns")
-    public RetResult<Collection<DataModelFieldTree>> getAllColumns(@RequestBody @Validated RetRequest<DBTableColumnReq> request) {
-        DBTableColumnReq req = request.getData();
-        return RetResponse.makeOKRsp(biUiDBService.getAllColumns(req.getTableName(), req.getTenantId()));
     }
 
     @ApiOperation(value = "获取数据树状结构", notes = "获取数据树状结构")

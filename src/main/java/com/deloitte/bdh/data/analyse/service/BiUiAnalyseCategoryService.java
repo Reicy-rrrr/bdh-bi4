@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
@@ -21,11 +22,10 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
 
     /**
      * 基于租户获取页面列表
-     *
-     * @param dto
+     * @param request
      * @return
      */
-    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategories(AnalyseCategoryReq dto);
+    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(RetRequest<AnalyseCategoryReq> request);
 
     /**
      * 查看单个resource
@@ -41,7 +41,7 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      * @param dto
      * @return
      */
-    BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto) throws Exception;
+    BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto);
 
     /**
      * del页面
@@ -49,7 +49,7 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      * @param id
      * @return
      */
-    void delAnalyseCategory(String id) throws Exception;
+    void delAnalyseCategory(String id);
 
     /**
      * 修改页面
@@ -59,7 +59,7 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      */
     BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception;
 
-    List<AnalyseCategoryTree> getTree(AnalyseCategoryReq dto);
+    List<AnalyseCategoryTree> getTree(RetRequest<AnalyseCategoryReq> request);
 
     void initTenantAnalyse(InitTenantReq data) throws Exception;
 
