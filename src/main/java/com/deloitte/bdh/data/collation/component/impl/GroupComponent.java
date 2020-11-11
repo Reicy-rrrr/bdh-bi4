@@ -15,7 +15,6 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
@@ -177,8 +176,7 @@ public class GroupComponent implements ComponentHandler {
                 sqlBuilder.append(newTempName);
                 sqlBuilder.append(sql_key_comma);
 
-                FieldMappingModel currMapping = new FieldMappingModel();
-                BeanUtils.copyProperties(fromMapping, currMapping);
+                FieldMappingModel currMapping = fromMapping.clone();
                 currMapping.setTempFieldName(newTempName);
                 currMapping.setFinalFieldName(newFinalName);
                 currFieldMappings.add(currMapping);
