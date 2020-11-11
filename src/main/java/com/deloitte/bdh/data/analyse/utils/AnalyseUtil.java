@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.analyse.utils;
 
-public class AnalyseUtils {
+public class AnalyseUtil {
     public static String getCurrentUser() {
         return "1";
     }

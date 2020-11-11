@@ -1,14 +1,12 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -22,11 +20,10 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
 
     /**
      * 基于租户获取页面列表
-     *
-     * @param dto
+     * @param request
      * @return
      */
-    PageResult<List<BiUiAnalysePage>> getAnalysePages(AnalysePageReq dto);
+    PageResult<BiUiAnalysePage> getAnalysePages(RetRequest<GetAnalysePageDto> request);
 
     /**
      * 查看单个resource
@@ -38,11 +35,10 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
 
     /**
      * 创建页面
-     *
-     * @param dto
+     * @param request
      * @return
      */
-    BiUiAnalysePage createAnalysePage(CreateAnalysePageDto dto) throws Exception;
+    BiUiAnalysePage createAnalysePage(RetRequest<CreateAnalysePageDto> request);
 
     /**
      * 复制页面
@@ -50,7 +46,7 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @param request
      * @return
      */
-    BiUiAnalysePage copyAnalysePage(CopyAnalysePageRequest request);
+    BiUiAnalysePage copyAnalysePage(CopyAnalysePageDto request);
 
     /**
      * del页面
@@ -66,7 +62,7 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @param request
      * @return
      */
-    void batchDelAnalysePage(BatchDelAnalysePageReq request);
+    void batchDelAnalysePage(BatchDelAnalysePageDto request);
 
     /**
      * 修改页面
@@ -74,7 +70,7 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @param dto
      * @return
      */
-    BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto) throws Exception;
+    BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto);
 
     /**
      * 获取组件数据
@@ -84,5 +80,4 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      */
     BaseComponentDataResponse getComponentData(BaseComponentDataRequest data);
 
-    List demoGridDemoRequest(GridDemoRequest data);
 }

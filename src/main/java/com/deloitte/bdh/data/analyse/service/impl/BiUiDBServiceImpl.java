@@ -8,7 +8,7 @@ import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
-import com.deloitte.bdh.data.analyse.model.request.GetDataTreeRequest;
+import com.deloitte.bdh.data.analyse.model.request.GetDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.BiUiDBService;
@@ -71,7 +71,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
 
     @Transactional
     @Override
-    public List<AnalyseFolderTree> getDataTree(RetRequest<GetDataTreeRequest> request) {
+    public List<AnalyseFolderTree> getDataTree(RetRequest<GetDataTreeDto> request) {
         Map<String, Object> result = getHistoryData(request);
 
         List<BiUiModelFolder> folderList = (List<BiUiModelFolder>) result.get("folder");
@@ -105,7 +105,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
      * @param request
      * @return
      */
-    private Map<String, Object> getHistoryData(RetRequest<GetDataTreeRequest> request) {
+    private Map<String, Object> getHistoryData(RetRequest<GetDataTreeDto> request) {
         LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
         folderQueryWrapper.eq(BiUiModelFolder::getPageId, request.getData().getPageId());
         folderQueryWrapper.eq(BiUiModelFolder::getModelId, request.getData().getModelId());

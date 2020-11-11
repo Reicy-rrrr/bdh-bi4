@@ -42,11 +42,4 @@ public class CreateAnalysePageDto {
     @ApiModelProperty(value = "图标")
     private String icon;
 
-    @ApiModelProperty(value = "tenantId", example = "123", required = true)
-    @NotNull(message = "租户id 不能为空")
-    private String tenantId;
-
-    @ApiModelProperty(value = "创建人", required = true)
-    @NotNull(message = "创建人不能为空")
-    private String createUser;
 }
