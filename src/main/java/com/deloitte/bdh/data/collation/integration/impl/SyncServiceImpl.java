@@ -364,7 +364,7 @@ public class SyncServiceImpl implements SyncService {
                     BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
                             .eq(BiProcessors::getCode, processorsCode)
                     );
-                    transfer.run(processors.getProcessGroupId());
+                    transfer.stop(processors.getProcessGroupId());
 
                     //修改plan 执行状态
                     plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
