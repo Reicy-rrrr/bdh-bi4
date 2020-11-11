@@ -131,7 +131,7 @@ public class EtlServiceImpl implements EtlService {
 
                 Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
                 if (!field.isPresent()) {
-                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段必须再同步的字段列表以内");
+                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段必须在同步的字段列表以内");
                 }
 
                 //同步都涉及 偏移字段，方便同步

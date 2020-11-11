@@ -76,4 +76,13 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      */
     void validate(String modelCode);
 
+    /**
+     * 运行/停止 Model
+     *
+     * @param modelCode
+     * @return
+     */
+    void trigger(String modelCode) throws Exception;
+
+
 }

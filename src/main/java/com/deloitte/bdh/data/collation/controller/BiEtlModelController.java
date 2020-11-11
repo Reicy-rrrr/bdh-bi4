@@ -89,4 +89,11 @@ public class BiEtlModelController {
         biEtlModelService.validate(request.getData());
         return RetResponse.makeOKRsp();
     }
+
+    @ApiOperation(value = "触发执行 model", notes = "马上执行一次")
+    @PostMapping("/trigger")
+    public RetResult<Void> trigger(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        biEtlModelService.trigger(request.getData());
+        return RetResponse.makeOKRsp();
+    }
 }

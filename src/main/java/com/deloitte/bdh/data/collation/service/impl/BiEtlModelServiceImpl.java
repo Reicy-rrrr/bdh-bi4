@@ -263,6 +263,13 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         componentService.validate(modelCode);
     }
 
+    @Override
+    public void trigger(String modelCode) throws Exception {
+        //todo 运行后才能促发，且当前没有正在执行的调度计划
+
+        jobService.trigger(modelCode);
+    }
+
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
         BiEtlModel inf = new BiEtlModel();
         //文件夹
