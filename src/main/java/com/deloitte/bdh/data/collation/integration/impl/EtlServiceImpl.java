@@ -20,7 +20,6 @@ import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
 import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
-import com.deloitte.bdh.data.collation.nifi.template.TemplateEnum;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.service.*;
@@ -59,8 +58,6 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiEtlMappingFieldService fieldService;
     @Autowired
-    private BiEtlDbRefService refService;
-    @Autowired
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private DbHandler dbHandler;
@@ -86,25 +83,7 @@ public class EtlServiceImpl implements EtlService {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 数据源状态不合法");
         }
 
-        //step1:创建数据源与model的关系
-        BiEtlDbRef biEtlDbRef = refService.getOne(new LambdaQueryWrapper<BiEtlDbRef>()
-                .eq(BiEtlDbRef::getSourceId, biEtlDatabaseInf.getId()).eq(BiEtlDbRef::getModelCode, biEtlModel.getCode())
-        );
-
-        String refCode;
-        if (null == biEtlDbRef) {
-            refCode = GenerateCodeUtil.genDbRef();
-            BiEtlDbRef dbRef = new BiEtlDbRef();
-            dbRef.setCode(refCode);
-            dbRef.setSourceId(dto.getSourceId());
-            dbRef.setModelCode(biEtlModel.getCode());
-            dbRef.setTenantId(ThreadLocalUtil.getTenantId());
-            refService.save(dbRef);
-        } else {
-            refCode = biEtlDbRef.getCode();
-        }
-
-        //step2:新建数据源组件与参数
+        //step1:新建数据源组件与参数
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
         component.setCode(componentCode);
@@ -119,7 +98,6 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-        params.put(ComponentCons.REF_CODE, refCode);
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
@@ -130,13 +108,13 @@ public class EtlServiceImpl implements EtlService {
             //step2.1:是独立副本，创建映射
             BiEtlMappingConfig mappingConfig = new BiEtlMappingConfig();
             mappingConfig.setCode(mappingCode);
-            mappingConfig.setRefCode(refCode);
+            mappingConfig.setRefModelCode(biEtlModel.getCode());
+            mappingConfig.setRefComponentCode(componentCode);
             mappingConfig.setType(SyncTypeEnum.getEnumByKey(dto.getSyncType()).getKey().toString());
             mappingConfig.setRefSourceId(biEtlDatabaseInf.getId());
             mappingConfig.setFromTableName(dto.getTableName());
             mappingConfig.setToTableName(dto.getTableName());
             mappingConfig.setTenantId(ThreadLocalUtil.getTenantId());
-            mappingConfig.setRefComponentCode(componentCode);
 
             if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
                 component.setEffect(EffectEnum.DISABLE.getKey());

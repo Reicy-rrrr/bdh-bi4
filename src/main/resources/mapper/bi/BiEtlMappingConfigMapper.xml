@@ -6,7 +6,8 @@
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlMappingConfig">
         <id column="id" property="id" />
         <result column="CODE" property="code" />
-        <result column="REF_CODE" property="refCode" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
+        <result column="REF_COMPONENT_CODE" property="refComponentCode" />
         <result column="TYPE" property="type" />
         <result column="OFFSET_FIELD" property="offsetField" />
         <result column="OFFSET_VALUE" property="offsetValue" />
@@ -14,7 +15,6 @@
         <result column="REF_SOURCE_ID" property="refSourceId" />
         <result column="FROM_TABLE_NAME" property="fromTableName" />
         <result column="TO_TABLE_NAME" property="toTableName" />
-        <result column="REF_COMPONENT_CODE" property="refComponentCode" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

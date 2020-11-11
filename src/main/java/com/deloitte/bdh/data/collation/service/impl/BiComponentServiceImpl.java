@@ -55,8 +55,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private BiEtlMappingFieldService fieldService;
     @Autowired
     private Transfer transfer;
-    @Autowired
-    private BiEtlDbRefService refService;
 
     @Override
     public BiComponentTree selectTree(String modelCode, String componentCode) {
@@ -123,16 +121,9 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         //是否独立的数据源组件
         String dulicate = paramsList.stream()
                 .filter(p -> p.getParamKey().equals(ComponentCons.DULICATE)).findAny().get().getParamValue();
-        String refCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_CODE)).findAny().get().getParamValue();
         String processorsCode = paramsList.stream()
                 .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
 
-        BiEtlDbRef ref = refService.getOne(new LambdaQueryWrapper<BiEtlDbRef>()
-                .eq(BiEtlDbRef::getCode, refCode)
-        );
-
-        refService.removeById(ref.getId());
         biComponentMapper.deleteById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())

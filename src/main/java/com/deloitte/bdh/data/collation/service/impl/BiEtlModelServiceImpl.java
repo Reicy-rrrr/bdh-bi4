@@ -6,7 +6,6 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.*;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
@@ -25,7 +24,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -61,11 +59,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Autowired
     private BiComponentService componentService;
     @Autowired
-    private BiComponentParamsService componentParamsService;
-    @Autowired
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
-    private BiEtlDbRefService refService;
+    private BiEtlMappingConfigService mappingConfigService;
     @Autowired
     private DbHandler dbHandler;
     @Autowired
@@ -239,16 +235,16 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public void validate(String modelCode) {
         //1：校验数据源是否可用，2：校验是否配置cron 表达式，3：校验输入组件，输出组件，4：校验nifi配置
-        List<BiEtlDbRef> dbRefs = refService.list(new LambdaQueryWrapper<BiEtlDbRef>()
-                .eq(BiEtlDbRef::getModelCode, modelCode)
+        List<BiEtlMappingConfig> mappingConfigs = mappingConfigService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getRefModelCode, modelCode)
         );
 
-        if (CollectionUtils.isEmpty(dbRefs)) {
+        if (CollectionUtils.isEmpty(mappingConfigs)) {
             throw new RuntimeException("校验失败:该模板未关联数据源");
         }
 
-        dbRefs.forEach(s -> {
-            BiEtlDatabaseInf databaseInf = databaseInfService.getById(s.getSourceId());
+        mappingConfigs.forEach(s -> {
+            BiEtlDatabaseInf databaseInf = databaseInfService.getById(s.getRefSourceId());
             if (!databaseInf.getEffect().equals(EffectEnum.ENABLE.getKey())) {
                 throw new RuntimeException("校验失败:该模板关联的数据源状态异常");
             }
