@@ -147,7 +147,7 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public long getCount(String tableName, String condition) {
-        String querySql = "SELECT COUNT(1) FROM " + tableName;
+        String querySql = "SELECT COUNT(1) FROM `" + tableName + "`";
         if (StringUtils.isNotBlank(condition)) {
             querySql = querySql + " WHERE " + condition;
         }
@@ -156,7 +156,7 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public long truncateTable(String tableName) {
-        String truncateSql = "TRUNCATE TABLE " + tableName;
+        String truncateSql = "TRUNCATE TABLE `" + tableName + "`";
         return biEtlDbMapper.truncateTable(truncateSql);
     }
 
@@ -165,13 +165,13 @@ public class DbHandlerImpl implements DbHandler {
         if (StringUtils.isBlank(condition)) {
             return 0L;
         }
-        String deleteSql = "DELETE FROM " + tableName + " WHERE " + condition;
+        String deleteSql = "DELETE FROM `" + tableName + "` WHERE " + condition;
         return biEtlDbMapper.truncateTable(deleteSql);
     }
 
     @Override
     public void drop(String tableName) {
-        String deleteSql = "DROP TABLE IF EXISTS " + tableName;
+        String deleteSql = "DROP TABLE IF EXISTS `" + tableName + "`";
         biEtlDbMapper.truncateTable(deleteSql);
     }
 

@@ -217,6 +217,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 syncPlanService.updateBatchById(planList);
             }
             biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
+            biEtlModel.setSyncStatus(YesOrNoEnum.NO.getKey());
         } else {
             validate(modelCode);
             ComponentModel componentModel = modelHandleService.handleModel(modelCode);
