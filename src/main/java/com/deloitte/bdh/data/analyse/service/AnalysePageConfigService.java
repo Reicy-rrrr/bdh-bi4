@@ -63,5 +63,5 @@ public interface AnalysePageConfigService extends Service<BiUiAnalysePageConfig>
      * @param data
      * @return
      */
-    List<BiUiAnalysePageConfig> getAnalysePageConfigList(AnalysePageConfigDto data) throws Exception;
+    List<AnalysePageConfigDto> getAnalysePageConfigList(AnalysePageConfigDto data);
 }

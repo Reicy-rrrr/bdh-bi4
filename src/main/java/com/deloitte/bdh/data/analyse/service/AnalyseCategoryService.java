@@ -24,35 +24,21 @@ import java.util.List;
 public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
 
     /**
-     * 基于租户获取页面列表
-     * @param request
-     * @return
-     */
-    PageResult<BiUiAnalyseCategory> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request);
-
-    /**
-     * 查看单个resource
-     * @param id
-     * @return
-     */
-    BiUiAnalyseCategory getAnalyseCategory(String id);
-
-    /**
-     * 创建页面
+     * 创建文件夹
      * @param request
      * @return
      */
     AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request);
 
     /**
-     * del页面
+     * 删除文件夹
      * @param id
      * @return
      */
     void delAnalyseCategory(String id);
 
     /**
-     * 修改页面
+     * 修改文件夹
      * @param request
      * @return
      */
@@ -62,7 +48,7 @@ public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
 
     void initTenantAnalyse(RetRequest<Void> request);
 
-    PageResult<AnalysePageDto> getChildAnalysePageReq(PageRequest<GetAnalysePageDto> request);
+    PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request);
 
     void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request);
 }

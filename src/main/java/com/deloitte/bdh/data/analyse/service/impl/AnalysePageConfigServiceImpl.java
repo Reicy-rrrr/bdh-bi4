@@ -18,6 +18,7 @@ import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
+import com.google.common.collect.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +37,10 @@ import java.util.List;
 @Service
 @DS(DSConstant.BI_DB)
 public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePageConfigMapper, BiUiAnalysePageConfig> implements AnalysePageConfigService {
+
     @Resource
     BiUiAnalysePageConfigMapper biUiReportPageConfigMapper;
+
     @Resource
     AnalysePageService analysePageService;
 
@@ -71,7 +74,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         if (pageId == null) {
             throw new Exception("页面id不能为空");
         }
-        BiUiAnalysePage page = analysePageService.getAnalysePage(pageId);
+        BiUiAnalysePage page = analysePageService.getById(pageId);
         if (page == null) {
             throw new Exception("页面id不正确");
         }
@@ -86,7 +89,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         if (pageId == null) {
             throw new BizException("页面id不能为空");
         }
-        BiUiAnalysePage page = analysePageService.getAnalysePage(pageId);
+        BiUiAnalysePage page = analysePageService.getById(pageId);
         if (page == null) {
             throw new BizException("页面id不正确");
         }
@@ -148,30 +151,25 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
     }
 
     @Override
-    public List<BiUiAnalysePageConfig> getAnalysePageConfigList(AnalysePageConfigDto data) throws Exception {
+    public List<AnalysePageConfigDto> getAnalysePageConfigList(AnalysePageConfigDto data) {
         String pageId = data.getPageId();
         if (pageId == null) {
-            throw new Exception("页面id不能为空");
+            throw new BizException("页面id不能为空");
         }
-        BiUiAnalysePage page = analysePageService.getAnalysePage(pageId);
+        BiUiAnalysePage page = analysePageService.getById(pageId);
         if (page == null) {
-            throw new Exception("页面id不正确");
+            throw new BizException("页面id不正确");
         }
-        LambdaQueryWrapper<BiUiAnalysePageConfig> query = new LambdaQueryWrapper();
+        LambdaQueryWrapper<BiUiAnalysePageConfig> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePageConfig::getPageId, pageId);
         List<BiUiAnalysePageConfig> configs = list(query);
+
+        List<AnalysePageConfigDto> dtoList = Lists.newArrayList();
         for (BiUiAnalysePageConfig config : configs) {
-            if (page.getEditId() != null) {
-                if (page.getEditId().equals(config.getId())) {
-                    config.setStatus(AnalyseConstants.PAGE_CONFIG_EDIT);
-                }
-            }
-            if (page.getPublishId() != null) {
-                if (page.getPublishId().equals(config.getId())) {
-                    config.setStatus(AnalyseConstants.PAGE_CONFIG_PUBLISH);
-                }
-            }
+            AnalysePageConfigDto dto = new AnalysePageConfigDto();
+            BeanUtils.copyProperties(config, dto);
+            dtoList.add(dto);
         }
-        return configs;
+        return dtoList;
     }
 }

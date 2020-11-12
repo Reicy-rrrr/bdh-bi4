@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,13 +21,11 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author bo.wang
- * @since 2020-10-19
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
  */
+@Api(value = "分析管理-报表配置")
 @RestController
 @RequestMapping("/ui/analyse/pageConfig")
 public class AnalysePageConfigController {
@@ -41,7 +40,7 @@ public class AnalysePageConfigController {
 
     @ApiOperation(value = "查看某个页面配置历史版本详情列表", notes = "查看某个页面配置历史版本详情列表")
     @PostMapping("/getAnalysePageConfigList")
-    public RetResult<List<BiUiAnalysePageConfig>> getAnalysePageConfigList(@RequestBody @Validated RetRequest<AnalysePageConfigDto> request) throws Exception {
+    public RetResult<List<AnalysePageConfigDto>> getAnalysePageConfigList(@RequestBody @Validated RetRequest<AnalysePageConfigDto> request) {
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfigList(request.getData()));
     }
 

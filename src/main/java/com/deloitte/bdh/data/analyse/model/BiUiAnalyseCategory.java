@@ -68,6 +68,12 @@ public class BiUiAnalyseCategory implements Serializable {
     @TableField("ICON")
     private String icon;
 
+    @TableField("IP")
+    private String ip;
+
+    @TableField("TENANT_ID")
+    private String tenantId;
+
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
 
@@ -80,9 +86,4 @@ public class BiUiAnalyseCategory implements Serializable {
     @TableField("MODIFIED_USER")
     private String modifiedUser;
 
-    @TableField("IP")
-    private String ip;
-
-    @TableField("TENANT_ID")
-    private String tenantId;
 }

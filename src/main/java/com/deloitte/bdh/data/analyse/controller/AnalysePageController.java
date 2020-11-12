@@ -7,9 +7,11 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,13 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 /**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author bo.wang
- * @since 2020-10-19
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
  */
+@Api(value = "分析管理-报表")
 @RestController
 @RequestMapping("/ui/analyse/page")
 public class AnalysePageController {
@@ -34,34 +34,33 @@ public class AnalysePageController {
     @Resource
     AnalysePageService analysePageService;
 
-    @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
-    @PostMapping("/getAnalysePages")
-    public RetResult<PageResult<BiUiAnalysePage>> getAnalysePages(@RequestBody @Validated PageRequest<GetAnalysePageDto> request) {
-        PageHelper.startPage(request.getPage(), request.getSize());
-        return RetResponse.makeOKRsp(analysePageService.getAnalysePages(request));
+    @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
+    @PostMapping("/getChildAnalysePageList")
+    public RetResult<PageResult<AnalysePageDto>> getChildAnalysePageList(@RequestBody @Validated PageRequest<GetAnalysePageDto> request) {
+        return RetResponse.makeOKRsp(analysePageService.getChildAnalysePageList(request));
     }
 
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
     @PostMapping("/getAnalysePage")
-    public RetResult<BiUiAnalysePage> getAnalysePage(@RequestBody @Validated RetRequest<String> request) {
+    public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(analysePageService.getAnalysePage(request.getData()));
     }
 
     @ApiOperation(value = "新增页面", notes = "新增页面")
     @PostMapping("/createAnalysePage")
-    public RetResult<BiUiAnalysePage> createAnalysePage(@RequestBody @Validated RetRequest<CreateAnalysePageDto> request) {
+    public RetResult<AnalysePageDto> createAnalysePage(@RequestBody @Validated RetRequest<CreateAnalysePageDto> request) {
         return RetResponse.makeOKRsp(analysePageService.createAnalysePage(request));
     }
 
     @ApiOperation(value = "复制页面", notes = "复制页面")
     @PostMapping("/copyAnalysePage")
-    public RetResult<BiUiAnalysePage> copyAnalysePage(@RequestBody @Validated RetRequest<CopyAnalysePageDto> request) {
+    public RetResult<AnalysePageDto> copyAnalysePage(@RequestBody @Validated RetRequest<CopyAnalysePageDto> request) {
         return RetResponse.makeOKRsp(analysePageService.copyAnalysePage(request.getData()));
     }
 
     @ApiOperation(value = "删除页面", notes = "删除页面")
     @PostMapping("/delAnalysePage")
-    public RetResult<Void> delAnalysePage(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    public RetResult<Void> delAnalysePage(@RequestBody @Validated RetRequest<String> request) {
         analysePageService.delAnalysePage(request.getData());
         return RetResponse.makeOKRsp();
     }
@@ -75,13 +74,13 @@ public class AnalysePageController {
 
     @ApiOperation(value = "修改页面", notes = "修改页面")
     @PostMapping("/updateAnalysePage")
-    public RetResult<BiUiAnalysePage> updateAnalysePage(@RequestBody @Validated RetRequest<UpdateAnalysePageDto> request) {
-        return RetResponse.makeOKRsp(analysePageService.updateAnalysePage(request.getData()));
+    public RetResult<AnalysePageDto> updateAnalysePage(@RequestBody @Validated RetRequest<UpdateAnalysePageDto> request) {
+        return RetResponse.makeOKRsp(analysePageService.updateAnalysePage(request));
     }
 
     @ApiOperation(value = "发布页面", notes = "发布页面")
     @PostMapping("/publishAnalysePage")
-    public RetResult<BiUiAnalysePageConfig> publishAnalysePageConfig(@RequestBody @Validated RetRequest<AnalysePageIdDto> request) {
+    public RetResult<AnalysePageConfigDto> publishAnalysePageConfig(@RequestBody @Validated RetRequest<AnalysePageIdDto> request) {
         return RetResponse.makeOKRsp(analysePageService.publishAnalysePage(request));
     }
 
