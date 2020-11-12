@@ -45,12 +45,6 @@ public class BiUiAnalysePage implements Serializable {
     private String type;
 
     /**
-     * 是否用户自定义类型CUSTOMER,TYPE1,TYPE2...
-     */
-    @TableField("INIT_TYPE")
-    private String initType;
-
-    /**
      * 上级id
      */
     @TableField("PARENT_ID")

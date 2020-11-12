@@ -22,8 +22,4 @@ import java.util.List;
 @DS(DSConstant.BI_DB)
 public class AnalyseDefaultCategoryServiceImpl extends AbstractService<BiUiAnalyseDefaultCategoryMapper, BiUiAnalyseDefaultCategory> implements AnalyseDefaultCategoryService {
 
-    @Override
-    public List<BiUiAnalyseDefaultCategory> getAllDefaultCategories() {
-        return list();
-    }
 }

@@ -14,5 +14,5 @@ import java.util.List;
  * @since 2020-10-22
  */
 public interface AnalyseDefaultCategoryService extends Service<BiUiAnalyseDefaultCategory> {
-    List<BiUiAnalyseDefaultCategory> getAllDefaultCategories();
+
 }

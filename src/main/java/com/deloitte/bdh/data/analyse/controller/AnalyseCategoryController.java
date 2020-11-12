@@ -95,9 +95,4 @@ public class AnalyseCategoryController {
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
-    @PostMapping("/getChildAnalysePageList")
-    public RetResult<PageResult<AnalysePageDto>> getChildAnalysePageList(@RequestBody @Validated PageRequest<GetAnalysePageDto> request) throws Exception {
-        return RetResponse.makeOKRsp(analyseCategoryService.getChildAnalysePageList(request));
-    }
 }

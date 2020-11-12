@@ -45,12 +45,6 @@ public class BiUiAnalyseCategory implements Serializable {
     private String type;
 
     /**
-     * 系统初始化,自建
-     */
-    @TableField("INIT_TYPE")
-    private String initType;
-
-    /**
      * 上级id
      */
     @TableField("PARENT_ID")
