@@ -144,7 +144,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (category == null) {
             throw new BizException("错误的id");
         }
-        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getInitType())) {
+        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getType())) {
             throw new BizException("默认文件夹不能删除");
         }
         this.removeById(id);
@@ -159,7 +159,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (CollectionUtils.isNotEmpty(pageList)) {
             List<String> pageIds = Lists.newArrayList();
             for (BiUiAnalysePage page : pageList) {
-                if (StringUtils.equals(AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT, page.getInitType())) {
+                if (StringUtils.equals(AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT, page.getType())) {
                     throw new BizException("默认文件夹不能删除");
                 }
                 pageIds.add(page.getId());
