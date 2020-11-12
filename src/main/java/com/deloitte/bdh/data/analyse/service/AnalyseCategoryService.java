@@ -1,25 +1,18 @@
 package com.deloitte.bdh.data.analyse.service;
 
-import com.deloitte.bdh.common.base.PageRequest;
-import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
-import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 
 import java.util.List;
 
 /**
- * <p>
- * 服务类
- * </p>
- *
- * @author bo.wang
- * @since 2020-10-19
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
  */
 public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
 

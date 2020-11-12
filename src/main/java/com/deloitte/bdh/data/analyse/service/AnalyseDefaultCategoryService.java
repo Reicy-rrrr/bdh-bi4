@@ -6,12 +6,9 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import java.util.List;
 
 /**
- * <p>
- * 服务类
- * </p>
- *
- * @author bo.wang
- * @since 2020-10-22
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
  */
 public interface AnalyseDefaultCategoryService extends Service<BiUiAnalyseDefaultCategory> {
 

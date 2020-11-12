@@ -15,12 +15,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 
 /**
- * <p>
- * 服务类
- * </p>
- *
- * @author bo.wang
- * @since 2020-10-19
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
  */
 public interface AnalysePageService extends Service<BiUiAnalysePage> {
 

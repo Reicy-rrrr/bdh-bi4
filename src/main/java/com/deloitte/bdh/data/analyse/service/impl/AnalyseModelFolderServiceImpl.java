@@ -40,17 +40,7 @@ public class AnalyseModelFolderServiceImpl extends AbstractService<BiUiModelFold
     }
 
     @Override
-    public List<BiUiModelFolder> getTenantBiUiModelFolders(String tenantId) {
-        if (StringUtil.isEmpty(tenantId)) {
-            throw new RuntimeException("租户id不能为空");
-        }
-        LambdaQueryWrapper<BiUiModelFolder> query = new LambdaQueryWrapper();
-        query.eq(BiUiModelFolder::getTenantId, tenantId);
-        return list(query);
-    }
-
-    @Override
-    public BiUiModelFolder createResource(CreateResourcesDto dto) throws Exception {
+    public BiUiModelFolder createResource(CreateResourcesDto dto) {
         BiUiModelFolder entity = new BiUiModelFolder();
         BeanUtils.copyProperties(dto, entity);
         biUiModelFolderMapper.insert(entity);
@@ -58,13 +48,13 @@ public class AnalyseModelFolderServiceImpl extends AbstractService<BiUiModelFold
     }
 
     @Override
-    public void delResource(String id) throws Exception {
+    public void delResource(String id) {
 //        BiUiModelFolder inf = biUiModelFolderMapper.selectById(id);
         biUiModelFolderMapper.deleteById(id);
     }
 
     @Override
-    public BiUiModelFolder updateResource(UpdateResourcesDto dto) throws Exception {
+    public BiUiModelFolder updateResource(UpdateResourcesDto dto) {
 //        BiUiModelFolder inf = biUiModelFolderMapper.selectById(dto.getId());
         BiUiModelFolder entity = new BiUiModelFolder();
         BeanUtils.copyProperties(dto, entity);

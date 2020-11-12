@@ -6,6 +6,11 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 
 import java.util.List;
 
+/**
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
+ */
 public interface AnalyseDBService {
 
     /**

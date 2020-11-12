@@ -25,20 +25,12 @@ public interface AnalyseModelFolderService extends Service<BiUiModelFolder> {
     BiUiModelFolder getResource(String id);
 
     /**
-     * 查看单个resource
-     *
-     * @param tenantId
-     * @return
-     */
-    List<BiUiModelFolder> getTenantBiUiModelFolders(String tenantId);
-
-    /**
      * 创建页面
      *
      * @param dto
      * @return
      */
-    BiUiModelFolder createResource(CreateResourcesDto dto) throws Exception;
+    BiUiModelFolder createResource(CreateResourcesDto dto);
 
     /**
      * del页面
@@ -46,7 +38,7 @@ public interface AnalyseModelFolderService extends Service<BiUiModelFolder> {
      * @param id
      * @return
      */
-    void delResource(String id) throws Exception;
+    void delResource(String id);
 
     /**
      * 修改页面
@@ -54,5 +46,5 @@ public interface AnalyseModelFolderService extends Service<BiUiModelFolder> {
      * @param dto
      * @return
      */
-    BiUiModelFolder updateResource(UpdateResourcesDto dto) throws Exception;
+    BiUiModelFolder updateResource(UpdateResourcesDto dto);
 }

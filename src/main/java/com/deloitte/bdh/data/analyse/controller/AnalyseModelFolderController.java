@@ -40,20 +40,20 @@ public class AnalyseModelFolderController {
 
     @ApiOperation(value = "新增文件夹", notes = "新增文件夹")
     @PostMapping("/createResource")
-    public RetResult<BiUiModelFolder> createResource(@RequestBody @Validated RetRequest<CreateResourcesDto> request) throws Exception {
+    public RetResult<BiUiModelFolder> createResource(@RequestBody @Validated RetRequest<CreateResourcesDto> request) {
         return RetResponse.makeOKRsp(analyseModelFolderService.createResource(request.getData()));
     }
 
     @ApiOperation(value = "删除文件夹", notes = "删除文件夹")
     @PostMapping("/delResource")
-    public RetResult<Void> delResource(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    public RetResult<Void> delResource(@RequestBody @Validated RetRequest<String> request) {
         analyseModelFolderService.delResource(request.getData());
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "修改文件夹", notes = "修改文件夹")
     @PostMapping("/updateResource")
-    public RetResult<BiUiModelFolder> updateResource(@RequestBody @Validated RetRequest<UpdateResourcesDto> request) throws Exception {
+    public RetResult<BiUiModelFolder> updateResource(@RequestBody @Validated RetRequest<UpdateResourcesDto> request) {
         return RetResponse.makeOKRsp(analyseModelFolderService.updateResource(request.getData()));
     }
 }
