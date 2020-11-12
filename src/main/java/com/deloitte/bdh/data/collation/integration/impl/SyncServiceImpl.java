@@ -36,6 +36,8 @@ public class SyncServiceImpl implements SyncService {
     @Autowired
     private BiComponentService componentService;
     @Autowired
+    private BiEtlDatabaseInfService biEtlDatabaseInfService;
+    @Autowired
     private BiEtlModelService modelService;
     @Autowired
     private BiEtlModelHandleService modelHandleService;
@@ -426,10 +428,18 @@ public class SyncServiceImpl implements SyncService {
             if (null == config) {
                 continue;
             }
+            // 判断数据源是否被禁用，若有一个被禁用，则不生成调度计划
+            BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfService.getById(config.getRefSourceId());
+            if (null == biEtlDatabaseInf || EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
+                log.error("Etl调度验证失败,数据源不存在或状态为失效, 调度模板编码:{}", modelCode);
+                return;
+            }
+
             //直连返回
             if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())) {
                 continue;
             }
+
             RunPlan runPlan = RunPlan.builder().groupCode(groupCode).planType("0")
                     .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).mappingConfigCode(config)
                     .synCount();

@@ -27,27 +27,21 @@ public class BiEtlSyncPlanController {
 
     @ApiOperation(value = "同步调度处理", notes = "数据同步")
     @GetMapping("/sync")
-    @NoLocal
-    public RetResult<Void> sync(String tenantCode) throws Exception {
-        ThreadLocalHolder.set("tenantCode", tenantCode);
+    public RetResult<Void> sync() throws Exception {
         sync.sync();
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "整理调度处理", notes = "数据整理")
     @GetMapping("/etl")
-    @NoLocal
-    public RetResult<Void> etl(String tenantCode) throws Exception {
-        ThreadLocalHolder.set("tenantCode", tenantCode);
+    public RetResult<Void> etl() throws Exception {
         sync.etl();
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "模板调度处理", notes = "模板")
     @GetMapping("/model")
-    @NoLocal
-    public RetResult<Void> model(String modelCode, String tenantCode, String tenantId, String operator) throws Exception {
-        ThreadLocalHolder.set("tenantCode", tenantCode);
+    public RetResult<Void> model(String modelCode, String tenantId, String operator) throws Exception {
         ThreadLocalHolder.set("tenantId", tenantId);
         ThreadLocalHolder.set("operator", operator);
         sync.model(modelCode);
