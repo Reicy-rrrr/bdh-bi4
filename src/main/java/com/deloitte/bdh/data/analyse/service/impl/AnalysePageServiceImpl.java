@@ -69,18 +69,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (StringUtils.isNotBlank(request.getData().getName())) {
             query.like(BiUiAnalysePage::getName, request.getData().getName());
         }
-        /**
-         * 只查询已经发布过的页面
-         */
-        if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(request.getData().getType())) {
-            query.isNotNull(BiUiAnalysePage::getPublishId);
-        }
-        /**
-         * 没有发布过的页面
-         */
-        if (AnalyseConstants.PAGE_CONFIG_EDIT.equals(request.getData().getType())) {
-            query.isNull(BiUiAnalysePage::getPublishId);
-        }
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         PageInfo<BiUiAnalysePage> pageInfo = new PageInfo(this.list(query));
         PageResult<BiUiAnalysePage> pageResult = new PageResult<>(pageInfo);

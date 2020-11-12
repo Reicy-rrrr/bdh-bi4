@@ -36,8 +36,8 @@ public class AnalysePageController {
 
     @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
     @PostMapping("/getAnalysePages")
-    public RetResult<PageResult<BiUiAnalysePage>> getAnalysePages(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) {
-        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
+    public RetResult<PageResult<BiUiAnalysePage>> getAnalysePages(@RequestBody @Validated PageRequest<GetAnalysePageDto> request) {
+        PageHelper.startPage(request.getPage(), request.getSize());
         return RetResponse.makeOKRsp(analysePageService.getAnalysePages(request));
     }
 

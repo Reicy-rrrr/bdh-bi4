@@ -16,6 +16,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
@@ -55,18 +56,17 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     AnalysePageService pageService;
 
     @Override
-    public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request) {
+    public PageResult<BiUiAnalyseCategory> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(request.getTenantId())) {
             query.eq(BiUiAnalyseCategory::getTenantId, request.getTenantId());
         }
-        // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(request.getData().getName())) {
             query.like(BiUiAnalyseCategory::getName, request.getData().getName());
         }
         query.orderByDesc(BiUiAnalyseCategory::getCreateDate);
-        PageInfo<BiUiAnalyseCategory> page = new PageInfo<>(this.list(query));
+        PageInfo<BiUiAnalyseCategory> page = PageInfo.of(this.list(query));
         return new PageResult<>(page);
     }
 
@@ -79,7 +79,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
-    public BiUiAnalyseCategory createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
+    public AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
         checkBiUiAnalyseCategoryByName(request.getData().getName(), request.getTenantId(), null);
         BiUiAnalyseCategory parent = null;
         if (request.getData().getParentId() == null) {
@@ -106,7 +106,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
          */
         entity.setParentId(parent.getId());
         this.save(entity);
-        return entity;
+        AnalyseCategoryDto dto = new AnalyseCategoryDto();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
     }
 
     @Override
@@ -134,7 +136,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
-    public BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request) {
+    public AnalyseCategoryDto updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request) {
         BiUiAnalyseCategory entity = this.getById(request.getData().getId());
         if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
             throw new BizException("默认文件夹不能修改");
@@ -144,7 +146,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         entity.setDes(request.getData().getDes());
         entity.setModifiedDate(LocalDateTime.now());
         this.updateById(entity);
-        return entity;
+        AnalyseCategoryDto dto = new AnalyseCategoryDto();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
     }
 
     @Override
@@ -252,17 +256,27 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
-    public List<BiUiAnalysePage> getChildAnalysePageReq(RetRequest<GetAnalysePageDto> request) {
-        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();
+    public PageResult<AnalysePageDto> getChildAnalysePageReq(PageRequest<GetAnalysePageDto> request) {
+        PageHelper.startPage(request.getPage(), request.getSize());
+        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
-        if (request.getData().getName() != null) {
+        if (StringUtils.isNotBlank(request.getData().getName())) {
             query.like(BiUiAnalysePage::getName, request.getData().getName());
         }
-        if (request.getData().getCategoryId() != null) {
+        if (StringUtils.isNotBlank(request.getData().getCategoryId())) {
             query.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
         }
-        List<BiUiAnalysePage> pages = pageService.list(query);
-        return pages;
+        query.isNotNull(BiUiAnalysePage::getPublishId);
+        query.orderByDesc(BiUiAnalysePage::getCreateDate);
+        List<BiUiAnalysePage> pageList = pageService.list(query);
+        List<AnalysePageDto> pageDtoList = Lists.newArrayList();
+        pageList.forEach(page -> {
+            AnalysePageDto dto = new AnalysePageDto();
+            BeanUtils.copyProperties(page, dto);
+            pageDtoList.add(dto);
+        });
+        PageInfo<AnalysePageDto> pageInfo = PageInfo.of(pageDtoList);
+        return new PageResult<>(pageInfo);
     }
 
     @Override

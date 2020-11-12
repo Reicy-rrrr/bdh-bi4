@@ -7,7 +7,9 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 
 import java.util.List;
 
@@ -26,7 +28,7 @@ public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
      * @param request
      * @return
      */
-    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request);
+    PageResult<BiUiAnalyseCategory> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request);
 
     /**
      * 查看单个resource
@@ -40,7 +42,7 @@ public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
      * @param request
      * @return
      */
-    BiUiAnalyseCategory createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request);
+    AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request);
 
     /**
      * del页面
@@ -54,13 +56,13 @@ public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
      * @param request
      * @return
      */
-    BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request);
+    AnalyseCategoryDto updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request);
 
     List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request);
 
     void initTenantAnalyse(RetRequest<Void> request);
 
-    List<BiUiAnalysePage> getChildAnalysePageReq(RetRequest<GetAnalysePageDto> request);
+    PageResult<AnalysePageDto> getChildAnalysePageReq(PageRequest<GetAnalysePageDto> request);
 
     void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request);
 }

@@ -6,7 +6,9 @@ import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -59,22 +61,22 @@ public class AnalyseCategoryController {
         }
         return RetResponse.makeOKRsp();
     }
-
-    @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
-    @PostMapping("/getAnalyseCategorys")
-    public RetResult<PageResult<List<BiUiAnalyseCategory>>> getAnalyseCategoryList(@RequestBody @Validated PageRequest<GetAnalyseCategoryDto> request) {
-        return RetResponse.makeOKRsp(analyseCategoryService.getAnalyseCategoryList(request));
-    }
-
-    @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
-    @PostMapping("/getAnalyseCategory")
-    public RetResult<BiUiAnalyseCategory> getAnalyseCategory(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(analyseCategoryService.getAnalyseCategory(request.getData()));
-    }
+//
+//    @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
+//    @PostMapping("/getAnalyseCategorys")
+//    public RetResult<PageResult<BiUiAnalyseCategory>> getAnalyseCategoryList(@RequestBody @Validated PageRequest<GetAnalyseCategoryDto> request) {
+//        return RetResponse.makeOKRsp(analyseCategoryService.getAnalyseCategoryList(request));
+//    }
+//
+//    @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
+//    @PostMapping("/getAnalyseCategory")
+//    public RetResult<BiUiAnalyseCategory> getAnalyseCategory(@RequestBody @Validated RetRequest<String> request) {
+//        return RetResponse.makeOKRsp(analyseCategoryService.getAnalyseCategory(request.getData()));
+//    }
 
     @ApiOperation(value = "新增文件夹", notes = "新增文件夹")
     @PostMapping("/createAnalyseCategory")
-    public RetResult<BiUiAnalyseCategory> createAnalyseCategory(@RequestBody @Validated RetRequest<CreateAnalyseCategoryDto> request) {
+    public RetResult<AnalyseCategoryDto> createAnalyseCategory(@RequestBody @Validated RetRequest<CreateAnalyseCategoryDto> request) {
         return RetResponse.makeOKRsp(analyseCategoryService.createAnalyseCategory(request));
     }
 
@@ -95,7 +97,7 @@ public class AnalyseCategoryController {
 
     @ApiOperation(value = "修改文件夹", notes = "修改文件夹")
     @PostMapping("/updateAnalyseCategory")
-    public RetResult<BiUiAnalyseCategory> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) {
+    public RetResult<AnalyseCategoryDto> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) {
         return RetResponse.makeOKRsp(analyseCategoryService.updateAnalyseCategory(request));
     }
 
@@ -106,9 +108,9 @@ public class AnalyseCategoryController {
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "报表和dashboard查询", notes = "报表和dashboard查询")
+    @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
     @PostMapping("/getChildAnalysePageList")
-    public RetResult<List<BiUiAnalysePage>> getChildAnalysePageList(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) throws Exception {
+    public RetResult<PageResult<AnalysePageDto>> getChildAnalysePageList(@RequestBody @Validated PageRequest<GetAnalysePageDto> request) throws Exception {
         return RetResponse.makeOKRsp(analyseCategoryService.getChildAnalysePageReq(request));
     }
 }
