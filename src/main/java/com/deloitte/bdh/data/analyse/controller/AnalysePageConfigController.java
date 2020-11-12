@@ -7,9 +7,8 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
-import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageConfigService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +29,9 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/ui/analyse/pageConfig")
-public class BiUiAnalysePageConfigController {
+public class AnalysePageConfigController {
     @Resource
-    BiUiAnalysePageConfigService biUiReportPageConfigService;
+    AnalysePageConfigService biUiReportPageConfigService;
 
     @ApiOperation(value = "查看单个页面配置详情", notes = "查看单个页面配置详情")
     @PostMapping("/getAnalysePageConfig")
@@ -50,12 +49,6 @@ public class BiUiAnalysePageConfigController {
     @PostMapping("/createAnalysePageConfig")
     public RetResult<BiUiAnalysePageConfig> createAnalysePageConfig(@RequestBody @Validated RetRequest<CreateAnalysePageConfigsDto> request) {
         return RetResponse.makeOKRsp(biUiReportPageConfigService.createAnalysePageConfig(request));
-    }
-
-    @ApiOperation(value = "发布页面", notes = "发布页面")
-    @PostMapping("/publishAnalysePageConfig")
-    public RetResult<BiUiAnalysePageConfig> publishAnalysePageConfig(@RequestBody @Validated RetRequest<PublishAnalysePageConfigsDto> request) {
-        return RetResponse.makeOKRsp(biUiReportPageConfigService.publishAnalysePageConfig(request));
     }
 
     @ApiOperation(value = "删除页面配置", notes = "删除页面配置")

@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-public class UpdateCategoryDto {
+public class UpdateAnalyseCategoryDto {
     private String id;
 
     @ApiModelProperty(value = "报表编码")

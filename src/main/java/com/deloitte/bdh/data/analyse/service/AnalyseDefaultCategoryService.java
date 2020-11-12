@@ -13,6 +13,6 @@ import java.util.List;
  * @author bo.wang
  * @since 2020-10-22
  */
-public interface BiUiAnalyseDefaultCategoryService extends Service<BiUiAnalyseDefaultCategory> {
+public interface AnalyseDefaultCategoryService extends Service<BiUiAnalyseDefaultCategory> {
     List<BiUiAnalyseDefaultCategory> getAllDefaultCategories();
 }

@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiModelFieldMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
-import com.deloitte.bdh.data.analyse.service.BiUiModelFieldService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiUiModelFieldServiceImpl extends AbstractService<BiUiModelFieldMapper, BiUiModelField> implements BiUiModelFieldService {
+public class AnalyseModelFieldServiceImpl extends AbstractService<BiUiModelFieldMapper, BiUiModelField> implements AnalyseModelFieldService {
     @Resource
     BiUiModelFieldMapper biUiModelFieldMapper;
 

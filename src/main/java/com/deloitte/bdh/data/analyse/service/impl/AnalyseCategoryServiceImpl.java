@@ -18,10 +18,9 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalyseDefaultCategoryService;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
+import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
+import com.deloitte.bdh.data.analyse.service.AnalyseDefaultCategoryService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +46,16 @@ import java.util.Map;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCategoryMapper, BiUiAnalyseCategory> implements BiUiAnalyseCategoryService {
+public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCategoryMapper, BiUiAnalyseCategory> implements AnalyseCategoryService {
 
     @Resource
-    BiUiAnalyseDefaultCategoryService biUiAnalyseDefaultCategoryService;
+    AnalyseDefaultCategoryService analyseDefaultCategoryService;
 
     @Resource
-    BiUiAnalysePageService pageService;
+    AnalysePageService pageService;
 
     @Override
-    public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetCategoryDto> request) {
+    public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(request.getTenantId())) {
@@ -136,7 +134,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateCategoryDto> request) {
+    public BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request) {
         BiUiAnalyseCategory entity = this.getById(request.getData().getId());
         if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
             throw new BizException("默认文件夹不能修改");
@@ -150,7 +148,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public List<AnalyseCategoryTree> getTree(RetRequest<GetCategoryDto> request) {
+    public List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request) {
         //查询文件夹
         LambdaQueryWrapper<BiUiAnalyseCategory> categoryQueryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(request.getTenantId())) {
@@ -162,7 +160,6 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         if (StringUtils.isNotBlank(request.getData().getType())) {
             categoryQueryWrapper.eq(BiUiAnalyseCategory::getType, request.getData().getType());
         }
-        // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(request.getData().getName())) {
             categoryQueryWrapper.like(BiUiAnalyseCategory::getName, request.getData().getName());
         }
@@ -173,8 +170,10 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         categoryList.forEach(category -> categoryIds.add(category.getId()));
         LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
         pageLambdaQueryWrapper.in(BiUiAnalysePage::getParentId, categoryIds);
+        pageLambdaQueryWrapper.isNotNull(BiUiAnalysePage::getPublishId);
         List<BiUiAnalysePage> pageList = pageService.list(pageLambdaQueryWrapper);
 
+        //组装category id和page的map结构，方便递归取数据
         Map<String, List<AnalysePageDto>> pageDtoMap = Maps.newHashMap();
         for (BiUiAnalysePage page : pageList) {
             List<AnalysePageDto> pageDtoList;
@@ -189,6 +188,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
             pageDtoMap.put(page.getParentId(), pageDtoList);
         }
 
+        //递归整理数据
         return buildCategoryTree(categoryList, pageDtoMap, "0");
     }
 
@@ -197,11 +197,11 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         if (request.getTenantId() == null) {
             throw new BizException("租户id不能为空");
         }
-        List<BiUiAnalyseCategory> newCategories = new ArrayList<>();
+        List<BiUiAnalyseCategory> newCategories = Lists.newArrayList();
         /**
          * 初始化默认文件夹
          */
-        List<BiUiAnalyseDefaultCategory> defaultCategories = biUiAnalyseDefaultCategoryService.getAllDefaultCategories();
+        List<BiUiAnalyseDefaultCategory> defaultCategories = analyseDefaultCategoryService.getAllDefaultCategories();
         List<BiUiAnalyseCategory> tenantAnalyseCategories = getTenantAnalyseCategories(request.getTenantId());
         Map<String, BiUiAnalyseCategory> tenantCategoryMap = new HashMap<>();
         Map<String, BiUiAnalyseDefaultCategory> defaultCategoryParentIdMap = new HashMap<>();
@@ -266,7 +266,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public void batchDelAnalyseCategories(RetRequest<BatchDeleteCategoryDto> request) {
+    public void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request) {
         for (String id : request.getData().getIds()) {
             delAnalyseCategory(id);
         }

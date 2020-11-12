@@ -12,6 +12,7 @@
         <result column="INIT_TYPE" property="initType" />
         <result column="PARENT_ID" property="parentId" />
         <result column="ICON" property="icon" />
+        <result column="IS_EDIT" property="isEdit" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

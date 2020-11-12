@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @ApiModel(description = "文件夹/报表管理")
-public class GetCategoryDto extends PageDto {
+public class GetAnalyseCategoryDto extends PageDto {
 
     @ApiModelProperty(value = "名称")
     private String name;

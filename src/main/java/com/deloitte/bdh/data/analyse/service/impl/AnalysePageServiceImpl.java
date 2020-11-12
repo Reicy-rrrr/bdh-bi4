@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
@@ -12,6 +13,7 @@ import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
@@ -20,9 +22,11 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageConfigService;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -47,10 +51,10 @@ import java.util.UUID;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMapper, BiUiAnalysePage> implements BiUiAnalysePageService {
+public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMapper, BiUiAnalysePage> implements AnalysePageService {
 
     @Resource
-    BiUiAnalysePageConfigService configService;
+    AnalysePageConfigService configService;
 
     @Resource
     BiUiDemoMapper biUiDemoMapper;
@@ -150,7 +154,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     }
 
     @Override
-    public void batchDelAnalysePage(BatchDelAnalysePageDto request) {
+    public void batchDelAnalysePage(BatchDeleteAnalyseDto request) {
         if (CollectionUtils.isEmpty(request.getIds())) {
             throw new BizException("请选择要删除的报表");
         }
@@ -184,6 +188,70 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             return entity;
         } else {
             throw new BizException("已存在相同名称的文件夹");
+        }
+    }
+
+    @Override
+    public BiUiAnalysePageConfig publishAnalysePage(RetRequest<AnalysePageIdDto> request) {
+        BiUiAnalysePage page = this.getById(request.getData().getPageId());
+        if (page == null) {
+            throw new BizException("页面id不正确");
+        }
+        BiUiAnalysePageConfig editConfig = configService.getById(page.getEditId());
+        if (editConfig == null) {
+            throw new BizException("清先编辑页面并保存");
+        }
+        /**
+         * 从editConfig复制一个publish对象
+         */
+        BiUiAnalysePageConfig publishConfig = new BiUiAnalysePageConfig();
+        publishConfig.setPageId(editConfig.getPageId());
+        publishConfig.setContent(editConfig.getContent());
+        publishConfig.setTenantId(editConfig.getTenantId());
+        publishConfig.setCreateUser(request.getOperator());
+        publishConfig.setCreateDate(LocalDateTime.now());
+        configService.save(publishConfig);
+        /**
+         * 这里的BiUiAnalysePageConfig 如果以前publish过,会变为历史版本,当前版本初始化就不会变更,存放在editId中
+         */
+        page.setPublishId(publishConfig.getId());
+        page.setIsEdit(YnTypeEnum.NO.getName());
+        this.updateById(page);
+        return publishConfig;
+    }
+
+    @Override
+    public PageResult<AnalysePageDto> getAnalysePageDrafts(PageRequest<AnalyseNameDto> request) {
+        PageHelper.startPage(request.getPage(), request.getSize());
+        LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (!StringUtil.isEmpty(request.getTenantId())) {
+            pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
+        }
+        if (StringUtils.isNotBlank(request.getData().getName())) {
+            pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
+        }
+        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getName());
+        pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
+        List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
+        List<AnalysePageDto> pageDtoList = Lists.newArrayList();
+        pageList.forEach(page -> {
+            AnalysePageDto dto = new AnalysePageDto();
+            BeanUtils.copyProperties(page, dto);
+            pageDtoList.add(dto);
+        });
+        PageInfo<AnalysePageDto> pageInfo = PageInfo.of(pageDtoList);
+        return new PageResult<>(pageInfo);
+    }
+
+    @Override
+    public void delAnalysePageDrafts(RetRequest<BatchDeleteAnalyseDto> request) {
+        LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        pageLambdaQueryWrapper.in(BiUiAnalysePage::getId, request.getData().getIds());
+        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
+        List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(pageList)) {
+            pageList.forEach(page -> page.setIsEdit(YnTypeEnum.NO.getName()));
+            this.updateBatchById(pageList);
         }
     }
 

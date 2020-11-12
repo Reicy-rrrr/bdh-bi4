@@ -19,14 +19,14 @@ import java.util.List;
  * @author bo.wang
  * @since 2020-10-19
  */
-public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory> {
+public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
 
     /**
      * 基于租户获取页面列表
      * @param request
      * @return
      */
-    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetCategoryDto> request);
+    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request);
 
     /**
      * 查看单个resource
@@ -54,13 +54,13 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      * @param request
      * @return
      */
-    BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateCategoryDto> request);
+    BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request);
 
-    List<AnalyseCategoryTree> getTree(RetRequest<GetCategoryDto> request);
+    List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request);
 
     void initTenantAnalyse(RetRequest<Void> request);
 
     List<BiUiAnalysePage> getChildAnalysePageReq(RetRequest<GetAnalysePageDto> request);
 
-    void batchDelAnalyseCategories(RetRequest<BatchDeleteCategoryDto> request);
+    void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request);
 }

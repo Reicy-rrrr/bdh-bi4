@@ -3,13 +3,16 @@ package com.deloitte.bdh.data.analyse.model.request;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
 
 @Data
-@ApiModel(description = "批量删除PAGE")
-public class BatchDelAnalysePageDto {
+@ApiModel(description = "批量删除目录")
+public class BatchDeleteAnalyseDto {
 
-    @ApiModelProperty(value = "pageIds")
+    @NotEmpty
+    @ApiModelProperty(value = "id")
     List<String> ids;
+
 }

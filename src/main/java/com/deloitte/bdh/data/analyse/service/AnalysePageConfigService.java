@@ -5,7 +5,6 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
-import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.List;
  * @author bo.wang
  * @since 2020-10-19
  */
-public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageConfig> {
+public interface AnalysePageConfigService extends Service<BiUiAnalysePageConfig> {
 
 //    /**
 //     * 基于租户获取页面配置列表
@@ -42,14 +41,6 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @return
      */
     BiUiAnalysePageConfig createAnalysePageConfig(RetRequest<CreateAnalysePageConfigsDto> request);
-
-    /**
-     * 发布一个页面
-     *
-     * @param request
-     * @return
-     */
-    public BiUiAnalysePageConfig publishAnalysePageConfig(RetRequest<PublishAnalysePageConfigsDto> request);
 
     /**
      * del页面配置

@@ -14,7 +14,7 @@ import java.util.List;
  * Description:
  */
 @Data
-public class SaveDataTreeDto implements Serializable {
+public class SaveAnalyseDataTreeDto implements Serializable {
 
     @ApiModelProperty(value = "树状结构", required = true)
     @NotEmpty(message = "树不能为空")

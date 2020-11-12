@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
+import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
 
@@ -15,22 +15,16 @@ import java.util.List;
  * @author bo.wang
  * @since 2020-10-21
  */
-public interface BiUiModelFolderService extends Service<BiUiModelFolder> {
+public interface AnalyseModelFieldService extends Service<BiUiModelField> {
     /**
      * 查看单个resource
      *
      * @param id
      * @return
      */
-    BiUiModelFolder getResource(String id);
+    BiUiModelField getResource(String id);
 
-    /**
-     * 查看单个resource
-     *
-     * @param tenantId
-     * @return
-     */
-    List<BiUiModelFolder> getTenantBiUiModelFolders(String tenantId);
+    public List<BiUiModelField> getTenantBiUiModelFields(String tenantId);
 
     /**
      * 创建页面
@@ -38,7 +32,7 @@ public interface BiUiModelFolderService extends Service<BiUiModelFolder> {
      * @param dto
      * @return
      */
-    BiUiModelFolder createResource(CreateResourcesDto dto) throws Exception;
+    BiUiModelField createResource(CreateResourcesDto dto) throws Exception;
 
     /**
      * del页面
@@ -54,5 +48,5 @@ public interface BiUiModelFolderService extends Service<BiUiModelFolder> {
      * @param dto
      * @return
      */
-    BiUiModelFolder updateResource(UpdateResourcesDto dto) throws Exception;
+    BiUiModelField updateResource(UpdateResourcesDto dto) throws Exception;
 }

@@ -1,12 +1,17 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * <p>
@@ -16,7 +21,7 @@ import com.deloitte.bdh.data.analyse.model.request.*;
  * @author bo.wang
  * @since 2020-10-19
  */
-public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
+public interface AnalysePageService extends Service<BiUiAnalysePage> {
 
     /**
      * 基于租户获取页面列表
@@ -62,7 +67,7 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @param request
      * @return
      */
-    void batchDelAnalysePage(BatchDelAnalysePageDto request);
+    void batchDelAnalysePage(BatchDeleteAnalyseDto request);
 
     /**
      * 修改页面
@@ -71,6 +76,27 @@ public interface BiUiAnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto);
+
+    /**
+     * 发布一个页面
+     *
+     * @param request
+     * @return
+     */
+    BiUiAnalysePageConfig publishAnalysePage(RetRequest<AnalysePageIdDto> request);
+
+    /**
+     * 获取草稿数据
+     * @param request
+     * @return
+     */
+    PageResult<AnalysePageDto> getAnalysePageDrafts(PageRequest<AnalyseNameDto> request);
+
+    /**
+     * 删除草稿
+     * @param request
+     */
+    void delAnalysePageDrafts(@RequestBody @Validated RetRequest<BatchDeleteAnalyseDto> request);
 
     /**
      * 获取组件数据
