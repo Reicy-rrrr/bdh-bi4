@@ -56,58 +56,28 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     AnalysePageService pageService;
 
     @Override
-    public PageResult<BiUiAnalyseCategory> getAnalyseCategoryList(PageRequest<GetAnalyseCategoryDto> request) {
-        PageHelper.startPage(request.getPage(), request.getSize());
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(request.getTenantId())) {
-            query.eq(BiUiAnalyseCategory::getTenantId, request.getTenantId());
-        }
-        if (StringUtils.isNotBlank(request.getData().getName())) {
-            query.like(BiUiAnalyseCategory::getName, request.getData().getName());
-        }
-        query.orderByDesc(BiUiAnalyseCategory::getCreateDate);
-        PageInfo<BiUiAnalyseCategory> page = PageInfo.of(this.list(query));
-        return new PageResult<>(page);
-    }
-
-    @Override
-    public BiUiAnalyseCategory getAnalyseCategory(String id) {
-        if (StringUtil.isEmpty(id)) {
-            throw new BizException("查看单个resource 失败:id 不能为空");
-        }
-        return this.getById(id);
-    }
-
-    @Override
     public AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
         checkBiUiAnalyseCategoryByName(request.getData().getName(), request.getTenantId(), null);
-        BiUiAnalyseCategory parent = null;
-        if (request.getData().getParentId() == null) {
-            parent = getCustomerTop(request.getTenantId());
-            if (parent == null) {
-                throw new BizException("清先初始化默认文件夹");
-            }
-        } else {
-            parent = getAnalyseCategory(request.getData().getParentId());
-            if (parent == null) {
-                throw new BizException("错误的上级文件夹id");
-            }
+        BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
+        if (parent == null) {
+            throw new BizException("上级文件夹不存在");
         }
-        BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
-        BeanUtils.copyProperties(request.getData(), entity);
-        if (entity.getParentId() == null) {
-            entity.setParentId("0");
+        //只可创建二级文件夹
+        if (!StringUtils.equals(parent.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
+            throw new BizException("当前层级不允许创建文件夹");
         }
-        entity.setCreateDate(LocalDateTime.now());
-        entity.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_CUSTOMER);
-        entity.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
-        /**
-         * 创建的自定义文件夹都在我的分析下面
-         */
-        entity.setParentId(parent.getId());
-        this.save(entity);
+
+        BiUiAnalyseCategory category = new BiUiAnalyseCategory();
+        BeanUtils.copyProperties(request.getData(), category);
+        category.setCreateDate(LocalDateTime.now());
+        category.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_CUSTOMER);
+        category.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
+        //创建的自定义文件夹都在我的分析下面
+        BiUiAnalyseCategory customerTop = getCustomerTop(request.getTenantId());
+        category.setParentId(customerTop.getId());
+        this.save(category);
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
-        BeanUtils.copyProperties(entity, dto);
+        BeanUtils.copyProperties(category, dto);
         return dto;
     }
 
@@ -256,7 +226,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
-    public PageResult<AnalysePageDto> getChildAnalysePageReq(PageRequest<GetAnalysePageDto> request) {
+    public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
@@ -276,7 +246,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             BeanUtils.copyProperties(page, dto);
             pageDtoList.add(dto);
         });
-        //处理page info total值不正确
         pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
     }
@@ -299,8 +268,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     private BiUiAnalyseCategory getCustomerTop(String tenantId) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
-        query.eq(BiUiAnalyseCategory::getInitType, AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
-        query.eq(BiUiAnalyseCategory::getName, AnalyseConstants.CATEGORY_MY_ANALYSE);
+        query.eq(BiUiAnalyseCategory::getType, AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
+        query.eq(BiUiAnalyseCategory::getParentId, AnalyseConstants.PARENT_ID_ZERO);
         return getOne(query);
     }
 

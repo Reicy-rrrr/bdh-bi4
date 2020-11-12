@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * Author:LIJUN
+ * Date:12/11/2020
+ * Description:
+ */
 @RestController
 @RequestMapping("/ui/analyse/db")
 public class AnalyseDBController {
