@@ -221,13 +221,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getName());
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
+        PageInfo pageInfo = PageInfo.of(pageList);
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
             pageDtoList.add(dto);
         });
-        PageInfo<AnalysePageDto> pageInfo = PageInfo.of(pageDtoList);
+        pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
     }
 

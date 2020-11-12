@@ -269,13 +269,15 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         query.isNotNull(BiUiAnalysePage::getPublishId);
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = pageService.list(query);
+        PageInfo pageInfo = PageInfo.of(pageList);
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
             pageDtoList.add(dto);
         });
-        PageInfo<AnalysePageDto> pageInfo = PageInfo.of(pageDtoList);
+        //处理page info total值不正确
+        pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
     }
 
