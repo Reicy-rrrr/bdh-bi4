@@ -3,15 +3,13 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.common.base.PageRequest;
-import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
-import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
-import com.deloitte.bdh.data.analyse.enums.CategoryPageTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.CategoryTreeChildrenTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
@@ -22,18 +20,16 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalyseDefaultCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +66,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         BiUiAnalyseCategory category = new BiUiAnalyseCategory();
         BeanUtils.copyProperties(request.getData(), category);
         category.setCreateDate(LocalDateTime.now());
-        category.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
+        category.setType(CategoryTypeEnum.CUSTOMER.getCode());
         //创建的自定义文件夹都在我的分析下面
         BiUiAnalyseCategory customerTop = getCustomerTop(request.getTenantId());
         category.setParentId(customerTop.getId());
@@ -81,35 +77,30 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
-    public void delAnalyseCategory(String id) {
-        BiUiAnalyseCategory category = this.getById(id);
+    public void delAnalyseCategory(RetRequest<String> request) {
+        BiUiAnalyseCategory category = this.getById(request.getData());
         if (category == null) {
-            throw new BizException("错误的id");
+            throw new BizException("文件夹错误");
         }
-        if (AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED.equals(category.getType())) {
-            throw new BizException("默认文件夹不能删除");
+        if (StringUtils.equals(category.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
+            throw new BizException("顶级文件夹不能删除");
         }
+        List<String> parentIdList = Lists.newArrayList(category.getId());
         //有下级的不能删除
-        List<BiUiAnalyseCategory> childs = getChildCategory(category.getId(), category.getTenantId());
-        if (childs.size() > 0) {
-            throw new BizException("清先删除下级文件夹");
+        List<BiUiAnalyseCategory> childList = getChildCategory(parentIdList, category.getTenantId());
+        if (childList.size() > 0) {
+            throw new BizException("请先删除下级文件夹");
         }
-        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalysePage::getTenantId, category.getTenantId());
-        query.eq(BiUiAnalysePage::getParentId, category.getId());
-        List<BiUiAnalysePage> childPages = pageService.list(query);
-        if (childPages.size() > 0) {
-            throw new BizException("清先删除下级页面");
+        List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, request.getTenantId());
+        if (childPageList.size() > 0) {
+            throw new BizException("请先删除下级页面");
         }
-        this.removeById(id);
+        this.removeById(request.getData());
     }
 
     @Override
     public AnalyseCategoryDto updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request) {
         BiUiAnalyseCategory entity = this.getById(request.getData().getId());
-        if (AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED.equals(entity.getType())) {
-            throw new BizException("默认文件夹不能修改");
-        }
         checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId());
         entity.setName(request.getData().getName());
         entity.setDes(request.getData().getDes());
@@ -216,24 +207,54 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
+    @Transactional
     public void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request) {
-        for (String id : request.getData().getIds()) {
-            delAnalyseCategory(id);
+        if (CollectionUtils.isEmpty(request.getData().getIds())) {
+            throw new BizException("请选择要删除的文件夹");
+        }
+        List<BiUiAnalyseCategory> categoryList = this.listByIds(request.getData().getIds());
+        if (CollectionUtils.isNotEmpty(categoryList)) {
+            List<String> parentIdList = Lists.newArrayList();
+            categoryList.forEach(category -> {
+                if (StringUtils.equals(category.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
+                    throw new BizException("顶级文件夹不能删除");
+                }
+                parentIdList.add(category.getId());
+            });
+
+            //有下级的不能删除
+            List<BiUiAnalyseCategory> childList = getChildCategory(parentIdList, request.getTenantId());
+            if (CollectionUtils.isNotEmpty(childList)) {
+                throw new BizException("请先删除下级文件夹");
+            }
+            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, request.getTenantId());
+            if (CollectionUtils.isNotEmpty(childPageList)) {
+                throw new BizException("请先删除下级页面");
+            }
+
+            //删除
+            this.removeByIds(parentIdList);
         }
     }
 
-    public List<BiUiAnalyseCategory> getChildCategory(String parentId, String tenantId) {
+    private List<BiUiAnalysePage> getChildPage(List<String> parentIdList, String tenantId) {
+        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
+        query.eq(BiUiAnalysePage::getTenantId, tenantId);
+        query.in(BiUiAnalysePage::getParentId, parentIdList);
+        return pageService.list(query);
+    }
+
+    private List<BiUiAnalyseCategory> getChildCategory(List<String> parentIdList, String tenantId) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
-        query.eq(BiUiAnalyseCategory::getParentId, parentId);
-        List<BiUiAnalyseCategory> pages = list(query);
-        return pages;
+        query.in(BiUiAnalyseCategory::getParentId, parentIdList);
+        return list(query);
     }
 
     private BiUiAnalyseCategory getCustomerTop(String tenantId) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
-        query.eq(BiUiAnalyseCategory::getType, AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
+        query.eq(BiUiAnalyseCategory::getType, CategoryTypeEnum.CUSTOMER.getCode());
         query.eq(BiUiAnalyseCategory::getParentId, AnalyseConstants.PARENT_ID_ZERO);
         return getOne(query);
     }
@@ -265,7 +286,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
             if (parentId.equals(categoryTree.getParentId())) {
                 categoryTree.setChildren(buildCategoryTree(categoryList, pageDtoMap, categoryTree.getId()));
-                categoryTree.setChildrenType(CategoryPageTypeEnum.CATEGORY.getName());
+                categoryTree.setChildrenType(CategoryTreeChildrenTypeEnum.CATEGORY.getCode());
                 treeDataModels.add(categoryTree);
 
                 //将页面和文件夹放到同一个children，通过children type区分
@@ -275,7 +296,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                     for (AnalysePageDto dto : pageDtoList) {
                         AnalyseCategoryTree tree = new AnalyseCategoryTree();
                         BeanUtils.copyProperties(dto, tree);
-                        tree.setChildrenType(CategoryPageTypeEnum.PAGE.getName());
+                        tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
                         pageList.add(tree);
                     }
                     if (CollectionUtils.isNotEmpty(categoryTree.getChildren())) {

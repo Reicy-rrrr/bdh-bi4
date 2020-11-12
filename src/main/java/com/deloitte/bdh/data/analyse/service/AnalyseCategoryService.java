@@ -32,10 +32,10 @@ public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
 
     /**
      * 删除文件夹
-     * @param id
+     * @param request
      * @return
      */
-    void delAnalyseCategory(String id);
+    void delAnalyseCategory(RetRequest<String> request);
 
     /**
      * 修改文件夹

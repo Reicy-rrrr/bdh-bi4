@@ -120,7 +120,7 @@ public class AnalyseDBServiceImpl implements AnalyseDBService {
             wd.setPageId(request.getData().getPageId());
             wd.setParentId("0");
             wd.setName(DataModelTypeEnum.WD.getDesc());
-            wd.setType(DataModelTypeEnum.WD.getType());
+            wd.setType(DataModelTypeEnum.WD.getCode());
             wd.setTenantId(request.getTenantId());
             wd.setIp(request.getIp());
             wd.setCreateUser(request.getOperator());
@@ -134,7 +134,7 @@ public class AnalyseDBServiceImpl implements AnalyseDBService {
             dl.setPageId(request.getData().getPageId());
             dl.setParentId("0");
             dl.setName(DataModelTypeEnum.DL.getDesc());
-            dl.setType(DataModelTypeEnum.DL.getType());
+            dl.setType(DataModelTypeEnum.DL.getCode());
             dl.setIp(request.getIp());
             dl.setTenantId(request.getTenantId());
             dl.setCreateUser(request.getOperator());
@@ -161,7 +161,7 @@ public class AnalyseDBServiceImpl implements AnalyseDBService {
                 field.setParentId("0");
                 field.setPageId(request.getData().getPageId());
                 field.setFolderId(wdId);
-                field.setIsDimention(YnTypeEnum.YES.getName());
+                field.setIsDimention(YnTypeEnum.YES.getCode());
                 field.setTenantId(request.getTenantId());
                 field.setIp(request.getIp());
                 field.setCreateUser("0");

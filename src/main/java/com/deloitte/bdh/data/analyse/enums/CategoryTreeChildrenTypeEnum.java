@@ -7,17 +7,17 @@ import com.deloitte.bdh.common.exception.BizException;
  * Date:11/11/2020
  * Description:
  */
-public enum CategoryPageTypeEnum {
+public enum CategoryTreeChildrenTypeEnum {
     PAGE("PAGE", "页面"),
     CATEGORY("CATEGORY", "文件夹"),
     ;
 
-    private String name;
+    private final String code;
 
-    private String desc;
+    private final String desc;
 
-    CategoryPageTypeEnum(String name, String desc) {
-        this.name = name;
+    CategoryTreeChildrenTypeEnum(String code, String desc) {
+        this.code = code;
         this.desc = desc;
     }
 
@@ -27,10 +27,10 @@ public enum CategoryPageTypeEnum {
      * @param name 类型
      * @return String
      */
-    public static String getDesc(Integer name) {
-        CategoryPageTypeEnum[] enums = CategoryPageTypeEnum.values();
+    public static String getDesc(String name) {
+        CategoryTreeChildrenTypeEnum[] enums = CategoryTreeChildrenTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getName().equals(name)) {
+            if (enums[i].getCode().equals(name)) {
                 return enums[i].getDesc();
             }
         }
@@ -43,18 +43,18 @@ public enum CategoryPageTypeEnum {
      * @param type
      * @return
      */
-    public static CategoryPageTypeEnum values(String type) {
-        CategoryPageTypeEnum[] enums = CategoryPageTypeEnum.values();
+    public static CategoryTreeChildrenTypeEnum values(String type) {
+        CategoryTreeChildrenTypeEnum[] enums = CategoryTreeChildrenTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getName().equals(type)) {
+            if (enums[i].getCode().equals(type)) {
                 return enums[i];
             }
         }
         throw new BizException("暂不支持的认证类型！");
     }
 
-    public String getName() {
-        return name;
+    public String getCode() {
+        return code;
     }
 
     public String getDesc() {

@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.controller;
 
 import com.deloitte.bdh.common.base.*;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -43,7 +44,7 @@ public class AnalyseCategoryController {
     @ApiOperation(value = "预定义报表", notes = "预定义报表")
     @PostMapping("/getDefaultCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getDefaultCategoryTree(@RequestBody @Validated RetRequest<GetAnalyseCategoryDto> request) {
-        request.getData().setType(AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED);
+        request.getData().setType(CategoryTypeEnum.PRE_DEFINED.getCode());
         List<AnalyseCategoryTree> tree = analyseCategoryService.getTree(request);
         if (!tree.isEmpty()) {
             return RetResponse.makeOKRsp(tree.get(0).getChildren());
@@ -54,7 +55,7 @@ public class AnalyseCategoryController {
     @ApiOperation(value = "我的分析", notes = "我的分析")
     @PostMapping("/getCustomerCategoryTree")
     public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<GetAnalyseCategoryDto> request) {
-        request.getData().setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
+        request.getData().setType(CategoryTypeEnum.CUSTOMER.getCode());
         List<AnalyseCategoryTree> tree = analyseCategoryService.getTree(request);
         if (!tree.isEmpty()) {
             return RetResponse.makeOKRsp(tree.get(0).getChildren());
@@ -71,7 +72,7 @@ public class AnalyseCategoryController {
     @ApiOperation(value = "删除文件夹", notes = "删除文件夹")
     @PostMapping("/delAnalyseCategory")
     public RetResult<Void> delAnalyseCategory(@RequestBody @Validated RetRequest<String> request) {
-        analyseCategoryService.delAnalyseCategory(request.getData());
+        analyseCategoryService.delAnalyseCategory(request);
         return RetResponse.makeOKRsp();
     }
 

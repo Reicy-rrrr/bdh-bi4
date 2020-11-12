@@ -3,9 +3,10 @@ package com.deloitte.bdh.data.analyse.service;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
-import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigDto;
+import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 
 import java.util.List;
 
@@ -19,49 +20,38 @@ import java.util.List;
  */
 public interface AnalysePageConfigService extends Service<BiUiAnalysePageConfig> {
 
-//    /**
-//     * 基于租户获取页面配置列表
-//     *
-//     * @param dto
-//     * @return
-//     */
-//    PageResult<List<BiUiReportPageConfig>> getAnalysePageConfigs(GetAnalysePageConfigsDto dto);
-
     /**
-     * 查看单个resource
-     *
-     * @param req
-     * @return
-     */
-    BiUiAnalysePageConfig getAnalysePageConfig(AnalysePageConfigDto req) throws Exception;
-
-    /**
-     * 创建页面配置
+     * 查询报表配置
      * @param request
      * @return
      */
-    BiUiAnalysePageConfig createAnalysePageConfig(RetRequest<CreateAnalysePageConfigsDto> request);
+    AnalysePageConfigDto getAnalysePageConfig(RetRequest<GetAnalysePageConfigDto> request);
 
     /**
-     * del页面配置
-     *
+     * 创建报表配置
+     * @param request
+     * @return
+     */
+    AnalysePageConfigDto createAnalysePageConfig(RetRequest<CreateAnalysePageConfigsDto> request);
+
+    /**
+     * 删除报表配置
      * @param id
      * @return
      */
-    void delAnalysePageConfig(String id) throws Exception;
+    void delAnalysePageConfig(String id);
 
     /**
-     * 修改页面配置
-     *
-     * @param dto
+     * 修改报表配置
+     * @param request
      * @return
      */
-    BiUiAnalysePageConfig updateAnalysePageConfig(UpdateAnalysePageConfigsDto dto) throws Exception;
+    AnalysePageConfigDto updateAnalysePageConfig(RetRequest<UpdateAnalysePageConfigsDto> request);
 
     /**
-     * 获取list
+     * 查询报表配置历史
      * @param data
      * @return
      */
-    List<AnalysePageConfigDto> getAnalysePageConfigList(AnalysePageConfigDto data);
+    List<AnalysePageConfigDto> getAnalysePageConfigList(GetAnalysePageConfigDto data);
 }
