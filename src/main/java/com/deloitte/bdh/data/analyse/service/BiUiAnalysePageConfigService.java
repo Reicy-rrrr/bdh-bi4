@@ -1,8 +1,9 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
-import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigReq;
+import com.deloitte.bdh.data.analyse.model.request.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
@@ -33,24 +34,22 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @param req
      * @return
      */
-    BiUiAnalysePageConfig getAnalysePageConfig(AnalysePageConfigReq req) throws Exception;
+    BiUiAnalysePageConfig getAnalysePageConfig(AnalysePageConfigDto req) throws Exception;
 
     /**
      * 创建页面配置
-     *
-     * @param dto
+     * @param request
      * @return
      */
-    BiUiAnalysePageConfig createAnalysePageConfig(CreateAnalysePageConfigsDto dto) throws Exception;
+    BiUiAnalysePageConfig createAnalysePageConfig(RetRequest<CreateAnalysePageConfigsDto> request);
 
     /**
      * 发布一个页面
      *
-     * @param dto
+     * @param request
      * @return
-     * @throws Exception
      */
-    public BiUiAnalysePageConfig publishAnalysePageConfig(PublishAnalysePageConfigsDto dto) throws Exception;
+    public BiUiAnalysePageConfig publishAnalysePageConfig(RetRequest<PublishAnalysePageConfigsDto> request);
 
     /**
      * del页面配置
@@ -73,5 +72,5 @@ public interface BiUiAnalysePageConfigService extends Service<BiUiAnalysePageCon
      * @param data
      * @return
      */
-    List<BiUiAnalysePageConfig> getAnalysePageConfigList(AnalysePageConfigReq data) throws Exception;
+    List<BiUiAnalysePageConfig> getAnalysePageConfigList(AnalysePageConfigDto data) throws Exception;
 }

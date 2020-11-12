@@ -7,9 +7,10 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@ApiModel(description = "批量删除PAGE")
-public class BatchDelAnalysePageReq {
+@ApiModel(description = "批量删除目录")
+public class BatchDeleteCategoryDto {
 
-    @ApiModelProperty(value = "pageIds")
+    @ApiModelProperty(value = "categoryId")
     List<String> ids;
+
 }

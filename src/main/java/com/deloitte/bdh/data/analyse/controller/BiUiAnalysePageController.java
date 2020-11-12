@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -38,9 +36,9 @@ public class BiUiAnalysePageController {
 
     @ApiOperation(value = "基于租户获取页面列表", notes = "基于租户获取页面列表")
     @PostMapping("/getAnalysePages")
-    public RetResult<PageResult> getAnalysePages(@RequestBody @Validated RetRequest<AnalysePageReq> request) {
+    public RetResult<PageResult<BiUiAnalysePage>> getAnalysePages(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
-        return RetResponse.makeOKRsp(biUiAnalysePageService.getAnalysePages(request.getData()));
+        return RetResponse.makeOKRsp(biUiAnalysePageService.getAnalysePages(request));
     }
 
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
@@ -51,13 +49,13 @@ public class BiUiAnalysePageController {
 
     @ApiOperation(value = "新增页面", notes = "新增页面")
     @PostMapping("/createAnalysePage")
-    public RetResult<BiUiAnalysePage> createAnalysePage(@RequestBody @Validated RetRequest<CreateAnalysePageDto> request) throws Exception {
-        return RetResponse.makeOKRsp(biUiAnalysePageService.createAnalysePage(request.getData()));
+    public RetResult<BiUiAnalysePage> createAnalysePage(@RequestBody @Validated RetRequest<CreateAnalysePageDto> request) {
+        return RetResponse.makeOKRsp(biUiAnalysePageService.createAnalysePage(request));
     }
 
     @ApiOperation(value = "复制页面", notes = "复制页面")
     @PostMapping("/copyAnalysePage")
-    public RetResult<BiUiAnalysePage> copyAnalysePage(@RequestBody @Validated RetRequest<CopyAnalysePageRequest> request) throws Exception {
+    public RetResult<BiUiAnalysePage> copyAnalysePage(@RequestBody @Validated RetRequest<CopyAnalysePageDto> request) {
         return RetResponse.makeOKRsp(biUiAnalysePageService.copyAnalysePage(request.getData()));
     }
 
@@ -70,26 +68,21 @@ public class BiUiAnalysePageController {
 
     @ApiOperation(value = "批量删除页面", notes = "批量删除页面")
     @PostMapping("/batchDelAnalysePage")
-    public RetResult<Void> batchDelAnalysePage(@RequestBody @Validated RetRequest<BatchDelAnalysePageReq> request) throws Exception {
+    public RetResult<Void> batchDelAnalysePage(@RequestBody @Validated RetRequest<BatchDelAnalysePageDto> request) {
         biUiAnalysePageService.batchDelAnalysePage(request.getData());
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "修改页面", notes = "修改页面")
     @PostMapping("/updateAnalysePage")
-    public RetResult<BiUiAnalysePage> updateAnalysePage(@RequestBody @Validated RetRequest<UpdateAnalysePageDto> request) throws Exception {
+    public RetResult<BiUiAnalysePage> updateAnalysePage(@RequestBody @Validated RetRequest<UpdateAnalysePageDto> request) {
         return RetResponse.makeOKRsp(biUiAnalysePageService.updateAnalysePage(request.getData()));
     }
 
     @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
     @PostMapping("/getComponentData")
-    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) throws Exception {
+    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) {
         return RetResponse.makeOKRsp(biUiAnalysePageService.getComponentData(request.getData()));
     }
 
-    @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
-    @PostMapping("/demoGridDemoRequest")
-    public RetResult<List> demoGridDemoRequest(@RequestBody @Validated RetRequest<GridDemoRequest> request) {
-        return RetResponse.makeOKRsp(biUiAnalysePageService.demoGridDemoRequest(request.getData()));
-    }
 }

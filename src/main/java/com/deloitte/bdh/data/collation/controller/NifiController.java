@@ -5,12 +5,14 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
+import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 
@@ -138,10 +140,15 @@ public class NifiController {
         return RetResponse.makeOKRsp(nifiProcessService.getProcessGroupFull(request.getData()));
     }
 
-    @ApiOperation(value = "getIp", notes = "previewConnction")
+    @ApiOperation(value = "getIp", notes = "getIp")
     @PostMapping("/getIp")
     public RetResult<String> getIp() throws Exception {
         return RetResponse.makeOKRsp(GetIpAndPortUtil.getIpAndPort());
     }
 
+    @ApiOperation(value = "getTime", notes = "getTime")
+    @PostMapping("/getTime")
+    public RetResult<String> getTime() throws Exception {
+        return RetResponse.makeOKRsp(JsonUtil.obj2String(LocalDateTime.now()));
+    }
 }

@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
@@ -21,7 +22,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataR
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,30 +56,30 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     BiUiDemoMapper biUiDemoMapper;
 
     @Override
-    public PageResult<List<BiUiAnalysePage>> getAnalysePages(AnalysePageReq dto) {
-        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();
-        if (!StringUtil.isEmpty(dto.getTenantId())) {
-            query.eq(BiUiAnalysePage::getTenantId, dto.getTenantId());
+    public PageResult<BiUiAnalysePage> getAnalysePages(RetRequest<GetAnalysePageDto> request) {
+        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
+        if (!StringUtil.isEmpty(request.getTenantId())) {
+            query.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
         }
         // 根据数据源名称模糊查询
-        if (StringUtils.isNotBlank(dto.getName())) {
-            query.like(BiUiAnalysePage::getName, dto.getName());
+        if (StringUtils.isNotBlank(request.getData().getName())) {
+            query.like(BiUiAnalysePage::getName, request.getData().getName());
         }
         /**
          * 只查询已经发布过的页面
          */
-        if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(dto.getType())) {
+        if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(request.getData().getType())) {
             query.isNotNull(BiUiAnalysePage::getPublishId);
         }
         /**
          * 没有发布过的页面
          */
-        if (AnalyseConstants.PAGE_CONFIG_EDIT.equals(dto.getType())) {
+        if (AnalyseConstants.PAGE_CONFIG_EDIT.equals(request.getData().getType())) {
             query.isNull(BiUiAnalysePage::getPublishId);
         }
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         PageInfo<BiUiAnalysePage> pageInfo = new PageInfo(this.list(query));
-        PageResult pageResult = new PageResult(pageInfo);
+        PageResult<BiUiAnalysePage> pageResult = new PageResult<>(pageInfo);
         return pageResult;
     }
 
@@ -91,20 +92,22 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     }
 
     @Override
-    public BiUiAnalysePage createAnalysePage(CreateAnalysePageDto dto) throws Exception {
-        if (checkBiUiAnalysePageByName(dto.getName(), dto.getTenantId(), null)) {
+    public BiUiAnalysePage createAnalysePage(RetRequest<CreateAnalysePageDto> request) {
+        if (checkBiUiAnalysePageByName(request.getData().getName(), request.getTenantId(), null)) {
             BiUiAnalysePage entity = new BiUiAnalysePage();
-            BeanUtils.copyProperties(dto, entity);
+            BeanUtils.copyProperties(request.getData(), entity);
+            entity.setTenantId(request.getTenantId());
+            entity.setCreateUser(request.getOperator());
             entity.setCreateDate(LocalDateTime.now());
             this.save(entity);
             return entity;
         } else {
-            throw new Exception("已存在相同名称的文件夹");
+            throw new BizException("已存在相同名称的文件夹");
         }
     }
 
     @Override
-    public BiUiAnalysePage copyAnalysePage(CopyAnalysePageRequest request) {
+    public BiUiAnalysePage copyAnalysePage(CopyAnalysePageDto request) {
         if (!checkBiUiAnalysePageByName(request.getName(), request.getTenantId(), null)) {
             throw new BizException("已存在同名报表");
         }
@@ -147,7 +150,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     }
 
     @Override
-    public void batchDelAnalysePage(BatchDelAnalysePageReq request) {
+    public void batchDelAnalysePage(BatchDelAnalysePageDto request) {
         if (CollectionUtils.isEmpty(request.getIds())) {
             throw new BizException("请选择要删除的报表");
         }
@@ -171,7 +174,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
     }
 
     @Override
-    public BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto) throws Exception {
+    public BiUiAnalysePage updateAnalysePage(UpdateAnalysePageDto dto) {
         BiUiAnalysePage entity = this.getById(dto.getId());
         if (checkBiUiAnalysePageByName(dto.getName(), entity.getTenantId(), entity.getId())) {
             entity.setName(dto.getName());
@@ -180,7 +183,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             this.updateById(entity);
             return entity;
         } else {
-            throw new Exception("已存在相同名称的文件夹");
+            throw new BizException("已存在相同名称的文件夹");
         }
     }
 
@@ -199,7 +202,7 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
             for (int i = 0; i < x.size(); i++) {
                 fields[i] = x.get(i).getId().replace("O_", "") + " as " + x.get(i).getId();
             }
-            String select = "select " + AnalyseUtils.join(",", fields);
+            String select = "select " + AnalyseUtil.join(",", fields);
             String querySql = select + " from " + tableName;
             if (pageIndex != null && pageSize != null && pageSize > 0) {
                 querySql = querySql + " limit " + (pageIndex - 1) * pageSize + "," + pageIndex * pageSize;
@@ -218,14 +221,6 @@ public class BiUiAnalysePageServiceImpl extends AbstractService<BiUiAnalysePageM
         }
         return null;
     }
-
-    public List demoGridDemoRequest(GridDemoRequest data) {
-        String select = "select " + AnalyseUtils.join(",", data.getColumns());
-        String querySql = select + " from " + data.getTable();
-        List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
-        return result;
-    }
-
 
     public boolean checkBiUiAnalysePageByName(String name, String tenantId, String currentId) {
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();

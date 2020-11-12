@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.Service;
@@ -25,11 +26,10 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
      * @param request
      * @return
      */
-    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(RetRequest<AnalyseCategoryReq> request);
+    PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetCategoryDto> request);
 
     /**
      * 查看单个resource
-     *
      * @param id
      * @return
      */
@@ -37,15 +37,13 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
 
     /**
      * 创建页面
-     *
-     * @param dto
+     * @param request
      * @return
      */
-    BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto);
+    BiUiAnalyseCategory createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request);
 
     /**
      * del页面
-     *
      * @param id
      * @return
      */
@@ -53,17 +51,16 @@ public interface BiUiAnalyseCategoryService extends Service<BiUiAnalyseCategory>
 
     /**
      * 修改页面
-     *
-     * @param dto
+     * @param request
      * @return
      */
-    BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) throws Exception;
+    BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateCategoryDto> request);
 
-    List<AnalyseCategoryTree> getTree(RetRequest<AnalyseCategoryReq> request);
+    List<AnalyseCategoryTree> getTree(RetRequest<GetCategoryDto> request);
 
-    void initTenantAnalyse(InitTenantReq data) throws Exception;
+    void initTenantAnalyse(RetRequest<Void> request);
 
-    List<BiUiAnalysePage> getChildAnalysePageReq(AnalysePageReq data);
+    List<BiUiAnalysePage> getChildAnalysePageReq(RetRequest<GetAnalysePageDto> request);
 
-    void batchDelAnalyseCategories(BatchAnalyseCategoryDelReq data) throws Exception;
+    void batchDelAnalyseCategories(RetRequest<BatchDeleteCategoryDto> request);
 }

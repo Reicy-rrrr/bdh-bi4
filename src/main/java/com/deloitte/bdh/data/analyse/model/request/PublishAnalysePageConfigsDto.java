@@ -5,5 +5,4 @@ import lombok.Data;
 @Data
 public class PublishAnalysePageConfigsDto {
     String pageId;
-    String tenantId;
 }

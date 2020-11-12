@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
  * Description:
  */
 @Data
-public class CopyAnalysePageRequest {
+public class CopyAnalysePageDto {
     /**
      * 报表编码
      */

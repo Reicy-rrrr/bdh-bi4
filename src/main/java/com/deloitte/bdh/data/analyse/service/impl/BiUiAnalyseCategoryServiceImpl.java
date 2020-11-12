@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
@@ -20,7 +21,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalyseDefaultCategoryService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtils;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -56,8 +57,8 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     BiUiAnalysePageService pageService;
 
     @Override
-    public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(RetRequest<AnalyseCategoryReq> request) {
-        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
+    public PageResult<List<BiUiAnalyseCategory>> getAnalyseCategoryList(PageRequest<GetCategoryDto> request) {
+        PageHelper.startPage(request.getPage(), request.getSize());
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(request.getTenantId())) {
             query.eq(BiUiAnalyseCategory::getTenantId, request.getTenantId());
@@ -80,22 +81,22 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public BiUiAnalyseCategory createAnalyseCategory(CreateAnalyseCategoryDto dto) {
-        checkBiUiAnalyseCategoryByName(dto.getName(), dto.getTenantId(), null);
+    public BiUiAnalyseCategory createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
+        checkBiUiAnalyseCategoryByName(request.getData().getName(), request.getTenantId(), null);
         BiUiAnalyseCategory parent = null;
-        if (dto.getParentId() == null) {
-            parent = getCustomerTop(dto.getTenantId());
+        if (request.getData().getParentId() == null) {
+            parent = getCustomerTop(request.getTenantId());
             if (parent == null) {
                 throw new BizException("清先初始化默认文件夹");
             }
         } else {
-            parent = getAnalyseCategory(dto.getParentId());
+            parent = getAnalyseCategory(request.getData().getParentId());
             if (parent == null) {
                 throw new BizException("错误的上级文件夹id");
             }
         }
         BiUiAnalyseCategory entity = new BiUiAnalyseCategory();
-        BeanUtils.copyProperties(dto, entity);
+        BeanUtils.copyProperties(request.getData(), entity);
         if (entity.getParentId() == null) {
             entity.setParentId("0");
         }
@@ -124,10 +125,10 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         if (childs.size() > 0) {
             throw new BizException("清先删除下级文件夹");
         }
-        AnalysePageReq req = new AnalysePageReq();
-        req.setTenantId(category.getTenantId());
-        req.setCategoryId(category.getId());
-        List<BiUiAnalysePage> childPages = getChildAnalysePageReq(req);
+        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
+        query.eq(BiUiAnalysePage::getTenantId, category.getTenantId());
+        query.eq(BiUiAnalysePage::getParentId, category.getId());
+        List<BiUiAnalysePage> childPages = pageService.list(query);
         if (childPages.size() > 0) {
             throw new BizException("清先删除下级页面");
         }
@@ -135,21 +136,21 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public BiUiAnalyseCategory updateAnalyseCategory(UpdateAnalyseCategoryDto dto) {
-        BiUiAnalyseCategory entity = this.getById(dto.getId());
+    public BiUiAnalyseCategory updateAnalyseCategory(RetRequest<UpdateCategoryDto> request) {
+        BiUiAnalyseCategory entity = this.getById(request.getData().getId());
         if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
             throw new BizException("默认文件夹不能修改");
         }
-        checkBiUiAnalyseCategoryByName(dto.getName(), entity.getTenantId(), entity.getId());
-        entity.setName(dto.getName());
-        entity.setDes(dto.getDes());
+        checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId());
+        entity.setName(request.getData().getName());
+        entity.setDes(request.getData().getDes());
         entity.setModifiedDate(LocalDateTime.now());
         this.updateById(entity);
         return entity;
     }
 
     @Override
-    public List<AnalyseCategoryTree> getTree(RetRequest<AnalyseCategoryReq> request) {
+    public List<AnalyseCategoryTree> getTree(RetRequest<GetCategoryDto> request) {
         //查询文件夹
         LambdaQueryWrapper<BiUiAnalyseCategory> categoryQueryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(request.getTenantId())) {
@@ -192,8 +193,8 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public void initTenantAnalyse(InitTenantReq data) {
-        if (data.getTenantId() == null) {
+    public void initTenantAnalyse(RetRequest<Void> request) {
+        if (request.getTenantId() == null) {
             throw new BizException("租户id不能为空");
         }
         List<BiUiAnalyseCategory> newCategories = new ArrayList<>();
@@ -201,7 +202,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
          * 初始化默认文件夹
          */
         List<BiUiAnalyseDefaultCategory> defaultCategories = biUiAnalyseDefaultCategoryService.getAllDefaultCategories();
-        List<BiUiAnalyseCategory> tenantAnalyseCategories = getTenantAnalyseCategories(data.getTenantId());
+        List<BiUiAnalyseCategory> tenantAnalyseCategories = getTenantAnalyseCategories(request.getTenantId());
         Map<String, BiUiAnalyseCategory> tenantCategoryMap = new HashMap<>();
         Map<String, BiUiAnalyseDefaultCategory> defaultCategoryParentIdMap = new HashMap<>();
         Map<String, BiUiAnalyseDefaultCategory> defaultCategoryParentNameMap = new HashMap<>();
@@ -219,10 +220,10 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
                 category = new BiUiAnalyseCategory();
                 BeanUtils.copyProperties(defaultCategory, category);
                 category.setCreateDate(LocalDateTime.now());
-                category.setCreateUser(AnalyseUtils.getCurrentUser());
+                category.setCreateUser(request.getOperator());
                 category.setModifiedUser(null);
                 category.setModifiedDate(null);
-                category.setTenantId(data.getTenantId());
+                category.setTenantId(request.getTenantId());
                 category.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT);
                 this.save(category);
                 tenantCategoryMap.put(name, category);
@@ -251,28 +252,28 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     @Override
-    public List<BiUiAnalysePage> getChildAnalysePageReq(AnalysePageReq data) {
+    public List<BiUiAnalysePage> getChildAnalysePageReq(RetRequest<GetAnalysePageDto> request) {
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper();
-        query.eq(BiUiAnalysePage::getTenantId, data.getTenantId());
-        if (data.getName() != null) {
-            query.like(BiUiAnalysePage::getName, data.getName());
+        query.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
+        if (request.getData().getName() != null) {
+            query.like(BiUiAnalysePage::getName, request.getData().getName());
         }
-        if (data.getCategoryId() != null) {
-            query.eq(BiUiAnalysePage::getParentId, data.getCategoryId());
+        if (request.getData().getCategoryId() != null) {
+            query.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
         }
         List<BiUiAnalysePage> pages = pageService.list(query);
         return pages;
     }
 
     @Override
-    public void batchDelAnalyseCategories(BatchAnalyseCategoryDelReq data) {
-        for (String id : data.getIds()) {
+    public void batchDelAnalyseCategories(RetRequest<BatchDeleteCategoryDto> request) {
+        for (String id : request.getData().getIds()) {
             delAnalyseCategory(id);
         }
     }
 
     public List<BiUiAnalyseCategory> getChildCategory(String parentId, String tenantId) {
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
         query.eq(BiUiAnalyseCategory::getParentId, parentId);
         List<BiUiAnalyseCategory> pages = list(query);
@@ -301,7 +302,7 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
     }
 
     private List<BiUiAnalyseCategory> getTenantAnalyseCategories(String tenantId) {
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper();
+        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
         return this.list(query);
     }
@@ -317,7 +318,6 @@ public class BiUiAnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseC
         for (BiUiAnalyseCategory category : categoryList) {
             AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
             BeanUtils.copyProperties(category, categoryTree);
-//            categoryTree.setPageList(pageDtoMap.get(category.getId()));
 
             if (parentId.equals(categoryTree.getParentId())) {
                 categoryTree.setChildren(buildCategoryTree(categoryList, pageDtoMap, categoryTree.getId()));

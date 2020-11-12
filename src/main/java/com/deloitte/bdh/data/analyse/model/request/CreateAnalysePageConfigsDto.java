@@ -6,5 +6,4 @@ import lombok.Data;
 public class CreateAnalysePageConfigsDto {
     String pageId;
     String content;
-    String tenantId;
 }

@@ -13,7 +13,7 @@ import java.io.Serializable;
  * Description:
  */
 @Data
-public class GetDataTreeRequest implements Serializable {
+public class GetDataTreeDto implements Serializable {
 
     @ApiModelProperty(value = "tenantId", required = true)
     @NotBlank(message = "pageid 不能为空")

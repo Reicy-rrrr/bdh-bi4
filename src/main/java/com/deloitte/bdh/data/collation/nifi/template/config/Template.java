@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class Template {
-    private String dttTemlateId;
+    private String dttTemplateId;
     private String dttModelGroupId;
     private String dttComponentName;
 

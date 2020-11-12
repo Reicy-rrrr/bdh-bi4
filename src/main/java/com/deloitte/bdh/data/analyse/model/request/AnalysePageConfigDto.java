@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @ApiModel(description = "页面配置查询")
-public class AnalysePageConfigReq {
+public class AnalysePageConfigDto {
     @ApiModelProperty(value = "id")
     private String id;
 

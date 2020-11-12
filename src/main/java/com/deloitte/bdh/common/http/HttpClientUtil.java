@@ -1,7 +1,7 @@
 package com.deloitte.bdh.common.http;
 
 
-import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.util.JsonUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
@@ -135,7 +135,7 @@ public class HttpClientUtil {
         }
 
         try {
-            String json = JsonUtil.readMapToJson(params);
+            String json = JsonUtil.obj2String(params);
             httpPost.setEntity(new StringEntity(json, "UTF-8"));
         } catch (UnsupportedCharsetException e) {
             e.printStackTrace();
@@ -186,7 +186,7 @@ public class HttpClientUtil {
             httpPut.addHeader(headerParam.getKey(), String.valueOf(headerParam.getValue()));
         }
         try {
-            String json = JsonUtil.readMapToJson(params);
+            String json = JsonUtil.obj2String(params);
             httpPut.setEntity(new StringEntity(json, "UTF-8"));
         } catch (UnsupportedCharsetException e) {
             e.printStackTrace();
