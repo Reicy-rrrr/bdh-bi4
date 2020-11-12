@@ -192,7 +192,7 @@ public class EtlServiceImpl implements EtlService {
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
         component.setCode(componentCode);
-        component.setName(getComponentName(ComponentTypeEnum.OUT));
+        component.setName(getComponentName(biEtlModel.getCode(), ComponentTypeEnum.OUT));
         component.setType(ComponentTypeEnum.OUT.getKey());
         // 输出组件默认启用
         component.setEffect(EffectEnum.ENABLE.getKey());
@@ -638,7 +638,7 @@ public class EtlServiceImpl implements EtlService {
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
         component.setCode(componentCode);
-        component.setName(getComponentName(type));
+        component.setName(getComponentName(modelCode, type));
         component.setType(type.getKey());
         component.setEffect(EffectEnum.ENABLE.getKey());
         component.setRefModelCode(modelCode);
@@ -655,8 +655,23 @@ public class EtlServiceImpl implements EtlService {
      * @param type 组件类型
      * @return
      */
-    private String getComponentName(ComponentTypeEnum type) {
-        String number = DateUtils.formatShortTime(new Date());
-        return (type.getKey() + number).toLowerCase();
+    private String getComponentName(String modelCode, ComponentTypeEnum type) {
+        int number = 1;
+        LambdaQueryWrapper<BiComponent> wrapper = new LambdaQueryWrapper();
+        wrapper.eq(BiComponent::getRefModelCode, modelCode);
+        wrapper.eq(BiComponent::getType, type.getKey());
+        wrapper.orderByDesc(BiComponent::getId);
+        wrapper.last("limit 1");
+        BiComponent component = componentService.getOne(wrapper);
+        if (component != null) {
+            String name = component.getName();
+            String nameNum = name.substring(type.getKey().length());
+            try {
+                number = Integer.valueOf(nameNum) + 1;
+            } catch (NumberFormatException e) {
+                number = 1;
+            }
+        }
+        return type.getKey().toLowerCase() + number;
     }
 }
