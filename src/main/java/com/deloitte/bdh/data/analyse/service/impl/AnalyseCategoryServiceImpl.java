@@ -70,7 +70,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         BiUiAnalyseCategory category = new BiUiAnalyseCategory();
         BeanUtils.copyProperties(request.getData(), category);
         category.setCreateDate(LocalDateTime.now());
-        category.setInitType(AnalyseConstants.CATEGORY_INIT_TYPE_CUSTOMER);
         category.setType(AnalyseConstants.CATEGORY_TYPE_CUSTOMER);
         //创建的自定义文件夹都在我的分析下面
         BiUiAnalyseCategory customerTop = getCustomerTop(request.getTenantId());
@@ -87,7 +86,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         if (category == null) {
             throw new BizException("错误的id");
         }
-        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(category.getInitType())) {
+        if (AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED.equals(category.getType())) {
             throw new BizException("默认文件夹不能删除");
         }
         //有下级的不能删除
@@ -108,7 +107,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     @Override
     public AnalyseCategoryDto updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request) {
         BiUiAnalyseCategory entity = this.getById(request.getData().getId());
-        if (AnalyseConstants.CATEGORY_INIT_TYPE_DEFAULT.equals(entity.getInitType())) {
+        if (AnalyseConstants.CATEGORY_TYPE_PRE_DEFINED.equals(entity.getType())) {
             throw new BizException("默认文件夹不能修改");
         }
         checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId());
