@@ -1,6 +1,8 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 
@@ -11,7 +13,7 @@ import java.util.List;
  * Date:12/11/2020
  * Description:
  */
-public interface AnalyseDBService {
+public interface AnalyseModelService {
 
     /**
      * 根据数据源获取表
@@ -32,5 +34,12 @@ public interface AnalyseDBService {
      * @return
      */
     void saveDataTree(RetRequest<List<AnalyseFolderTree>> request);
+
+    /**
+     * 获取组件数据
+     * @param data
+     * @return
+     */
+    BaseComponentDataResponse getComponentData(BaseComponentDataRequest data);
 
 }

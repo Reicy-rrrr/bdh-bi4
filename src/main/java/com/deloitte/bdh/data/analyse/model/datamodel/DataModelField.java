@@ -5,14 +5,19 @@ import lombok.Data;
 
 @Data
 public class DataModelField {
+
     @ApiModelProperty(value = "前端对应的key")
     String frontendId;
+
     @ApiModelProperty(value = "数据库对应的cloumn,如果有抽象后对应的抽象的列id")
     String id;
-    @ApiModelProperty(value = "维度为d,度量为m")
+
+    @ApiModelProperty(value = "维度为WD,度量为DL")
     String type;
+
     @ApiModelProperty(value = "数据类型")
     String dataType;
+
     @ApiModelProperty(value = "别名select a as alias from table")
     String alias;
 }

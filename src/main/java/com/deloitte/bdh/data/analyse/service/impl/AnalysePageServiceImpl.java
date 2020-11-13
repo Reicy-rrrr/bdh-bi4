@@ -250,7 +250,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             DataConfig dataConfig = request.getDataConfig();
             DataModel dataModel = dataConfig.getDataModel();
             List<DataModelField> x = dataModel.getX();
-            Integer pageIndex = dataModel.getPageIndex();
+            Integer pageIndex = dataModel.getPage();
             Integer pageSize = dataModel.getPageSize();
             String tableName = dataModel.getTableName();
             String[] fields = new String[x.size()];
@@ -268,10 +268,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 item.put("key", UUID.randomUUID().toString());
             });
             BaseComponentDataResponse response = new BaseComponentDataResponse();
-            response.setSql(select);
-            Map rdata = new HashMap();
-            rdata.put("rows", result);
-            response.setData(rdata);
+            response.setRows(result);
             return response;
         }
         return null;

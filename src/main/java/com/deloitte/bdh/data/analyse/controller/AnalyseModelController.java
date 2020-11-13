@@ -3,9 +3,13 @@ package com.deloitte.bdh.data.analyse.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
+import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,10 +26,13 @@ import java.util.List;
  * Description:
  */
 @RestController
-@RequestMapping("/ui/analyse/db")
-public class AnalyseDBController {
+@RequestMapping("/ui/analyse/model")
+public class AnalyseModelController {
     @Resource
     AnalyseModelService analyseModelService;
+
+    @Resource
+    AnalyseDataService analyseDataService;
 
     @ApiOperation(value = "获取所有表", notes = "获取所有表")
     @PostMapping("/getAllTable")
@@ -44,6 +51,12 @@ public class AnalyseDBController {
     public RetResult<Void> saveDataTree(@RequestBody @Validated RetRequest<List<AnalyseFolderTree>> request) {
         analyseModelService.saveDataTree(request);
         return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
+    @PostMapping("/getComponentData")
+    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) {
+        return RetResponse.makeOKRsp(analyseModelService.getComponentData(request.getData()));
     }
 
 }

@@ -4,16 +4,27 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.util.SpringUtil;
+import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
+import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
-import com.deloitte.bdh.data.analyse.service.AnalyseDBService;
+import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.google.common.collect.Lists;
@@ -26,8 +37,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author chenghzhang
@@ -35,7 +48,7 @@ import java.util.Map;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class AnalyseDBServiceImpl implements AnalyseDBService {
+public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Resource
     private DbHandler dbHandler;
@@ -45,6 +58,9 @@ public class AnalyseDBServiceImpl implements AnalyseDBService {
 
     @Resource
     AnalyseModelFieldService fieldService;
+
+    @Resource
+    BiUiDemoMapper biUiDemoMapper;
 
     @Override
     public List<String> getAllTable() {
@@ -98,6 +114,12 @@ public class AnalyseDBServiceImpl implements AnalyseDBService {
             dataTree.add(folderTree);
         }
         return dataTree;
+    }
+
+    @Override
+    public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) {
+        String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
+        return SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
     }
 
     /**
