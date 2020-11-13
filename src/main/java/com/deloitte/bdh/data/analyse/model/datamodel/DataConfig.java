@@ -17,7 +17,7 @@ public class DataConfig {
     String tableType;
 
     @ApiModelProperty(value = "是否聚合")
-    Boolean tableNotAggregate = false;
+    Boolean tableAggregate = false;
 
     @NotNull
     @ApiModelProperty(value = "数据模型相关配置")

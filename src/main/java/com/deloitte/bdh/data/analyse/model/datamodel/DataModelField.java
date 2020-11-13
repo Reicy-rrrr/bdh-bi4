@@ -18,6 +18,12 @@ public class DataModelField {
     @ApiModelProperty(value = "数据类型")
     String dataType;
 
-    @ApiModelProperty(value = "别名select a as alias from table")
+    @ApiModelProperty(value = "别名")
     String alias;
+
+    @ApiModelProperty("是否维度")
+    private String isDimention;
+
+    @ApiModelProperty("是否度量")
+    private String isMensure;
 }

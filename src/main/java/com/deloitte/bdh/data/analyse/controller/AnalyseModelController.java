@@ -31,9 +31,6 @@ public class AnalyseModelController {
     @Resource
     AnalyseModelService analyseModelService;
 
-    @Resource
-    AnalyseDataService analyseDataService;
-
     @ApiOperation(value = "获取所有表", notes = "获取所有表")
     @PostMapping("/getAllTable")
     public RetResult<List<String>> getAllTable(@RequestBody @Validated RetRequest<Void> request) {
