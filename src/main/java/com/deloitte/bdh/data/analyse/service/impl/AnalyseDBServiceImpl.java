@@ -8,12 +8,12 @@ import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
-import com.deloitte.bdh.data.analyse.model.request.GetDataTreeDto;
+import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
-import com.deloitte.bdh.data.analyse.service.BiUiDBService;
-import com.deloitte.bdh.data.analyse.service.BiUiModelFieldService;
-import com.deloitte.bdh.data.analyse.service.BiUiModelFolderService;
+import com.deloitte.bdh.data.analyse.service.AnalyseDBService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.google.common.collect.Lists;
@@ -35,16 +35,16 @@ import java.util.Map;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiUiDBServiceImpl implements BiUiDBService {
+public class AnalyseDBServiceImpl implements AnalyseDBService {
 
     @Resource
     private DbHandler dbHandler;
 
     @Resource
-    BiUiModelFolderService folderService;
+    AnalyseModelFolderService folderService;
 
     @Resource
-    BiUiModelFieldService fieldService;
+    AnalyseModelFieldService fieldService;
 
     @Override
     public List<String> getAllTable() {
@@ -71,7 +71,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
 
     @Transactional
     @Override
-    public List<AnalyseFolderTree> getDataTree(RetRequest<GetDataTreeDto> request) {
+    public List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) {
         Map<String, Object> result = getHistoryData(request);
 
         List<BiUiModelFolder> folderList = (List<BiUiModelFolder>) result.get("folder");
@@ -105,7 +105,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
      * @param request
      * @return
      */
-    private Map<String, Object> getHistoryData(RetRequest<GetDataTreeDto> request) {
+    private Map<String, Object> getHistoryData(RetRequest<GetAnalyseDataTreeDto> request) {
         LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
         folderQueryWrapper.eq(BiUiModelFolder::getPageId, request.getData().getPageId());
         folderQueryWrapper.eq(BiUiModelFolder::getModelId, request.getData().getModelId());
@@ -120,7 +120,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
             wd.setPageId(request.getData().getPageId());
             wd.setParentId("0");
             wd.setName(DataModelTypeEnum.WD.getDesc());
-            wd.setType(DataModelTypeEnum.WD.getType());
+            wd.setType(DataModelTypeEnum.WD.getCode());
             wd.setTenantId(request.getTenantId());
             wd.setIp(request.getIp());
             wd.setCreateUser(request.getOperator());
@@ -134,7 +134,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
             dl.setPageId(request.getData().getPageId());
             dl.setParentId("0");
             dl.setName(DataModelTypeEnum.DL.getDesc());
-            dl.setType(DataModelTypeEnum.DL.getType());
+            dl.setType(DataModelTypeEnum.DL.getCode());
             dl.setIp(request.getIp());
             dl.setTenantId(request.getTenantId());
             dl.setCreateUser(request.getOperator());
@@ -161,7 +161,7 @@ public class BiUiDBServiceImpl implements BiUiDBService {
                 field.setParentId("0");
                 field.setPageId(request.getData().getPageId());
                 field.setFolderId(wdId);
-                field.setIsDimention(YnTypeEnum.YES.getName());
+                field.setIsDimention(YnTypeEnum.YES.getCode());
                 field.setTenantId(request.getTenantId());
                 field.setIp(request.getIp());
                 field.setCreateUser("0");

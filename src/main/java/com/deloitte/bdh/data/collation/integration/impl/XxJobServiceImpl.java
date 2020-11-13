@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
 import com.deloitte.bdh.common.http.HttpClientUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ public class XxJobServiceImpl implements XxJobService {
         reqXxJob.put("callBackAddress", callBackAddress);
         reqXxJob.put("cron", cron);
         reqXxJob.put("params", params);
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
         HttpClientUtil.post(ip + ADD_PATH, null, reqXxJob);
     }
 
@@ -34,6 +36,7 @@ public class XxJobServiceImpl implements XxJobService {
         reqXxJob.put("callBackAddress", callBackAddress);
         reqXxJob.put("cron", cron);
         reqXxJob.put("params", params);
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
         HttpClientUtil.post(ip + UPDATE_PATH, null, reqXxJob);
     }
 

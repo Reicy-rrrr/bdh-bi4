@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiModelFolderMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
-import com.deloitte.bdh.data.analyse.service.BiUiModelFolderService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiUiModelFolderServiceImpl extends AbstractService<BiUiModelFolderMapper, BiUiModelFolder> implements BiUiModelFolderService {
+public class AnalyseModelFolderServiceImpl extends AbstractService<BiUiModelFolderMapper, BiUiModelFolder> implements AnalyseModelFolderService {
     @Resource
     BiUiModelFolderMapper biUiModelFolderMapper;
 
@@ -40,17 +40,7 @@ public class BiUiModelFolderServiceImpl extends AbstractService<BiUiModelFolderM
     }
 
     @Override
-    public List<BiUiModelFolder> getTenantBiUiModelFolders(String tenantId) {
-        if (StringUtil.isEmpty(tenantId)) {
-            throw new RuntimeException("租户id不能为空");
-        }
-        LambdaQueryWrapper<BiUiModelFolder> query = new LambdaQueryWrapper();
-        query.eq(BiUiModelFolder::getTenantId, tenantId);
-        return list(query);
-    }
-
-    @Override
-    public BiUiModelFolder createResource(CreateResourcesDto dto) throws Exception {
+    public BiUiModelFolder createResource(CreateResourcesDto dto) {
         BiUiModelFolder entity = new BiUiModelFolder();
         BeanUtils.copyProperties(dto, entity);
         biUiModelFolderMapper.insert(entity);
@@ -58,13 +48,13 @@ public class BiUiModelFolderServiceImpl extends AbstractService<BiUiModelFolderM
     }
 
     @Override
-    public void delResource(String id) throws Exception {
+    public void delResource(String id) {
 //        BiUiModelFolder inf = biUiModelFolderMapper.selectById(id);
         biUiModelFolderMapper.deleteById(id);
     }
 
     @Override
-    public BiUiModelFolder updateResource(UpdateResourcesDto dto) throws Exception {
+    public BiUiModelFolder updateResource(UpdateResourcesDto dto) {
 //        BiUiModelFolder inf = biUiModelFolderMapper.selectById(dto.getId());
         BiUiModelFolder entity = new BiUiModelFolder();
         BeanUtils.copyProperties(dto, entity);

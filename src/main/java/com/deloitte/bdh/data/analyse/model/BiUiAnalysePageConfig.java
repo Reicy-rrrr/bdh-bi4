@@ -39,6 +39,12 @@ public class BiUiAnalysePageConfig implements Serializable {
     @TableField("CONTENT")
     private String content;
 
+    @TableField("IP")
+    private String ip;
+
+    @TableField("TENANT_ID")
+    private String tenantId;
+
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
 
@@ -51,18 +57,4 @@ public class BiUiAnalysePageConfig implements Serializable {
     @TableField("MODIFIED_USER")
     private String modifiedUser;
 
-    @TableField("IP")
-    private String ip;
-
-    @TableField("TENANT_ID")
-    private String tenantId;
-
-    /**
-     * 版本号
-     */
-    @TableField("VERSION")
-    private String version;
-
-    @Transient
-    private String status;
 }

@@ -4,38 +4,49 @@ import com.deloitte.bdh.common.exception.BizException;
 
 /**
  * Author:LIJUN
- * Date:09/11/2020
+ * Date:12/11/2020
  * Description:
  */
-public enum DataModelTypeEnum {
-
-    WD("WD", "维度"),
-    DL("DL", "度量"),
+public enum CategoryTypeEnum {
+    PRE_DEFINED("PRE_DEFINED", "预定义"),
+    CUSTOMER("CUSTOMER", "自定义"),
     ;
 
     private final String code;
 
     private final String desc;
 
-    DataModelTypeEnum(String code, String desc) {
+    CategoryTypeEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
 
-    public static String getDesc(String code) {
-        DataModelTypeEnum[] enums = DataModelTypeEnum.values();
+    /**
+     * 根据type获取描述
+     *
+     * @param name 类型
+     * @return String
+     */
+    public static String getDesc(String name) {
+        CategoryTypeEnum[] enums = CategoryTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getCode().equals(code)) {
+            if (enums[i].getCode().equals(name)) {
                 return enums[i].getDesc();
             }
         }
         return "";
     }
 
-    public static DataModelTypeEnum values(String code) {
-        DataModelTypeEnum[] enums = DataModelTypeEnum.values();
+    /**
+     * 根据类型获取枚举类型
+     *
+     * @param type
+     * @return
+     */
+    public static CategoryTypeEnum values(String type) {
+        CategoryTypeEnum[] enums = CategoryTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getCode().equals(code)) {
+            if (enums[i].getCode().equals(type)) {
                 return enums[i];
             }
         }

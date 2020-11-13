@@ -8,53 +8,42 @@ import com.deloitte.bdh.common.exception.BizException;
  * Description:
  */
 public enum YnTypeEnum {
+
     YES("Y", ""),
     NO("N", ""),
     ;
 
-    private String name;
+    private String code;
 
     private String desc;
 
-    YnTypeEnum(String name, String desc) {
-        this.name = name;
+    YnTypeEnum(String code, String desc) {
+        this.code = code;
         this.desc = desc;
     }
 
-    /**
-     * 根据type获取描述
-     *
-     * @param name 类型
-     * @return String
-     */
-    public static String getDesc(Integer name) {
+    public static String getDesc(String code) {
         YnTypeEnum[] enums = YnTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getName().equals(name)) {
+            if (enums[i].getCode().equals(code)) {
                 return enums[i].getDesc();
             }
         }
         return "";
     }
 
-    /**
-     * 根据类型获取枚举类型
-     *
-     * @param type
-     * @return
-     */
-    public static YnTypeEnum values(String type) {
+    public static YnTypeEnum values(String code) {
         YnTypeEnum[] enums = YnTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getName().equals(type)) {
+            if (enums[i].getCode().equals(code)) {
                 return enums[i];
             }
         }
         throw new BizException("暂不支持的认证类型！");
     }
 
-    public String getName() {
-        return name;
+    public String getCode() {
+        return code;
     }
 
     public String getDesc() {

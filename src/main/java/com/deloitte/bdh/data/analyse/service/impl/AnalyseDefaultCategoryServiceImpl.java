@@ -4,7 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseDefaultCategoryMapper;
-import com.deloitte.bdh.data.analyse.service.BiUiAnalyseDefaultCategoryService;
+import com.deloitte.bdh.data.analyse.service.AnalyseDefaultCategoryService;
 import com.deloitte.bdh.common.base.AbstractService;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +20,6 @@ import java.util.List;
  */
 @Service
 @DS(DSConstant.BI_DB)
-public class BiUiAnalyseDefaultCategoryServiceImpl extends AbstractService<BiUiAnalyseDefaultCategoryMapper, BiUiAnalyseDefaultCategory> implements BiUiAnalyseDefaultCategoryService {
+public class AnalyseDefaultCategoryServiceImpl extends AbstractService<BiUiAnalyseDefaultCategoryMapper, BiUiAnalyseDefaultCategory> implements AnalyseDefaultCategoryService {
 
-    @Override
-    public List<BiUiAnalyseDefaultCategory> getAllDefaultCategories() {
-        return list();
-    }
 }
