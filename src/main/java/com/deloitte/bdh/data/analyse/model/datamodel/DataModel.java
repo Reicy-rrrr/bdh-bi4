@@ -11,8 +11,11 @@ public class DataModel {
     @ApiModelProperty(value = "查询的表", notes = "树上所选表")
     String tableName;
 
-    @ApiModelProperty(value = "横向显示的字段", notes = "维度和度量")
+    @ApiModelProperty(value = "横向显示的字段", notes = "横向显示的字段")
     List<DataModelField> x;
+
+    @ApiModelProperty(value = "纵向显示的字段", notes = "纵向显示的字段")
+    List<DataModelField> y;
 
     @ApiModelProperty(value = "页开始", notes = "1开始")
     Integer page;

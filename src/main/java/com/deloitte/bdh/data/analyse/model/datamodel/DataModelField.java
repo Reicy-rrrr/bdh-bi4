@@ -25,6 +25,9 @@ public class DataModelField {
     @ApiModelProperty("维度为WD,度量为DL")
     private String quota;
 
-    @ApiModelProperty("聚合方式：")
+    @ApiModelProperty("聚合方式")
     private String aggregateType = AggregateTypeEnum.SUM.getKey();
+
+    @ApiModelProperty("排序方式")
+    private String orderType;
 }
