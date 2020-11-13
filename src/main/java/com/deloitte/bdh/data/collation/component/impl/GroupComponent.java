@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
@@ -151,6 +152,10 @@ public class GroupComponent implements ComponentHandler {
             }
             Set<String> fields = entry.getValue();
             for (String field : fields) {
+                // 字段名称为空，不做处理
+                if (StringUtils.isBlank(field)) {
+                    continue;
+                }
                 if (!fromFields.contains(field)) {
                     throw new BizException("从组件中不存在的字段，处理失败！");
                 }
