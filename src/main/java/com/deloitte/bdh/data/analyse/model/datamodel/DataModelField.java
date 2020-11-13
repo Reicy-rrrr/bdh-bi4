@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.model.datamodel;
 
+import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -21,9 +22,9 @@ public class DataModelField {
     @ApiModelProperty(value = "别名")
     String alias;
 
-    @ApiModelProperty("是否维度")
-    private String isDimention;
+    @ApiModelProperty("维度为WD,度量为DL")
+    private String quota;
 
-    @ApiModelProperty("是否度量")
-    private String isMensure;
+    @ApiModelProperty("聚合方式：")
+    private String aggregateType = AggregateTypeEnum.SUM.getKey();
 }

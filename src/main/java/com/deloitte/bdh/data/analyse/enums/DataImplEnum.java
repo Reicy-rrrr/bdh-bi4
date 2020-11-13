@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.enums;
 
-import com.deloitte.bdh.common.exception.BizException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -10,7 +9,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public enum DataImplEnum {
 
-    TABLE_NORMAL("table","normal", "tableNormalDataImpl"),
+    TABLE_NORMAL("table", "normal", "tableNormalDataImpl"),
+    GRAPHICS_PIE("graphics", "pie", "graphicsDataImpl"),
+    GRAPHICS_RING("graphics", "ring", "graphicsDataImpl"),
+
     ;
 
     private final String type;

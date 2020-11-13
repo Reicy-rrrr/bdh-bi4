@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -44,7 +45,7 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
         List<String> aggregateField = Lists.newArrayList();
         if (dataConfig.getTableAggregate()) {
             for (int i = 0; i < x.size(); i++) {
-                if (StringUtils.equals(x.get(i).getIsMensure(), YnTypeEnum.YES.getCode())) {
+                if (StringUtils.equals(x.get(i).getQuota(), DataModelTypeEnum.DL.getCode())) {
                     if (StringUtils.isNotBlank(x.get(i).getAlias())) {
                         fields[i] = "sum(" + x.get(i).getId() + ") as " + x.get(i).getAlias();
                     } else {
