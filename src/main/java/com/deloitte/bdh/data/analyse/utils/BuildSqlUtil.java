@@ -1,0 +1,72 @@
+package com.deloitte.bdh.data.analyse.utils;
+
+import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import org.apache.commons.lang.StringUtils;
+
+
+public class BuildSqlUtil {
+
+    public static String select(String tableName, String field, String quota, String aggregateType, String alias) {
+        //获取表名+字段名
+        String fieldExpress = selectField(tableName, field);
+        //判断度量和维度
+        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            fieldExpress = aggregate(fieldExpress, aggregateType);
+        }
+        return fieldExpress + " AS " + (StringUtils.isBlank(alias) ? field : alias);
+    }
+
+    public static String from(String tableName, String alias) {
+        return tableName + " AS " + (StringUtils.isBlank(alias) ? tableName : alias);
+
+    }
+
+    public static String where(String tableName, String field, String quota, String symbol, String value) {
+        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            return null;
+        }
+        return condition(selectField(tableName, field), symbol, value);
+    }
+
+    public static String groupBy(String tableName, String field, String quota) {
+        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            return null;
+        }
+        return selectField(tableName, field);
+    }
+
+    public static String having(String tableName, String field, String quota, String aggregateType, String symbol, String value) {
+        if (DataModelTypeEnum.WD.getCode().equals(quota)) {
+            return null;
+        }
+        return condition(aggregate(selectField(tableName, field), aggregateType), symbol, value);
+    }
+
+    public static String orderBy(String tableName, String field, String quota, String aggregateType, String orderType) {
+        if (StringUtils.isBlank(orderType)) {
+            return null;
+        }
+        String fieldExpress = selectField(tableName, field);
+        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            fieldExpress = aggregate(fieldExpress, aggregateType);
+        }
+        return fieldExpress + " " + orderType;
+    }
+
+    private static String selectField(String tableName, String field) {
+        return "`" + tableName + "`.`" + field + "`";
+    }
+
+    private static String aggregate(String field, String aggregateType) {
+        return AggregateTypeEnum.get(aggregateType).expression(field);
+    }
+
+    private static String condition(String field, String symbol, String value) {
+        if (StringUtils.isBlank(symbol) || StringUtils.isBlank(value)) {
+            return null;
+        }
+        return field + " " + symbol + "" + value;
+    }
+
+}

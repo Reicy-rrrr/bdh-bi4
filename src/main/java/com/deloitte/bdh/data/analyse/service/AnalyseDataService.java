@@ -15,6 +15,6 @@ public interface AnalyseDataService {
      * @param request
      * @return
      */
-    BaseComponentDataResponse handle(BaseComponentDataRequest request);
+    BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception;
 
 }

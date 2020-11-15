@@ -15,4 +15,5 @@ public class BaseComponentDataResponse {
     @ApiModelProperty(value = "数据")
     List<Map<String, Object>> rows;
 
+    private String sql;
 }

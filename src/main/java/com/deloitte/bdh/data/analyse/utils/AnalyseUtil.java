@@ -19,7 +19,7 @@ public class AnalyseUtil {
         if (empty(left)) {
             return right;
         } else {
-            if (empty(left)) {
+            if (empty(right)) {
                 return left;
             }
             return left + split + right;

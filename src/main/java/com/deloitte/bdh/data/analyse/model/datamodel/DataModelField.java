@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.model.datamodel;
 
-import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -26,8 +25,14 @@ public class DataModelField {
     private String quota;
 
     @ApiModelProperty("聚合方式")
-    private String aggregateType = AggregateTypeEnum.SUM.getKey();
+    private String aggregateType;
 
     @ApiModelProperty("排序方式")
     private String orderType;
+
+    @ApiModelProperty("symbol")
+    private String symbol;
+
+    @ApiModelProperty("value")
+    private String value;
 }

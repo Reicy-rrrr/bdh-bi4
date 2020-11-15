@@ -40,6 +40,6 @@ public interface AnalyseModelService {
      * @param data
      * @return
      */
-    BaseComponentDataResponse getComponentData(BaseComponentDataRequest data);
+    BaseComponentDataResponse getComponentData(BaseComponentDataRequest data) throws Exception;
 
 }

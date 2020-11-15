@@ -52,7 +52,7 @@ public class AnalyseModelController {
 
     @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
     @PostMapping("/getComponentData")
-    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) {
+    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) throws Exception {
         return RetResponse.makeOKRsp(analyseModelService.getComponentData(request.getData()));
     }
 

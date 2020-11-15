@@ -117,7 +117,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     }
 
     @Override
-    public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         return SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
     }

@@ -1,10 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
-import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -17,10 +13,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Author:LIJUN
@@ -30,11 +23,8 @@ import java.util.UUID;
 @Service("tableNormalDataImpl")
 public class TableNormalDataImpl extends AbstractDataService implements AnalyseDataService {
 
-    @Resource
-    BiUiDemoMapper biUiDemoMapper;
-
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception {
         DataConfig dataConfig = request.getDataConfig();
         DataModel dataModel = dataConfig.getDataModel();
         List<DataModelField> x = dataModel.getX();
@@ -74,14 +64,16 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
         String select = "select " + AnalyseUtil.join(",", fields);
         String querySql = select + " from " + tableName;
         if (CollectionUtils.isNotEmpty(aggregateField)) {
-            querySql += " group by "+ StringUtils.join(aggregateField, ",");
+            querySql += " group by " + StringUtils.join(aggregateField, ",");
         }
         if (pageIndex != null && pageSize != null && pageSize > 0) {
             querySql = querySql + " limit " + (pageIndex - 1) * pageSize + "," + pageIndex * pageSize;
         }
-        List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
-        BaseComponentDataResponse response = new BaseComponentDataResponse();
-        response.setRows(result);
-        return response;
+        return super.execute(querySql);
+    }
+
+    @Override
+    protected void validate(DataModel dataModel) {
+        //todo
     }
 }
