@@ -60,7 +60,7 @@ public abstract class AbstractDataService {
             }
         }
         for (DataModelField s : dataModel.getY()) {
-            String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getAlias());
+            String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -98,7 +98,7 @@ public abstract class AbstractDataService {
             }
         }
         for (DataModelField s : dataModel.getY()) {
-            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota());
+            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
