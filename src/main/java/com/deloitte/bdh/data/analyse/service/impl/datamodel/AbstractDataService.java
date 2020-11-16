@@ -97,16 +97,20 @@ public abstract class AbstractDataService {
 
     private String buildGroupBy(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
-        for (DataModelField s : dataModel.getX()) {
-            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
-            if (StringUtils.isNotBlank(express)) {
-                list.add(express);
+        if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+            for (DataModelField s : dataModel.getX()) {
+                String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
+                if (StringUtils.isNotBlank(express)) {
+                    list.add(express);
+                }
             }
         }
-        for (DataModelField s : dataModel.getY()) {
-            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
-            if (StringUtils.isNotBlank(express)) {
-                list.add(express);
+        if (CollectionUtils.isNotEmpty(dataModel.getY())) {
+            for (DataModelField s : dataModel.getY()) {
+                String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
+                if (StringUtils.isNotBlank(express)) {
+                    list.add(express);
+                }
             }
         }
         if (CollectionUtils.isEmpty(list)) {

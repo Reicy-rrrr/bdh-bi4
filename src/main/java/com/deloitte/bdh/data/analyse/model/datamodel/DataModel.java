@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.model.datamodel;
 
+import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -12,10 +13,10 @@ public class DataModel {
     String tableName;
 
     @ApiModelProperty(value = "横向显示的字段", notes = "横向显示的字段")
-    List<DataModelField> x;
+    List<DataModelField> x = Lists.newArrayList();
 
     @ApiModelProperty(value = "纵向显示的字段", notes = "纵向显示的字段")
-    List<DataModelField> y;
+    List<DataModelField> y = Lists.newArrayList();
 
     @ApiModelProperty(value = "页开始", notes = "1开始")
     Integer page;
