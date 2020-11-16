@@ -182,6 +182,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public BiEtlModel updateModel(UpdateModelDto dto) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(dto.getId());
+
         if (YesOrNoEnum.YES.getKey().equals(inf.getSyncStatus())) {
             throw new RuntimeException("当前正在执行同步任务，不允许修改");
         }
@@ -198,24 +199,31 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (!StringUtil.isEmpty(dto.getContent())) {
             inf.setContent(dto.getContent());
         }
-        if (!StringUtil.isEmpty(dto.getCronExpression())) {
-            inf.setCornExpression(dto.getCronExpression());
-            //调用xxjob 设置调度任务
-            Map<String, String> params = Maps.newHashMap();
-            params.put("modelCode", inf.getCode());
-            params.put("tenantId", ThreadLocalHolder.getTenantId());
-            params.put("operator", ThreadLocalHolder.getOperator());
-            jobService.update(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
-                    dto.getCronExpression(), params);
-        }
-        //调用nifi
-        Map<String, Object> reqNifi = Maps.newHashMap();
-        reqNifi.put("id", inf.getProcessGroupId());
-        reqNifi.put("name", inf.getName());
-        reqNifi.put("comments", inf.getComments());
+        if (YesOrNoEnum.NO.getKey().equals(inf.getIsFile())) {
+            if (!StringUtil.isEmpty(dto.getCronExpression())) {
+                inf.setCornExpression(dto.getCronExpression());
+                //调用xxjob 设置调度任务
+                Map<String, String> params = Maps.newHashMap();
+                params.put("modelCode", inf.getCode());
+                params.put("tenantId", ThreadLocalHolder.getTenantId());
+                params.put("operator", ThreadLocalHolder.getOperator());
+                jobService.update(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
+                        dto.getCronExpression(), params);
+            }
 
-        Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
-        inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+            //调用nifi
+            Map<String, Object> reqNifi = Maps.newHashMap();
+            reqNifi.put("id", inf.getProcessGroupId());
+            reqNifi.put("name", inf.getName());
+            reqNifi.put("comments", inf.getComments());
+            Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
+            inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+
+            if(!StringUtil.isEmpty(dto.getFileCode())){
+                inf.setParentCode(dto.getFileCode());
+            }
+        }
+
         biEtlModelMapper.updateById(inf);
         return inf;
     }
