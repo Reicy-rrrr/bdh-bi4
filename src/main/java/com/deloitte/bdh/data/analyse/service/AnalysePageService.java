@@ -87,12 +87,4 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      */
     void delAnalysePageDrafts(@RequestBody @Validated RetRequest<BatchDeleteAnalyseDto> request);
 
-    /**
-     * 获取组件数据
-     *
-     * @param data
-     * @return
-     */
-    BaseComponentDataResponse getComponentData(BaseComponentDataRequest data);
-
 }

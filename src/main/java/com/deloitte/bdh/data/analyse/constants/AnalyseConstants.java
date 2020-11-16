@@ -1,5 +1,9 @@
 package com.deloitte.bdh.data.analyse.constants;
 
+import com.google.common.collect.Lists;
+
+import java.util.List;
+
 public class AnalyseConstants {
 
     /**
@@ -14,4 +18,8 @@ public class AnalyseConstants {
      * 编辑中
      */
     public static final String PAGE_CONFIG_EDIT = "EDIT";
+
+    public static final List<String> MENSURE_TYPE = Lists.newArrayList(
+            "TINYINT","SMALLINT","MEDIUMINT","INT","INTEGER","BIGINT","FLOAT","DOUBLE","DECIMAL");
+
 }

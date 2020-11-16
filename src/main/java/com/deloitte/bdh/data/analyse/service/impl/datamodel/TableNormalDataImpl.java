@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Author:LIJUN
  * Date:13/11/2020
- * Description:
+ * Description:普通表格
  */
 @Service("tableNormalDataImpl")
 public class TableNormalDataImpl extends AbstractDataService implements AnalyseDataService {
@@ -69,7 +69,7 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
         if (pageIndex != null && pageSize != null && pageSize > 0) {
             querySql = querySql + " limit " + (pageIndex - 1) * pageSize + "," + pageIndex * pageSize;
         }
-        return super.execute(querySql);
+        return execute(querySql);
     }
 
     @Override

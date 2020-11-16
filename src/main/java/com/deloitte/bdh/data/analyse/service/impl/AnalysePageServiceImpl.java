@@ -9,23 +9,16 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
-import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -37,10 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * <p>
@@ -240,38 +230,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageList.forEach(page -> page.setIsEdit(YnTypeEnum.NO.getCode()));
             this.updateBatchById(pageList);
         }
-    }
-
-    @Override
-    public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) {
-        String type = request.getType();
-        if (AnalyseTypeConstants.TABLE.equals(type)) {
-//            GridComponentDataRequest request = JSONObject.parseObject(JSONObject.toJSONString(data), GridComponentDataRequest.class);
-            DataConfig dataConfig = request.getDataConfig();
-            DataModel dataModel = dataConfig.getDataModel();
-            List<DataModelField> x = dataModel.getX();
-            Integer pageIndex = dataModel.getPage();
-            Integer pageSize = dataModel.getPageSize();
-            String tableName = dataModel.getTableName();
-            String[] fields = new String[x.size()];
-            for (int i = 0; i < x.size(); i++) {
-                fields[i] = x.get(i).getId().replace("O_", "") + " as " + x.get(i).getId();
-            }
-            String select = "select " + AnalyseUtil.join(",", fields);
-            String querySql = select + " from " + tableName;
-            if (pageIndex != null && pageSize != null && pageSize > 0) {
-                querySql = querySql + " limit " + (pageIndex - 1) * pageSize + "," + pageIndex * pageSize;
-            }
-            List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(querySql);
-            //todo 需要知道那个列是主键,然后加到上面的sql中作为一定查询的列 as key
-            result.forEach(item -> {
-                item.put("key", UUID.randomUUID().toString());
-            });
-            BaseComponentDataResponse response = new BaseComponentDataResponse();
-            response.setRows(result);
-            return response;
-        }
-        return null;
     }
 
     private void checkBiUiAnalysePageByName(String name, String tenantId, String currentId) {

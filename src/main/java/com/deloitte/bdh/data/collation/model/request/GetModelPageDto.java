@@ -11,5 +11,5 @@ import lombok.ToString;
 @Getter
 @ToString
 public class GetModelPageDto extends PageDto {
-
+    private String fileCode;
 }

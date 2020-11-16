@@ -5,16 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
-import com.deloitte.bdh.data.analyse.constants.AnalyseTypeConstants;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
-import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
@@ -24,7 +21,6 @@ import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.google.common.collect.Lists;
@@ -37,10 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author chenghzhang
@@ -134,9 +128,10 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
+        String dlId= null;
         if (CollectionUtils.isEmpty(folderList)) {
             folderList = Lists.newArrayList();
-            //初始化维度数据
+            //初始化维度文件夹
             BiUiModelFolder wd = new BiUiModelFolder();
             wd.setModelId(request.getData().getModelId());
             wd.setPageId(request.getData().getPageId());
@@ -150,7 +145,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             folderService.save(wd);
             wdId = wd.getId();
 
-            //初始化度量数据
+            //初始化度量文件夹
             BiUiModelFolder dl = new BiUiModelFolder();
             dl.setModelId(request.getData().getModelId());
             dl.setPageId(request.getData().getPageId());
@@ -162,6 +157,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             dl.setCreateUser(request.getOperator());
             dl.setCreateDate(LocalDateTime.now());
             folderService.save(dl);
+            dlId = dl.getId();
 
             folderList.add(wd);
             folderList.add(dl);
@@ -182,8 +178,15 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 field.setFieldDesc(column.getDesc());
                 field.setParentId("0");
                 field.setPageId(request.getData().getPageId());
-                field.setFolderId(wdId);
-                field.setIsDimention(YnTypeEnum.YES.getCode());
+                if (AnalyseConstants.MENSURE_TYPE.contains(column.getDataType().toUpperCase())) {
+                    field.setFolderId(dlId);
+                    field.setIsDimention(YnTypeEnum.NO.getCode());
+                    field.setIsMensure(YnTypeEnum.YES.getCode());
+                } else {
+                    field.setFolderId(wdId);
+                    field.setIsDimention(YnTypeEnum.YES.getCode());
+                    field.setIsMensure(YnTypeEnum.NO.getCode());
+                }
                 field.setTenantId(request.getTenantId());
                 field.setIp(request.getIp());
                 field.setCreateUser("0");

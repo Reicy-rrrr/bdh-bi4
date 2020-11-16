@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.enums;
 
 
+import org.apache.commons.lang3.StringUtils;
 
 public enum AggregateTypeEnum {
     SUM("SUM", "求和"),
@@ -44,6 +45,10 @@ public enum AggregateTypeEnum {
     }
 
     public String expression(String str) {
+        //默认值SUM
+        if (StringUtils.isBlank(str)) {
+            return SUM.getKey() + "(" + str + ")";
+        }
         return this.getKey() + "(" + str + ")";
     }
 

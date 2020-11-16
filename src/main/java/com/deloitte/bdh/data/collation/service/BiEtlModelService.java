@@ -23,6 +23,15 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
     /**
      * 基于租户获取Model列表
      *
+     * @param
+     * @return
+     */
+    List<BiEtlModel> getModelTree();
+
+
+    /**
+     * 基于租户获取Model列表
+     *
      * @param dto
      * @return
      */
