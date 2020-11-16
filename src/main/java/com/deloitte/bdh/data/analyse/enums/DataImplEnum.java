@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum DataImplEnum {
 
     TABLE_NORMAL("table", "normal", "tableNormalDataImpl"),
+    TABLE_CROSS("table", "cross", "crossPivotDataImpl"),
     GRAPHICS_PIE("graphics", "pie", "graphicsDataImpl"),
     GRAPHICS_RING("graphics", "ring", "graphicsDataImpl"),
 

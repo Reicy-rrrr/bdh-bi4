@@ -28,11 +28,11 @@ public abstract class AbstractDataService {
 
     protected abstract void validate(DataModel dataModel);
 
-    protected BaseComponentDataResponse execute(Sql sql) throws Exception {
+    protected BaseComponentDataResponse execute(Sql sql) {
         return execute(sql.build());
     }
 
-    protected BaseComponentDataResponse execute(String sql) throws Exception {
+    protected BaseComponentDataResponse execute(String sql) {
         List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(sql);
         BaseComponentDataResponse response = new BaseComponentDataResponse();
         response.setRows(result);
@@ -55,6 +55,12 @@ public abstract class AbstractDataService {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
             String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias());
+            if (StringUtils.isNotBlank(express)) {
+                list.add(express);
+            }
+        }
+        for (DataModelField s : dataModel.getY()) {
+            String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getAlias());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -87,6 +93,12 @@ public abstract class AbstractDataService {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
             String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
+            if (StringUtils.isNotBlank(express)) {
+                list.add(express);
+            }
+        }
+        for (DataModelField s : dataModel.getY()) {
+            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -136,6 +148,6 @@ public abstract class AbstractDataService {
     }
 
     public interface Sql {
-        String build() throws Exception;
+        String build();
     }
 }

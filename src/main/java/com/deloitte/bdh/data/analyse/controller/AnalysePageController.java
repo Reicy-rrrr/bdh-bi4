@@ -97,10 +97,4 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp();
     }
 
-    @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
-    @PostMapping("/getComponentData")
-    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) {
-        return RetResponse.makeOKRsp(analysePageService.getComponentData(request.getData()));
-    }
-
 }
