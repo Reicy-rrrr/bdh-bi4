@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
@@ -13,6 +14,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,26 +45,36 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         List<Map<String, Object>> rows = response.getRows();
         if (CollectionUtils.isNotEmpty(rows)) {
             for (DataModelField field : request.getDataConfig().getDataModel().getX()) {
-                for (Map<String, Object> map : rows) {
-
+                String col = field.getId();
+                if (StringUtils.isNotBlank(field.getAlias())) {
+                    col = field.getAlias();
                 }
+
             }
         }
+
+
+
+
     }
 
-//    private List<AnalyseFieldTree> buildFieldTree(List<Map<String, Object>> rows, String parentId, String name) {
+//    private List<ListTree> buildFieldTree(List<Map<String, Object>> rows, DataModelField parentField) {
 //        List<ListTree> treeDataModels = Lists.newArrayList();
-//        for (Map<String, Object> map : rows) {
+//        for (Map<String, Object> row : rows) {
 //            ListTree tree = new ListTree();
-//            tree.setName(MapUtils.getString(map, name));
-//            if (StringUtils.equals(parentId, )) {
-//                tree.setChildren(buildFieldTree(rows, analyseFieldTree.getId()));
-//                treeDataModels.add(analyseFieldTree);
+//            String col = parentField.getId();
+//            if (StringUtils.isNotBlank(parentField.getAlias())) {
+//                col = parentField.getAlias();
+//            }
+//            String value = MapUtils.getString(row, col);
+//            tree.setName(value);
+//            if (StringUtils.equals(value, preValue)) {
+//                tree.setChildren(buildFieldTree(rows, preField, field));
+//                treeDataModels.add(tree);
 //            }
 //        }
 //        return treeDataModels;
 //    }
-
 
     @Override
     protected void validate(DataModel dataModel) {
