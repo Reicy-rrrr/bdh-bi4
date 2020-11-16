@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
@@ -111,6 +112,9 @@ public class ArrangeComponent implements ComponentHandler {
             case TRIM:
                 arrangeCases.addAll(trim(component, context));
                 break;
+            case BLANK:
+                arrangeCases.addAll(blank(component, context));
+                break;
             case REPLACE:
                 arrangeCases.addAll(replace(component, context));
                 break;
@@ -136,7 +140,7 @@ public class ArrangeComponent implements ComponentHandler {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(buildSelect(fromComponent, arrangeCases, currMappings, excludeFields));
         sqlBuilder.append(buildFrom(fromComponent));
-        if (CollectionUtils.isEmpty(whereCases)) {
+        if (!CollectionUtils.isEmpty(whereCases)) {
             sqlBuilder.append(buildWhere(whereCases));
         }
 
@@ -212,6 +216,7 @@ public class ArrangeComponent implements ComponentHandler {
             fromBuilder.append(sql_key_as);
             fromBuilder.append(fromTableName);
         }
+        fromBuilder.append(sql_key_blank);
         return fromBuilder;
     }
 
@@ -390,9 +395,31 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    private List<ArrangeResultModel> blank(ComponentModel component, String context) {
+        List<ArrangeBlankModel> blankModels = JSONArray.parseArray(context, ArrangeBlankModel.class);
+        if (CollectionUtils.isEmpty(blankModels)) {
+            throw new BizException("Arrange component remove blank error: 去除空格字段不能为空！");
+        }
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        blankModels.forEach(blankModel -> {
+            String fieldName = blankModel.getName();
+            FieldMappingModel fromMapping = MapUtils.getObject(fromMappingMap, fieldName);
+            if (fromMapping != null) {
+                ArrangeResultModel resultModel = arranger.blank(fromMapping, blankModel, fromComponent.getTableName(), fromComponent.getTypeEnum());
+                resultModels.add(resultModel);
+            }
+        });
+        return resultModels;
+    }
+
     private List<ArrangeResultModel> group(ComponentModel component, String context) {
-        List<ArrangeGroupModel> groupModels = JSONArray.parseArray(context, ArrangeGroupModel.class);
-        if (CollectionUtils.isEmpty(groupModels)) {
+        ArrangeGroupModel groupModel = JSON.parseObject(context, ArrangeGroupModel.class);
+        if (groupModel == null) {
             throw new BizException("Arrange component group error: 分组字段不能为空！");
         }
         // 从组件信息
@@ -401,12 +428,21 @@ public class ArrangeComponent implements ComponentHandler {
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
 
         List<ArrangeResultModel> resultModels = Lists.newArrayList();
-        groupModels.forEach(groupModel -> {
-            String fieldName = groupModel.getName();
-            List<ArrangeGroupFieldModel> groups = groupModel.getGroups();
-
+        // 字符类型的分组字段
+        List<ArrangeGroupEnumModel> stringGroups = groupModel.getEnumFields();
+        stringGroups.forEach(stringModel -> {
+            String fieldName = stringModel.getName();
             FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
-            ArrangeResultModel resultModel = arranger.group(mapping, groups, fromComponent.getTableName(), fromComponent.getTypeEnum());
+            ArrangeResultModel resultModel = arranger.enumGroup(mapping, stringModel, fromComponent.getTableName(), fromComponent.getTypeEnum());
+            resultModels.add(resultModel);
+        });
+
+        // 数字类型的分组字段
+        List<ArrangeGroupSectModel> numberGroups = groupModel.getSectFields();
+        numberGroups.forEach(numberModel -> {
+            String fieldName = numberModel.getName();
+            FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
+            ArrangeResultModel resultModel = arranger.sectGroup(mapping, numberModel, fromComponent.getTableName(), fromComponent.getTypeEnum());
             resultModels.add(resultModel);
         });
         return resultModels;

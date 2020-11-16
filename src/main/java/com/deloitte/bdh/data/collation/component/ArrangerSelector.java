@@ -1,12 +1,9 @@
 package com.deloitte.bdh.data.collation.component;
 
-import com.deloitte.bdh.data.collation.component.model.ArrangeGroupFieldModel;
-import com.deloitte.bdh.data.collation.component.model.ArrangeResultModel;
-import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
 import java.util.List;
@@ -104,15 +101,38 @@ public interface ArrangerSelector extends Component {
     List<ArrangeResultModel> trim(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType);
 
     /**
-     * 字段分组（新增字段）
+     * 去除空格
+     *
+     * @param fromFieldMapping 字段映射
+     * @param blankModel
+     * @param fromTable        源表名（上一个组件）
+     * @param fromType         从组件类型
+     * @return List
+     */
+    ArrangeResultModel blank(FieldMappingModel fromFieldMapping, ArrangeBlankModel blankModel, String fromTable, ComponentTypeEnum fromType);
+
+    /**
+     * 字段根据列举类型分组（新增字段）
+     * 字段值按照列举进行分组
      *
      * @param fromFieldMapping
-     * @param groups           分组属性
+     * @param groupModel           分组属性
      * @param fromTable        源表名（上一个组件）
      * @param fromType         从组件类型
      * @return
      */
-    ArrangeResultModel group(FieldMappingModel fromFieldMapping, List<ArrangeGroupFieldModel> groups, String fromTable, ComponentTypeEnum fromType);
+    ArrangeResultModel enumGroup(FieldMappingModel fromFieldMapping, ArrangeGroupEnumModel groupModel, String fromTable, ComponentTypeEnum fromType);
+
+    /**
+     * 字段根据区间类型分组（新增字段）
+     *
+     * @param fromFieldMapping
+     * @param groupModel           分组属性
+     * @param fromTable        源表名（上一个组件）
+     * @param fromType         从组件类型
+     * @return
+     */
+    ArrangeResultModel sectGroup(FieldMappingModel fromFieldMapping, ArrangeGroupSectModel groupModel, String fromTable, ComponentTypeEnum fromType);
 
     /**
      * 获取合并字段后新字段的长度

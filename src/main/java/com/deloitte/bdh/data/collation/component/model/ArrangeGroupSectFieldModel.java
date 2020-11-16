@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 整理组件分组字段模型
+ * 整理组件分组字段模型（区间类型：1-1000）
  *
  * @author chenghzhang
  * @date 2020/11/11
@@ -16,11 +16,13 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArrangeGroupFieldModel {
-    /** 原字段值 */
-    @ApiModelProperty(value = "原字段值", example = "integer, long, double", required = true)
-    private List<String> sources;
-
+public class ArrangeGroupSectFieldModel {
+    /** 最小值 */
+    @ApiModelProperty(value = "最小值", example = "1", required = true)
+    private String minSource;
+    /** 最大值 */
+    @ApiModelProperty(value = "最大值", example = "1000", required = true)
+    private String maxSource;
     /** 分组后字段值 */
     @ApiModelProperty(value = "分组后字段值", example = "number", required = true)
     private String target;

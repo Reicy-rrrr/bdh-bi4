@@ -99,13 +99,22 @@ public interface EtlService {
     BiComponent arrangeCaseConvert(ArrangeCaseConvertDto dto) throws Exception;
 
     /**
-     * 引入去空格整理组件（创建）
+     * 引入去前后空格整理组件（创建）
      *
      * @param dto 整理组件dto
      * @return BiComponent
      * @throws Exception
      */
     BiComponent arrangeTrim(ArrangeTrimDto dto) throws Exception;
+
+    /**
+     * 引入去字段空格整理组件（创建）
+     *
+     * @param dto 整理组件dto
+     * @return BiComponent
+     * @throws Exception
+     */
+    BiComponent arrangeBlank(ArrangeBlankDto dto) throws Exception;
 
     /**
      * 引入分组整理组件（创建）

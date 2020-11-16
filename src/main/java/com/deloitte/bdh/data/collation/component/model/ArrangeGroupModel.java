@@ -17,10 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArrangeGroupModel {
-    /** 字段名称 */
-    @ApiModelProperty(value = "字段名称", example = "type", required = true)
-    private String name;
-    /** 分组属性 */
-    @ApiModelProperty(value = "分组属性", example = "", required = true)
-    private List<ArrangeGroupFieldModel> groups;
+    /** 区间类型字段 */
+    @ApiModelProperty(value = "区间类型字段", example = "", required = true)
+    private List<ArrangeGroupSectModel> sectFields;
+    /** 列举类型字段 */
+    @ApiModelProperty(value = "列举类型字段", example = "", required = true)
+    private List<ArrangeGroupEnumModel> enumFields;
 }

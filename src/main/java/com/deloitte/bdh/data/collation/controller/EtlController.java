@@ -99,10 +99,16 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeCaseConvert(request.getData()));
     }
 
-    @ApiOperation(value = "引入整理组件(前后去空格)", notes = "引入整理组件(前后去空格)")
-    @PostMapping("/arrange/trim/join")
-    public RetResult<BiComponent> arrangeTrim(@RequestBody @Validated RetRequest<ArrangeTrimDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeTrim(request.getData()));
+//    @ApiOperation(value = "引入整理组件(去前后空格)", notes = "引入整理组件(去前后空格)")
+//    @PostMapping("/arrange/trim/join")
+//    public RetResult<BiComponent> arrangeTrim(@RequestBody @Validated RetRequest<ArrangeTrimDto> request) throws Exception {
+//        return RetResponse.makeOKRsp(etlService.arrangeTrim(request.getData()));
+//    }
+
+    @ApiOperation(value = "引入整理组件(去字段空格)", notes = "引入整理组件(去字段空格)")
+    @PostMapping("/arrange/blank/join")
+    public RetResult<BiComponent> arrangeBlank(@RequestBody @Validated RetRequest<ArrangeBlankDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeBlank(request.getData()));
     }
 
     @ApiOperation(value = "引入整理组件(分组)", notes = "引入整理组件(分组)")
@@ -110,8 +116,6 @@ public class EtlController {
     public RetResult<BiComponent> arrangeGroup(@RequestBody @Validated RetRequest<ArrangeGroupDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.arrangeGroup(request.getData()));
     }
-
-
 
     @ApiOperation(value = "移除组件", notes = "移除组件")
     @PostMapping("/component/remove")

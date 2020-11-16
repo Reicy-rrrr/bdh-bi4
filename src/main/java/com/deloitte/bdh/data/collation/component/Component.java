@@ -25,6 +25,7 @@ public interface Component {
     String sql_key_on = "ON ";
     String sql_key_as = "AS ";
     String sql_key_and = "AND ";
+    String sql_key_between = "BETWEEN ";
     String sql_key_group_by = "GROUP BY ";
     String sql_key_order_by = "ORDER BY ";
     String sql_key_having = "HAVING ";

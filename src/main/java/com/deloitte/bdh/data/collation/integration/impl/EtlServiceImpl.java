@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
@@ -34,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -410,6 +408,23 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    public BiComponent arrangeBlank(ArrangeBlankDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.ARRANGE_PARAM_KEY_TYPE, ArrangeTypeEnum.BLANK.getType());
+        params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
     public BiComponent arrangeGroup(ArrangeGroupDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
@@ -665,13 +680,13 @@ public class EtlServiceImpl implements EtlService {
         BiComponent component = componentService.getOne(wrapper);
         if (component != null) {
             String name = component.getName();
-            String nameNum = name.substring(type.getKey().length());
+            String nameNum = name.substring(type.getDesc().length());
             try {
                 number = Integer.valueOf(nameNum) + 1;
             } catch (NumberFormatException e) {
                 number = 1;
             }
         }
-        return type.getKey().toLowerCase() + number;
+        return type.getDesc().toLowerCase() + number;
     }
 }

@@ -5,11 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum ComponentTypeEnum {
 
-    DATASOURCE("DATASOURCE", "sourceComponent", "数据源"),
-    JOIN("JOIN", "joinComponent", "关联"),
-    GROUP("GROUP", "groupComponent", "聚合"),
-    ARRANGE("ARRANGE", "arrangeComponent", "整理"),
-    OUT("OUT", "outComponent", "输出"),
+    DATASOURCE("DATASOURCE", "sourceComponent", "数据源", "Table"),
+    JOIN("JOIN", "joinComponent", "关联", "Connector"),
+    GROUP("GROUP", "groupComponent", "聚合", "Aggregator"),
+    ARRANGE("ARRANGE", "arrangeComponent", "整理", "Arranger"),
+    OUT("OUT", "outComponent", "输出", "OutPutter"),
 
     ;
 
@@ -19,10 +19,13 @@ public enum ComponentTypeEnum {
 
     private String value;
 
-    ComponentTypeEnum(String key, String name, String value) {
+    private String desc;
+
+    ComponentTypeEnum(String key, String name, String value, String desc) {
         this.key = key;
         this.name = name;
         this.value = value;
+        this.desc = desc;
     }
 
     public static ComponentTypeEnum values(String key) {
@@ -45,5 +48,9 @@ public enum ComponentTypeEnum {
 
     public String getValue() {
         return value;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 }

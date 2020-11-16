@@ -30,4 +30,10 @@ public class ComponentCons {
     public static final String ARRANGE_PARAM_KEY_CASE_UPPER = "upper";
     /** 整理组件(转换大小写)参数：lower */
     public static final String ARRANGE_PARAM_KEY_CASE_LOWER = "lower";
+    /** 整理组件(移除空格)参数：all-所以空格 */
+    public static final String ARRANGE_PARAM_KEY_SPACE_ALL = "all";
+    /** 整理组件(移除空格)参数：left-从左侧起定长内空格 */
+    public static final String ARRANGE_PARAM_KEY_SPACE_LEFT = "left";
+    /** 整理组件(移除空格)参数：right-从右侧起定长内空格 */
+    public static final String ARRANGE_PARAM_KEY_SPACE_RIGHT = "right";
 }
