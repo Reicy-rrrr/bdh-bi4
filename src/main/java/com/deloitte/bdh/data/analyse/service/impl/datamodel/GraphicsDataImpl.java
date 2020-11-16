@@ -29,48 +29,45 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception {
         String sql = buildSql(request.getDataConfig().getDataModel());
-        return execute(sql, new Rows() {
-            @Override
-            public List<Map<String, Object>> set(List<Map<String, Object>> list) {
-                List<DataModelField> fields = request.getDataConfig().getDataModel().getX();
-                List<String> wds = Lists.newArrayList();
-                List<String> dls = Lists.newArrayList();
-                for (DataModelField field : fields) {
-                    String name = StringUtils.isBlank(field.getAlias()) ? field.getId() : field.getAlias();
-                    if (DataModelTypeEnum.WD.getCode().equals(field.getQuota())) {
-                        wds.add(name);
-                    } else {
-                        dls.add(name);
-                    }
+        return execute(sql, list -> {
+            List<DataModelField> fields = request.getDataConfig().getDataModel().getX();
+            List<String> wds = Lists.newArrayList();
+            List<String> dls = Lists.newArrayList();
+            for (DataModelField field : fields) {
+                String name = StringUtils.isBlank(field.getAlias()) ? field.getId() : field.getAlias();
+                if (DataModelTypeEnum.WD.getCode().equals(field.getQuota())) {
+                    wds.add(name);
+                } else {
+                    dls.add(name);
                 }
-
-                List<Map<String, Object>> result = Lists.newArrayList();
-                BigDecimal count = BigDecimal.ZERO;
-                for (Map<String, Object> map : list) {
-                    Map<String, Object> one = Maps.newHashMap();
-                    for (String str : wds) {
-                        if (one.containsKey("item")) {
-                            one.put("item", one.get("item") + "-" + map.get(str));
-                        } else {
-                            one.put("item", map.get(str));
-                        }
-                    }
-                    for (String str : dls) {
-                        //度量只会一个
-                        one.put("count", map.get(str));
-                        count = count.add(new BigDecimal(String.valueOf(map.get(str))));
-                    }
-                    result.add(one);
-                }
-                //求百分比
-                for (Map<String, Object> map : result) {
-                    BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
-                            .multiply(new BigDecimal("100"))
-                            .divide(count, 2, BigDecimal.ROUND_HALF_UP);
-                    map.put("percent", per.toString());
-                }
-                return result;
             }
+
+            List<Map<String, Object>> result = Lists.newArrayList();
+            BigDecimal count = BigDecimal.ZERO;
+            for (Map<String, Object> map : list) {
+                Map<String, Object> one = Maps.newHashMap();
+                for (String str : wds) {
+                    if (one.containsKey("item")) {
+                        one.put("item", one.get("item") + "-" + map.get(str));
+                    } else {
+                        one.put("item", map.get(str));
+                    }
+                }
+                for (String str : dls) {
+                    //度量只会一个
+                    one.put("count", map.get(str));
+                    count = count.add(new BigDecimal(String.valueOf(map.get(str))));
+                }
+                result.add(one);
+            }
+            //求百分比
+            for (Map<String, Object> map : result) {
+                BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
+                        .multiply(new BigDecimal("100"))
+                        .divide(count, 2, BigDecimal.ROUND_HALF_UP);
+                map.put("percent", per.toString());
+            }
+            return result;
         });
     }
 
