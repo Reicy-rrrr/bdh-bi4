@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -7,10 +8,14 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +29,49 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception {
         String sql = buildSql(request.getDataConfig().getDataModel());
-        return execute(sql);
+        return execute(sql, new Rows() {
+            @Override
+            public List<Map<String, Object>> set(List<Map<String, Object>> list) {
+                List<DataModelField> fields = request.getDataConfig().getDataModel().getX();
+                List<String> wds = Lists.newArrayList();
+                List<String> dls = Lists.newArrayList();
+                for (DataModelField field : fields) {
+                    String name = StringUtils.isBlank(field.getAlias()) ? field.getId() : field.getAlias();
+                    if (DataModelTypeEnum.WD.getCode().equals(field.getQuota())) {
+                        wds.add(name);
+                    } else {
+                        dls.add(name);
+                    }
+                }
+
+                List<Map<String, Object>> result = Lists.newArrayList();
+                BigDecimal count = BigDecimal.ZERO;
+                for (Map<String, Object> map : list) {
+                    Map<String, Object> one = Maps.newHashMap();
+                    for (String str : wds) {
+                        if (one.containsKey("item")) {
+                            one.put("item", one.get("item") + "-" + map.get(str));
+                        } else {
+                            one.put("item", map.get(str));
+                        }
+                    }
+                    for (String str : dls) {
+                        //度量只会一个
+                        one.put("count", map.get(str));
+                        count = count.add(new BigDecimal(String.valueOf(map.get(str))));
+                    }
+                    result.add(one);
+                }
+                //求百分比
+                for (Map<String, Object> map : result) {
+                    BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
+                            .multiply(new BigDecimal("100"))
+                            .divide(count, 2, BigDecimal.ROUND_HALF_UP);
+                    map.put("percent", per.toString());
+                }
+                return result;
+            }
+        });
     }
 
     @Override

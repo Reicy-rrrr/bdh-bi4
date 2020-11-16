@@ -33,10 +33,20 @@ public abstract class AbstractDataService {
     }
 
     protected BaseComponentDataResponse execute(String sql) {
-        List<Map<String, Object>> result = biUiDemoMapper.selectDemoList(sql);
+        return execute(sql, list -> list);
+    }
+
+    protected BaseComponentDataResponse execute(String sql,Rows rows) {
         BaseComponentDataResponse response = new BaseComponentDataResponse();
-        response.setRows(result);
-        response.setSql(SqlFormatUtil.format(sql));
+        response.setRows(rows.set(biUiDemoMapper.selectDemoList(sql)));
+        response.setSql(sql);
+        return response;
+    }
+
+    protected BaseComponentDataResponse execute(Sql sql,Rows rows) {
+        BaseComponentDataResponse response = new BaseComponentDataResponse();
+        response.setRows(rows.set(biUiDemoMapper.selectDemoList(sql.build())));
+        response.setSql(sql.build());
         return response;
     }
 
@@ -159,5 +169,9 @@ public abstract class AbstractDataService {
 
     public interface Sql {
         String build();
+    }
+
+    public interface Rows {
+        List<Map<String, Object>> set(List<Map<String, Object>> list);
     }
 }
