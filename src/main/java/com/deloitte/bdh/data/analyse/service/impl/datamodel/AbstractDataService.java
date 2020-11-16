@@ -54,7 +54,7 @@ public abstract class AbstractDataService {
     private String buildSelect(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
-            String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getAlias());
+            String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -86,7 +86,7 @@ public abstract class AbstractDataService {
     private String buildGroupBy(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
-            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota());
+            String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -117,7 +117,7 @@ public abstract class AbstractDataService {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
             String express = BuildSqlUtil.orderBy(dataModel.getTableName(), s.getId(), s.getQuota()
-                    , s.getAggregateType(), s.getOrderType());
+                    , s.getAggregateType(), s.getFormatType(), s.getOrderType());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }

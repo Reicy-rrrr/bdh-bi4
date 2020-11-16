@@ -2,17 +2,22 @@ package com.deloitte.bdh.data.analyse.utils;
 
 import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
 import org.apache.commons.lang.StringUtils;
 
 
 public class BuildSqlUtil {
 
-    public static String select(String tableName, String field, String quota, String aggregateType, String alias) {
+    public static String select(String tableName, String field, String quota, String aggregateType, String formatType, String alias) {
         //获取表名+字段名
         String fieldExpress = selectField(tableName, field);
         //判断度量和维度
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
+        } else {
+            if (StringUtils.isNotBlank(formatType)) {
+                fieldExpress = format(fieldExpress, formatType);
+            }
         }
         return fieldExpress + " AS " + (StringUtils.isBlank(alias) ? field : alias);
     }
@@ -29,11 +34,15 @@ public class BuildSqlUtil {
         return condition(selectField(tableName, field), symbol, value);
     }
 
-    public static String groupBy(String tableName, String field, String quota) {
+    public static String groupBy(String tableName, String field, String quota, String formatType) {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             return null;
         }
-        return selectField(tableName, field);
+        if (StringUtils.isNotBlank(formatType)) {
+            return format(field, formatType);
+        } else {
+            return selectField(tableName, field);
+        }
     }
 
     public static String having(String tableName, String field, String quota, String aggregateType, String symbol, String value) {
@@ -43,13 +52,17 @@ public class BuildSqlUtil {
         return condition(aggregate(selectField(tableName, field), aggregateType), symbol, value);
     }
 
-    public static String orderBy(String tableName, String field, String quota, String aggregateType, String orderType) {
+    public static String orderBy(String tableName, String field, String quota, String aggregateType, String formatType, String orderType) {
         if (StringUtils.isBlank(orderType)) {
             return null;
         }
         String fieldExpress = selectField(tableName, field);
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
+        } else {
+            if (StringUtils.isNotBlank(formatType)) {
+                fieldExpress = format(fieldExpress, formatType);
+            }
         }
         return fieldExpress + " " + orderType;
     }
@@ -60,6 +73,10 @@ public class BuildSqlUtil {
 
     private static String aggregate(String field, String aggregateType) {
         return AggregateTypeEnum.get(aggregateType).expression(field);
+    }
+
+    private static String format(String field, String formatType) {
+        return FormatTypeEnum.get(formatType).expression(field);
     }
 
     private static String condition(String field, String symbol, String value) {

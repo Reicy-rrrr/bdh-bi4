@@ -35,4 +35,7 @@ public class DataModelField {
 
     @ApiModelProperty("value")
     private String value;
+
+    @ApiModelProperty("转换类型")
+    private String formatType;
 }
