@@ -79,9 +79,7 @@ public abstract class AbstractDataService {
                 list.add(express);
             }
         }
-        if (CollectionUtils.isEmpty(list)) {
-            return "";
-        }
+
         return " WHERE " + AnalyseUtil.join(" AND ", list.toArray(new String[0]));
     }
 
@@ -131,6 +129,9 @@ public abstract class AbstractDataService {
     }
 
     private String limit(DataModel dataModel) {
+        if (null == dataModel.getPage()) {
+            return "";
+        }
         return " LIMIT " + (dataModel.getPage() - 1) * dataModel.getPageSize() + "," + dataModel.getPage() * dataModel.getPageSize();
     }
 
