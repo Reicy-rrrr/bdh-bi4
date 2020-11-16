@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 @Service("hive2")
 public class Hive2 extends AbstractProcess implements DbSelector {
@@ -86,6 +87,11 @@ public class Hive2 extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        return super.executeQuery(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "show tables";
     }
@@ -105,5 +111,10 @@ public class Hive2 extends AbstractProcess implements DbSelector {
         int end = page * size;
         return "select * from (select row_number() over () as TEMP_NUM, " + context.getTableName() + ".* from " + context.getTableName()
                 + ") as " + context.getTableName() + " where TEMP_NUM between " + start + " and " + end;*/
+    }
+
+    @Override
+    protected String buildQueryLimit(DbContext context) {
+        return context.getQuerySql() + " limit 10";
     }
 }

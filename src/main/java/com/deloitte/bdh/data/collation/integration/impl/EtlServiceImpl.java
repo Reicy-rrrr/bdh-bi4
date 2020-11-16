@@ -13,6 +13,8 @@ import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.database.DbSelector;
+import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.EtlService;
@@ -61,7 +63,11 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private DbHandler dbHandler;
     @Autowired
+    private DbSelector dbSelector;
+    @Autowired
     private BiEtlModelHandleService biEtlModelHandleService;
+    @Autowired
+    private BiEtlMappingConfigService etlMappingConfigService;
     @Resource
     private Transfer transfer;
 
@@ -482,8 +488,25 @@ public class EtlServiceImpl implements EtlService {
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
         biEtlModelHandleService.handlePreviewSql(componentModel);
-        List<Map<String, Object>> rows = dbHandler.executeQuery(componentModel.getPreviewSql());
 
+        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
+        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
+        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
+        configWrapper.last("limit 1");
+        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
+
+        List<Map<String, Object>> rows = null;
+        // 直连方式直接查询数据源
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            String sourceId = mappingConfig.getRefSourceId();
+            DbContext context = new DbContext();
+            context.setDbId(sourceId);
+            context.setQuerySql(componentModel.getPreviewSql().replace("LIMIT 10", ""));
+            rows = dbSelector.executeQuery(context);
+        } else {
+            rows = dbHandler.executeQuery(componentModel.getPreviewSql());
+        }
         ComponentPreviewVo previewVo = new ComponentPreviewVo();
         previewVo.setRows(rows);
 

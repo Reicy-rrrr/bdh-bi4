@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 @Service("hana")
 public class Hana extends AbstractProcess implements DbSelector {
@@ -88,6 +89,11 @@ public class Hana extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        return super.executeQuery(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "SELECT * FROM TABLES WHERE SCHEMA_NAME = '" + context.getDbUserName().toUpperCase() + "' AND IS_SYSTEM_TABLE = 'FALSE'";
     }
@@ -103,5 +109,10 @@ public class Hana extends AbstractProcess implements DbSelector {
         Integer size = context.getSize();
         int start = (page - 1) * size;
         return "SELECT * FROM " + context.getTableName() + " LIMIT " + size + " OFFSET " + start;
+    }
+
+    @Override
+    protected String buildQueryLimit(DbContext context) {
+        return context.getQuerySql() + " LIMIT 10 OFFSET 1";
     }
 }

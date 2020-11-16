@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.component.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
@@ -12,7 +13,12 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
+import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
+import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
+import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
+import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
+import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +44,10 @@ public class ArrangeComponent implements ComponentHandler {
 
     private static final String arranger_bean_suffix = "Arranger";
 
+    private BiEtlMappingConfigService etlMappingConfigService;
+
+    private BiEtlDatabaseInfService etlDatabaseInfService;
+
     private DbHandler dbHandler;
 
     private ComponentHandler componentHandler;
@@ -57,10 +67,28 @@ public class ArrangeComponent implements ComponentHandler {
             throw new BizException("整理组件有且只能有一个上层组件，处理失败！");
         }
 
-        // todo: 获取数据库类型
-        SourceTypeEnum dbType = SourceTypeEnum.Mysql;
-        arranger = SpringUtil.getBean(dbType.getTypeName() + arranger_bean_suffix, ArrangerSelector.class);
 
+        String modelCode = component.getRefModelCode();
+        LambdaQueryWrapper<BiEtlMappingConfig> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
+        queryWrapper.orderByDesc(BiEtlMappingConfig::getId);
+        queryWrapper.last("limit 1");
+        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(queryWrapper);
+        if (mappingConfig == null) {
+            throw new BizException("Arrange component handle error: 为查询到数据源组件配置映射信息！");
+        }
+
+        // todo：设置默认数据源类型
+        SourceTypeEnum dbType = SourceTypeEnum.Mysql;
+        // 直连时直接使用数据源
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            String sourceId = mappingConfig.getRefSourceId();
+            BiEtlDatabaseInf db = etlDatabaseInfService.getById(sourceId);
+            dbType = SourceTypeEnum.values(db.getType());
+        }
+
+        arranger = SpringUtil.getBean(dbType.getTypeName() + arranger_bean_suffix, ArrangerSelector.class);
         component.setTableName(component.getCode());
         component.setTableName(componentCode);
         Map<String, BiComponentParams> params = component.getParams().stream().collect(Collectors.toMap(BiComponentParams::getParamKey, param -> param));
@@ -213,7 +241,7 @@ public class ArrangeComponent implements ComponentHandler {
             fromBuilder.append(sql_key_bracket_left);
             fromBuilder.append(fromComponent.getQuerySql());
             fromBuilder.append(sql_key_bracket_right);
-            fromBuilder.append(sql_key_as);
+            fromBuilder.append(sql_key_blank);
             fromBuilder.append(fromTableName);
         }
         fromBuilder.append(sql_key_blank);
@@ -446,6 +474,16 @@ public class ArrangeComponent implements ComponentHandler {
             resultModels.add(resultModel);
         });
         return resultModels;
+    }
+
+    @Autowired
+    public void setEtlMappingConfigService(BiEtlMappingConfigService etlMappingConfigService) {
+        this.etlMappingConfigService = etlMappingConfigService;
+    }
+
+    @Autowired
+    public void setEtlDatabaseInfService(BiEtlDatabaseInfService etlDatabaseInfService) {
+        this.etlDatabaseInfService = etlDatabaseInfService;
     }
 
     @Autowired

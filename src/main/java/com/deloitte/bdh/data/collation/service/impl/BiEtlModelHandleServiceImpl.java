@@ -144,7 +144,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             sqlBuilder.append("LIMIT 10");
             sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
             sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(ComponentHandler.sql_key_as);
             sqlBuilder.append(componentModel.getTableName());
         }
         componentModel.setPreviewSql(sqlBuilder.toString());

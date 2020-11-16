@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractProcess {
 
@@ -73,11 +74,38 @@ public abstract class AbstractProcess {
         return count;
     }
 
+    protected List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        Connection con = this.connection(context);
+        PreparedStatement statement = con.prepareStatement(buildQueryLimit(context));
+        ResultSet result = statement.executeQuery();
+        ResultSetMetaData metaData = result.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        List<Map<String, Object>> rows = Lists.newArrayList();
+
+        String tableName = context.getTableName();
+        while (result.next()) {
+            Map<String, Object> rowData = Maps.newLinkedHashMap();
+            for (int colIndex = 1; colIndex <= columnCount; colIndex++) {
+                // hive数据库查询的结果集字段带表名
+                String columnName = metaData.getColumnName(colIndex).replace(tableName + ".", "");
+                if ("TEMP_NUM".equals(columnName)) {
+                    continue;
+                }
+                rowData.put(columnName, result.getObject(colIndex));
+            }
+            rows.add(rowData);
+        }
+        this.close(con);
+        return rows;
+    }
+
     protected abstract String tableSql(DbContext context);
 
     protected abstract String fieldSql(DbContext context);
 
     protected abstract String selectSql(DbContext context);
+
+    protected abstract String buildQueryLimit(DbContext context);
 
     protected String countSql(DbContext context) {
         if (StringUtils.isNotBlank(context.getCondition())) {

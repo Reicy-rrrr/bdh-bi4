@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service("excel")
 public class Excel extends AbstractProcess implements DbSelector {
@@ -79,6 +80,11 @@ public class Excel extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        return super.executeQuery(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return null;
     }
@@ -91,5 +97,10 @@ public class Excel extends AbstractProcess implements DbSelector {
     @Override
     protected String selectSql(DbContext context) {
         return null;
+    }
+
+    @Override
+    protected String buildQueryLimit(DbContext context) {
+        return context.getQuerySql() + " LIMIT 1, 10";
     }
 }

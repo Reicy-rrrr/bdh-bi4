@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @Service("dbSelector")
 public class DbSelectorImpl implements DbSelector {
@@ -55,6 +56,13 @@ public class DbSelectorImpl implements DbSelector {
         context(context);
         long count = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).getTableCount(context);
         return count;
+    }
+
+    @Override
+    public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        context(context);
+        List<Map<String, Object>> result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).executeQuery(context);
+        return result;
     }
 
     private void context(DbContext context) {

@@ -211,7 +211,7 @@ public class GroupComponent implements ComponentHandler {
             sqlBuilder.append(sql_key_bracket_left);
             sqlBuilder.append(fromComponent.getQuerySql());
             sqlBuilder.append(sql_key_bracket_right);
-            sqlBuilder.append(sql_key_as);
+            sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(fromComponent.getTableName());
         }
         sqlBuilder.append(sql_key_blank);

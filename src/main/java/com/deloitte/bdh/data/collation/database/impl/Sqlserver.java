@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 @Service("sqlserver")
 public class Sqlserver extends AbstractProcess implements DbSelector {
@@ -93,6 +94,11 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        return super.executeQuery(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "SELECT * FROM sysobjects WHERE XTYPE='U'";
     }
@@ -106,6 +112,11 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
     protected String selectSql(DbContext context) {
         Integer page = context.getPage();
         Integer size = context.getSize();
-        return "SELECT * FROM (SELECT * , (ROW_NUMBER() OVER(ORDER BY @@SERVERNAME)-1)/" + size + " AS TEMP_NUM FROM test) temp WHERE TEMP_NUM = " + (page - 1);
+        return "SELECT * FROM (SELECT * , (ROW_NUMBER() OVER(ORDER BY @@SERVERNAME)-1)/" + size + " AS TEMP_NUM FROM " + context.getTableName() + ") temp WHERE TEMP_NUM = " + (page - 1);
+    }
+
+    @Override
+    protected String buildQueryLimit(DbContext context) {
+        return "SELECT * FROM (SELECT * , (ROW_NUMBER() OVER(ORDER BY @@SERVERNAME)-1)/10 AS TEMP_NUM FROM (" + context.getQuerySql() + ") temp1) temp2 WHERE TEMP_NUM = 1";
     }
 }

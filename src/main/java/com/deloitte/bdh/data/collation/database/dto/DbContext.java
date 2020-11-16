@@ -25,4 +25,6 @@ public class DbContext {
 
     /** 条件 */
     private String condition;
+    /** 查询sql */
+    private String querySql;
 }

@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DbSelector {
     String test(DbContext context) throws Exception;
@@ -18,4 +19,11 @@ public interface DbSelector {
     TableData getTableData(DbContext context) throws Exception;
 
     long getTableCount(DbContext context) throws Exception;
+
+    /**
+     * 执行查询sql语句
+     * @param context
+     * @return
+     */
+    List<Map<String, Object>> executeQuery(DbContext context) throws Exception;
 }

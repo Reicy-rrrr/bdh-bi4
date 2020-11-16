@@ -216,7 +216,6 @@ public class JoinComponent implements ComponentHandler {
                 // 子查询使用组件code作为别名
                 sqlBuilder.append(sql_key_bracket_right);
                 sqlBuilder.append(sql_key_blank);
-                sqlBuilder.append(sql_key_as);
                 sqlBuilder.append(rightComponent.getTableName());
                 sqlBuilder.append(sql_key_blank);
             }

@@ -107,6 +107,11 @@ public class Oracle extends AbstractProcess implements DbSelector {
     }
 
     @Override
+    public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
+        return super.executeQuery(context);
+    }
+
+    @Override
     public String tableSql(DbContext context) {
         return "SELECT * FROM all_tables WHERE OWNER = '" + context.getDbUserName().toUpperCase() + "' ORDER BY table_name";
     }
@@ -127,5 +132,10 @@ public class Oracle extends AbstractProcess implements DbSelector {
         int end = page * size;
         return "SELECT * FROM (SELECT tmp.*, ROWNUM AS TEMP_NUM FROM (SELECT * FROM " + context.getTableName()
                 + ") tmp) WHERE TEMP_NUM BETWEEN " + start + " AND " + end;
+    }
+
+    @Override
+    protected String buildQueryLimit(DbContext context) {
+        return "SELECT * FROM (SELECT tmp.*, ROWNUM AS TEMP_NUM FROM (SELECT * FROM (" + context.getQuerySql() + ")) tmp) WHERE TEMP_NUM BETWEEN 1 AND 10";
     }
 }
