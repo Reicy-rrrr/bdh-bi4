@@ -69,12 +69,44 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
 
     @Override
+    public List<BiEtlModel> getModelTree() {
+        List<BiEtlModel> models = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getParentCode, "0")
+                .eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey())
+                .orderByDesc(BiEtlModel::getCreateDate)
+        );
+
+        if (CollectionUtils.isEmpty(models)) {
+            //创建初始化模板
+            BiEtlModel model = new BiEtlModel();
+            String code = GenerateCodeUtil.generate();
+            model.setCode(code);
+            model.setName("默认文件夹");
+            model.setComments("默认文件夹");
+            model.setVersion("0");
+            model.setParentCode("0");
+            model.setRootCode(code);
+            model.setIsFile(YesOrNoEnum.YES.getKey());
+            model.setEffect(EffectEnum.ENABLE.getKey());
+            model.setTenantId(ThreadLocalHolder.getTenantId());
+            model.setProcessGroupId(code);
+            biEtlModelMapper.insert(model);
+            models.add(model);
+        }
+        return models;
+    }
+
+    @Override
     public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
         LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
         fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
         if (!StringUtil.isEmpty(ThreadLocalHolder.getTenantId())) {
             fUOLamQW.eq(BiEtlModel::getTenantId, ThreadLocalHolder.getTenantId());
         }
+        if (!StringUtil.isEmpty(dto.getFileCode())) {
+            fUOLamQW.eq(BiEtlModel::getParentCode, dto.getFileCode());
+        }
+        fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
         fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
         PageInfo<BiEtlModel> pageInfo = new PageInfo(this.list(fUOLamQW));
         PageResult<List<BiEtlModel>> pageResult = new PageResult(pageInfo);
@@ -202,19 +234,21 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
         RunStatusEnum runStatusEnum = RunStatusEnum.getEnum(biEtlModel.getStatus());
         if (RunStatusEnum.RUNNING == runStatusEnum) {
-            // 停止数据源组nifi 、停止与删除etl NIFI
-            componentService.stopAndDelComponents(modelCode);
-            // 停止 job
-            jobService.stop(modelCode);
-            //判断是否有执行计划正在执行中，有则取消
+            //判断是否有执行计划正在执行中，有则无法停止
             List<BiEtlSyncPlan> planList = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
                     .eq(BiEtlSyncPlan::getRefModelCode, modelCode)
                     .isNull(BiEtlSyncPlan::getPlanResult)
             );
             if (CollectionUtils.isNotEmpty(planList)) {
-                planList.forEach(s -> s.setPlanResult(PlanResultEnum.CANCEL.getValue()));
-                syncPlanService.updateBatchById(planList);
+                throw new RuntimeException("EtlServiceImpl.runModel.error : 该任务正在执行，不允许停止");
+//                planList.forEach(s -> s.setPlanResult(PlanResultEnum.CANCEL.getValue()));
+//                syncPlanService.updateBatchById(planList);
             }
+            // 此时不会有待执行的执行计划，停止数据源组nifi 、停止与删除etl NIFI
+            componentService.stopAndDelComponents(modelCode);
+            // 停止 job
+            jobService.stop(modelCode);
+
             biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
             biEtlModel.setSyncStatus(YesOrNoEnum.NO.getKey());
         } else {
@@ -293,11 +327,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
         BiEtlModel inf = new BiEtlModel();
+        BeanUtils.copyProperties(dto, inf);
         //文件夹
         if (YesOrNoEnum.YES.getKey().equals(dto.getIsFile())) {
             inf.setCode(modelCode);
             if ("0".equals(dto.getParentCode())) {
-                inf.setRootCode(modelCode);
+                inf.setRootCode(inf.getCode());
             } else {
                 //查询上级是否是文件夹
                 Map<String, Object> query = Maps.newHashMap();
@@ -315,6 +350,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             inf.setTenantId(ThreadLocalHolder.getTenantId());
             inf.setVersion("0");
             inf.setEffect(EffectEnum.ENABLE.getKey());
+            inf.setProcessGroupId(modelCode);
             biEtlModelMapper.insert(inf);
         }
         return inf;
@@ -323,6 +359,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
         BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getName, dto.getName())
+                .eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey())
         );
         if (null != model) {
             throw new RuntimeException("模板编码名字重复!");
@@ -333,8 +370,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (StringUtil.isEmpty(inf.getPosition())) {
             inf.setPosition(NifiProcessUtil.randPosition());
         }
-        if (!"0".equals(dto.getParentCode())) {
-            throw new RuntimeException("非文件夹模式下只能创建ETL模板");
+        if ("0".equals(dto.getParentCode())) {
+            throw new RuntimeException("请在文件夹下创建ETL模板");
         }
         //生效、失效的状态
         inf.setEffect(EffectEnum.ENABLE.getKey());

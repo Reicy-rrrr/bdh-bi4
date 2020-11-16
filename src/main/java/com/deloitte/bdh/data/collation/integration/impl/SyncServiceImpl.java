@@ -272,8 +272,6 @@ public class SyncServiceImpl implements SyncService {
                 if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
                     throw new RuntimeException("依赖的同步任务失败:" + syncPlan.getCode());
                 }
-                //todo 取消状态呢？
-
                 //有任务正在运行中，直接返回待下次处理
                 if (null == syncPlan.getPlanResult()) {
                     return;

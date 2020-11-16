@@ -37,6 +37,12 @@ public class BiEtlModelController {
     @Autowired
     private BiEtlModelService biEtlModelService;
 
+    @ApiOperation(value = "基于租户获取模型文件夹树", notes = "基于租户获取模型文件夹树")
+    @PostMapping("/getModelTree")
+    public RetResult<List<BiEtlModel>> getModelTree(@RequestBody @Validated RetRequest request) {
+        return RetResponse.makeOKRsp(biEtlModelService.getModelTree());
+    }
+
     @ApiOperation(value = "基于租户获取模型列表", notes = "基于租户获取模型列表")
     @PostMapping("/getModelPage")
     public RetResult<PageResult<List<BiEtlModel>>> getModelPage(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
