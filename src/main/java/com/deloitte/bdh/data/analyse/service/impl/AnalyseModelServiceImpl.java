@@ -128,6 +128,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
+        String dlId= null;
         if (CollectionUtils.isEmpty(folderList)) {
             folderList = Lists.newArrayList();
             //初始化维度文件夹
@@ -156,6 +157,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             dl.setCreateUser(request.getOperator());
             dl.setCreateDate(LocalDateTime.now());
             folderService.save(dl);
+            dlId = dl.getId();
 
             folderList.add(wd);
             folderList.add(dl);
@@ -176,11 +178,12 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 field.setFieldDesc(column.getDesc());
                 field.setParentId("0");
                 field.setPageId(request.getData().getPageId());
-                field.setFolderId(wdId);
                 if (AnalyseConstants.MENSURE_TYPE.contains(column.getDataType().toUpperCase())) {
+                    field.setFolderId(dlId);
                     field.setIsDimention(YnTypeEnum.NO.getCode());
                     field.setIsMensure(YnTypeEnum.YES.getCode());
                 } else {
+                    field.setFolderId(wdId);
                     field.setIsDimention(YnTypeEnum.YES.getCode());
                     field.setIsMensure(YnTypeEnum.NO.getCode());
                 }
