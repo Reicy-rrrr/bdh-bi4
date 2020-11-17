@@ -40,9 +40,6 @@ import java.util.List;
 public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePageConfigMapper, BiUiAnalysePageConfig> implements AnalysePageConfigService {
 
     @Resource
-    BiUiAnalysePageConfigMapper biUiReportPageConfigMapper;
-
-    @Resource
     AnalysePageService analysePageService;
 
     @Override
@@ -95,7 +92,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         config.setTenantId(request.getTenantId());
         config.setCreateUser(request.getOperator());
         config.setCreateDate(LocalDateTime.now());
-        biUiReportPageConfigMapper.insert(config);
+        this.save(config);
         page.setEditId(config.getId());
         page.setIsEdit(YnTypeEnum.YES.getCode());
         analysePageService.updateById(page);
@@ -106,7 +103,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
 
     @Override
     public void delAnalysePageConfig(String id) {
-        biUiReportPageConfigMapper.deleteById(id);
+        this.removeById(id);
     }
 
     @Override
@@ -119,7 +116,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         config.setContent(request.getData().getContent());
         config.setModifiedDate(LocalDateTime.now());
         config.setModifiedUser(AnalyseUtil.getCurrentUser());
-        biUiReportPageConfigMapper.updateById(config);
+        this.updateById(config);
         BiUiAnalysePage page = analysePageService.getById(config.getPageId());
         page.setIsEdit(YnTypeEnum.YES.getCode());
         analysePageService.updateById(page);
