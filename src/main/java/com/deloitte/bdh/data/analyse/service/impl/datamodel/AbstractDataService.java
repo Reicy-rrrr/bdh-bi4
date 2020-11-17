@@ -37,10 +37,7 @@ public abstract class AbstractDataService {
     }
 
     protected BaseComponentDataResponse execute(String sql,Rows rows) {
-        BaseComponentDataResponse response = new BaseComponentDataResponse();
-        response.setRows(rows.set(biUiDemoMapper.selectDemoList(sql)));
-        response.setSql(sql);
-        return response;
+        return execute(() -> sql, rows);
     }
 
     protected BaseComponentDataResponse execute(Sql sql,Rows rows) {

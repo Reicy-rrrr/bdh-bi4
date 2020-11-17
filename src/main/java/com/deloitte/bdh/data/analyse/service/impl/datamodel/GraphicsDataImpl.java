@@ -65,7 +65,7 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
                 BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
                         .multiply(new BigDecimal("100"))
                         .divide(count, 2, BigDecimal.ROUND_HALF_UP);
-                map.put("percent", per.toString());
+                map.put("percent", per.doubleValue());
             }
             return result;
         });
