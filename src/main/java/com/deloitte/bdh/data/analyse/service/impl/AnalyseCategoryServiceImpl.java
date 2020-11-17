@@ -116,6 +116,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
         pageLambdaQueryWrapper.in(BiUiAnalysePage::getParentId, categoryIds);
         pageLambdaQueryWrapper.isNotNull(BiUiAnalysePage::getPublishId);
+        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode());
         List<BiUiAnalysePage> pageList = pageService.list(pageLambdaQueryWrapper);
 
         //组装category id和page的map结构，方便递归取数据
@@ -134,7 +135,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         }
 
         //递归整理数据
-        return buildCategoryTree(categoryList, pageDtoMap, "0");
+        List<AnalyseCategoryTree> trees = buildCategoryTree(categoryList, pageDtoMap, "0");
+        return trees;
     }
 
     @Override
@@ -311,9 +313,11 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                         tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
                         pageList.add(tree);
                     }
-                    if (CollectionUtils.isNotEmpty(categoryTree.getChildren())) {
-                        categoryTree.getChildren().addAll(pageList);
+                    if (CollectionUtils.isEmpty(categoryTree.getChildren())) {
+                        List<AnalyseCategoryTree> children = Lists.newArrayList();
+                        categoryTree.setChildren(children);
                     }
+                    categoryTree.getChildren().addAll(pageList);
                 }
             }
         }

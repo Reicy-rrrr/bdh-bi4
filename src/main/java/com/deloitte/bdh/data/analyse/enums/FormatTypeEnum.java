@@ -30,7 +30,7 @@ public enum FormatTypeEnum {
     YEAR_MONTH_DAY("YEAR_MONTH_DAY", "年-月-日") {
         @Override
         public String expression(String str) {
-            return " DATE_FORMAT(str)".replaceAll("str", str);
+            return " DATE_FORMAT(str, '%Y-%m-%d')".replaceAll("str", str);
         }
     },
     QUARTER("QUARTER", "季度"),

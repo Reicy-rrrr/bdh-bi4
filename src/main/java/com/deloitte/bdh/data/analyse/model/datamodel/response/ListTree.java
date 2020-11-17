@@ -16,6 +16,9 @@ public class ListTree {
     @ApiModelProperty(value = "名称")
     private String title;
 
+    @ApiModelProperty(value = "名称")
+    private String key;
+
     @ApiModelProperty(value = "下级数据")
     private List<ListTree> children;
 }

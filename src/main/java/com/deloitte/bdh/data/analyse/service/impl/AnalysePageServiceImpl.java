@@ -62,6 +62,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             query.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
         }
         query.isNotNull(BiUiAnalysePage::getPublishId);
+        query.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode());
         query.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(query);
         return getAnalysePageDtoPageResult(pageList);

@@ -1,18 +1,25 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.ListTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import springfox.documentation.spring.web.readers.parameter.ModelAttributeField;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +30,9 @@ import java.util.Map;
  */
 @Service("crossPivotDataImpl")
 public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDataService {
+
+    @Resource
+    private AnalyseModelFieldService fieldService;
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
@@ -36,38 +46,35 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         List<Map<String, Object>> rows = response.getRows();
         //构造要查询的行字段
         if (CollectionUtils.isNotEmpty(rows)) {
+            Map<String, List<ListTree>> columns = Maps.newHashMap();
             DataModel dataModel = request.getDataConfig().getDataModel();
             String[] colNameXArr = new String[dataModel.getX().size()];
-            for (int i = 0; i < dataModel.getX().size(); i++) {
-                String colName = dataModel.getX().get(i).getId();
-                if (StringUtils.isNotBlank(dataModel.getX().get(i).getAlias())) {
-                    colName = dataModel.getX().get(i).getAlias();
+            if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+                for (int i = 0; i < dataModel.getX().size(); i++) {
+                    String colName = dataModel.getX().get(i).getId();
+                    String quota = dataModel.getX().get(i).getQuota();
+                    if (StringUtils.isNotBlank(dataModel.getX().get(i).getAlias()) &&
+                            StringUtils.equals(DataModelTypeEnum.WD.getCode(), quota)) {
+                        colName = dataModel.getX().get(i).getAlias();
+                    }
+                    colNameXArr[i] = colName;
                 }
-                colNameXArr[i] = colName;
+                //构造树形结构
+                List<ListTree> x = buildTree(rows, 0, colNameXArr);
+                columns.put("x", x);
             }
-            //构造树形结构
-            List<ListTree> x = buildTree(rows, 0, colNameXArr);
 
-            String[] colNameYArr = new String[dataModel.getY().size()];
-            for (int i = 0; i < dataModel.getY().size(); i++) {
-                String colName = dataModel.getY().get(i).getId();
-                if (StringUtils.isNotBlank(dataModel.getY().get(i).getAlias())) {
-                    colName = dataModel.getY().get(i).getAlias();
+            if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+                String[] colNameYArr = new String[dataModel.getY().size()];
+                for (int i = 0; i < dataModel.getY().size(); i++) {
+                    String colName = dataModel.getY().get(i).getId();
+                    colNameYArr[i] = colName;
                 }
-                colNameYArr[i] = colName;
+                List<ListTree> y = buildY(dataModel.getTableName(), colNameYArr);
+                columns.put("y", y);
             }
-            List<ListTree> y = buildTree(rows, 0, colNameYArr);
-
-//            List<ListTree> firstTree = setFirstNode(colNameXArr, 0, colNameYArr);
-//            List<ListTree> x = Lists.newArrayList();
-//            x.addAll(firstTree);
-//            x.addAll(xList);
-            Map<String, List<ListTree>> columns = Maps.newHashMap();
-            columns.put("x", x);
-            columns.put("y", y);
             response.setColumns(columns);
         }
-
     }
 
     private List<ListTree> buildTree(List<Map<String, Object>> rows, int currentNode, String[] colNameArr) {
@@ -93,6 +100,7 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
             ListTree tree = new ListTree();
             tree.setTitle(key);
             if (currentNode != colNameArr.length) {
+                tree.setKey(colNameArr[currentNode]);
                 tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameArr));
                 treeDataModels.add(tree);
             }
@@ -100,30 +108,23 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         return treeDataModels;
     }
 
-    private List<ListTree> setFirstNode(String[] colNameXArr, int currentNode, String[] colNameYArr) {
-        List<ListTree> listTrees = Lists.newArrayList();
-        if (colNameXArr != null && colNameXArr.length > 0) {
-            for (int i = colNameXArr.length -1 ; i >=0; i--) {
-                ListTree tree = new ListTree();
-                if (currentNode != colNameXArr.length -1) {
-                    tree.setChildren(setFirstNode(colNameXArr,currentNode + 1, colNameYArr));
-                    listTrees.add(tree);
-                }
-                if (currentNode == colNameXArr.length -1) {
-                    if (colNameYArr != null && colNameYArr.length > 0) {
-                        List<ListTree> innerList = Lists.newArrayList();
-                        for (String name : colNameYArr) {
-                            ListTree lastTree = new ListTree();
-                            lastTree.setTitle(name);
-                            innerList.add(lastTree);
-                        }
-                        tree.setChildren(innerList);
-                        listTrees.add(tree);
-                    }
-                }
-            }
+    private List<ListTree> buildY(String tableName, String[] colNameArr) {
+        LambdaQueryWrapper<BiUiModelField> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiModelField::getModelId, tableName);
+        queryWrapper.in(BiUiModelField::getName, Lists.newArrayList(colNameArr));
+        List<BiUiModelField> fieldList = fieldService.list(queryWrapper);
+        Map<String, String> nameDescMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(fieldList)) {
+            fieldList.forEach(field -> nameDescMap.put(field.getName(), field.getFieldDesc()));
         }
-        return listTrees;
+        List<ListTree> treeDataModels = Lists.newArrayList();
+        for (String colName : colNameArr) {
+            ListTree tree = new ListTree();
+            tree.setKey(colName);
+            tree.setTitle(MapUtils.getString(nameDescMap, colName));
+            treeDataModels.add(tree);
+        }
+        return treeDataModels;
     }
 
     @Override
