@@ -14,7 +14,7 @@ import java.util.List;
 public class ListTree {
 
     @ApiModelProperty(value = "名称")
-    private String name;
+    private String title;
 
     @ApiModelProperty(value = "下级数据")
     private List<ListTree> children;

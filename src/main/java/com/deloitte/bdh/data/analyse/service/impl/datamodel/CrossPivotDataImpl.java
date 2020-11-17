@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.ListTree;
@@ -57,6 +58,10 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
             }
             List<ListTree> y = buildTree(rows, 0, colNameYArr);
 
+//            List<ListTree> firstTree = setFirstNode(colNameXArr, 0, colNameYArr);
+//            List<ListTree> x = Lists.newArrayList();
+//            x.addAll(firstTree);
+//            x.addAll(xList);
             Map<String, List<ListTree>> columns = Maps.newHashMap();
             columns.put("x", x);
             columns.put("y", y);
@@ -86,13 +91,39 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         }
         for (String key : keyMap.keySet()) {
             ListTree tree = new ListTree();
-            tree.setName(key);
+            tree.setTitle(key);
             if (currentNode != colNameArr.length) {
                 tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameArr));
                 treeDataModels.add(tree);
             }
         }
         return treeDataModels;
+    }
+
+    private List<ListTree> setFirstNode(String[] colNameXArr, int currentNode, String[] colNameYArr) {
+        List<ListTree> listTrees = Lists.newArrayList();
+        if (colNameXArr != null && colNameXArr.length > 0) {
+            for (int i = colNameXArr.length -1 ; i >=0; i--) {
+                ListTree tree = new ListTree();
+                if (currentNode != colNameXArr.length -1) {
+                    tree.setChildren(setFirstNode(colNameXArr,currentNode + 1, colNameYArr));
+                    listTrees.add(tree);
+                }
+                if (currentNode == colNameXArr.length -1) {
+                    if (colNameYArr != null && colNameYArr.length > 0) {
+                        List<ListTree> innerList = Lists.newArrayList();
+                        for (String name : colNameYArr) {
+                            ListTree lastTree = new ListTree();
+                            lastTree.setTitle(name);
+                            innerList.add(lastTree);
+                        }
+                        tree.setChildren(innerList);
+                        listTrees.add(tree);
+                    }
+                }
+            }
+        }
+        return listTrees;
     }
 
     @Override
