@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -79,21 +80,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
         BeanUtils.copyProperties(category, dto);
         return dto;
-    }
-
-    @Override
-    public void delAnalyseCategory(RetRequest<String> request) {
-        BiUiAnalyseCategory category = this.getById(request.getData());
-        if (category == null) {
-            throw new BizException("文件夹错误");
-        }
-        if (StringUtils.equals(category.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
-            throw new BizException("顶级文件夹不能删除");
-        }
-        List<String> parentIdList = Lists.newArrayList(category.getId());
-        //有下级的不能删除
-        delAnalyseCategoriesCheck(parentIdList, request.getTenantId());
-        this.removeById(request.getData());
     }
 
     @Override
@@ -205,12 +191,32 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     }
 
     @Override
+    public void delAnalyseCategory(RetRequest<String> request) {
+
+        List<String> ids = Arrays.asList(request.getData().split(" "));
+        String tenatId = request.getTenantId();
+        delAnalyseCategories(ids, tenatId);
+    }
+
+    @Override
     @Transactional
     public void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request) {
-        if (CollectionUtils.isEmpty(request.getData().getIds())) {
+
+        List<String> ids = request.getData().getIds();
+        String tenatId = request.getTenantId();
+        delAnalyseCategories(ids, tenatId);
+    }
+
+    //删除文件夹和批量删除文件夹公用方法
+    private void delAnalyseCategories(List<String> ids, String tenantId) {
+
+        if (null == tenantId || tenantId.isEmpty()) {
+            throw new BizException("请选择租户");
+        }
+        if (CollectionUtils.isEmpty(ids)) {
             throw new BizException("请选择要删除的文件夹");
         }
-        List<BiUiAnalyseCategory> categoryList = this.listByIds(request.getData().getIds());
+        List<BiUiAnalyseCategory> categoryList = this.listByIds(ids);
         if (CollectionUtils.isNotEmpty(categoryList)) {
             List<String> parentIdList = Lists.newArrayList();
             categoryList.forEach(category -> {
@@ -219,41 +225,26 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                 }
                 parentIdList.add(category.getId());
             });
-
-            //有下级的不能删除
-            List<BiUiAnalyseCategory> childList = getChildCategory(parentIdList, request.getTenantId());
+            //删除前检查是否有下级文件
+            List<BiUiAnalyseCategory> childList = getChildCategory(parentIdList, tenantId);
             if (CollectionUtils.isNotEmpty(childList)) {
                 throw new BizException("请先删除下级文件夹");
             }
-            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, request.getTenantId());
+            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
             if (CollectionUtils.isNotEmpty(childPageList)) {
-                throw new BizException("请先删除下级页面");
+                List<String> existEdit = childPageList.stream()
+                        .filter(BiUiAnalysePage -> null != BiUiAnalysePage.getIsEdit() &&
+                                BiUiAnalysePage.getIsEdit().equals(YnTypeEnum.YES.getCode()))
+                        .map(BiUiAnalysePage::getName).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(existEdit)) {
+                    String message = StringUtils.join(existEdit);
+                    throw new BizException("请先删除该文件夹中的草稿页面，草稿页面名称如下：" + message);
+                } else {
+                    throw new BizException("请先删除下级页面");
+                }
             }
-
-            //删除前检查是否有下级文件
-            delAnalyseCategoriesCheck(parentIdList, request.getTenantId());
             //删除
             this.removeByIds(parentIdList);
-        }
-    }
-
-    //删除前检查是否有下级文件
-    private void delAnalyseCategoriesCheck(List<String> parentIdList, String tenantId) {
-
-        List<BiUiAnalyseCategory> childList = getChildCategory(parentIdList, tenantId);
-        if (CollectionUtils.isNotEmpty(childList)) {
-            throw new BizException("请先删除下级文件夹");
-        }
-        List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
-        if (CollectionUtils.isNotEmpty(childPageList)) {
-            List<BiUiAnalysePage> existEdit = childPageList.stream()
-                    .filter(BiUiAnalysePage -> BiUiAnalysePage.getEditId().equals(YnTypeEnum.YES.getCode()))
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(existEdit)) {
-                throw new BizException("请先删除下级草稿页面");
-            } else {
-                throw new BizException("请先删除下级页面");
-            }
         }
     }
 
