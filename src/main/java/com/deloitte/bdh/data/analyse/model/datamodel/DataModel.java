@@ -3,12 +3,15 @@ package com.deloitte.bdh.data.analyse.model.datamodel;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class DataModel {
 
+    @NotBlank
     @ApiModelProperty(value = "查询的表", notes = "树上所选表")
     String tableName;
 
@@ -22,5 +25,8 @@ public class DataModel {
     Integer page;
 
     @ApiModelProperty(value = "页大小")
-    Integer pageSize;
+    Integer pageSize = 10;
+
+    @ApiModelProperty(value = "自定义参数")
+    Map<String, String> customParams;
 }
