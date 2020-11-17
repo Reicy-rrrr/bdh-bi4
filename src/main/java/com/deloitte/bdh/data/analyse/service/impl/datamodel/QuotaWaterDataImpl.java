@@ -28,6 +28,7 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
             //度量只会一个
             for (Map<String, Object> var : list) {
                 for (Map.Entry<String, Object> param : var.entrySet()) {
+                    map.put("name", param.getKey());
                     map.put("percent", new BigDecimal(String.valueOf(param.getValue())));
                 }
             }
