@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -102,6 +103,15 @@ public interface DbHandler {
      * @return
      */
     List<Map<String, Object>> executeQuery(String querySql);
+
+    /**
+     * 执行查询批量插入
+     *
+     * @param tableName 目标表名
+     * @param rows      数据行
+     * @return
+     */
+    long executeInsert(String tableName, List<Map<String, Object>> rows);
 
     /**
      * 查询数据源组件表字段

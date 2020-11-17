@@ -63,4 +63,13 @@ public interface BiEtlDbMapper {
      * @return
      */
     List<Map<String, Object>> executeQuery(@Param("querySql") String querySql);
+
+    /**
+     * 执行批量插入操作
+     *
+     * @param tableName 目标表名
+     * @param rows      数据行
+     * @return
+     */
+    long executeInsert(@Param(value = "tableName") String tableName, @Param(value = "rows") List<Map<String, Object>> rows);
 }

@@ -145,10 +145,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         }
         BiEtlDatabaseInf inf = createResource(createDto);
 
-        // 根据数据源信息初始化mongodb集合名称
-        String collectionName = initMongoCollectionName(inf);
+        // 根据数据源信息初始化表名称
+        String tableName = initImportTableName(inf);
         // 将mongodb集合名称暂存到数据源的数据库名称字段中
-        inf.setDbName(collectionName);
+        inf.setDbName(tableName);
         this.updateById(inf);
 
         String fileName = dbFile.getStoredFileName();
@@ -156,7 +156,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 从ftp服务器获取文件
         byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
         // 读取文件
-        fileReadService.read(fileBytes, fileType, dto.getColumns(), collectionName);
+        fileReadService.read(fileBytes, fileType, dto.getColumns(), tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(inf.getId());
         // 修改文件状态为已读
@@ -527,13 +527,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     /**
-     * 初始化生成mongo集合名称
+     * 初始化生成导入文件表名称
      * 默认：租户id + "_" + yyyyMMdd + "_" + dbId
      *
      * @param inf
      * @return
      */
-    private String initMongoCollectionName(BiEtlDatabaseInf inf) {
+    private String initImportTableName(BiEtlDatabaseInf inf) {
         if (inf == null) {
             return null;
         }

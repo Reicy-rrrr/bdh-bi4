@@ -112,9 +112,6 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public List<String> getTables() {
-        if (true) {
-            return Lists.newArrayList("ORDERS_USCA_BI");
-        }
         // 查询所有输出组件
         LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
         componentQuery.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
@@ -131,10 +128,13 @@ public class DbHandlerImpl implements DbHandler {
         paramQuery.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
         List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
         if (CollectionUtils.isEmpty(params)) {
-            return Lists.newArrayList();
+            // todo: 待修改为返回空集合
+            return Lists.newArrayList("ORDERS_USCA_BI");
         }
 
         List<String> tableNames = params.stream().map(BiComponentParams::getParamValue).collect(Collectors.toList());
+        // todo: 待删除
+        tableNames.add("ORDERS_USCA_BI");
         return tableNames;
     }
 
@@ -178,6 +178,23 @@ public class DbHandlerImpl implements DbHandler {
     @Override
     public List<Map<String, Object>> executeQuery(String querySql) {
         return biEtlDbMapper.executeQuery(querySql);
+    }
+
+    @Override
+    public long executeInsert(String tableName, List<Map<String, Object>> rows) {
+        if (StringUtils.isBlank(tableName)) {
+            throw new BizException("DbHandler execute insert error: 表名不能为空！");
+        }
+
+        List<String> tables = getTables();
+        if (!tables.contains(tableName)) {
+            throw new BizException("DbHandler execute insert error: 表不存在！");
+        }
+
+        if (CollectionUtils.isEmpty(rows)) {
+            return 0;
+        }
+        return biEtlDbMapper.executeInsert(tableName, rows);
     }
 
     private String buildQueryColumnsSql(String tableName) {
@@ -235,7 +252,11 @@ public class DbHandlerImpl implements DbHandler {
             if (!CollectionUtils.isEmpty(targetColumns) && !targetColumns.contains(fieldName)) {
                 continue;
             }
-            sqlBuilder.append(fieldName).append(" ").append(columnType).append(",");
+            sqlBuilder.append(fieldName).append(" ").append(columnType);
+            if (StringUtils.isNotBlank(field.getDesc())) {
+                sqlBuilder.append(" COMMENT '").append(field.getDesc()).append("'");
+            }
+            sqlBuilder.append(",");
         }
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
         sqlBuilder.append(")");

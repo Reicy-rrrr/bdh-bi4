@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
@@ -120,8 +120,8 @@ public class BiEtlModel implements Serializable {
     /**
      * 同步时间
      */
-    @TableField("CORN_EXPRESSION")
-    private String cornExpression;
+    @TableField("CRON_EXPRESSION")
+    private String cronExpression;
 
     /**
      * 模型内容：大json
@@ -269,12 +269,12 @@ public class BiEtlModel implements Serializable {
     public void setProcessGroupId(String processGroupId) {
         this.processGroupId = processGroupId;
     }
-    public String getCornExpression() {
-        return cornExpression;
+    public String getCronExpression() {
+        return cronExpression;
     }
 
-    public void setCornExpression(String cornExpression) {
-        this.cornExpression = cornExpression;
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
     }
     public String getContent() {
         return content;
@@ -307,7 +307,7 @@ public class BiEtlModel implements Serializable {
         ", ip=" + ip +
         ", tenantId=" + tenantId +
         ", processGroupId=" + processGroupId +
-        ", cornExpression=" + cornExpression +
+        ", cronExpression=" + cronExpression +
         ", content=" + content +
         "}";
     }

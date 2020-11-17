@@ -201,7 +201,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         if (YesOrNoEnum.NO.getKey().equals(inf.getIsFile())) {
             if (!StringUtil.isEmpty(dto.getCronExpression())) {
-                inf.setCornExpression(dto.getCronExpression());
+                inf.setCronExpression(dto.getCronExpression());
                 //调用xxjob 设置调度任务
                 Map<String, String> params = Maps.newHashMap();
                 params.put("modelCode", inf.getCode());
@@ -301,7 +301,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 失效状态下无法发布");
         }
 
-        if (StringUtil.isEmpty(biEtlModel.getCornExpression())) {
+        if (StringUtil.isEmpty(biEtlModel.getCronExpression())) {
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
         }
         componentService.validate(modelCode);
