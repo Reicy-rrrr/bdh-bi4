@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.analyse.enums;
 
 
-import org.apache.commons.lang3.StringUtils;
 
 public enum AggregateTypeEnum {
     SUM("SUM", "求和"),

@@ -22,7 +22,7 @@ public class DataModel {
     List<DataModelField> y = Lists.newArrayList();
 
     @ApiModelProperty(value = "页开始", notes = "1开始")
-    Integer page = 1;
+    Integer page;
 
     @ApiModelProperty(value = "页大小")
     Integer pageSize = 10;
