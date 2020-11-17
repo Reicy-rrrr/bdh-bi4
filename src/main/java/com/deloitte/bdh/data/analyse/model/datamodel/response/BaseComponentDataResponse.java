@@ -10,7 +10,7 @@ import java.util.Map;
 public class BaseComponentDataResponse {
 
     @ApiModelProperty(value = "列名称")
-    List<Object> columns;
+    Map<String, List<ListTree>> columns;
 
     @ApiModelProperty(value = "数据")
     List<Map<String, Object>> rows;
