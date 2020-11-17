@@ -11,8 +11,11 @@ public enum DataImplEnum {
 
     TABLE_NORMAL("table", "normal", "tableNormalDataImpl"),
     TABLE_CROSS("table", "cross", "crossPivotDataImpl"),
+    //圆图
     GRAPHICS_PIE("graphics", "pie", "graphicsDataImpl"),
     GRAPHICS_RING("graphics", "ring", "graphicsDataImpl"),
+    //指标图
+    QUOTA("quota", "water", "quotaWaterDataImpl"),
 
     ;
 

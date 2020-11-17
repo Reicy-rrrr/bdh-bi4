@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
-import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -18,11 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Author:LIJUN
- * Date:13/11/2020
- * Description:
- */
+
 @Service("graphicsDataImpl")
 public class GraphicsDataImpl extends AbstractDataService implements AnalyseDataService {
 
@@ -93,8 +88,6 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
         if (dlFields.size() > 1) {
             throw new RuntimeException("度量字段数量不能大于1");
         }
-        //校验度量聚合类型
-        dlFields.forEach(s -> AggregateTypeEnum.get(s.getAggregateType()));
-
+        dataModel.setPage(null);
     }
 }
