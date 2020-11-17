@@ -122,6 +122,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         biUiReportPageConfigMapper.updateById(config);
         BiUiAnalysePage page = analysePageService.getById(config.getPageId());
         page.setIsEdit(YnTypeEnum.YES.getCode());
+        analysePageService.updateById(page);
         AnalysePageConfigDto dto = new AnalysePageConfigDto();
         BeanUtils.copyProperties(config, dto);
         return dto;
