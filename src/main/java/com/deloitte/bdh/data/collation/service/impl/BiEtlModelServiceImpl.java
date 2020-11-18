@@ -264,6 +264,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             ComponentModel componentModel = modelHandleService.handleModel(modelCode);
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
+            // todo 看数据分析是否用到该表，且该表是否字段一致
+
             //创建nifi 配置
             componentService.addOutComponent(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
             //创建表

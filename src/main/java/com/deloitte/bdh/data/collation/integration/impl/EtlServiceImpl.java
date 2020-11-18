@@ -215,6 +215,15 @@ public class EtlServiceImpl implements EtlService {
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
 
+        // 校验表名是否重复
+        List<String> tables = dbHandler.getTables();
+        if (CollectionUtils.isNotEmpty(tables)) {
+            Optional<String> optional = tables.stream().filter(s -> s.equalsIgnoreCase(tableName)).findAny();
+            if(optional.isPresent()){
+                throw new RuntimeException("EtlServiceImpl.out.error : 表名已存在");
+            }
+        }
+
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
