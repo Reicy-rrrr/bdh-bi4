@@ -36,6 +36,11 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+        DataModel dataModel = request.getDataConfig().getDataModel();
+        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
+            dataModel.getY().forEach(field -> dataModel.getX().add(field));
+        }
+
         String sql = buildSql(request.getDataConfig().getDataModel());
         BaseComponentDataResponse response = execute(sql);
         buildColumns(request, response);
@@ -48,17 +53,20 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         if (CollectionUtils.isNotEmpty(rows)) {
             Map<String, List<ListTree>> columns = Maps.newHashMap();
             DataModel dataModel = request.getDataConfig().getDataModel();
-            String[] colNameXArr = new String[dataModel.getX().size()];
             if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+                List<String> colNameList = Lists.newArrayList();
                 for (int i = 0; i < dataModel.getX().size(); i++) {
-                    String colName = dataModel.getX().get(i).getId();
                     String quota = dataModel.getX().get(i).getQuota();
-                    if (StringUtils.isNotBlank(dataModel.getX().get(i).getAlias()) &&
-                            StringUtils.equals(DataModelTypeEnum.WD.getCode(), quota)) {
-                        colName = dataModel.getX().get(i).getAlias();
+                    if (StringUtils.equals(DataModelTypeEnum.WD.getCode(), quota)) {
+                        String colName = dataModel.getX().get(i).getId();
+                        if (StringUtils.isNotBlank(dataModel.getX().get(i).getAlias())) {
+                            colName = dataModel.getX().get(i).getAlias();
+                        }
+                        colNameList.add(colName);
                     }
-                    colNameXArr[i] = colName;
                 }
+                String[] colNameXArr =  colNameList.toArray(new String[0]);
+
                 //构造树形结构
                 List<ListTree> x = buildTree(rows, 0, colNameXArr);
                 columns.put("x", x);
@@ -99,8 +107,10 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         for (String key : keyMap.keySet()) {
             ListTree tree = new ListTree();
             tree.setTitle(key);
+            tree.setDataIndex(key);
             if (currentNode != colNameArr.length) {
-                tree.setKey(colNameArr[currentNode]);
+                tree.setKey(key);
+//                tree.setKey(colNameArr[currentNode]);
                 tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameArr));
                 treeDataModels.add(tree);
             }
@@ -109,20 +119,22 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
     }
 
     private List<ListTree> buildY(String tableName, String[] colNameArr) {
-        LambdaQueryWrapper<BiUiModelField> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiModelField::getModelId, tableName);
-        queryWrapper.in(BiUiModelField::getName, Lists.newArrayList(colNameArr));
-        List<BiUiModelField> fieldList = fieldService.list(queryWrapper);
-        Map<String, String> nameDescMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(fieldList)) {
-            fieldList.forEach(field -> nameDescMap.put(field.getName(), field.getFieldDesc()));
-        }
         List<ListTree> treeDataModels = Lists.newArrayList();
-        for (String colName : colNameArr) {
-            ListTree tree = new ListTree();
-            tree.setKey(colName);
-            tree.setTitle(MapUtils.getString(nameDescMap, colName));
-            treeDataModels.add(tree);
+        if (null != colNameArr && colNameArr.length > 0) {
+            LambdaQueryWrapper<BiUiModelField> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiUiModelField::getModelId, tableName);
+            queryWrapper.in(BiUiModelField::getName, Lists.newArrayList(colNameArr));
+            List<BiUiModelField> fieldList = fieldService.list(queryWrapper);
+            Map<String, String> nameDescMap = Maps.newHashMap();
+            if (CollectionUtils.isNotEmpty(fieldList)) {
+                fieldList.forEach(field -> nameDescMap.put(field.getName(), field.getFieldDesc()));
+            }
+            for (String colName : colNameArr) {
+                ListTree tree = new ListTree();
+                tree.setKey(colName);
+                tree.setTitle(MapUtils.getString(nameDescMap, colName));
+                treeDataModels.add(tree);
+            }
         }
         return treeDataModels;
     }

@@ -38,51 +38,6 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
         }
         String sql = buildSql(request.getDataConfig().getDataModel());
         return execute(sql);
-//        DataConfig dataConfig = request.getDataConfig();
-//        DataModel dataModel = dataConfig.getDataModel();
-//        List<DataModelField> x = dataModel.getX();
-//        Integer pageIndex = dataModel.getPage();
-//        Integer pageSize = dataModel.getPageSize();
-//        String tableName = dataModel.getTableName();
-//        String[] fields = new String[x.size()];
-//        List<String> aggregateField = Lists.newArrayList();
-//        if (dataConfig.getTableAggregate()) {
-//            for (int i = 0; i < x.size(); i++) {
-//                if (StringUtils.equals(x.get(i).getQuota(), DataModelTypeEnum.DL.getCode())) {
-//                    if (StringUtils.isNotBlank(x.get(i).getAlias())) {
-//                        fields[i] = "sum(" + x.get(i).getId() + ") as " + x.get(i).getAlias();
-//                    } else {
-//                        fields[i] = "sum(" + x.get(i).getId() + ") as " + x.get(i).getId();
-//                    }
-//                } else {
-//                    if (StringUtils.isNotBlank(x.get(i).getAlias())) {
-//                        fields[i] = x.get(i).getId() + " as " + x.get(i).getAlias();
-//                    } else {
-//                        fields[i] = x.get(i).getId() + " as " + x.get(i).getId();
-//                    }
-//                    aggregateField.add(x.get(i).getId());
-//                }
-//
-//            }
-//        } else {
-//            for (int i = 0; i < x.size(); i++) {
-//                if (StringUtils.isNotBlank(x.get(i).getAlias())) {
-//                    fields[i] = x.get(i).getId() + " as " + x.get(i).getAlias();
-//                } else {
-//                    fields[i] = x.get(i).getId() + " as " + x.get(i).getId();
-//                }
-//            }
-//        }
-//
-//        String select = "select " + AnalyseUtil.join(",", fields);
-//        String querySql = select + " from " + tableName;
-//        if (CollectionUtils.isNotEmpty(aggregateField)) {
-//            querySql += " group by " + StringUtils.join(aggregateField, ",");
-//        }
-//        if (pageIndex != null && pageSize != null && pageSize > 0) {
-//            querySql = querySql + " limit " + (pageIndex - 1) * pageSize + "," + pageIndex * pageSize;
-//        }
-//        return execute(querySql);
     }
 
     @Override

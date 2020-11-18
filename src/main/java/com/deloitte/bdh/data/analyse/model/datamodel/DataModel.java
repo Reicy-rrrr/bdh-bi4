@@ -29,4 +29,7 @@ public class DataModel {
 
     @ApiModelProperty(value = "自定义参数")
     Map<String, String> customParams;
+
+    @ApiModelProperty(value = "条件")
+    List<DataCondition> conditions;
 }

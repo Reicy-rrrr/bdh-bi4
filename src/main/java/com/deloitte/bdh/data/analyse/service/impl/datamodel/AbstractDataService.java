@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
@@ -69,15 +70,6 @@ public abstract class AbstractDataService {
                 }
             }
         }
-        if (CollectionUtils.isNotEmpty(dataModel.getY())) {
-            for (DataModelField s : dataModel.getY()) {
-                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias());
-                if (StringUtils.isNotBlank(express)) {
-                    list.add(express);
-                }
-            }
-        }
-
         if (CollectionUtils.isEmpty(list)) {
             return "";
         }
@@ -98,6 +90,14 @@ public abstract class AbstractDataService {
                 list.add(express);
             }
         }
+        if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+            for (DataCondition condition : dataModel.getConditions()) {
+                String express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getSymbol(), condition.getValue());
+                if (StringUtils.isNotBlank(express)) {
+                    list.add(express);
+                }
+            }
+        }
 
         return " WHERE " + AnalyseUtil.join(" AND ", list.toArray(new String[0]));
     }
@@ -106,14 +106,6 @@ public abstract class AbstractDataService {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
-                if (StringUtils.isNotBlank(express)) {
-                    list.add(express);
-                }
-            }
-        }
-        if (CollectionUtils.isNotEmpty(dataModel.getY())) {
-            for (DataModelField s : dataModel.getY()) {
                 String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);

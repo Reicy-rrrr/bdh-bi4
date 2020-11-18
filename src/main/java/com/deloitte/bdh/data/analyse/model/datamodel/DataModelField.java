@@ -12,7 +12,7 @@ public class DataModelField {
     @ApiModelProperty(value = "数据库对应的cloumn,如果有抽象后对应的抽象的列id")
     String id;
 
-    @ApiModelProperty(value = "维度为WD,度量为DL")
+    @ApiModelProperty("type")
     String type;
 
     @ApiModelProperty(value = "数据类型")
