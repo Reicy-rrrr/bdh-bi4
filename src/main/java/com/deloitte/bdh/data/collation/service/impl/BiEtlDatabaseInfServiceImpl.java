@@ -23,13 +23,12 @@ import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
+import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
-import com.deloitte.bdh.data.collation.service.BiEtlDbFileService;
-import com.deloitte.bdh.data.collation.service.FileReadService;
-import com.deloitte.bdh.data.collation.service.FtpService;
+import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -67,6 +66,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private FileReadService fileReadService;
     @Autowired
     private BiEtlDbFileService biEtlDbFileService;
+    @Autowired
+    private BiEtlMappingConfigService configService;
     @Autowired
     private MongoHelper mongoHelper;
     @Autowired
@@ -304,7 +305,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
             String controllerServiceId = inf.getControllerServiceId();
-            //todo 需要校验 该数据源是否已经被引用 以及nifi 是否允许删除特定状态的数据源
+            // 需要校验 该数据源是否已经被引用
+            List<BiEtlMappingConfig> configList = configService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                    .eq(BiEtlMappingConfig::getRefSourceId, inf.getId())
+            );
+            if (CollectionUtils.isNotEmpty(configList)) {
+                throw new RuntimeException("该数据源已被引用,不允许删除");
+            }
             nifiProcessService.delControllerService(controllerServiceId);
         } else {
             //todo 文件型需要删除 ,查询被哪些processor引用了,且是否运行中，先停止再删掉

@@ -294,6 +294,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             if (!databaseInf.getEffect().equals(EffectEnum.ENABLE.getKey())) {
                 throw new RuntimeException("校验失败:该模板关联的数据源状态异常");
             }
+            //todo 校验数据源的表以及数据结构是否发生变化
         });
 
         BiEtlModel biEtlModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
