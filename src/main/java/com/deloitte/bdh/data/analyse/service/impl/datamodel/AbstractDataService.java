@@ -37,18 +37,23 @@ public abstract class AbstractDataService {
         return execute(sql, list -> list);
     }
 
-    protected BaseComponentDataResponse execute(String sql,Rows rows) {
+    protected BaseComponentDataResponse execute(String sql, Rows rows) {
         return execute(() -> sql, rows);
     }
 
-    protected BaseComponentDataResponse execute(Sql sql,Rows rows) {
+    protected BaseComponentDataResponse execute(Sql sqlInterface, Rows rowsInterface) {
         BaseComponentDataResponse response = new BaseComponentDataResponse();
-        response.setRows(rows.set(biUiDemoMapper.selectDemoList(sql.build())));
-        response.setSql(sql.build());
+        List<Map<String, Object>> list = null;
+        String sql = sqlInterface.build();
+        if (StringUtils.isNotBlank(sql)) {
+            list = biUiDemoMapper.selectDemoList(sql);
+        }
+        response.setRows(rowsInterface.set(list));
+        response.setSql(sql);
         return response;
     }
 
-    protected String buildSql(DataModel dataModel) {
+    final protected String buildSql(DataModel dataModel) {
         validate(dataModel);
         return buildSelect(dataModel)
                 + buildFrom(dataModel)
@@ -59,7 +64,7 @@ public abstract class AbstractDataService {
                 + limit(dataModel);
     }
 
-    private String buildSelect(DataModel dataModel) {
+    protected String buildSelect(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
 
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
@@ -76,12 +81,12 @@ public abstract class AbstractDataService {
         return "SELECT " + AnalyseUtil.join(",", list.toArray(new String[0]));
     }
 
-    private String buildFrom(DataModel dataModel) {
+    protected String buildFrom(DataModel dataModel) {
         return " FROM " + BuildSqlUtil.from(dataModel.getTableName(), null);
     }
 
     @Deprecated
-    private String buildWhere(DataModel dataModel) {
+    protected String buildWhere(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
         list.add(" 1=1 ");
         for (DataModelField s : dataModel.getX()) {
@@ -102,7 +107,7 @@ public abstract class AbstractDataService {
         return " WHERE " + AnalyseUtil.join(" AND ", list.toArray(new String[0]));
     }
 
-    private String buildGroupBy(DataModel dataModel) {
+    protected String buildGroupBy(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
@@ -119,7 +124,7 @@ public abstract class AbstractDataService {
     }
 
     @Deprecated
-    private String buildHaving(DataModel dataModel) {
+    protected String buildHaving(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
             String express = BuildSqlUtil.having(dataModel.getTableName(), s.getId(), s.getQuota()
@@ -134,7 +139,7 @@ public abstract class AbstractDataService {
         return " HAVING " + AnalyseUtil.join(" AND ", list.toArray(new String[0]));
     }
 
-    private String buildOrder(DataModel dataModel) {
+    protected String buildOrder(DataModel dataModel) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : dataModel.getX()) {
             String express = BuildSqlUtil.orderBy(dataModel.getTableName(), s.getId(), s.getQuota()
@@ -149,7 +154,7 @@ public abstract class AbstractDataService {
         return " ORDER BY " + AnalyseUtil.join(" , ", list.toArray(new String[0]));
     }
 
-    private String limit(DataModel dataModel) {
+    protected String limit(DataModel dataModel) {
         if (null == dataModel.getPage()) {
             return "";
         }

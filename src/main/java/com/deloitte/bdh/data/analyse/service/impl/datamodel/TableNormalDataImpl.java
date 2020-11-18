@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
-import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.data.analyse.enums.CustomParamsEnum;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -27,7 +26,7 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
         Map<String, String> customParams = request.getDataConfig().getDataModel().getCustomParams();
         if (MapUtils.isNotEmpty(customParams)) {
-            String tableAggregate = MapUtils.getString(customParams, CustomParamsEnum.TABLE_AGGREGATE.getCode());
+            String tableAggregate = MapUtils.getString(customParams, CustomParamsConstants.TABLE_AGGREGATE);
             if (StringUtils.equals(tableAggregate, "true")) {
                 if (CollectionUtils.isNotEmpty(request.getDataConfig().getDataModel().getX())) {
                     for (DataModelField field : request.getDataConfig().getDataModel().getX()) {
