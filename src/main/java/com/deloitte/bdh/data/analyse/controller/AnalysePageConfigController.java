@@ -53,7 +53,7 @@ public class AnalysePageConfigController {
 
     @ApiOperation(value = "删除页面配置", notes = "删除页面配置")
     @PostMapping("/delAnalysePageConfig")
-    public RetResult<Void> delAnalysePageConfig(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    public RetResult<Void> delAnalysePageConfig(@RequestBody @Validated RetRequest<String> request) {
         biUiReportPageConfigService.delAnalysePageConfig(request.getData());
         return RetResponse.makeOKRsp();
     }

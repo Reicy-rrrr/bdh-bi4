@@ -8,14 +8,16 @@ import org.apache.commons.lang3.StringUtils;
  * Description:
  */
 public enum DataImplEnum {
-
-    TABLE_NORMAL("table", "normal", "tableNormalDataImpl"),
-    TABLE_CROSS("table", "cross", "crossPivotDataImpl"),
+    TABLE_NORMAL("table", "normal", "tableNormalDataImpl", "普通表格"),
+    TABLE_CROSS("table", "cross", "crossPivotDataImpl", "交叉透视图"),
     //圆图
-    GRAPHICS_PIE("graphics", "pie", "graphicsDataImpl"),
-    GRAPHICS_RING("graphics", "ring", "graphicsDataImpl"),
+    GRAPHICS_PIE("graphics", "pie", "graphicsDataImpl", "饼状图"),
+    GRAPHICS_RING("graphics", "ring", "graphicsDataImpl", "水波图"),
     //指标图
-    QUOTA("quota", "water", "quotaWaterDataImpl"),
+    QUOTA("quota", "water", "quotaWaterDataImpl", "指标图"),
+    //过滤
+    DATA_RANGE("filter", "range", "dataRangeDataImpl", "数据范围过滤"),
+    BASE_DATA("filter", "base", "baseDataImpl", "普通字段过滤"),
 
     ;
 
@@ -25,10 +27,13 @@ public enum DataImplEnum {
 
     private final String dataImpl;
 
-    DataImplEnum(String type, String tableType, String dataImpl) {
+    private final String desc;
+
+    DataImplEnum(String type, String tableType, String dataImpl, String desc) {
         this.type = type;
         this.tableType = tableType;
         this.dataImpl = dataImpl;
+        this.desc = desc;
     }
 
     public static String getImpl(String type, String tableType) {
@@ -51,5 +56,9 @@ public enum DataImplEnum {
 
     public String getDataImpl() {
         return dataImpl;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 }

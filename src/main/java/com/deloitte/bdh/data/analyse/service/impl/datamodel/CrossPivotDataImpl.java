@@ -37,12 +37,15 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
+        List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
 
         String sql = buildSql(request.getDataConfig().getDataModel());
         BaseComponentDataResponse response = execute(sql);
+        //设置原始X轴数据构造树
+        request.getDataConfig().getDataModel().setX(originalX);
         buildColumns(request, response);
         return response;
     }

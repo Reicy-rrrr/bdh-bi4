@@ -19,6 +19,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -184,20 +185,30 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (page == null) {
             throw new BizException("报表不存在");
         }
-        BiUiAnalysePageConfig editConfig = configService.getById(page.getEditId());
-        if (editConfig == null) {
-            throw new BizException("请先编辑页面并保存");
+
+        BiUiAnalysePageConfig config = new BiUiAnalysePageConfig();
+        BeanUtils.copyProperties(request.getData(), config);
+        if (StringUtils.isNotBlank(request.getData().getConfigId())) {
+            config.setModifiedDate(LocalDateTime.now());
+            config.setModifiedUser(AnalyseUtil.getCurrentUser());
+        } else {
+            config.setTenantId(request.getTenantId());
+            config.setCreateUser(request.getOperator());
+            config.setCreateDate(LocalDateTime.now());
         }
+        configService.saveOrUpdate(config);
+
         //复制一个publish对象
         BiUiAnalysePageConfig publishConfig = new BiUiAnalysePageConfig();
-        publishConfig.setPageId(editConfig.getPageId());
-        publishConfig.setContent(editConfig.getContent());
-        publishConfig.setTenantId(editConfig.getTenantId());
+        publishConfig.setPageId(config.getPageId());
+        publishConfig.setContent(config.getContent());
+        publishConfig.setTenantId(config.getTenantId());
         publishConfig.setCreateUser(request.getOperator());
         publishConfig.setCreateDate(LocalDateTime.now());
         configService.save(publishConfig);
         //如果以前publish过,会变为历史版本,当前版本初始化就不会变更,存放在editId中
         page.setPublishId(publishConfig.getId());
+        page.setEditId(config.getId());
         page.setIsEdit(YnTypeEnum.NO.getCode());
         this.updateById(page);
         AnalysePageConfigDto dto = new AnalysePageConfigDto();

@@ -18,4 +18,10 @@ public class AnalysePageIdDto implements Serializable {
     @ApiModelProperty(value = "pageId")
     String pageId;
 
+    @ApiModelProperty(value = "配置ID")
+    String configId;
+
+    @ApiModelProperty(value = "配置内容")
+    String content;
+
 }
