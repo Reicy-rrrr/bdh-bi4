@@ -1,14 +1,16 @@
 package com.deloitte.bdh.common.interceptor;
 
 import com.alibaba.fastjson.JSON;
+import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
+
 import java.util.Arrays;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.aspectj.lang.JoinPoint;
@@ -69,10 +71,21 @@ public class WebLogAspect {
         } else {
             logger.info("参数 : " + Arrays.toString(joinPoint.getArgs()));
         }
+
+        ThreadLocalHolder.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
         //设置参数
         if (joinPoint.getArgs().length > 0) {
-            Map<String, Object> params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
-            ThreadLocalHolder.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
+
+            Map<String, Object> params;
+            Object args = joinPoint.getArgs()[0];
+            if (args instanceof Map) {
+                params = (Map<String, Object>) args;
+            } else if (args instanceof RetRequest) {
+                params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
+            } else {
+                return;
+            }
+
             if (null != MapUtils.getString(params, "tenantId")) {
                 ThreadLocalHolder.set("tenantId", MapUtils.getString(params, "tenantId"));
             }
