@@ -69,10 +69,11 @@ public class WebLogAspect {
         } else {
             logger.info("参数 : " + Arrays.toString(joinPoint.getArgs()));
         }
+
+        ThreadLocalHolder.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
         //设置参数
         if (joinPoint.getArgs().length > 0) {
             Map<String, Object> params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
-            ThreadLocalHolder.set("tenantCode", request.getHeader("x-bdh-tenant-code"));
             if (null != MapUtils.getString(params, "tenantId")) {
                 ThreadLocalHolder.set("tenantId", MapUtils.getString(params, "tenantId"));
             }
