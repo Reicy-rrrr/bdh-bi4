@@ -71,11 +71,14 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
         BiUiAnalyseCategory category = new BiUiAnalyseCategory();
         BeanUtils.copyProperties(request.getData(), category);
-        category.setCreateDate(LocalDateTime.now());
         category.setType(CategoryTypeEnum.CUSTOMER.getCode());
         //创建的自定义文件夹都在我的分析下面
         BiUiAnalyseCategory customerTop = getCustomerTop(request.getTenantId());
         category.setParentId(customerTop.getId());
+        //设置通用字段
+        category.setCreateDate(LocalDateTime.now());
+        category.setCreateUser(request.getOperator());
+        category.setTenantId(request.getTenantId());
         this.save(category);
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
         BeanUtils.copyProperties(category, dto);
@@ -88,7 +91,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId());
         entity.setName(request.getData().getName());
         entity.setDes(request.getData().getDes());
+        //设置通用字段
         entity.setModifiedDate(LocalDateTime.now());
+        entity.setModifiedUser(request.getOperator());
         this.updateById(entity);
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
         BeanUtils.copyProperties(entity, dto);
