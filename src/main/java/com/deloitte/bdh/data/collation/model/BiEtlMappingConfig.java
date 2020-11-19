@@ -40,7 +40,7 @@ public class BiEtlMappingConfig implements Serializable {
     private String refComponentCode;
 
     /**
-     * 同步方式（0：直连，1：全量，2：增量）
+     * 同步方式（0：直连，1：全量，2：增量，3：local）
      */
     @TableField("TYPE")
     private String type;

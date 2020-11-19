@@ -97,7 +97,7 @@ public class EtlServiceImpl implements EtlService {
         component.setCode(componentCode);
         component.setName(dto.getComponentName());
         component.setType(ComponentTypeEnum.DATASOURCE.getKey());
-        component.setEffect(EffectEnum.DISABLE.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
@@ -113,6 +113,12 @@ public class EtlServiceImpl implements EtlService {
             component.setRefMappingCode(mappingCode);
             dto.setBelongMappingCode(mappingCode);
 
+            //step2.0:判断数据源是否是文件类型,是则设置类型
+            if (biEtlDatabaseInf.getType().equals(SourceTypeEnum.File_Excel.getType())
+                    || biEtlDatabaseInf.getType().equals(SourceTypeEnum.File_Csv.getType())) {
+                dto.setSyncType(SyncTypeEnum.LOCAL.getKey());
+            }
+
             //step2.1:是独立副本，创建映射
             BiEtlMappingConfig mappingConfig = new BiEtlMappingConfig();
             mappingConfig.setCode(mappingCode);
@@ -124,7 +130,9 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setToTableName(dto.getTableName());
             mappingConfig.setTenantId(ThreadLocalHolder.getTenantId());
 
-            if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
+            //非直连且非本地
+            if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
+                    && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
                 component.setEffect(EffectEnum.DISABLE.getKey());
                 if (CollectionUtils.isEmpty(dto.getFields())) {
                     throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,所选字段不能为空");
@@ -149,15 +157,12 @@ public class EtlServiceImpl implements EtlService {
                 String toTableName = componentCode + "_" + dto.getTableName();
                 mappingConfig.setToTableName(toTableName);
 
-                //step2.1.0：获取数据源的count
+                //step2.1.1：获取数据源的count
                 RunPlan runPlan = RunPlan.builder()
                         .groupCode("0").planType("0")
                         .first(YesOrNoEnum.YES.getKey()).modelCode(biEtlModel.getCode())
                         .mappingConfigCode(mappingConfig).synCount();
 
-                //step2.1.1:创建 字段列表,此处为映射编码
-                List<BiEtlMappingField> fields = transferToFields(mappingCode, dto.getFields());
-                fieldService.saveBatch(fields);
 
                 //step2.1.2: 调用NIFI生成processors
                 transferNifiSource(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
@@ -171,7 +176,12 @@ public class EtlServiceImpl implements EtlService {
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
             }
+
             configService.save(mappingConfig);
+
+            //step2.2:创建 字段列表,此处为映射编码
+            List<BiEtlMappingField> fields = transferToFields(mappingCode, dto.getFields());
+            fieldService.saveBatch(fields);
         } else {
             if (StringUtils.isBlank(dto.getBelongMappingCode())) {
                 throw new RuntimeException("EtlServiceImpl.joinResource.error : 非独立副本时,引用的表不能为空");
@@ -219,7 +229,7 @@ public class EtlServiceImpl implements EtlService {
         List<String> tables = dbHandler.getTables();
         if (CollectionUtils.isNotEmpty(tables)) {
             Optional<String> optional = tables.stream().filter(s -> s.equalsIgnoreCase(tableName)).findAny();
-            if(optional.isPresent()){
+            if (optional.isPresent()) {
                 throw new RuntimeException("EtlServiceImpl.out.error : 表名已存在");
             }
         }

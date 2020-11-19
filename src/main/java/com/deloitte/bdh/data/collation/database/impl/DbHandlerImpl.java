@@ -146,6 +146,13 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
+    public List<TableField> getTableFields(String tableName) {
+        String querySql = buildQueryColumnsSql(tableName);
+        List<Map<String, Object>> results = biEtlDbMapper.selectColumns(querySql);
+        return formatTableField(results);
+    }
+
+    @Override
     public long getCount(String tableName, String condition) {
         String querySql = "SELECT COUNT(1) FROM `" + tableName + "`";
         if (StringUtils.isNotBlank(condition)) {
@@ -213,8 +220,8 @@ public class DbHandlerImpl implements DbHandler {
         // 获取数据落地本地的数据库类型：Hive/MySQL
         String localSourceType = "mysql";
         if ("mysql".equals(localSourceType)) {
-            return "select * from information_schema.COLUMNS where" +
-                    " TABLE_SCHEMA = (select database()) and TABLE_NAME='" + tableName + "'";
+            return "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE" +
+                    " TABLE_SCHEMA = (SELECT DATABASE()) AND TABLE_NAME='" + tableName + "' ORDER BY ORDINAL_POSITION";
         }
         return "desc " + tableName;
     }
@@ -232,13 +239,37 @@ public class DbHandlerImpl implements DbHandler {
             if ("mysql".equals(localSourceType)) {
                 tableColumn.setName((String) rowData.get("COLUMN_NAME"));
                 tableColumn.setDesc((String) rowData.get("COLUMN_COMMENT"));
-                tableColumn.setType("String");
+                tableColumn.setType("Text");
                 tableColumn.setDataType((String) rowData.get("DATA_TYPE"));
             } else {
                 tableColumn.setName((String) rowData.get("col_name"));
-                tableColumn.setType("String");
+                tableColumn.setType("Text");
             }
             result.add(tableColumn);
+        });
+        return result;
+    }
+
+    private List<TableField> formatTableField(List<Map<String, Object>> data) {
+        List<TableField> result = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(data)) {
+            return result;
+        }
+
+        // 获取数据落地本地的数据库类型(不同类型字段名不一样)：Hive/MySQL
+        String localSourceType = "mysql";
+        data.forEach(rowData -> {
+            TableField tableField = new TableField();
+            if ("mysql".equals(localSourceType)) {
+                tableField.setName((String) rowData.get("COLUMN_NAME"));
+                tableField.setDesc((String) rowData.get("COLUMN_COMMENT"));
+                tableField.setType("Text");
+                tableField.setDataType((String) rowData.get("DATA_TYPE"));
+            } else {
+                tableField.setName((String) rowData.get("col_name"));
+                tableField.setType("Text");
+            }
+            result.add(tableField);
         });
         return result;
     }

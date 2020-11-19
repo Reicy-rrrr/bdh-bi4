@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,14 @@ public interface DbHandler {
      * @return
      */
     List<TableColumn> getColumns(String tableName);
+
+    /**
+     * 查询表所有字段列表
+     *
+     * @param tableName 表名
+     * @return
+     */
+    List<TableField> getTableFields(String tableName);
 
     /**
      * 查询表数据量

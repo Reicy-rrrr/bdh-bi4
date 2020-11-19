@@ -648,7 +648,11 @@ public class FileReadServiceImpl implements FileReadService {
             return null;
         }
         if (value instanceof Date) {
-            return DataTypeEnum.Date;
+            Date date = (Date) value;
+            if (String.valueOf(date.getTime()).endsWith("00000")) {
+                return DataTypeEnum.Date;
+            }
+            return DataTypeEnum.DateTime;
         } else if (value instanceof Integer) {
             return DataTypeEnum.Integer;
         } else if (value instanceof Float) {
@@ -683,6 +687,8 @@ public class FileReadServiceImpl implements FileReadService {
                 columnTypes.put(headerName, DataTypeEnum.Float.getValue());
             } else if (types.contains(DataTypeEnum.Integer)) {
                 columnTypes.put(headerName, DataTypeEnum.Integer.getValue());
+            } else if (types.contains(DataTypeEnum.DateTime)){
+                columnTypes.put(headerName, DataTypeEnum.DateTime.getValue());
             } else {
                 columnTypes.put(headerName, DataTypeEnum.Date.getValue());
             }
@@ -728,6 +734,23 @@ public class FileReadServiceImpl implements FileReadService {
                 }
                 break;
             case Date:
+                if (source instanceof Date) {
+                    target = source;
+                } else if (source instanceof Float) {
+                    target = null;
+                } else if (source instanceof Integer) {
+                    target = null;
+                } else if (source instanceof String) {
+                    try {
+                        target = DateUtils.parseStandardDate((String) source);
+                    } catch (Exception e) {
+                        target = null;
+                    }
+                } else {
+                    target = null;
+                }
+                break;
+            case DateTime:
                 if (source instanceof Date) {
                     target = source;
                 } else if (source instanceof Float) {

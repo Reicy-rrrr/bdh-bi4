@@ -433,8 +433,15 @@ public class SyncServiceImpl implements SyncService {
                 return;
             }
 
-            //直连返回
-            if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())) {
+            if (SourceTypeEnum.File_Csv.getType().equals(biEtlDatabaseInf.getType())
+                    || SourceTypeEnum.File_Excel.getType().equals(biEtlDatabaseInf.getType())) {
+                log.warn("文件型数据源,不需要同步, 组件编码:{}", component.getCode());
+                continue;
+            }
+
+            //直连&本地则返回
+            if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())
+                    || config.getType().equals(SyncTypeEnum.LOCAL.getValue())) {
                 continue;
             }
 
