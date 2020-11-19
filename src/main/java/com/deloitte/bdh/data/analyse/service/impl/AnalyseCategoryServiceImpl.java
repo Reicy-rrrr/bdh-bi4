@@ -34,7 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -114,118 +116,33 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         List<BiUiAnalyseCategory> categoryList = this.list(categoryQueryWrapper);
 
         //查询page
-        List<BiUiAnalysePage> pageList = new ArrayList<>();
+        List<String> categoryIds = Lists.newArrayList();
+        categoryList.forEach(category -> categoryIds.add(category.getId()));
         LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        //模糊查询pageName或者在文件夹下的page都符合条件
-        if (CollectionUtils.isNotEmpty(categoryList)) {
-            List<String> categoryIds = new ArrayList<>();
-            categoryList.forEach(category -> categoryIds.add(category.getId()));
-            pageLambdaQueryWrapper.or(wrapper -> wrapper.in(BiUiAnalysePage::getParentId, categoryIds)
-                    .or().like(BiUiAnalysePage::getName, request.getData().getName()));
-        } else {
-            pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
-        }
+        pageLambdaQueryWrapper.in(BiUiAnalysePage::getParentId, categoryIds);
         pageLambdaQueryWrapper.isNotNull(BiUiAnalysePage::getPublishId);
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode());
-        pageList = pageService.list(pageLambdaQueryWrapper);
+        List<BiUiAnalysePage> pageList = pageService.list(pageLambdaQueryWrapper);
 
         //组装category id和page的map结构，方便递归取数据
-        Map<String, List<AnalysePageDto>> pageDtoMapTmp = new LinkedHashMap<>();
+        Map<String, List<AnalysePageDto>> pageDtoMap = Maps.newHashMap();
         for (BiUiAnalysePage page : pageList) {
             List<AnalysePageDto> pageDtoList;
-            if (pageDtoMapTmp.containsKey(page.getParentId())) {
-                pageDtoList = pageDtoMapTmp.get(page.getParentId());
+            if (pageDtoMap.containsKey(page.getParentId())) {
+                pageDtoList = pageDtoMap.get(page.getParentId());
             } else {
                 pageDtoList = Lists.newArrayList();
             }
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
             pageDtoList.add(dto);
-            pageDtoMapTmp.put(page.getParentId(), pageDtoList);
+            pageDtoMap.put(page.getParentId(), pageDtoList);
         }
-
-        //获取所有的文件夹
-        List<BiUiAnalyseCategory> biCate = list();
-        Map<String, BiUiAnalyseCategory> allCategoryMap = biCate.stream().collect(Collectors.toMap(BiUiAnalyseCategory::getId, b -> b, (v1, v2) -> v1));
-        //递归的时候判断当前数据有无遍历过
-        List<String> record = new ArrayList<>();
-        Map<String, List<AnalysePageDto>> pageDtoMap = pageDtoMapFun(categoryList, pageDtoMapTmp, record, allCategoryMap);
 
         //递归整理数据
         List<AnalyseCategoryTree> trees = buildCategoryTree(categoryList, pageDtoMap, "0");
         return trees;
     }
-
-    private Map<String, List<AnalysePageDto>> pageDtoMapFun(
-            List<BiUiAnalyseCategory> categoryList, Map<String, List<AnalysePageDto>> pageDtoMapTmp,
-            List<String> record, Map<String, BiUiAnalyseCategory> allCategoryMap) {
-        //遍历所有page
-        for (String key : pageDtoMapTmp.keySet()) {
-            //如果当前page没被遍历
-            if (!record.contains(key)) {
-                //添加记录，作为已遍历
-                record.add(key);
-                //获取当前id的文件夹
-                BiUiAnalyseCategory biUiAnalyseCategory = allCategoryMap.get(key);
-                //得到文件夹父id
-                String parentId = biUiAnalyseCategory.getParentId();
-                //判断父文件夹是否在当前文件夹中并且是否是0级文件夹
-                if (!pageDtoMapTmp.containsKey(parentId) && !parentId.equals("0")) {
-                    //如果不存在就放进当前文件夹
-                    pageDtoMapTmp.put(parentId, new ArrayList<>());
-                    categoryList.add(allCategoryMap.get(parentId));
-                    categoryList.add(biUiAnalyseCategory);
-                }
-                //递归处理
-                pageDtoMapFun(categoryList, pageDtoMapTmp, record, allCategoryMap);
-                //递归结束，说明已经遍历所有的文件夹，返回即可
-                return pageDtoMapTmp;
-            }
-        }
-        return pageDtoMapTmp;
-    }
-
-
-    /**
-     * 递归转换成树
-     *
-     * @param categoryList
-     * @param parentId
-     * @return
-     */
-    private List<AnalyseCategoryTree> buildCategoryTree(List<BiUiAnalyseCategory> categoryList,
-                                                        Map<String, List<AnalysePageDto>> pageDtoMap, String parentId) {
-        List<AnalyseCategoryTree> treeDataModels = Lists.newArrayList();
-        for (BiUiAnalyseCategory category : categoryList) {
-            AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
-            BeanUtils.copyProperties(category, categoryTree);
-
-            if (parentId.equals(categoryTree.getParentId())) {
-                categoryTree.setChildren(buildCategoryTree(categoryList, pageDtoMap, categoryTree.getId()));
-                categoryTree.setChildrenType(CategoryTreeChildrenTypeEnum.CATEGORY.getCode());
-                treeDataModels.add(categoryTree);
-
-                //将页面和文件夹放到同一个children，通过children type区分
-                List<AnalysePageDto> pageDtoList = pageDtoMap.get(category.getId());
-                List<AnalyseCategoryTree> pageList = Lists.newArrayList();
-                if (CollectionUtils.isNotEmpty(pageDtoList)) {
-                    for (AnalysePageDto dto : pageDtoList) {
-                        AnalyseCategoryTree tree = new AnalyseCategoryTree();
-                        BeanUtils.copyProperties(dto, tree);
-                        tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
-                        pageList.add(tree);
-                    }
-                    if (CollectionUtils.isEmpty(categoryTree.getChildren())) {
-                        List<AnalyseCategoryTree> children = Lists.newArrayList();
-                        categoryTree.setChildren(children);
-                    }
-                    categoryTree.getChildren().addAll(pageList);
-                }
-            }
-        }
-        return treeDataModels;
-    }
-
 
     @Override
     public void initTenantAnalyse(RetRequest<Void> request) {
@@ -328,7 +245,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                         .map(BiUiAnalysePage::getName).collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(existEdit)) {
                     String message = StringUtils.join(existEdit);
-                    throw new BizException("请删除在草稿箱中的" + message + "报表");
+                    throw new BizException("请先删除该文件夹中的草稿页面，草稿页面名称如下：" + message);
                 } else {
                     throw new BizException("请先删除下级页面");
                 }
@@ -371,5 +288,44 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         if (CollectionUtils.isNotEmpty(categoryList)) {
             throw new BizException("存在相同名称文件夹");
         }
+    }
+
+    /**
+     * 递归转换成树
+     *
+     * @param categoryList
+     * @param parentId
+     * @return
+     */
+    private List<AnalyseCategoryTree> buildCategoryTree(List<BiUiAnalyseCategory> categoryList, Map<String, List<AnalysePageDto>> pageDtoMap, String parentId) {
+        List<AnalyseCategoryTree> treeDataModels = Lists.newArrayList();
+        for (BiUiAnalyseCategory category : categoryList) {
+            AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
+            BeanUtils.copyProperties(category, categoryTree);
+
+            if (parentId.equals(categoryTree.getParentId())) {
+                categoryTree.setChildren(buildCategoryTree(categoryList, pageDtoMap, categoryTree.getId()));
+                categoryTree.setChildrenType(CategoryTreeChildrenTypeEnum.CATEGORY.getCode());
+                treeDataModels.add(categoryTree);
+
+                //将页面和文件夹放到同一个children，通过children type区分
+                List<AnalysePageDto> pageDtoList = pageDtoMap.get(category.getId());
+                List<AnalyseCategoryTree> pageList = Lists.newArrayList();
+                if (CollectionUtils.isNotEmpty(pageDtoList)) {
+                    for (AnalysePageDto dto : pageDtoList) {
+                        AnalyseCategoryTree tree = new AnalyseCategoryTree();
+                        BeanUtils.copyProperties(dto, tree);
+                        tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
+                        pageList.add(tree);
+                    }
+                    if (CollectionUtils.isEmpty(categoryTree.getChildren())) {
+                        List<AnalyseCategoryTree> children = Lists.newArrayList();
+                        categoryTree.setChildren(children);
+                    }
+                    categoryTree.getChildren().addAll(pageList);
+                }
+            }
+        }
+        return treeDataModels;
     }
 }
