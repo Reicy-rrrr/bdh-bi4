@@ -97,7 +97,7 @@ public class EtlServiceImpl implements EtlService {
         component.setCode(componentCode);
         component.setName(dto.getComponentName());
         component.setType(ComponentTypeEnum.DATASOURCE.getKey());
-        component.setEffect(EffectEnum.DISABLE.getKey());
+        component.setEffect(EffectEnum.ENABLE.getKey());
         component.setRefModelCode(biEtlModel.getCode());
         component.setVersion("1");
         component.setPosition(dto.getPosition());
@@ -124,52 +124,61 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setToTableName(dto.getTableName());
             mappingConfig.setTenantId(ThreadLocalHolder.getTenantId());
 
-            if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
-                component.setEffect(EffectEnum.DISABLE.getKey());
-                if (CollectionUtils.isEmpty(dto.getFields())) {
-                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,所选字段不能为空");
-                }
-
-                if (StringUtils.isBlank(dto.getOffsetField())) {
-                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段不能为空");
-                }
-
-                Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
-                if (!field.isPresent()) {
-                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段必须在同步的字段列表以内");
-                }
-
-                //同步都涉及 偏移字段，方便同步
-                String processorsCode = GenerateCodeUtil.genProcessors();
-                mappingConfig.setOffsetField(dto.getOffsetField());
-                mappingConfig.setOffsetValue(dto.getOffsetValue());
-                //初次同步设置0
-                mappingConfig.setLocalCount("0");
-                //表名：组件编码+源表名
-                String toTableName = componentCode + "_" + dto.getTableName();
-                mappingConfig.setToTableName(toTableName);
-
-                //step2.1.0：获取数据源的count
-                RunPlan runPlan = RunPlan.builder()
-                        .groupCode("0").planType("0")
-                        .first(YesOrNoEnum.YES.getKey()).modelCode(biEtlModel.getCode())
-                        .mappingConfigCode(mappingConfig).synCount();
+            //判断数据源是否是文件类型
+            if (biEtlDatabaseInf.getType().equals(SourceTypeEnum.File_Excel.getType())
+                    || biEtlDatabaseInf.getType().equals(SourceTypeEnum.File_Csv.getType())) {
 
                 //step2.1.1:创建 字段列表,此处为映射编码
                 List<BiEtlMappingField> fields = transferToFields(mappingCode, dto.getFields());
                 fieldService.saveBatch(fields);
+            } else {
+                if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())) {
+                    component.setEffect(EffectEnum.DISABLE.getKey());
+                    if (CollectionUtils.isEmpty(dto.getFields())) {
+                        throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,所选字段不能为空");
+                    }
 
-                //step2.1.2: 调用NIFI生成processors
-                transferNifiSource(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
+                    if (StringUtils.isBlank(dto.getOffsetField())) {
+                        throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段不能为空");
+                    }
 
-                //step 2.1.3:创建目标表
-                dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
+                    Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
+                    if (!field.isPresent()) {
+                        throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段必须在同步的字段列表以内");
+                    }
 
-                //step2.1.4 生成同步的第一次的调度计划
-                syncPlanService.createFirstPlan(runPlan);
+                    //同步都涉及 偏移字段，方便同步
+                    String processorsCode = GenerateCodeUtil.genProcessors();
+                    mappingConfig.setOffsetField(dto.getOffsetField());
+                    mappingConfig.setOffsetValue(dto.getOffsetValue());
+                    //初次同步设置0
+                    mappingConfig.setLocalCount("0");
+                    //表名：组件编码+源表名
+                    String toTableName = componentCode + "_" + dto.getTableName();
+                    mappingConfig.setToTableName(toTableName);
 
-                //step2.1.5 关联组件与processors
-                params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
+                    //step2.1.0：获取数据源的count
+                    RunPlan runPlan = RunPlan.builder()
+                            .groupCode("0").planType("0")
+                            .first(YesOrNoEnum.YES.getKey()).modelCode(biEtlModel.getCode())
+                            .mappingConfigCode(mappingConfig).synCount();
+
+                    //step2.1.1:创建 字段列表,此处为映射编码
+                    List<BiEtlMappingField> fields = transferToFields(mappingCode, dto.getFields());
+                    fieldService.saveBatch(fields);
+
+                    //step2.1.2: 调用NIFI生成processors
+                    transferNifiSource(dto, mappingConfig, biEtlDatabaseInf, biEtlModel, processorsCode);
+
+                    //step 2.1.3:创建目标表
+                    dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
+
+                    //step2.1.4 生成同步的第一次的调度计划
+                    syncPlanService.createFirstPlan(runPlan);
+
+                    //step2.1.5 关联组件与processors
+                    params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
+                }
             }
             configService.save(mappingConfig);
         } else {
@@ -219,7 +228,7 @@ public class EtlServiceImpl implements EtlService {
         List<String> tables = dbHandler.getTables();
         if (CollectionUtils.isNotEmpty(tables)) {
             Optional<String> optional = tables.stream().filter(s -> s.equalsIgnoreCase(tableName)).findAny();
-            if(optional.isPresent()){
+            if (optional.isPresent()) {
                 throw new RuntimeException("EtlServiceImpl.out.error : 表名已存在");
             }
         }
