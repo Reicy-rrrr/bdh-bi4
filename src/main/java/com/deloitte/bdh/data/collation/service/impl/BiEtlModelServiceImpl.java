@@ -5,21 +5,38 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.util.*;
+import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.GetIpAndPortUtil;
+import com.deloitte.bdh.common.util.NifiProcessUtil;
+import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import com.deloitte.bdh.data.collation.enums.*;
+import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.EffectEnum;
+import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
-import com.deloitte.bdh.data.collation.model.*;
+import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
+import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
+import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.collation.service.*;
+import com.deloitte.bdh.data.collation.service.BiComponentService;
+import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
+import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
+import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
+import com.deloitte.bdh.data.collation.service.BiEtlModelService;
+import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -176,7 +193,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
         jobService.remove(inf.getCode());
         biEtlModelMapper.deleteById(id);
-        logger.info("删除数据成功:{}", JsonUtil.obj2String(sourceMap));
+        logger.info("删除数据成功:{}", JsonUtil.readObjToJson(sourceMap));
     }
 
     @Override
@@ -219,7 +236,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
             inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
 
-            if(!StringUtil.isEmpty(dto.getFileCode())){
+            if (!StringUtil.isEmpty(dto.getFileCode())) {
                 inf.setParentCode(dto.getFileCode());
             }
         }
@@ -396,7 +413,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         Map<String, Object> reqNifi = Maps.newHashMap();
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
-        reqNifi.put("position", JsonUtil.string2Obj(NifiProcessUtil.randPosition(), Map.class));
+        reqNifi.put("position", JsonUtil.readObjToJson(JsonUtil.readObjToJson(NifiProcessUtil.randPosition())));
         Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
 
         if (!StringUtil.isEmpty(dto.getCronExpression())) {

@@ -3,7 +3,7 @@ package com.deloitte.bdh.common.interceptor;
 import com.alibaba.fastjson.JSON;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 
@@ -81,7 +81,7 @@ public class WebLogAspect {
             if (args instanceof Map) {
                 params = (Map<String, Object>) args;
             } else if (args instanceof RetRequest) {
-                params = JsonUtil.string2Obj((joinPoint.getArgs()[0]).toString(), Map.class);
+                params = JsonUtil.JsonStrToMap(JsonUtil.readObjToJson(joinPoint.getArgs()[0]));
             } else {
                 return;
             }
