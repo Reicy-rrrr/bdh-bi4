@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -132,32 +133,26 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Override
     @Transactional
     public void delAnalysePage(String id) {
-        BiUiAnalysePage page = this.getById(id);
-        if (page == null) {
-            throw new BizException("报表错误");
-        }
-        //删除config
-        LambdaQueryWrapper<BiUiAnalysePageConfig> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalysePageConfig::getPageId, page.getId());
-        configService.remove(queryWrapper);
-        //删除page
-        this.removeById(id);
+        List<String> ids = Arrays.asList(id.split(" "));
+        baseDelAnalysePage(ids);
     }
 
     @Override
     @Transactional
     public void batchDelAnalysePage(BatchDeleteAnalyseDto request) {
-        if (CollectionUtils.isEmpty(request.getIds())) {
+        baseDelAnalysePage(request.getIds());
+    }
+
+    //删除页面和批量删除页面
+    private void baseDelAnalysePage(List<String> pageIds){
+        if (CollectionUtils.isEmpty(pageIds)) {
             throw new BizException("请选择要删除的报表");
         }
-        List<BiUiAnalysePage> pageList = this.listByIds(request.getIds());
+        List<BiUiAnalysePage> pageList = this.listByIds(pageIds);
         if (CollectionUtils.isNotEmpty(pageList)) {
-            List<String> pageIds = Lists.newArrayList();
             //删除config
-            LambdaQueryWrapper<BiUiAnalysePageConfig> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
-            configService.remove(queryWrapper);
-
+            configService.remove(new LambdaQueryWrapper<BiUiAnalysePageConfig>()
+                    .in(BiUiAnalysePageConfig::getPageId, pageIds));
             //删除page
             this.removeByIds(pageIds);
         }
