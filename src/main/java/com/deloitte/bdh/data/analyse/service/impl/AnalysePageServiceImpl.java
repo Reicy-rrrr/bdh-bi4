@@ -183,12 +183,18 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("报表不存在");
         }
 
-        BiUiAnalysePageConfig config = new BiUiAnalysePageConfig();
-        BeanUtils.copyProperties(request.getData(), config);
+        BiUiAnalysePageConfig config;
         if (StringUtils.isNotBlank(request.getData().getConfigId())) {
+            config = configService.getById(request.getData().getConfigId());
+            if (null == config) {
+                throw new BizException("配置不存在");
+            }
+            config.setContent(request.getData().getContent());
             config.setModifiedDate(LocalDateTime.now());
             config.setModifiedUser(AnalyseUtil.getCurrentUser());
         } else {
+            config = new BiUiAnalysePageConfig();
+            BeanUtils.copyProperties(request.getData(), config);
             config.setTenantId(request.getTenantId());
             config.setCreateUser(request.getOperator());
             config.setCreateDate(LocalDateTime.now());
