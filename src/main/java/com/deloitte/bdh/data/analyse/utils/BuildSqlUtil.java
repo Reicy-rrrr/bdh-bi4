@@ -9,11 +9,19 @@ import org.apache.commons.lang.StringUtils;
 public class BuildSqlUtil {
 
     public static String select(String tableName, String field, String quota, String aggregateType, String formatType, String alias) {
+        return select(tableName, field, quota, aggregateType, formatType, alias, null);
+    }
+
+    public static String select(String tableName, String field, String quota, String aggregateType,
+                                String formatType, String alias, String defaultValue) {
         //获取表名+字段名
         String fieldExpress = selectField(tableName, field);
         //判断度量和维度
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
+            if (StringUtils.isNotBlank(defaultValue)) {
+                fieldExpress = ifNull(fieldExpress);
+            }
         } else {
             if (StringUtils.isNotBlank(formatType)) {
                 fieldExpress = format(fieldExpress, formatType);
@@ -25,6 +33,13 @@ public class BuildSqlUtil {
     public static String from(String tableName, String alias) {
         return tableName + " AS " + (StringUtils.isBlank(alias) ? tableName : alias);
 
+    }
+
+    public static String where(String tableName, String field, String quota, String symbol, String value) {
+        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            return null;
+        }
+        return condition(selectField(tableName, field), symbol, value);
     }
 
     public static String where(String tableName, String field, String quota, String formatType, String symbol, String value) {
@@ -77,6 +92,10 @@ public class BuildSqlUtil {
 
     private static String aggregate(String field, String aggregateType) {
         return AggregateTypeEnum.get(aggregateType).expression(field);
+    }
+
+    private static String ifNull(String field) {
+        return " IFNULL( " + field + " ,0)";
     }
 
     private static String format(String field, String formatType) {
