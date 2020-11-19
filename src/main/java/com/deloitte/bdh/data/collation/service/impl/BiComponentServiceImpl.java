@@ -145,22 +145,27 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             throw new RuntimeException("EtlServiceImpl.removeResource.error : 该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
         }
 
-        //判断当前组件同步类型，"直连" 则直接删除
+        //判断当前组件同步类型，"直连或本地" 则直接删除
         BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                 .eq(BiEtlMappingConfig::getCode, mappingCode)
         );
         configService.removeById(config.getId());
-        if (SyncTypeEnum.DIRECT.getKey().toString().equals(config.getType())) {
-            //直接连接需要删除 mappingConfig
+        fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
+                .eq(BiEtlMappingField::getRefCode, config.getCode())
+        );
+        if (SyncTypeEnum.DIRECT.getKey().toString().equals(config.getType())
+                || SyncTypeEnum.LOCAL.getKey().toString().equals(config.getType())) {
+            //直接或本地连接需要删除 mappingConfig和 fields
             return;
         }
 
-        //当前是 "非直连"
+        //当前是 "非直连、非本地"
         //不管当前是 第一次同步还是定时调度，是待同步还是同步中还是同步完成，都一致操作
         //1：若当前调度计划未完成则取消，2： 停止清空NIFI，修改状态为取消，3：删除本地表，4：删除本地组件配置，5： 删除NIFI配置
 
         BiEtlSyncPlan syncPlan = planService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getRefMappingCode, mappingCode)
+                .eq(BiEtlSyncPlan::getPlanType, "0")
                 .orderByDesc(BiEtlSyncPlan::getCreateDate)
                 .last("limit 1")
         );
@@ -177,9 +182,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         transfer.del(processors.getProcessGroupId());
         processorsService.removeById(processors.getId());
         dbHandler.drop(config.getToTableName());
-        fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
-                .eq(BiEtlMappingField::getRefCode, config.getCode())
-        );
     }
 
     @Override

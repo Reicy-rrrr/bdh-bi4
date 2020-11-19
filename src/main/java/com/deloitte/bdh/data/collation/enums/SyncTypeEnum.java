@@ -8,6 +8,7 @@ public enum SyncTypeEnum {
     DIRECT(0, "直连"),
     FULL(1, "全量同步"),
     INCREMENT(2, "增量同步"),
+    LOCAL(3, "本地"),
 
     ;
 

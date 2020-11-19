@@ -439,8 +439,9 @@ public class SyncServiceImpl implements SyncService {
                 continue;
             }
 
-            //直连返回
-            if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())) {
+            //直连&本地则返回
+            if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())
+                    || config.getType().equals(SyncTypeEnum.LOCAL.getValue())) {
                 continue;
             }
 
