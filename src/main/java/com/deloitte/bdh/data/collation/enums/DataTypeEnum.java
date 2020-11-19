@@ -9,7 +9,7 @@ import com.deloitte.bdh.common.exception.BizException;
  */
 public enum DataTypeEnum {
 
-    String("String", "文本"),
+    Text("Text", "文本"),
     Integer("Integer", "整数"),
     Float("Float", "浮点数"),
     Date("Date", "日期"),

@@ -664,7 +664,7 @@ public class FileReadServiceImpl implements FileReadService {
                     return DataTypeEnum.Integer;
                 }
             } catch (Exception e) {
-                return DataTypeEnum.String;
+                return DataTypeEnum.Text;
             }
         }
     }
@@ -677,8 +677,8 @@ public class FileReadServiceImpl implements FileReadService {
         for (int index = 0; index < headers.size(); index++) {
             String headerName = headers.get(index);
             Set<DataTypeEnum> types = MapUtils.getObject(dataTypes, index);
-            if (types.contains(DataTypeEnum.String)) {
-                columnTypes.put(headerName, DataTypeEnum.String.getValue());
+            if (types.contains(DataTypeEnum.Text)) {
+                columnTypes.put(headerName, DataTypeEnum.Text.getValue());
             } else if (types.contains(DataTypeEnum.Float)) {
                 columnTypes.put(headerName, DataTypeEnum.Float.getValue());
             } else if (types.contains(DataTypeEnum.Integer)) {
@@ -744,7 +744,7 @@ public class FileReadServiceImpl implements FileReadService {
                     target = null;
                 }
                 break;
-            case String:
+            case Text:
                 // 字符串长度限制为255
                 if (source instanceof String) {
                     String value = (String) source;

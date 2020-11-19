@@ -594,7 +594,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 case Float:
                     tableField = new TableField(type, columnName, name, "decimal(32,8)", "decimal", "32,8");
                     break;
-                case String:
+                case Text:
                     tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255");
                     break;
                 case Date:
