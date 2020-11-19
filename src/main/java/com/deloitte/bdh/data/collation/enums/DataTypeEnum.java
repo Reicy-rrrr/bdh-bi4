@@ -13,6 +13,7 @@ public enum DataTypeEnum {
     Integer("Integer", "整数"),
     Float("Float", "浮点数"),
     Date("Date", "日期"),
+    DateTime("DateTime", "日期时间"),
     ;
 
     private String value;

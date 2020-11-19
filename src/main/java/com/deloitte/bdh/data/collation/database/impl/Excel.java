@@ -52,7 +52,7 @@ public class Excel extends AbstractProcess implements DbSelector {
         while (result.next()) {
             TableField field = new TableField();
             field.setName(result.getString("COLUMN_NAME"));
-            field.setType("String");
+            field.setType("Text");
             field.setDesc(result.getString("COLUMN_COMMENT"));
 
             field.setDataType(result.getString("DATA_TYPE"));
@@ -81,13 +81,13 @@ public class Excel extends AbstractProcess implements DbSelector {
 
     @Override
     public String tableSql(DbContext context) {
-        return "select * from information_schema.TABLES where TABLE_SCHEMA=(select database())";
+        return "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=(SELECT DATABASE())";
     }
 
     @Override
     public String fieldSql(DbContext context) {
-        return "select * from information_schema.COLUMNS where" +
-                " TABLE_SCHEMA = (select database()) and TABLE_NAME='" + context.getTableName() + "'";
+        return "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE" +
+                " TABLE_SCHEMA = (SELECT DATABASE()) AND TABLE_NAME='" + context.getTableName() + "' ORDER BY ORDINAL_POSITION";
     }
 
     @Override
