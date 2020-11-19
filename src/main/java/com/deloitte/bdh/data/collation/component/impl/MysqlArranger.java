@@ -7,6 +7,7 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +26,16 @@ public class MysqlArranger implements ArrangerSelector {
     public List<ArrangeResultModel> split(FieldMappingModel fromFieldMapping, String separator, String fromTable, ComponentTypeEnum fromType) {
         String leftField = fromFieldMapping.getFinalFieldName() + "_left";
         String leftFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + leftField);
+        String desc = fromFieldMapping.getTableField().getDesc();
+        if (StringUtils.isBlank(desc)) {
+            desc = fromFieldMapping.getFinalFieldName();
+        }
+
         FieldMappingModel leftMapping = fromFieldMapping.clone();
         leftMapping.setTempFieldName(leftFieldTemp);
         leftMapping.setFinalFieldName(leftField);
         leftMapping.getTableField().setName(leftField);
+        leftMapping.getTableField().setDesc(desc + "_left");
 
         String rightField = fromFieldMapping.getFinalFieldName() + "_right";
         String rightFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + rightField);
@@ -36,6 +43,7 @@ public class MysqlArranger implements ArrangerSelector {
         rightMapping.setTempFieldName(rightFieldTemp);
         rightMapping.setFinalFieldName(rightField);
         rightMapping.getTableField().setName(rightField);
+        rightMapping.getTableField().setDesc(desc + "_right");
 
         String leftSql;
         String rightSql;
@@ -44,7 +52,6 @@ public class MysqlArranger implements ArrangerSelector {
             rightSql = "SUBSTRING(" + fromFieldMapping.getOriginalFieldName() + ", IF(INSTR(" + fromFieldMapping.getOriginalFieldName() + ", '" + separator + "') > 0, INSTR(" + fromFieldMapping.getOriginalFieldName() + ", '" + separator + "'), LENGTH(" + fromFieldMapping.getOriginalFieldName() + ")) + 1) AS " + rightFieldTemp;
             // 以下sql为没有匹配到分隔符，右边字段使用全与左边一致
             // rightSql = "SUBSTRING(" + fromFieldMapping.getOriginalFieldName() + ", INSTR(" + fromFieldMapping.getOriginalFieldName() + ", '" + separator + "') + 1) AS " + rightFieldTemp;
-
         } else {
             leftSql = "SUBSTRING_INDEX(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "', 1) AS " + leftFieldTemp;
             rightSql = "SUBSTRING(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", IF(INSTR(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "') > 0, INSTR(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "'), LENGTH(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ")) + 1) AS " + rightFieldTemp;
@@ -62,10 +69,16 @@ public class MysqlArranger implements ArrangerSelector {
     public List<ArrangeResultModel> split(FieldMappingModel fromFieldMapping, int length, String fromTable, ComponentTypeEnum fromType) {
         String leftField = fromFieldMapping.getFinalFieldName() + "_left";
         String leftFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + leftField);
+        String desc = fromFieldMapping.getTableField().getDesc();
+        if (StringUtils.isBlank(desc)) {
+            desc = fromFieldMapping.getFinalFieldName();
+        }
+
         FieldMappingModel leftMapping = fromFieldMapping.clone();
         leftMapping.setTempFieldName(leftFieldTemp);
         leftMapping.setFinalFieldName(leftField);
         leftMapping.getTableField().setName(leftField);
+        leftMapping.getTableField().setDesc(desc + "_left");
 
         String rightField = fromFieldMapping.getFinalFieldName() + "_right";
         String rightFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + rightField);
@@ -73,6 +86,7 @@ public class MysqlArranger implements ArrangerSelector {
         rightMapping.setTempFieldName(rightFieldTemp);
         rightMapping.setFinalFieldName(rightField);
         rightMapping.getTableField().setName(rightField);
+        rightMapping.getTableField().setDesc(desc + "_right");
 
         String leftSql;
         String rightSql;
@@ -131,7 +145,15 @@ public class MysqlArranger implements ArrangerSelector {
         // 新字段的属性
         Integer length = getCombineColumnLength(fromFieldMapping);
         String columnType = "varchar(" + length + ")";
-        TableField tableField = new TableField(null, fieldName, null, columnType, "varchar", String.valueOf(length));
+
+        String desc = fromFieldMapping.get(0).getTableField().getDesc();
+        String columnDesc = null;
+        if (StringUtils.isBlank(desc)) {
+            columnDesc = fieldName;
+        } else {
+            columnDesc = desc + "_combine";
+        }
+        TableField tableField = new TableField(null, fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
         FieldMappingModel newMapping = fromFieldMapping.get(0).clone();
         newMapping.setTempFieldName(tempName);
         newMapping.setFinalFieldName(fieldName);
@@ -252,8 +274,14 @@ public class MysqlArranger implements ArrangerSelector {
         newMapping.setFinalFieldName(newField);
         newMapping.setTempFieldName(newFieldTemp);
         newMapping.getTableField().setName(newField);
-        newMapping.getTableField().setColumnType("varchar(64)");
+        newMapping.getTableField().setColumnType("varchar(255)");
         newMapping.getTableField().setDataType("varchar");
+        String desc = fromFieldMapping.getTableField().getDesc();
+        if (StringUtils.isBlank(desc)) {
+            newMapping.getTableField().setDesc(newField);
+        } else {
+            newMapping.getTableField().setDesc(desc + "_group");
+        }
 
         // 遍历生成条件
         groups.forEach(group -> {
@@ -304,8 +332,14 @@ public class MysqlArranger implements ArrangerSelector {
         newMapping.setFinalFieldName(newField);
         newMapping.setTempFieldName(newFieldTemp);
         newMapping.getTableField().setName(newField);
-        newMapping.getTableField().setColumnType("varchar(64)");
+        newMapping.getTableField().setColumnType("varchar(255)");
         newMapping.getTableField().setDataType("varchar");
+        String desc = fromFieldMapping.getTableField().getDesc();
+        if (StringUtils.isBlank(desc)) {
+            newMapping.getTableField().setDesc(newField);
+        } else {
+            newMapping.getTableField().setDesc(desc + "_group");
+        }
 
         StringBuilder fieldBuilder = new StringBuilder();
         fieldBuilder.append("CASE ");

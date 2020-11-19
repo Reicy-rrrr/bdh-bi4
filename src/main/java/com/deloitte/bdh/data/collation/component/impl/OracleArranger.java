@@ -7,6 +7,7 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,18 @@ import java.util.List;
 public class OracleArranger implements ArrangerSelector {
     @Override
     public List<ArrangeResultModel> split(FieldMappingModel fromFieldMapping, String separator, String fromTable, ComponentTypeEnum fromType) {
+        String desc = fromFieldMapping.getTableField().getDesc();
+        if (StringUtils.isBlank(desc)) {
+            desc = fromFieldMapping.getFinalFieldName();
+        }
+
         String leftField = fromFieldMapping.getFinalFieldName() + "_left";
         String leftFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + leftField);
         FieldMappingModel leftMapping = fromFieldMapping.clone();
         leftMapping.setTempFieldName(leftFieldTemp);
         leftMapping.setFinalFieldName(leftField);
         leftMapping.getTableField().setName(leftField);
+        leftMapping.getTableField().setDesc(desc + "_left");
 
         String rightField = fromFieldMapping.getFinalFieldName() + "_right";
         String rightFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + rightField);
@@ -36,6 +43,7 @@ public class OracleArranger implements ArrangerSelector {
         rightMapping.setTempFieldName(rightFieldTemp);
         rightMapping.setFinalFieldName(rightField);
         rightMapping.getTableField().setName(rightField);
+        rightMapping.getTableField().setDesc(desc + "_right");
 
         String fromField = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
@@ -52,12 +60,18 @@ public class OracleArranger implements ArrangerSelector {
 
     @Override
     public List<ArrangeResultModel> split(FieldMappingModel fromFieldMapping, int length, String fromTable, ComponentTypeEnum fromType) {
+        String desc = fromFieldMapping.getTableField().getDesc();
+        if (StringUtils.isBlank(desc)) {
+            desc = fromFieldMapping.getFinalFieldName();
+        }
+
         String leftField = fromFieldMapping.getFinalFieldName() + "_left";
         String leftFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + leftField);
         FieldMappingModel leftMapping = fromFieldMapping.clone();
         leftMapping.setTempFieldName(leftFieldTemp);
         leftMapping.setFinalFieldName(leftField);
         leftMapping.getTableField().setName(leftField);
+        leftMapping.getTableField().setDesc(desc + "_left");
 
         String rightField = fromFieldMapping.getFinalFieldName() + "_right";
         String rightFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + rightField);
@@ -65,6 +79,7 @@ public class OracleArranger implements ArrangerSelector {
         rightMapping.setTempFieldName(rightFieldTemp);
         rightMapping.setFinalFieldName(rightField);
         rightMapping.getTableField().setName(rightField);
+        rightMapping.getTableField().setDesc(desc + "_right");
 
         String fromField = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {

@@ -25,6 +25,11 @@ public class DbConvertorImpl implements DbConvertor {
      */
     @Override
     public void convertFieldType(List<TableField> fields, DbContext context) {
+        // 文件类型数据源不需要转换字段类型
+        SourceTypeEnum sourceType = context.getSourceTypeEnum();
+        if (SourceTypeEnum.File_Csv.equals(sourceType) || SourceTypeEnum.File_Excel.equals(sourceType)) {
+            return;
+        }
         SpringUtil.getBean(getConvertType(context), DbConvertor.class).convertFieldType(fields, context);
     }
 

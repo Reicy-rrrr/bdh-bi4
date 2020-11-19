@@ -61,7 +61,8 @@ public class Mysql extends AbstractProcess implements DbSelector {
             TableField field = new TableField();
             field.setName(result.getString("COLUMN_NAME"));
             field.setType("String");
-            field.setDesc(result.getString("COLUMN_COMMENT"));
+            // field.setDesc(result.getString("COLUMN_COMMENT"));
+            field.setDesc(result.getString("COLUMN_NAME"));
 
             field.setDataType(result.getString("DATA_TYPE"));
             field.setColumnType(result.getString("COLUMN_TYPE"));

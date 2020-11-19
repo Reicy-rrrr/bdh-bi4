@@ -176,6 +176,19 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
+    public boolean isTableExists(String tableName) {
+        if (StringUtils.isBlank(tableName)) {
+            throw new BizException("Check table exists error: 表名不能为空！");
+        }
+
+        String result = biEtlDbMapper.checkTableExists(tableName);
+        if (StringUtils.isBlank(result)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public List<Map<String, Object>> executeQuery(String querySql) {
         return biEtlDbMapper.executeQuery(querySql);
     }
@@ -186,8 +199,7 @@ public class DbHandlerImpl implements DbHandler {
             throw new BizException("DbHandler execute insert error: 表名不能为空！");
         }
 
-        List<String> tables = getTables();
-        if (!tables.contains(tableName)) {
+        if (!isTableExists(tableName)) {
             throw new BizException("DbHandler execute insert error: 表不存在！");
         }
 

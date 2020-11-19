@@ -18,9 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FilePreReadResult {
-    @ApiModelProperty(value = "数据源id", example = "10", required = true)
-    private String dbId;
-
     @ApiModelProperty(value = "文件信息id", example = "25", required = true)
     private String fileId;
 

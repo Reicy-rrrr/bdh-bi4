@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.collation.database.po;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;

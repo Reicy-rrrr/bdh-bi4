@@ -60,20 +60,23 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
             TableField field = new TableField();
-            field.setName(result.getString("COLUMN_NAME"));//列名
-            String dataType=result.getString("DATA_TYPE"); //数据类型
-
-            String characterMaximumLength=result.getString("CHARACTER_MAXIMUM_LENGTH");
-            String numericScale=result.getString("NUMERIC_SCALE");
-            String numericPrecision=result.getString("NUMERIC_PRECISION");
-            if(StringUtil.isNotEmpty(characterMaximumLength)) { //字符串最大长度
-                field.setColumnType(dataType+"("+characterMaximumLength+")");
-            }else if(StringUtil.isNotEmpty(numericScale) && StringUtil.isNotEmpty(numericPrecision)){
-                //精度和标度都有值时
-                field.setColumnType(dataType+"("+numericPrecision+","+numericScale+")");
-            }else if(StringUtil.isNotEmpty(numericPrecision)){
-                field.setColumnType(dataType+"("+numericPrecision+")");
-            }else{
+            // 列名
+            field.setName(result.getString("COLUMN_NAME"));
+            field.setName(field.getName());
+            // 数据类型
+            String dataType = result.getString("DATA_TYPE");
+            // 字符串最大长度
+            String characterMaximumLength = result.getString("CHARACTER_MAXIMUM_LENGTH");
+            String numericScale = result.getString("NUMERIC_SCALE");
+            String numericPrecision = result.getString("NUMERIC_PRECISION");
+            if (StringUtil.isNotEmpty(characterMaximumLength)) {
+                field.setColumnType(dataType + "(" + characterMaximumLength + ")");
+            } else if (StringUtil.isNotEmpty(numericScale) && StringUtil.isNotEmpty(numericPrecision)) {
+                // 精度和标度都有值时
+                field.setColumnType(dataType + "(" + numericPrecision + "," + numericScale + ")");
+            } else if (StringUtil.isNotEmpty(numericPrecision)) {
+                field.setColumnType(dataType + "(" + numericPrecision + ")");
+            } else {
                 field.setColumnType(dataType);
             }
             columns.add(field);

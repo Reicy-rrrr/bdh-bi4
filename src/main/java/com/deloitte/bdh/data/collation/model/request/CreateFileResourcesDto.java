@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
@@ -30,5 +31,5 @@ public class CreateFileResourcesDto {
     private String fileId;
 
     @ApiModelProperty(value = "字段类型", example = "id:1, code:2, value:3", required = true)
-    private Map<String, String> columns;
+    private LinkedHashMap<String, String> columns;
 }
