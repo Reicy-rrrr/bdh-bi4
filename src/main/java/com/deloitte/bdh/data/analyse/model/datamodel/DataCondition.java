@@ -17,6 +17,9 @@ public class DataCondition {
     @ApiModelProperty("quota")
     private String quota;
 
+    @ApiModelProperty("formatType")
+    private String formatType;
+
     @ApiModelProperty("symbol")
     private String symbol;
 

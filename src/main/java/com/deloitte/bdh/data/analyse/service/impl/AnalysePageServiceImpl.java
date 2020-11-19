@@ -14,9 +14,13 @@ import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.BiUiModelField;
+import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
@@ -31,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,7 +53,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     AnalysePageConfigService configService;
 
     @Resource
-    BiUiDemoMapper biUiDemoMapper;
+    AnalyseModelFolderService folderService;
+
+    @Resource
+    AnalyseModelFieldService fieldService;
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
@@ -90,6 +96,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePage entity = new BiUiAnalysePage();
         BeanUtils.copyProperties(request.getData(), entity);
         entity.setTenantId(request.getTenantId());
+        entity.setIsEdit(YnTypeEnum.YES.getCode());
         entity.setCreateUser(request.getOperator());
         entity.setCreateDate(LocalDateTime.now());
         this.save(entity);
@@ -133,28 +140,23 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Override
     @Transactional
     public void delAnalysePage(String id) {
-        List<String> ids = Arrays.asList(id.split(" "));
-        baseDelAnalysePage(ids);
+        BiUiAnalysePage page = this.getById(id);
+        if (page == null) {
+            throw new BizException("报表错误");
+        }
+        delPage(Lists.newArrayList(page.getId()));
     }
 
     @Override
     @Transactional
     public void batchDelAnalysePage(BatchDeleteAnalyseDto request) {
-        baseDelAnalysePage(request.getIds());
-    }
-
-    //删除页面和批量删除页面
-    private void baseDelAnalysePage(List<String> pageIds){
-        if (CollectionUtils.isEmpty(pageIds)) {
+        if (CollectionUtils.isEmpty(request.getIds())) {
             throw new BizException("请选择要删除的报表");
         }
-        List<BiUiAnalysePage> pageList = this.listByIds(pageIds);
+        List<BiUiAnalysePage> pageList = this.listByIds(request.getIds());
         if (CollectionUtils.isNotEmpty(pageList)) {
-            //删除config
-            configService.remove(new LambdaQueryWrapper<BiUiAnalysePageConfig>()
-                    .in(BiUiAnalysePageConfig::getPageId, pageIds));
-            //删除page
-            this.removeByIds(pageIds);
+            List<String> pageIds = Lists.newArrayList();
+            delPage(pageIds);
         }
     }
 
@@ -236,6 +238,25 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (CollectionUtils.isNotEmpty(pageList)) {
             pageList.forEach(page -> page.setIsEdit(YnTypeEnum.NO.getCode()));
             this.updateBatchById(pageList);
+        }
+    }
+
+    private void delPage(List<String> pageIds) {
+        if (CollectionUtils.isNotEmpty(pageIds)) {
+            //删除度量维度配置
+            LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
+            folderQueryWrapper.in(BiUiModelFolder::getPageId, pageIds);
+            folderService.remove(folderQueryWrapper);
+            LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
+            fieldQueryWrapper.in(BiUiModelField::getPageId, pageIds);
+            fieldService.remove(fieldQueryWrapper);
+            //删除config
+            LambdaQueryWrapper<BiUiAnalysePageConfig> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
+            configService.remove(queryWrapper);
+
+            //删除page
+            this.removeByIds(pageIds);
         }
     }
 

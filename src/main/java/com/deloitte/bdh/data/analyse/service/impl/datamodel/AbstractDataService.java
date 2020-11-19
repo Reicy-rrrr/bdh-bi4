@@ -90,14 +90,14 @@ public abstract class AbstractDataService {
         List<String> list = Lists.newArrayList();
         list.add(" 1=1 ");
         for (DataModelField s : dataModel.getX()) {
-            String express = BuildSqlUtil.where(dataModel.getTableName(), s.getId(), s.getQuota(), s.getSymbol(), s.getValue());
+            String express = BuildSqlUtil.where(dataModel.getTableName(), s.getId(), s.getQuota(), null, s.getSymbol(), s.getValue());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
         }
         if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
             for (DataCondition condition : dataModel.getConditions()) {
-                String express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getSymbol(), condition.getValue());
+                String express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getFormatType(), condition.getSymbol(), condition.getValue());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }

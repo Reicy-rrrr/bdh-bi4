@@ -27,11 +27,15 @@ public class BuildSqlUtil {
 
     }
 
-    public static String where(String tableName, String field, String quota, String symbol, String value) {
+    public static String where(String tableName, String field, String quota, String formatType, String symbol, String value) {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             return null;
         }
-        return condition(selectField(tableName, field), symbol, value);
+        String fieldExpress = selectField(tableName, field);
+        if (StringUtils.isNotBlank(formatType)) {
+            fieldExpress = format(fieldExpress, formatType);
+        }
+        return condition(fieldExpress, symbol, value);
     }
 
     public static String groupBy(String tableName, String field, String quota, String formatType) {
