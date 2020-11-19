@@ -155,7 +155,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         List<BiUiAnalysePage> pageList = this.listByIds(request.getIds());
         if (CollectionUtils.isNotEmpty(pageList)) {
-            List<String> pageIds = Lists.newArrayList();
+            List<String> pageIds = request.getIds();
             delPage(pageIds);
         }
     }
