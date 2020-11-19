@@ -7,6 +7,7 @@ import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.component.model.GroupModel;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.google.common.collect.Lists;
@@ -150,6 +151,7 @@ public class GroupComponent implements ComponentHandler {
             if (param_key_group.equals(paramKey)) {
                 continue;
             }
+
             Set<String> fields = entry.getValue();
             for (String field : fields) {
                 // 字段名称为空，不做处理
@@ -184,6 +186,14 @@ public class GroupComponent implements ComponentHandler {
                 FieldMappingModel currMapping = fromMapping.clone();
                 currMapping.setTempFieldName(newTempName);
                 currMapping.setFinalFieldName(newFinalName);
+
+                TableField tableField = currMapping.getTableField();
+                tableField.setName(newFinalName);
+                if (StringUtils.isBlank(tableField.getDesc())) {
+                    tableField.setDesc(newFinalName);
+                } else {
+                    tableField.setDesc(tableField.getDesc() + "_" + paramKey);
+                }
                 currFieldMappings.add(currMapping);
             }
         }

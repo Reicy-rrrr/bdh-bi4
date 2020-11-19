@@ -62,19 +62,20 @@ public class Oracle extends AbstractProcess implements DbSelector {
         while (result.next()) {
             TableField field = new TableField();
             field.setName(result.getString("COLUMN_NAME"));//列名
-            //field.setType(result.getString("DATA_TYPE")); //数据类型
-            field.setDesc(result.getString("COMMENTS"));//备注
+            // field.setType(result.getString("DATA_TYPE")); //数据类型
+            // field.setDesc(result.getString("COMMENTS"));//备注
+            field.setDesc(field.getName());//备注
 
-            String dataType=result.getString("DATA_TYPE");
-            String dataPrecision=result.getString("DATA_PRECISION");
-            String dataScale=result.getString("DATA_SCALE");
-            String dataLength=result.getString("DATA_LENGTH");
-            if(StringUtil.isNotEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
-                field.setColumnType(dataType+"("+dataPrecision+","+dataScale+")");
-            }else if(StringUtil.isNotEmpty(dataScale)){
+            String dataType = result.getString("DATA_TYPE");
+            String dataPrecision = result.getString("DATA_PRECISION");
+            String dataScale = result.getString("DATA_SCALE");
+            String dataLength = result.getString("DATA_LENGTH");
+            if (StringUtil.isNotEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
+                field.setColumnType(dataType + "(" + dataPrecision + "," + dataScale + ")");
+            } else if (StringUtil.isNotEmpty(dataScale)) {
                 field.setColumnType(dataType);
-            }else{
-                field.setColumnType(dataType+"("+dataLength+")");
+            } else {
+                field.setColumnType(dataType + "(" + dataLength + ")");
             }
             columns.add(field);
         }

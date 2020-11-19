@@ -1,25 +1,21 @@
 package com.deloitte.bdh.data.collation.database.impl;
 
-import com.deloitte.bdh.common.base.MongoHelper;
-import com.deloitte.bdh.common.base.MongoPageResult;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.google.common.collect.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashMap;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
 @Service("excel")
 public class Excel extends AbstractProcess implements DbSelector {
-
-    @Autowired
-    private MongoHelper<LinkedHashMap> mongoHelper;
 
     @Override
     public String test(DbContext context) throws Exception {
@@ -35,43 +31,42 @@ public class Excel extends AbstractProcess implements DbSelector {
 
     @Override
     public List<String> getFields(DbContext context) throws Exception {
-        MongoPageResult<LinkedHashMap> result = mongoHelper.selectListByPage(context.getDbName(), LinkedHashMap.class, 1, 1);
-        LinkedHashMap rowMap = result.getRows().get(0);
-        List<String> list = Lists.newArrayList(rowMap.keySet());
+        Connection con = super.connection(context);
+        PreparedStatement statement = con.prepareStatement(fieldSql(context));
+        ResultSet result = statement.executeQuery();
+        List<String> list = Lists.newArrayList();
+        while (result.next()) {
+            list.add(result.getString("COLUMN_NAME"));
+        }
+        super.close(con);
         return list;
     }
 
     @Override
     public TableSchema getTableSchema(DbContext context) throws Exception {
-        MongoPageResult<LinkedHashMap> result = mongoHelper.selectListByPage(context.getDbName(), LinkedHashMap.class, 1, 1);
-        LinkedHashMap rowMap = result.getRows().get(0);
+        Connection con = super.connection(context);
+        PreparedStatement statement = con.prepareStatement(fieldSql(context));
+        ResultSet result = statement.executeQuery();
         TableSchema schema = new TableSchema();
         List<TableField> columns = Lists.newArrayList();
-        rowMap.forEach((key, value) -> {
+        while (result.next()) {
             TableField field = new TableField();
-            field.setName((String) key);
+            field.setName(result.getString("COLUMN_NAME"));
             field.setType("String");
-            field.setDesc("");
-            columns.add(field);
-        });
+            field.setDesc(result.getString("COLUMN_COMMENT"));
 
+            field.setDataType(result.getString("DATA_TYPE"));
+            field.setColumnType(result.getString("COLUMN_TYPE"));
+            columns.add(field);
+        }
+        super.close(con);
         schema.setColumns(columns);
         return schema;
     }
 
     @Override
     public TableData getTableData(DbContext context) throws Exception {
-        MongoPageResult<LinkedHashMap> result = mongoHelper.selectListByPage(
-                context.getDbName(), LinkedHashMap.class, context.getPage(), context.getSize());
-        TableData data = new TableData();
-        data.setTotal(result.getTotal());
-        data.setMore(result.isMore());
-        List<LinkedHashMap<String, Object>> rows = Lists.newArrayList();
-        result.getRows().forEach(rowData -> {
-            rows.add(rowData);
-        });
-        data.setRows(rows);
-        return data;
+        return super.getTableData(context);
     }
 
     @Override
@@ -86,17 +81,21 @@ public class Excel extends AbstractProcess implements DbSelector {
 
     @Override
     public String tableSql(DbContext context) {
-        return null;
+        return "select * from information_schema.TABLES where TABLE_SCHEMA=(select database())";
     }
 
     @Override
     public String fieldSql(DbContext context) {
-        return null;
+        return "select * from information_schema.COLUMNS where" +
+                " TABLE_SCHEMA = (select database()) and TABLE_NAME='" + context.getTableName() + "'";
     }
 
     @Override
     protected String selectSql(DbContext context) {
-        return null;
+        Integer page = context.getPage();
+        Integer size = context.getSize();
+        int start = (page - 1) * size;
+        return "SELECT * FROM " + context.getTableName() + " LIMIT " + start + ", " + size;
     }
 
     @Override

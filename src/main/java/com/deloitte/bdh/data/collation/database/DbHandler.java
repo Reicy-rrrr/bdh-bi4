@@ -97,6 +97,14 @@ public interface DbHandler {
     void drop(String tableName);
 
     /**
+     * 检查表是否存在
+     *
+     * @param tableName 表名
+     * @return
+     */
+    boolean isTableExists(String tableName);
+
+    /**
      * 执行查询sql
      *
      * @param querySql

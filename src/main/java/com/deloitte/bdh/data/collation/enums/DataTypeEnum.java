@@ -3,23 +3,23 @@ package com.deloitte.bdh.data.collation.enums;
 import com.deloitte.bdh.common.exception.BizException;
 
 /**
- * 上传文件中数据类型枚举
+ * 数据类型枚举
  *
  * @author chenghzhang
  */
-public enum FileDataTypeEnum {
+public enum DataTypeEnum {
 
-    Integer("Integer", "正数"),
+    Text("Text", "文本"),
+    Integer("Integer", "整数"),
     Float("Float", "浮点数"),
-    String("String", "文本"),
-    Date("Date", "时间"),
+    Date("Date", "日期"),
     ;
 
     private String value;
 
     private String desc;
 
-    FileDataTypeEnum(String value, String desc) {
+    DataTypeEnum(String value, String desc) {
         this.value = value;
         this.desc = desc;
     }
@@ -31,7 +31,7 @@ public enum FileDataTypeEnum {
      * @return String
      */
     public static String getDesc(String value) {
-        FileDataTypeEnum[] enums = FileDataTypeEnum.values();
+        DataTypeEnum[] enums = DataTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getValue().equals(value)) {
                 return enums[i].getDesc();
@@ -46,8 +46,8 @@ public enum FileDataTypeEnum {
      * @param value
      * @return
      */
-    public static FileDataTypeEnum values(String value) {
-        FileDataTypeEnum[] enums = FileDataTypeEnum.values();
+    public static DataTypeEnum values(String value) {
+        DataTypeEnum[] enums = DataTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getValue().equals(value)) {
                 return enums[i];

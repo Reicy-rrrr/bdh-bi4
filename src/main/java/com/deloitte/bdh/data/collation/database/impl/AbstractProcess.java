@@ -6,7 +6,9 @@ import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,7 +16,13 @@ import java.util.Map;
 
 public abstract class AbstractProcess {
 
+    @Autowired
+    DataSource dataSource;
+
     protected Connection connection(DbContext context) throws Exception {
+        if (SourceTypeEnum.File_Csv.equals(context.getSourceTypeEnum()) || SourceTypeEnum.File_Excel.equals(context.getSourceTypeEnum())) {
+            return dataSource.getConnection();
+        }
         Class.forName(context.getDriverName());
         return DriverManager.getConnection(context.getDbUrl(), context.getDbUserName(), context.getDbPassword());
     }

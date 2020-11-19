@@ -61,14 +61,15 @@ public class Hana extends AbstractProcess implements DbSelector {
         while (result.next()) {
             TableField field = new TableField();
             field.setName(result.getString("COLUMN_NAME"));
+            field.setDesc(result.getString("COLUMN_NAME"));
 
-            String dataType=result.getString("DATA_TYPE_NAME");
-            String scale=result.getString("SCALE");
-            String length=result.getString("LENGTH");
-            if(StringUtil.isNotEmpty(scale) && !"0".equals(scale) ) {
-                field.setColumnType(dataType+"("+length+","+scale+")");
-            }else{
-                field.setColumnType(dataType+"("+length+")");
+            String dataType = result.getString("DATA_TYPE_NAME");
+            String scale = result.getString("SCALE");
+            String length = result.getString("LENGTH");
+            if (StringUtil.isNotEmpty(scale) && !"0".equals(scale)) {
+                field.setColumnType(dataType + "(" + length + "," + scale + ")");
+            } else {
+                field.setColumnType(dataType + "(" + length + ")");
             }
 
             columns.add(field);

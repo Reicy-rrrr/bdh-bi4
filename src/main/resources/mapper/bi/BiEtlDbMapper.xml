@@ -28,6 +28,11 @@
     </update>
 
     <!-- 执行批量sql查询语句 -->
+    <select id="checkTableExists" parameterType="String" resultType="String">
+        show tables like #{tableName}
+    </select>
+
+    <!-- 执行批量sql查询语句 -->
     <select id="executeQuery" parameterType="String" resultType="Map">
         ${querySql}
     </select>
@@ -39,8 +44,8 @@
             ${key}
         </foreach>
         values
-        <foreach collection="rows" item="rowMap" open="(" separator="," close=")">
-            <foreach collection="rowMap" item="value" index="key" separator=",">
+        <foreach collection="rows" item="rowMap" separator=",">
+            <foreach collection="rowMap" item="value" index="key" open="(" separator="," close=")">
                 #{value}
             </foreach>
         </foreach>

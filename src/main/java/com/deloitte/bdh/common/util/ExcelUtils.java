@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,6 +25,11 @@ public class ExcelUtils {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatPattern);
     private static DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
 
+    private static NumberFormat numberFormat = NumberFormat.getInstance();
+    static {
+        numberFormat.setGroupingUsed(false);
+    }
+
     /**
      * 获取单元格值
      *
@@ -39,7 +45,7 @@ public class ExcelUtils {
             case BLANK:
                 return "";
             case BOOLEAN:
-                return cell.getBooleanCellValue();
+                return String.valueOf(cell.getBooleanCellValue());
             case STRING:
                 return cell.getStringCellValue();
             case NUMERIC:
@@ -102,10 +108,21 @@ public class ExcelUtils {
         if (DateUtil.isCellDateFormatted(cell)) {
             return cell.getDateCellValue();
         } else {
-            return cell.getNumericCellValue();
+            String formatValue = numberFormat.format(cell.getNumericCellValue());
+            if (formatValue.contains(".")) {
+                return Double.parseDouble(formatValue);
+            } else {
+                return Integer.parseInt(formatValue);
+            }
         }
     }
 
+    /**
+     * 获取单元格值的字符串（非字符串时转换为字符串）
+     *
+     * @param cell excel单元格
+     * @return
+     */
     public static String getCellStringValue(Cell cell) {
         if (cell == null) {
             return null;
@@ -129,6 +146,12 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * 获取数值类型单元值的字符串
+     *
+     * @param cell excel单元格
+     * @return
+     */
     private static String getNumericCellStringValue(Cell cell) {
         if (DateUtil.isCellDateFormatted(cell)) {
             if (StringUtils.isEmpty(dateFormatPattern)) {
@@ -140,6 +163,12 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * 获取公式类型单元格值的字符串
+     *
+     * @param cell excel单元格
+     * @return
+     */
     private static String getFormulaCellStringValue(Cell cell) {
         CellValue cellValue = null;
         /*

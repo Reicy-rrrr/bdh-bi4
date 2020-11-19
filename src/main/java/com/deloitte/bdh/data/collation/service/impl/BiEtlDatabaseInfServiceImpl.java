@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.common.base.MongoHelper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
@@ -12,14 +11,13 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
+import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
-import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.FileTypeEnum;
-import com.deloitte.bdh.data.collation.enums.PoolTypeEnum;
-import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
@@ -27,6 +25,7 @@ import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -42,6 +41,7 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -69,9 +69,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Autowired
     private BiEtlMappingConfigService configService;
     @Autowired
-    private MongoHelper mongoHelper;
-    @Autowired
     private DbSelector dbSelector;
+    @Autowired
+    private DbHandler dbHandler;
 
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
@@ -148,22 +148,29 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         // 根据数据源信息初始化表名称
         String tableName = initImportTableName(inf);
-        // 将mongodb集合名称暂存到数据源的数据库名称字段中
-        inf.setDbName(tableName);
-        this.updateById(inf);
+
+        // 根据字段信息创建表
+        List<TableField> tableFields = initTableSchema(dto.getColumns());
+        dbHandler.createTable(inf.getId(), tableName, tableFields);
+        // 新字段描述为源文件表头
+        Map<String, TableField> tableFieldMap = tableFields.stream().collect(Collectors.toMap(TableField::getDesc, tableField -> tableField));
 
         String fileName = dbFile.getStoredFileName();
         String filePath = dbFile.getFilePath();
         // 从ftp服务器获取文件
         byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
         // 读取文件
-        fileReadService.read(fileBytes, fileType, dto.getColumns(), tableName);
+        fileReadService.readIntoDB(fileBytes, fileType, tableFieldMap, tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(inf.getId());
         // 修改文件状态为已读
         dbFile.setReadFlag(0);
         biEtlDbFileService.updateById(dbFile);
-        ThreadLocalHolder.async(() -> runResource(inf.getId(), EffectEnum.ENABLE.getKey()));
+
+        // 将本地表名称暂存到数据源的数据库名称字段中
+        inf.setDbName(tableName);
+        inf.setEffect(EffectEnum.ENABLE.getKey());
+        this.updateById(inf);
         return inf;
     }
 
@@ -213,7 +220,12 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
         // 读取文件
         String fileType = dbFile.getFileType();
-        fileReadService.read(fileBytes, fileType, dto.getColumns(), collectionName);
+
+        // 初始化字段信息
+        List<TableField> tableFields = initTableSchema(dto.getColumns());
+        // 新字段描述为源文件表头
+        Map<String, TableField> tableFieldMap = tableFields.stream().collect(Collectors.toMap(TableField::getDesc, tableField -> tableField));
+        fileReadService.readIntoDB(fileBytes, fileType, tableFieldMap, collectionName);
         // 设置文件的关联数据源id
         dbFile.setDbId(database.getId());
         // 修改文件状态为已读
@@ -259,9 +271,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new BizException("重置文件型数据源失败，文件已被读取过！");
         }
 
-        // 清空集合中已有的数据
-        String collectionName = database.getDbName();
-        mongoHelper.removeAll(collectionName);
+        // 删除已有表
+        String tableName = database.getDbName();
+        dbHandler.drop(tableName);
         // 删除文件信息及已上传ftp服务器的文件
         biEtlDbFileService.deleteByDbId(dbId);
 
@@ -272,7 +284,12 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
         // 读取文件
         String fileType = dbFile.getFileType();
-        fileReadService.read(fileBytes, fileType, dto.getColumns(), collectionName);
+        // 根据字段信息创建表
+        List<TableField> tableFields = initTableSchema(dto.getColumns());
+        dbHandler.createTable(dbId, tableName, tableFields);
+        // 新字段描述为源文件表头
+        Map<String, TableField> tableFieldMap = tableFields.stream().collect(Collectors.toMap(TableField::getDesc, tableField -> tableField));
+        fileReadService.readIntoDB(fileBytes, fileType, tableFieldMap, tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(database.getId());
         // 修改文件状态为已读
@@ -545,9 +562,50 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             return null;
         }
 
+        SourceTypeEnum sourceType = SourceTypeEnum.values(inf.getType());
+
         StringBuilder collectionName = new StringBuilder(32);
         String now = DateUtils.formatShortDate(new Date());
-        collectionName.append(inf.getTenantId()).append("_").append(now).append("_").append(inf.getId());
+        collectionName.append(sourceType.getTypeName()).append("_").append(inf.getId()).append("_").append(now);
         return collectionName.toString();
+    }
+
+    /**
+     * 初始化表字段信息
+     * 自动生成新的字段名，原表头信息存放到描述中
+     *
+     * @param columns
+     * @return
+     */
+    private List<TableField> initTableSchema(Map<String, String> columns) {
+        List<TableField> tableFields = Lists.newArrayList();
+        int columnNum = 1;
+        for (Map.Entry<String, String> entry : columns.entrySet()) {
+            String name = entry.getKey();
+            String type = entry.getValue();
+
+            DataTypeEnum dataType = DataTypeEnum.values(type);
+            String columnName = "column" + columnNum;
+            TableField tableField = null;
+            switch (dataType) {
+                case Integer:
+                    tableField = new TableField(type, columnName, name, "bigint(32)", "bigint", "32");
+                    break;
+                case Float:
+                    tableField = new TableField(type, columnName, name, "decimal(32,8)", "decimal", "32,8");
+                    break;
+                case Text:
+                    tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255");
+                    break;
+                case Date:
+                    tableField = new TableField(type, columnName, name, "datetime", "datetime", "");
+                    break;
+                default:
+                    tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255");
+            }
+            tableFields.add(tableField);
+            columnNum++;
+        }
+        return tableFields;
     }
 }

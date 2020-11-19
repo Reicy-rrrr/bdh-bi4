@@ -57,6 +57,14 @@ public interface BiEtlDbMapper {
     long delete(@Param("deleteSql") String deleteSql);
 
     /**
+     * 检查表是否存在：返回值为空代表不存在，否则存在
+     *
+     * @param tableName 表名
+     * @return
+     */
+    String checkTableExists(@Param("tableName") String tableName);
+
+    /**
      * 执行查询sql
      *
      * @param querySql
