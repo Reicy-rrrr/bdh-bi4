@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
+import com.deloitte.bdh.data.collation.model.request.UpdateModelContent;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageHelper;
@@ -81,6 +82,14 @@ public class BiEtlModelController {
         return RetResponse.makeOKRsp(biEtlModelService.updateModel(request.getData()));
     }
 
+    @ApiOperation(value = "修改大字段", notes = "修改大字段")
+    @PostMapping("/updateContent")
+    public RetResult<BiEtlModel> updateContent(@RequestBody @Validated RetRequest<UpdateModelContent> request) throws Exception {
+        BiEtlModel model = biEtlModelService.getById(request.getData().getId());
+        model.setContent(request.getData().getContent());
+        biEtlModelService.updateById(model);
+        return RetResponse.makeOKRsp(model);
+    }
 
     @ApiOperation(value = "运行/停止 model", notes = "运行/停止 Model")
     @PostMapping("/run")
