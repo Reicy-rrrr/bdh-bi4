@@ -27,11 +27,11 @@ public class BuildSqlUtil {
                 fieldExpress = format(fieldExpress, formatType);
             }
         }
-        return fieldExpress + " AS " + (StringUtils.isBlank(alias) ? field : alias);
+        return fieldExpress + " AS `" + (StringUtils.isBlank(alias) ? field : alias) + "`";
     }
 
     public static String from(String tableName, String alias) {
-        return tableName + " AS " + (StringUtils.isBlank(alias) ? tableName : alias);
+        return tableName + " AS `" + (StringUtils.isBlank(alias) ? tableName : alias) + "`";
 
     }
 
