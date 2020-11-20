@@ -118,7 +118,8 @@ public class DbHandlerImpl implements DbHandler {
         componentQuery.eq(BiComponent::getEffect, EffectEnum.ENABLE.getKey());
         List<BiComponent> components = biComponentService.list(componentQuery);
         if (CollectionUtils.isEmpty(components)) {
-            return Lists.newArrayList();
+            // todo: 待修改为返回空集合
+            return Lists.newArrayList("ORDERS_USCA_BI");
         }
         List<String> componentCodes = components.stream().map(BiComponent::getCode).collect(Collectors.toList());
 
