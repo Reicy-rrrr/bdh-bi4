@@ -224,23 +224,31 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         // 追加文件与历史导入表字段进行校验
         List<TableField> historyFields = dbHandler.getTableFields(tableName);
-        if (dto.getColumns().size() > historyFields.size()) {
-            logger.error("追加文件型数据源失败，追加文件字段数量与历史导入文件不一致！");
-            throw new BizException("追加文件型数据源失败，追加文件字段数量与历史导入文件不一致！");
-        }
-        Set<String> historyHeaders = historyFields.stream().map(TableField::getDesc).collect(Collectors.toSet());
-        for (String header : dto.getColumns().keySet()) {
-            if (!historyHeaders.contains(header)) {
-                logger.error("追加文件型数据源失败，历史文件不包含字段[{}]！", header);
-                throw new BizException("追加文件型数据源失败，追加文件字段与历史导入文件不一致！");
+        // 新字段描述为源文件表头
+        Map<String, TableField> tableFieldMap = historyFields.stream().collect(Collectors.toMap(TableField::getDesc, tableField -> tableField));
+
+        // 新字段描述为源文件表头
+        Map<String, TableField> importFields = Maps.newHashMap();
+        // 校验追加文件中字段是否为历史导入文件的字段
+        boolean validateFlag = true;
+        StringBuilder errorMsg = new StringBuilder("追加文件型数据源失败，导入文件中列： ");
+        for (String importColumn : dto.getColumns().keySet()) {
+            if (!tableFieldMap.containsKey(importColumn)) {
+                validateFlag = false;
+                errorMsg.append(importColumn).append("|");
+                continue;
             }
+            importFields.put(importColumn, MapUtils.getObject(tableFieldMap, importColumn));
+        }
+        // 删除最后多余的“|”
+        errorMsg.deleteCharAt(errorMsg.lastIndexOf("|"));
+        errorMsg.append("在历史导入文件中不存在！");
+        if (!validateFlag) {
+            logger.error(errorMsg.toString());
+            throw new BizException(errorMsg.toString());
         }
 
-        // 初始化字段信息
-        List<TableField> tableFields = initTableSchema(dto.getColumns());
-        // 新字段描述为源文件表头
-        Map<String, TableField> tableFieldMap = tableFields.stream().collect(Collectors.toMap(TableField::getDesc, tableField -> tableField));
-        fileReadService.readIntoDB(fileBytes, fileType, tableFieldMap, tableName);
+        fileReadService.readIntoDB(fileBytes, fileType, importFields, tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(database.getId());
         // 修改文件状态为已读

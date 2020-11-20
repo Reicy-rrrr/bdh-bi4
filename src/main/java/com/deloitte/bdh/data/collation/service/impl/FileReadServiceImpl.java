@@ -682,15 +682,15 @@ public class FileReadServiceImpl implements FileReadService {
             String headerName = headers.get(index);
             Set<DataTypeEnum> types = MapUtils.getObject(dataTypes, index);
             if (types.contains(DataTypeEnum.Text)) {
-                columnTypes.put(headerName, DataTypeEnum.Text.getValue());
+                columnTypes.put(headerName, DataTypeEnum.Text.getType());
             } else if (types.contains(DataTypeEnum.Float)) {
-                columnTypes.put(headerName, DataTypeEnum.Float.getValue());
+                columnTypes.put(headerName, DataTypeEnum.Float.getType());
             } else if (types.contains(DataTypeEnum.Integer)) {
-                columnTypes.put(headerName, DataTypeEnum.Integer.getValue());
+                columnTypes.put(headerName, DataTypeEnum.Integer.getType());
             } else if (types.contains(DataTypeEnum.DateTime)){
-                columnTypes.put(headerName, DataTypeEnum.DateTime.getValue());
+                columnTypes.put(headerName, DataTypeEnum.DateTime.getType());
             } else {
-                columnTypes.put(headerName, DataTypeEnum.Date.getValue());
+                columnTypes.put(headerName, DataTypeEnum.Date.getType());
             }
         }
         return columnTypes;

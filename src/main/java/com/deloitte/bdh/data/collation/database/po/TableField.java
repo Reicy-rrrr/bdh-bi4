@@ -32,7 +32,6 @@ public class TableField implements Cloneable {
     private String columnType;
 
     /** 字段数据类型 */
-
     @ApiModelProperty(value = "字段数据类型", example = "decimal")
     private String dataType;
 

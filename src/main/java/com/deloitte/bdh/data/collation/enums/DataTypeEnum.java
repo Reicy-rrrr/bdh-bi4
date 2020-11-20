@@ -9,18 +9,21 @@ import com.deloitte.bdh.common.exception.BizException;
  */
 public enum DataTypeEnum {
 
-    Text("Text", "文本"),
-    Integer("Integer", "整数"),
-    Float("Float", "浮点数"),
-    Date("Date", "日期"),
-    DateTime("DateTime", "日期时间"),
+    Text("Text", "varchar", "文本"),
+    Integer("Integer", "bigint", "整数"),
+    Float("Float", "decimal", "浮点数"),
+    Date("Date", "date", "日期"),
+    DateTime("DateTime", "datetime", "日期时间"),
     ;
+
+    private String type;
 
     private String value;
 
     private String desc;
 
-    DataTypeEnum(String value, String desc) {
+    DataTypeEnum(String type, String value, String desc) {
+        this.type = type;
         this.value = value;
         this.desc = desc;
     }
@@ -28,13 +31,13 @@ public enum DataTypeEnum {
     /**
      * 根据value获取描述
      *
-     * @param value 文件类型
+     * @param type 文件类型
      * @return String
      */
-    public static String getDesc(String value) {
+    public static String getDesc(String type) {
         DataTypeEnum[] enums = DataTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getValue().equals(value)) {
+            if (enums[i].getType().equals(type)) {
                 return enums[i].getDesc();
             }
         }
@@ -44,17 +47,21 @@ public enum DataTypeEnum {
     /**
      * 根据类型获取枚举类型
      *
-     * @param value
+     * @param type
      * @return
      */
-    public static DataTypeEnum values(String value) {
+    public static DataTypeEnum values(String type) {
         DataTypeEnum[] enums = DataTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getValue().equals(value)) {
+            if (enums[i].getType().equals(type)) {
                 return enums[i];
             }
         }
         throw new BizException("暂不支持的数据类型！");
+    }
+
+    public String getType() {
+        return type;
     }
 
     public String getValue() {
