@@ -142,7 +142,7 @@ public class GroupComponent implements ComponentHandler {
             }
             sqlBuilder.append(sql_key_comma);
             groupBuilder.append(sql_key_comma);
-            currFieldMappings.add(fromFieldMappings.get(groupField));
+            currFieldMappings.add(fromFieldMappings.get(groupField).clone());
         });
 
         // 组装用做聚合计算的字段(count, max, min, sum, avg)
@@ -169,6 +169,14 @@ public class GroupComponent implements ComponentHandler {
                 String newTempName = getColumnAlias(fromMapping.getOriginalTableName()
                         + sql_key_separator + newFinalName);
 
+                // 新字段备注: 原字段有备注使用原备注加后缀，原字段没有备注直接使用新字段名作为备注
+                String newFinalDesc = null;
+                if (StringUtils.isBlank(fromMapping.getTableField().getDesc())) {
+                    newFinalDesc = newFinalName;
+                } else {
+                    newFinalDesc = fromMapping.getTableField().getDesc() + "(" + paramKey + ")";
+                }
+
                 sqlBuilder.append(paramKey.toUpperCase());
                 sqlBuilder.append(sql_key_bracket_left);
                 if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
@@ -186,14 +194,11 @@ public class GroupComponent implements ComponentHandler {
                 FieldMappingModel currMapping = fromMapping.clone();
                 currMapping.setTempFieldName(newTempName);
                 currMapping.setFinalFieldName(newFinalName);
+                currMapping.setFinalFieldDesc(newFinalDesc);
 
                 TableField tableField = currMapping.getTableField();
                 tableField.setName(newFinalName);
-                if (StringUtils.isBlank(tableField.getDesc())) {
-                    tableField.setDesc(newFinalName);
-                } else {
-                    tableField.setDesc(tableField.getDesc() + "_" + paramKey);
-                }
+                tableField.setDesc(newFinalDesc);
                 currFieldMappings.add(currMapping);
             }
         }

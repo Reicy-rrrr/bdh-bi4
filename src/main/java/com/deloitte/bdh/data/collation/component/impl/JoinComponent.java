@@ -130,7 +130,7 @@ public class JoinComponent implements ComponentHandler {
                     continue;
                 }
                 // 将从组件的字段添加到连接组件中
-                currMappings.add(fieldMapping);
+                currMappings.add(fieldMapping.clone());
                 if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                     sqlBuilder.append(sql_key_blank);
                     sqlBuilder.append(fullName);

@@ -354,6 +354,12 @@ public class DbHandlerImpl implements DbHandler {
             }
             List<TableField> columns = tableSchema.getColumns();
             dbConvertor.convertFieldType(columns, context);
+            // 初始化字段的备注：如果没有备注，使用字段名称作为备注
+            columns.forEach(tableField -> {
+                if (StringUtils.isBlank(tableField.getDesc())) {
+                    tableField.setDesc(tableField.getName());
+                }
+            });
             return columns;
         }
 
@@ -380,8 +386,12 @@ public class DbHandlerImpl implements DbHandler {
         results.forEach(columnMap -> {
             TableField field = new TableField();
             field.setName(MapUtils.getString(columnMap, "COLUMN_NAME"));
-            field.setType("String");
-            field.setDesc(MapUtils.getString(columnMap, "COLUMN_COMMENT"));
+            field.setType("Text");
+            if (StringUtils.isBlank(MapUtils.getString(columnMap, "COLUMN_COMMENT"))) {
+                field.setDesc(field.getName());
+            } else {
+                field.setDesc(MapUtils.getString(columnMap, "COLUMN_COMMENT"));
+            }
             field.setDataType(MapUtils.getString(columnMap, "DATA_TYPE"));
             field.setColumnType(MapUtils.getString(columnMap, "COLUMN_TYPE"));
             columns.add(field);
@@ -395,7 +405,8 @@ public class DbHandlerImpl implements DbHandler {
             TableField field = new TableField();
             field.setName(MapUtils.getString(columnMap, "col_name")
                     .replace(tableName + ".", ""));
-            field.setType("String");
+            field.setDesc(field.getName());
+            field.setType("Text");
             field.setColumnType(MapUtils.getString(columnMap, "data_type"));
             columns.add(field);
         });

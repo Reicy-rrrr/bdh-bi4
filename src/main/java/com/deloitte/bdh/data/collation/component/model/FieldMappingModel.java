@@ -22,6 +22,9 @@ public class FieldMappingModel implements Cloneable {
     /** 最终字段名称：最终字段名称（最终表中的字段） */
     @ApiModelProperty(value = "最终字段名称", example = "user_name")
     private String finalFieldName;
+    /** 最终字段描述：最终字段名称描述（最终表字段的描述） */
+    @ApiModelProperty(value = "最终字段描述", example = "用户名称")
+    private String finalFieldDesc;
     /** 原始字段名称 */
     @ApiModelProperty(value = "原始字段名称", example = "user_name")
     private String originalFieldName;
@@ -38,17 +41,19 @@ public class FieldMappingModel implements Cloneable {
     @ApiModelProperty(value = "表字段", example = "")
     private TableField tableField;
 
-    public FieldMappingModel(String tempFieldName, String finalFieldName, String originalFieldName, String originalTableName, String originalColumnType) {
+    public FieldMappingModel(String tempFieldName, String finalFieldName, String finalFieldDesc, String originalFieldName, String originalTableName, String originalColumnType) {
         this.tempFieldName = tempFieldName;
         this.finalFieldName = finalFieldName;
+        this.finalFieldDesc = finalFieldDesc;
         this.originalFieldName = originalFieldName;
         this.originalTableName = originalTableName;
         this.originalColumnType = originalColumnType;
     }
 
-    public FieldMappingModel(String tempFieldName, String finalFieldName, String originalFieldName, String originalTableName, String originalColumnType, TableField tableField) {
+    public FieldMappingModel(String tempFieldName, String finalFieldName, String finalFieldDesc, String originalFieldName, String originalTableName, String originalColumnType, TableField tableField) {
         this.tempFieldName = tempFieldName;
         this.finalFieldName = finalFieldName;
+        this.finalFieldDesc = finalFieldDesc;
         this.originalFieldName = originalFieldName;
         this.originalTableName = originalTableName;
         this.originalColumnType = originalColumnType;

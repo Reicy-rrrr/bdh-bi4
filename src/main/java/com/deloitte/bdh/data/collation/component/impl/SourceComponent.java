@@ -3,13 +3,11 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -18,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -47,7 +46,6 @@ public class SourceComponent implements ComponentHandler {
 
     @Override
     public void handle(ComponentModel component) {
-        String componentCode = component.getCode();
         // 查询配置映射（表名）
         LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
         configWrapper.eq(BiEtlMappingConfig::getCode, component.getRefMappingCode());
@@ -83,7 +81,8 @@ public class SourceComponent implements ComponentHandler {
             String tempName = getColumnAlias(fullName);
             TableField tableField = MapUtils.getObject(columnTypes, fieldName);
 
-            FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldName,
+            String fieldDesc = StringUtils.isBlank(tableField.getDesc()) ? fieldName : tableField.getDesc();
+            FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldDesc, fieldName,
                     tableName, tableField.getColumnType(), tableField);
             fieldMappings.add(mapping);
         });
