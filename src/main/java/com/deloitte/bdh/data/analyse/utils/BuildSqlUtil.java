@@ -9,6 +9,14 @@ import org.apache.commons.lang.StringUtils;
 
 public class BuildSqlUtil {
 
+    public static String select(String tableName, String field, String quota, String aggregateType, String formatType, String alias) {
+        return select(tableName, field, quota, aggregateType, formatType, null, null, alias, null);
+    }
+
+    public static String select(String tableName, String field, String quota, String aggregateType, String formatType, String alias, String defaultValue) {
+        return select(tableName, field, quota, aggregateType, formatType, null, null, alias, defaultValue);
+    }
+
     public static String select(String tableName, String field, String quota, String aggregateType, String formatType,
                                 String dataType, Integer precision, String alias) {
         return select(tableName, field, quota, aggregateType, formatType, dataType, precision, alias, null);
