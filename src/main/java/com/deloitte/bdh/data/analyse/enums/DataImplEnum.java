@@ -18,7 +18,7 @@ public enum DataImplEnum {
     QUOTA_CORE("quota", "core", "quotaCoreDataImpl","指标图"),
     //过滤
     DATA_RANGE("filter", "range", "dataRangeDataImpl", "数据范围过滤"),
-    BASE_DATA("filter", "base", "baseDataImpl", "普通字段过滤"),
+    BASE_DATA("filter", "base", "normalFilterDataImpl", "普通字段过滤"),
 
     ;
 

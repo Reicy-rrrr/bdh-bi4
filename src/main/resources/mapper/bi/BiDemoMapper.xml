@@ -6,4 +6,8 @@
     <select id="selectDemoList" parameterType="String" resultType="Map">
         ${querySql}
     </select>
+
+    <select id="selectCount" parameterType="String" resultType="Long">
+        ${countSql}
+    </select>
 </mapper>

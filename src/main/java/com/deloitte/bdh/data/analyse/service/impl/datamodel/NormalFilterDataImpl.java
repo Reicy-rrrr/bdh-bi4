@@ -20,8 +20,8 @@ import java.util.Map;
  * Date:18/11/2020
  * Description:
  */
-@Service("baseDataImpl")
-public class BaseDataImpl extends AbstractDataService implements AnalyseDataService {
+@Service("normalFilterDataImpl")
+public class NormalFilterDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {

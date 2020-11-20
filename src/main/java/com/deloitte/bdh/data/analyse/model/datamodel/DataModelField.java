@@ -38,4 +38,7 @@ public class DataModelField {
 
     @ApiModelProperty("转换类型")
     private String formatType;
+
+    @ApiModelProperty("精度")
+    private Integer precision;
 }
