@@ -25,6 +25,7 @@ public class XxJobServiceImpl implements XxJobService {
         reqXxJob.put("cron", cron);
         reqXxJob.put("params", params);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
+        reqXxJob.put("projectName", "BDH-BI");
         HttpClientUtil.post(ip + ADD_PATH, null, reqXxJob);
     }
 
@@ -37,6 +38,7 @@ public class XxJobServiceImpl implements XxJobService {
         reqXxJob.put("cron", cron);
         reqXxJob.put("params", params);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
+        reqXxJob.put("projectName", "BDH-BI");
         HttpClientUtil.post(ip + UPDATE_PATH, null, reqXxJob);
     }
 
