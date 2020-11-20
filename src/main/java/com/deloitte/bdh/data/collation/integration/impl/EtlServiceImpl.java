@@ -722,13 +722,13 @@ public class EtlServiceImpl implements EtlService {
         BiComponent component = componentService.getOne(wrapper);
         if (component != null) {
             String name = component.getName();
-            String nameNum = name.substring(type.getDesc().length());
+            String nameNum = name.substring(type.getValue().length());
             try {
                 number = Integer.valueOf(nameNum) + 1;
             } catch (NumberFormatException e) {
                 number = 1;
             }
         }
-        return type.getDesc().toLowerCase() + number;
+        return type.getValue() + number;
     }
 }
