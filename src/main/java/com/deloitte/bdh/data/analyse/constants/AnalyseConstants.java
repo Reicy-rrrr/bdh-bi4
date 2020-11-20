@@ -22,4 +22,7 @@ public class AnalyseConstants {
     public static final List<String> MENSURE_TYPE = Lists.newArrayList(
             "TINYINT","SMALLINT","MEDIUMINT","INT","INTEGER","BIGINT","FLOAT","DOUBLE","DECIMAL");
 
+    public static final List<String> MENSURE_DECIMAL_TYPE = Lists.newArrayList(
+            "FLOAT","DOUBLE","DECIMAL");
+
 }

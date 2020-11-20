@@ -270,7 +270,8 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias(), "0");
+                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
+                        s.getFormatType(), s.getDataType(), s.getPrecision(), s.getAlias(),"0");
                 if (org.apache.commons.lang.StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }

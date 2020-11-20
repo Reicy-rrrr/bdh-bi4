@@ -15,5 +15,8 @@ public class BaseComponentDataResponse {
     @ApiModelProperty(value = "数据")
     List<Map<String, Object>> rows;
 
+    @ApiModelProperty(value = "总条数")
+    private Long total;
+
     private String sql;
 }

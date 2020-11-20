@@ -22,4 +22,7 @@ public interface BiUiDemoMapper {
      * @return
      */
     List<Map<String, Object>> selectDemoList(@Param("querySql") String querySql);
+
+    Long selectCount(@Param("countSql") String countSql);
+
 }

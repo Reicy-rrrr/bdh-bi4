@@ -11,7 +11,7 @@ import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -49,6 +49,7 @@ public abstract class AbstractDataService {
             list = biUiDemoMapper.selectDemoList(sql);
         }
         response.setRows(rowsInterface.set(list));
+        response.setTotal(buildCount(sql));
         response.setSql(sql);
         return response;
     }
@@ -69,7 +70,8 @@ public abstract class AbstractDataService {
 
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias());
+                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
+                        s.getFormatType(), s.getDataType(), s.getPrecision(), s.getAlias());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
@@ -158,7 +160,19 @@ public abstract class AbstractDataService {
         if (null == dataModel.getPage()) {
             return "";
         }
-        return " LIMIT " + (dataModel.getPage() - 1) * dataModel.getPageSize() + "," + dataModel.getPage() * dataModel.getPageSize();
+        return " LIMIT " + (dataModel.getPage() - 1) * dataModel.getPageSize() + "," + dataModel.getPageSize();
+    }
+
+    private Long buildCount(String sql) {
+        String countSql = sql;
+        if (StringUtils.isNotBlank(countSql)) {
+            if (StringUtils.containsIgnoreCase(sql, "LIMIT")) {
+                countSql = StringUtils.substringBefore(countSql, "LIMIT");
+            }
+            countSql = "SELECT count(0) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
+            return biUiDemoMapper.selectCount(countSql);
+        }
+        return null;
     }
 
     public interface Sql {

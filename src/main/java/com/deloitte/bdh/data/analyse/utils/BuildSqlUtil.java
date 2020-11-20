@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.utils;
 
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
@@ -8,17 +9,22 @@ import org.apache.commons.lang.StringUtils;
 
 public class BuildSqlUtil {
 
-    public static String select(String tableName, String field, String quota, String aggregateType, String formatType, String alias) {
-        return select(tableName, field, quota, aggregateType, formatType, alias, null);
+    public static String select(String tableName, String field, String quota, String aggregateType, String formatType,
+                                String dataType, Integer precision, String alias) {
+        return select(tableName, field, quota, aggregateType, formatType, dataType, precision, alias, null);
     }
 
     public static String select(String tableName, String field, String quota, String aggregateType,
-                                String formatType, String alias, String defaultValue) {
+                                String formatType, String dataType, Integer precision, String alias, String defaultValue) {
         //获取表名+字段名
         String fieldExpress = selectField(tableName, field);
         //判断度量和维度
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
+            if (StringUtils.isNotBlank(dataType) && null != precision &&
+                    AnalyseConstants.MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
+                fieldExpress = formatPrecision(fieldExpress, precision);
+            }
             if (StringUtils.isNotBlank(defaultValue)) {
                 fieldExpress = ifNull(fieldExpress);
             }
@@ -96,6 +102,10 @@ public class BuildSqlUtil {
 
     private static String ifNull(String field) {
         return " IFNULL( " + field + " ,0)";
+    }
+
+    private static String formatPrecision(String field, Integer precision) {
+        return " FORMAT( " + field + " ,"+ precision +")";
     }
 
     private static String format(String field, String formatType) {
