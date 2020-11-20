@@ -702,8 +702,10 @@ public class FileReadServiceImpl implements FileReadService {
             case Integer:
                 if (source instanceof Integer) {
                     target = source;
-                } else if (source instanceof Float) {
+                } else if (source instanceof Double) {
                     target = ((Double) source).intValue();
+                } else if (source instanceof Float) {
+                    target = ((Float) source).intValue();
                 } else if (source instanceof Date) {
                     target = 0;
                 } else if (source instanceof String) {
@@ -717,7 +719,7 @@ public class FileReadServiceImpl implements FileReadService {
                 }
                 break;
             case Float:
-                if (source instanceof Float) {
+                if (source instanceof Double || source instanceof Float) {
                     target = source;
                 } else if (source instanceof Integer) {
                     target = Double.valueOf((Integer) source);
@@ -736,7 +738,7 @@ public class FileReadServiceImpl implements FileReadService {
             case Date:
                 if (source instanceof Date) {
                     target = source;
-                } else if (source instanceof Float) {
+                } else if (source instanceof Double || source instanceof Float) {
                     target = null;
                 } else if (source instanceof Integer) {
                     target = null;
@@ -753,7 +755,7 @@ public class FileReadServiceImpl implements FileReadService {
             case DateTime:
                 if (source instanceof Date) {
                     target = source;
-                } else if (source instanceof Float) {
+                } else if (source instanceof Double || source instanceof Float) {
                     target = null;
                 } else if (source instanceof Integer) {
                     target = null;
