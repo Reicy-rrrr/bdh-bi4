@@ -413,7 +413,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         Map<String, Object> reqNifi = Maps.newHashMap();
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
-        reqNifi.put("position", JsonUtil.readObjToJson(JsonUtil.readObjToJson(NifiProcessUtil.randPosition())));
+        reqNifi.put("position", JsonUtil.JsonStrToMap(NifiProcessUtil.randPosition()));
         Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
 
         if (!StringUtil.isEmpty(dto.getCronExpression())) {
@@ -433,4 +433,5 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         biEtlModelMapper.insert(inf);
         return inf;
     }
+
 }
