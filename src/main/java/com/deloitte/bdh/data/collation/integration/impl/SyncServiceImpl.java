@@ -396,8 +396,15 @@ public class SyncServiceImpl implements SyncService {
         BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, modelCode)
         );
+
+        if (null == model) {
+            log.error("Etl调度验证失败,模板不存, 调度模板编码:{}", modelCode);
+            return;
+        }
+
         if (YesOrNoEnum.NO.getKey().equals(model.getValidate()) || EffectEnum.DISABLE.getKey().equals(model.getEffect())
                 || RunStatusEnum.STOP.getKey().equals(model.getStatus()) || YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
+            log.error("Etl调度验证失败,模板状态不正常, 调度模板编码:{}", modelCode);
             return;
         }
         //首先获取模板下的数据源组件
