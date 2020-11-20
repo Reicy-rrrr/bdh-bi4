@@ -121,8 +121,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         //是否独立的数据源组件
         String dulicate = paramsList.stream()
                 .filter(p -> p.getParamKey().equals(ComponentCons.DULICATE)).findAny().get().getParamValue();
-        String processorsCode = paramsList.stream()
-                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
 
         biComponentMapper.deleteById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
@@ -163,6 +161,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         //不管当前是 第一次同步还是定时调度，是待同步还是同步中还是同步完成，都一致操作
         //1：若当前调度计划未完成则取消，2： 停止清空NIFI，修改状态为取消，3：删除本地表，4：删除本地组件配置，5： 删除NIFI配置
 
+        String processorsCode = paramsList.stream()
+                .filter(p -> p.getParamKey().equals(ComponentCons.REF_PROCESSORS_CDOE)).findAny().get().getParamValue();
         BiEtlSyncPlan syncPlan = planService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getRefMappingCode, mappingCode)
                 .eq(BiEtlSyncPlan::getPlanType, "0")
