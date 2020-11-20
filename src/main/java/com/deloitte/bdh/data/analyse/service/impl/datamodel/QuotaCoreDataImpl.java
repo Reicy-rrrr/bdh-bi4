@@ -33,21 +33,21 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return execute(sql, list -> {
             //未开启直接返回
             if (!isOpen(dataModel)) {
-                return invoke(dataModel, list);
+                return decoration(setDefalut(dataModel, list));
             }
 
             String sourceSql = doSourceSql(sql, dataModel);
-            List<Map<String, Object>> sourceSqlList = invoke(dataModel, super.biUiDemoMapper.selectDemoList(sourceSql));
+            List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, super.biUiDemoMapper.selectDemoList(sourceSql));
 
             List<Map<String, Object>> chainSqlList = Lists.newArrayList();
             if (isOpenChain(dataModel)) {
                 String chainSql = chainSql(sql, dataModel);
-                chainSqlList = invoke(dataModel, super.biUiDemoMapper.selectDemoList(chainSql));
+                chainSqlList = setDefalut(dataModel, super.biUiDemoMapper.selectDemoList(chainSql));
             }
             List<Map<String, Object>> yoySqlList = Lists.newArrayList();
             if (isOpenYoy(dataModel)) {
                 String yoySql = yoySql(sql, dataModel);
-                yoySqlList = invoke(dataModel, super.biUiDemoMapper.selectDemoList(yoySql));
+                yoySqlList = setDefalut(dataModel, super.biUiDemoMapper.selectDemoList(yoySql));
             }
 
             for (String field : getFields(dataModel)) {
@@ -95,7 +95,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                     }
                 }
             }
-            return sourceSqlList;
+            return decoration(sourceSqlList);
         });
     }
 
@@ -220,7 +220,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.CORE_DATE_TYPE);
     }
 
-    private List<Map<String, Object>> invoke(DataModel dataModel, List<Map<String, Object>> args) {
+    private List<Map<String, Object>> setDefalut(DataModel dataModel, List<Map<String, Object>> args) {
         List<Map<String, Object>> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(args) && MapUtils.isNotEmpty(args.get(0))) {
             for (Map.Entry<String, Object> entry : args.get(0).entrySet()) {
@@ -233,6 +233,25 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 Map<String, Object> map = Maps.newHashMap();
                 map.put(var, BigDecimal.ZERO);
                 list.add(map);
+            }
+        }
+        return list;
+    }
+
+    private List<Map<String, Object>> decoration(List<Map<String, Object>> args) {
+        List<Map<String, Object>> list = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(args)) {
+            for (Map<String, Object> args0 : args) {
+                Map<String, Object> newMap = Maps.newHashMap();
+                for (Map.Entry<String, Object> var : args0.entrySet()) {
+                    if ("yoy".equals(var.getKey()) || "chain".equals(var.getKey())) {
+                        newMap.put(var.getKey(), var.getValue());
+                    } else {
+                        newMap.put("name", var.getKey());
+                        newMap.put("value", var.getValue());
+                    }
+                }
+                list.add(newMap);
             }
         }
         return list;
@@ -251,7 +270,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias(),"0");
+                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(), s.getFormatType(), s.getAlias(), "0");
                 if (org.apache.commons.lang.StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
