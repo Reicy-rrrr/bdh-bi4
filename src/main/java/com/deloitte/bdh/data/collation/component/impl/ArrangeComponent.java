@@ -120,7 +120,7 @@ public class ArrangeComponent implements ComponentHandler {
                 arrangeCases.addAll(split(component, context));
                 break;
             case COMBINE:
-                arrangeCases.add(combine(component, context));
+                arrangeCases.addAll(combine(component, context));
                 break;
             case NON_NULL:
                 whereCases.addAll(nonNull(component, context));
@@ -346,18 +346,26 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
-    private ArrangeResultModel combine(ComponentModel component, String context) {
-        List<String> combineFields = JSONArray.parseArray(context, String.class);
+    private List<ArrangeResultModel> combine(ComponentModel component, String context) {
+        List<ArrangeCombineModel> combineFields = JSONArray.parseArray(context, ArrangeCombineModel.class);
         if (CollectionUtils.isEmpty(combineFields)) {
             throw new BizException("Arrange component combine error: 合并字段不能为空！");
         }
-
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
-        List<FieldMappingModel> combineMappings = fromComponent.getFieldMappings().stream()
-                .filter(mappingModel -> combineFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
-        ArrangeResultModel resultModel = arranger.combine(combineMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
-        return resultModel;
+        Map<String, FieldMappingModel> mappings = fromComponent.getFieldMappings().stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        combineFields.forEach(combineModel -> {
+            String leftField = combineModel.getLeft();
+            String rightField = combineModel.getRight();
+            String connector = combineModel.getConnector();
+
+            FieldMappingModel leftMapping = MapUtils.getObject(mappings, leftField);
+            FieldMappingModel rightMapping = MapUtils.getObject(mappings, rightField);
+            resultModels.add(arranger.combine(leftMapping, rightMapping, connector, fromComponent.getTableName(), fromComponent.getTypeEnum()));
+        });
+        return resultModels;
     }
 
     private List<String> nonNull(ComponentModel component, String context) {

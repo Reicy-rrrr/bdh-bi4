@@ -45,6 +45,12 @@ public class BiEtlMappingField implements Serializable {
     @TableField("FIELD_TYPE")
     private String fieldType;
 
+    /**
+     * 字段描述
+     */
+    @TableField("FIELD_DESC")
+    private String fieldDesc;
+
     @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
 
@@ -103,6 +109,14 @@ public class BiEtlMappingField implements Serializable {
         this.fieldType = fieldType;
     }
 
+    public String getFieldDesc() {
+        return fieldDesc;
+    }
+
+    public void setFieldDesc(String fieldDesc) {
+        this.fieldDesc = fieldDesc;
+    }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -159,6 +173,7 @@ public class BiEtlMappingField implements Serializable {
                 ", refCode=" + refCode +
                 ", fieldName=" + fieldName +
                 ", fieldType=" + fieldType +
+                ", fieldDesc=" + fieldDesc +
                 ", createDate=" + createDate +
                 ", createUser=" + createUser +
                 ", modifiedDate=" + modifiedDate +

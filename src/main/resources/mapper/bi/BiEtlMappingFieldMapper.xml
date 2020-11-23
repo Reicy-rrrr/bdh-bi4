@@ -9,6 +9,7 @@
         <result column="REF_CODE" property="refCode" />
         <result column="FIELD_NAME" property="fieldName" />
         <result column="FIELD_TYPE" property="fieldType" />
+        <result column="FIELD_DESC" property="fieldDesc" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

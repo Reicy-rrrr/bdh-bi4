@@ -608,6 +608,7 @@ public class EtlServiceImpl implements EtlService {
             params.setCode(GenerateCodeUtil.generate());
             params.setFieldName(var.getName());
             params.setFieldType(var.getColumnType());
+            params.setFieldDesc(var.getDesc());
             params.setRefCode(code);
             params.setTenantId(ThreadLocalHolder.getTenantId());
             result.add(params);

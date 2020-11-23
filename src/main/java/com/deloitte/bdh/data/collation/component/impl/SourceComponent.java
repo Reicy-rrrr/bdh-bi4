@@ -63,29 +63,39 @@ public class SourceComponent implements ComponentHandler {
         fieldWrapper.eq(BiEtlMappingField::getRefCode, component.getRefMappingCode());
         fieldWrapper.orderByAsc(BiEtlMappingField::getId);
         List<BiEtlMappingField> fields = biEtlMappingFieldService.list(fieldWrapper);
-        List<String> fieldNames = null;
         // 如果映射字段为空，直接查询表结构中的所有字段
+        Map<String, String> fieldNames = Maps.newLinkedHashMap();
         if (!CollectionUtils.isEmpty(fields)) {
-            fieldNames = fields.stream().map(BiEtlMappingField::getFieldName).collect(Collectors.toList());
+            fields.forEach(field -> {
+                fieldNames.put(field.getFieldName(), field.getFieldDesc());
+            });
         } else {
             List<TableColumn> columns = dbHandler.getColumns(tableName);
-            fieldNames = columns.stream().map(TableColumn::getName).collect(Collectors.toList());
+            columns.forEach(tableColumn -> {
+                fieldNames.put(tableColumn.getName(), tableColumn.getDesc());
+            });
         }
 
         List<FieldMappingModel> fieldMappings = Lists.newArrayList();
         Map<String, TableField> columnTypes = getColumnTypes(component.getRefMappingCode());
-        fieldNames.forEach(fieldName -> {
+
+        for (Map.Entry<String, String> entry : fieldNames.entrySet()) {
+            String fieldName = entry.getKey();
+            String fieldDesc = entry.getValue();
             // fullName: table.column
             String fullName = tableName + sql_key_separator + fieldName;
             // 使用全名进行编码获取到字段别名（全名可以避免重复）
             String tempName = getColumnAlias(fullName);
             TableField tableField = MapUtils.getObject(columnTypes, fieldName);
-
-            String fieldDesc = StringUtils.isBlank(tableField.getDesc()) ? fieldName : tableField.getDesc();
+            // 字段描述为空时，使用字段名称作为描述
+            if (StringUtils.isBlank(fieldDesc)) {
+                fieldDesc = fieldName;
+            }
+            tableField.setDesc(fieldDesc);
             FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldDesc, fieldName,
                     tableName, tableField.getColumnType(), tableField);
             fieldMappings.add(mapping);
-        });
+        }
 
         List<String> tempFields = fieldMappings.stream().map(FieldMappingModel::getTempFieldName).collect(Collectors.toList());
         component.setFields(tempFields);

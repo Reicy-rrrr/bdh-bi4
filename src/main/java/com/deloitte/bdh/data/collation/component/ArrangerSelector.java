@@ -53,12 +53,14 @@ public interface ArrangerSelector extends Component {
     /**
      * 合并字段
      *
-     * @param fieldMappings 字段映射
-     * @param fromTable     源表名（上一个组件）
-     * @param fromType      从组件类型
-     * @return Pair
+     * @param leftMapping  左侧字段映射
+     * @param rightMapping 右侧字段映射
+     * @param connector    连接符
+     * @param fromTable    源表名（上一个组件）
+     * @param fromType     从组件类型
+     * @return ArrangeResultModel
      */
-    ArrangeResultModel combine(List<FieldMappingModel> fieldMappings, String fromTable, ComponentTypeEnum fromType);
+    ArrangeResultModel combine(FieldMappingModel leftMapping, FieldMappingModel rightMapping, String connector, String fromTable, ComponentTypeEnum fromType);
 
     /**
      * 字段排空
@@ -116,7 +118,7 @@ public interface ArrangerSelector extends Component {
      * 字段值按照列举进行分组
      *
      * @param fromFieldMapping
-     * @param groupModel           分组属性
+     * @param groupModel       分组属性
      * @param fromTable        源表名（上一个组件）
      * @param fromType         从组件类型
      * @return
@@ -127,7 +129,7 @@ public interface ArrangerSelector extends Component {
      * 字段根据区间类型分组（新增字段）
      *
      * @param fromFieldMapping
-     * @param groupModel           分组属性
+     * @param groupModel       分组属性
      * @param fromTable        源表名（上一个组件）
      * @param fromType         从组件类型
      * @return
@@ -137,16 +139,14 @@ public interface ArrangerSelector extends Component {
     /**
      * 获取合并字段后新字段的长度
      *
-     * @param fromFieldMappings 待合并的字段映射
+     * @param leftMapping  左侧字段映射
+     * @param rightMapping 右侧字段映射
      * @return Integer
      */
-    default Integer getCombineColumnLength(List<FieldMappingModel> fromFieldMappings) {
-        List<String> columnTypes = fromFieldMappings.stream().map(mapping -> mapping.getTableField().getColumnType()).collect(Collectors.toList());
-
+    default Integer getCombineColumnLength(FieldMappingModel leftMapping, FieldMappingModel rightMapping) {
         List<Integer> numbers = Lists.newArrayList();
-        columnTypes.forEach(columnType -> {
-            numbers.addAll(getNumbers(columnType));
-        });
+        numbers.addAll(getNumbers(leftMapping.getTableField().getColumnType()));
+        numbers.addAll(getNumbers(rightMapping.getTableField().getColumnType()));
         return numbers.stream().mapToInt(value -> value).sum();
     }
 

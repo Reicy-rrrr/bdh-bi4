@@ -120,37 +120,44 @@ public class MysqlArranger implements ArrangerSelector {
     }
 
     @Override
-    public ArrangeResultModel combine(List<FieldMappingModel> fromFieldMapping, String fromTable, ComponentTypeEnum fromType) {
-        String fieldName = fromFieldMapping.get(0).getFinalFieldName() + "_combine";
-        String tempName = getColumnAlias(fromFieldMapping.get(0).getOriginalTableName() + sql_key_separator + fieldName);
+    public ArrangeResultModel combine(FieldMappingModel leftMapping, FieldMappingModel rightMapping, String connector, String fromTable, ComponentTypeEnum fromType) {
+        String fieldName = leftMapping.getFinalFieldName() + "_combine";
+        String tempName = getColumnAlias(leftMapping.getOriginalTableName() + sql_key_separator + fieldName);
+        // 连接符为空
+        if (StringUtils.isBlank(connector)) {
+            connector = "''";
+        } else {
+            connector = "'" + connector + "'";
+        }
+
+        String leftField = leftMapping.getTempFieldName();
+        String rightField = rightMapping.getTempFieldName();
+        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            leftField = leftMapping.getOriginalFieldName();
+            rightField = rightMapping.getOriginalFieldName();
+
+        }
+
         StringBuilder fieldBuilder = new StringBuilder();
         fieldBuilder.append("CONCAT(");
-
-        fromFieldMapping.forEach(fromMapping -> {
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                fieldBuilder.append("IFNULL(");
-                fieldBuilder.append(fromMapping.getOriginalFieldName());
-                fieldBuilder.append(", '')");
-                fieldBuilder.append(sql_key_comma);
-            } else {
-                fieldBuilder.append("IFNULL(");
-                fieldBuilder.append(fromTable);
-                fieldBuilder.append(sql_key_separator);
-                fieldBuilder.append(fromMapping.getTempFieldName());
-                fieldBuilder.append(", '')");
-                fieldBuilder.append(sql_key_comma);
-            }
-        });
-        // 删除SELECT中最后多余的“,”
-        fieldBuilder.deleteCharAt(fieldBuilder.lastIndexOf(sql_key_comma));
-        fieldBuilder.append(") AS ");
+        fieldBuilder.append("IFNULL(");
+        fieldBuilder.append(leftField);
+        fieldBuilder.append(", '')");
+        fieldBuilder.append(sql_key_comma);
+        fieldBuilder.append(connector);
+        fieldBuilder.append(sql_key_comma);
+        fieldBuilder.append("IFNULL(");
+        fieldBuilder.append(fromTable);
+        fieldBuilder.append(sql_key_separator);
+        fieldBuilder.append(rightField);
+        fieldBuilder.append(", '')) AS ");
         fieldBuilder.append(tempName);
 
         // 新字段的属性
-        Integer length = getCombineColumnLength(fromFieldMapping);
+        Integer length = getCombineColumnLength(leftMapping, rightMapping);
         String columnType = "varchar(" + length + ")";
         // 新字段描述
-        String desc = fromFieldMapping.get(0).getTableField().getDesc();
+        String desc = leftMapping.getTableField().getDesc();
         String columnDesc = null;
         if (StringUtils.isBlank(desc)) {
             columnDesc = fieldName;
@@ -158,7 +165,7 @@ public class MysqlArranger implements ArrangerSelector {
             columnDesc = desc + "(combine)";
         }
         TableField tableField = new TableField(null, fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
-        FieldMappingModel newMapping = fromFieldMapping.get(0).clone();
+        FieldMappingModel newMapping = leftMapping.clone();
         newMapping.setTempFieldName(tempName);
         newMapping.setFinalFieldName(fieldName);
         newMapping.setFinalFieldDesc(columnDesc);
