@@ -179,38 +179,48 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     public void delModel(String id) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(id);
         if (inf == null) {
-            return;
-        }
-        if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
-            throw new RuntimeException("运行状态下,不允许删除");
+            throw new RuntimeException("未找到目标对象");
         }
 
-        //获取模板下的组件集合
-        List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
-                .eq(BiComponent::getRefModelCode, inf.getCode())
-        );
-
-        // 最终表名
-        for (BiComponent component : componentList) {
-            switch (ComponentTypeEnum.values(component.getType())) {
-                case DATASOURCE:
-                    componentService.removeResourceComponent(component);
-                    break;
-                case OUT:
-                    componentService.removeOut(component);
-                    break;
-                default:
-                    componentService.remove(component);
+        if (YesOrNoEnum.YES.getKey().equals(inf.getIsFile())) {
+            //校验是否有子文件
+            List<BiEtlModel> modelList = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
+                    .eq(BiEtlModel::getParentCode, inf.getCode())
+                    .eq(BiEtlModel::getIsFile, YesOrNoEnum.NO)
+            );
+            if (CollectionUtils.isNotEmpty(modelList)) {
+                throw new RuntimeException("文件夹下有文件,请先删除子文件");
             }
+        } else {
+            if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
+                throw new RuntimeException("运行状态下,不允许删除");
+            }
+
+            //获取模板下的组件集合
+            List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
+                    .eq(BiComponent::getRefModelCode, inf.getCode())
+            );
+
+            // 最终表名
+            for (BiComponent component : componentList) {
+                switch (ComponentTypeEnum.values(component.getType())) {
+                    case DATASOURCE:
+                        componentService.removeResourceComponent(component);
+                        break;
+                    case OUT:
+                        componentService.removeOut(component);
+                        break;
+                    default:
+                        componentService.remove(component);
+                }
+            }
+
+            //删除model
+            String processGroupId = inf.getProcessGroupId();
+            nifiProcessService.delProcessGroup(processGroupId);
+            jobService.remove(inf.getCode());
         }
-
-        //删除model
-        String processGroupId = inf.getProcessGroupId();
-        Map<String, Object> sourceMap = nifiProcessService.delProcessGroup(processGroupId);
-
-        jobService.remove(inf.getCode());
         biEtlModelMapper.deleteById(id);
-        logger.info("删除数据成功:{}", JsonUtil.readObjToJson(sourceMap));
     }
 
     @Override
