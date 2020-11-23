@@ -6,7 +6,6 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.cron.CronUtil;
-import com.deloitte.bdh.common.cron.TaskScheduleModel;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
@@ -127,7 +126,7 @@ public class BiEtlModelController {
 
     @ApiOperation(value = "解析cron", notes = "解析cron")
     @PostMapping("/parseCron")
-    public RetResult<String> parseCron(@RequestBody @Validated RetRequest<TaskScheduleModel> request) {
+    public RetResult<String> parseCron(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(CronUtil.createCronExpression(request.getData()));
     }
 }
