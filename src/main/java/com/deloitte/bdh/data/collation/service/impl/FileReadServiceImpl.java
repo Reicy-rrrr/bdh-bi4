@@ -8,7 +8,7 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.deloitte.bdh.data.collation.enums.FileTypeEnum;
-import com.deloitte.bdh.data.collation.model.resp.FilePreReadResult;
+import com.deloitte.bdh.data.collation.model.FilePreReadResult;
 import com.deloitte.bdh.data.collation.service.FileReadService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -366,7 +366,7 @@ public class FileReadServiceImpl implements FileReadService {
         }
 
         List<Document> documents = Lists.newArrayList();
-        for (int rowIndex = 1; rowIndex < sheet.getLastRowNum(); rowIndex++) {
+        for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
             Row row = sheet.getRow(rowIndex);
             Document document = new Document();
             for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
@@ -451,7 +451,7 @@ public class FileReadServiceImpl implements FileReadService {
         }
 
         List<Map<String, Object>> lines = Lists.newArrayList();
-        for (int rowIndex = 1; rowIndex < sheet.getLastRowNum(); rowIndex++) {
+        for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
             Row row = sheet.getRow(rowIndex);
             Map<String, Object> line = Maps.newLinkedHashMap();
             for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {

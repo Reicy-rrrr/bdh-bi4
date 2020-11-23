@@ -9,11 +9,12 @@ import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
+import com.deloitte.bdh.data.collation.model.BiComponentTree;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
 import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -112,7 +114,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(ComponentHandler.sql_key_select);
 
-
         List<FieldMappingModel> mappings = componentModel.getFieldMappings();
         mappings.forEach(fieldMapping -> {
             if (ComponentTypeEnum.DATASOURCE.equals(type)) {
@@ -141,6 +142,76 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
             sqlBuilder.append(componentModel.getQuerySql());
             sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append("LIMIT 10");
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(componentModel.getTableName());
+        }
+        componentModel.setPreviewSql(sqlBuilder.toString());
+    }
+
+    @Override
+    public void handlePreviewNullSql(ComponentModel componentModel, List<String> nullFields) {
+        if (!componentModel.isHandled()) {
+            throw new BizException("当前组件还未处理，不支持预览sql！");
+        }
+        ComponentTypeEnum type = componentModel.getTypeEnum();
+
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(ComponentHandler.sql_key_select);
+        List<FieldMappingModel> mappings = componentModel.getFieldMappings();
+        mappings.forEach(fieldMapping -> {
+            if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+                sqlBuilder.append(fieldMapping.getOriginalFieldName());
+                sqlBuilder.append(ComponentHandler.sql_key_comma);
+            } else {
+                sqlBuilder.append(componentModel.getTableName());
+                sqlBuilder.append(ComponentHandler.sql_key_separator);
+                sqlBuilder.append(fieldMapping.getTempFieldName());
+                sqlBuilder.append(ComponentHandler.sql_key_blank);
+                sqlBuilder.append(ComponentHandler.sql_key_as);
+                sqlBuilder.append(fieldMapping.getFinalFieldName());
+                sqlBuilder.append(ComponentHandler.sql_key_comma);
+            }
+        });
+        // 删除SELECT中最后多余的“,”
+        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_from);
+
+        Map<String, FieldMappingModel> mappingMap = mappings.stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+            sqlBuilder.append(componentModel.getTableName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            if (!CollectionUtils.isEmpty(nullFields)) {
+                sqlBuilder.append(ComponentHandler.sql_key_where);
+                for (int index = 0; index < nullFields.size(); index++) {
+                    String nullField = nullFields.get(index);
+                    FieldMappingModel mapping = MapUtils.getObject(mappingMap, nullField);
+                    if (index > 0) {
+                        sqlBuilder.append(ComponentHandler.sql_key_and);
+                    }
+                    sqlBuilder.append(mapping.getFinalFieldName());
+                    sqlBuilder.append(" IS NULL ");
+                }
+            }
+            sqlBuilder.append("LIMIT 10");
+        } else {
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+            sqlBuilder.append(componentModel.getQuerySql());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            if (!CollectionUtils.isEmpty(nullFields)) {
+                sqlBuilder.append(ComponentHandler.sql_key_where);
+                for (int index = 0; index < nullFields.size(); index++) {
+                    String nullField = nullFields.get(index);
+                    FieldMappingModel mapping = MapUtils.getObject(mappingMap, nullField);
+                    if (index > 0) {
+                        sqlBuilder.append(ComponentHandler.sql_key_and);
+                    }
+                    sqlBuilder.append(mapping.getTempFieldName());
+                    sqlBuilder.append(" IS NULL ");
+                }
+            }
             sqlBuilder.append("LIMIT 10");
             sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
             sqlBuilder.append(ComponentHandler.sql_key_blank);

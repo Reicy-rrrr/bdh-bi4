@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.model.resp;
+package com.deloitte.bdh.data.collation.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

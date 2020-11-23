@@ -20,8 +20,8 @@ import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
-import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
+import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
+import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
@@ -467,7 +467,7 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
-    public ComponentVo handle(ComponentPreviewDto dto) throws Exception {
+    public ComponentResp handle(ComponentPreviewDto dto) throws Exception {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);
         if (model == null) {
@@ -480,7 +480,7 @@ public class EtlServiceImpl implements EtlService {
             throw new BizException("未找到组件信息！");
         }
 
-        ComponentVo vo = new ComponentVo();
+        ComponentResp vo = new ComponentResp();
         BeanUtils.copyProperties(component, vo);
 
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(
@@ -490,7 +490,7 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
-    public ComponentPreviewVo previewData(ComponentPreviewDto dto) throws Exception {
+    public ComponentPreviewResp previewData(ComponentPreviewDto dto) throws Exception {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);
         if (model == null) {
@@ -526,12 +526,58 @@ public class EtlServiceImpl implements EtlService {
         } else {
             rows = dbHandler.executeQuery(componentModel.getPreviewSql());
         }
-        ComponentPreviewVo previewVo = new ComponentPreviewVo();
+        ComponentPreviewResp previewVo = new ComponentPreviewResp();
         previewVo.setRows(rows);
 
         List<TableField> columns = componentModel.getFieldMappings().stream()
                 .map(FieldMappingModel::getTableField).collect(Collectors.toList());
 
+        previewVo.setColumns(columns);
+        return previewVo;
+    }
+
+    @Override
+    public ComponentPreviewResp previewNullData(ComponentPreviewNullDto dto) throws Exception {
+        String modelId = dto.getModelId();
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            throw new BizException("未找到模板信息！");
+        }
+
+        String componentId = dto.getComponentId();
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            throw new BizException("未找到组件信息！");
+        }
+
+        String modelCode = model.getCode();
+        String componentCode = component.getCode();
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        biEtlModelHandleService.handlePreviewNullSql(componentModel, dto.getFields());
+
+        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
+        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
+        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
+        configWrapper.last("limit 1");
+        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
+
+        List<Map<String, Object>> rows = null;
+        // 直连方式直接查询数据源
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            String sourceId = mappingConfig.getRefSourceId();
+            DbContext context = new DbContext();
+            context.setDbId(sourceId);
+            context.setQuerySql(componentModel.getPreviewSql());
+            rows = dbSelector.executeQuery(context);
+        } else {
+            rows = dbHandler.executeQuery(componentModel.getPreviewSql());
+        }
+        ComponentPreviewResp previewVo = new ComponentPreviewResp();
+        previewVo.setRows(rows);
+
+        List<TableField> columns = componentModel.getFieldMappings().stream()
+                .map(FieldMappingModel::getTableField).collect(Collectors.toList());
         previewVo.setColumns(columns);
         return previewVo;
     }

@@ -10,7 +10,7 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentMapper;
-import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
+import com.deloitte.bdh.data.collation.model.BiComponentTree;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.nifi.template.config.OutSql;
 import com.deloitte.bdh.data.collation.service.*;
