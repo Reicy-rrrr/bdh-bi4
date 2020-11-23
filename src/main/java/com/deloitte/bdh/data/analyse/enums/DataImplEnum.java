@@ -23,7 +23,8 @@ public enum DataImplEnum {
     //图表
     CHART_LINE("chart", "line", "lineChartDataImpl", "折线图"),
     CHART_DLINE("chart", "dline", "lineDChartDataImpl", "双折线图"),
-
+    //柱状图
+    BAR_SIMPLE("bar", "simple", "barSimpleDataImpl", "柱状图"),
     ;
 
     private final String type;

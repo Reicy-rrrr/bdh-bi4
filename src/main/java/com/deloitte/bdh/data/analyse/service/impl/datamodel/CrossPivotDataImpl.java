@@ -57,21 +57,25 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
             Map<String, List<ListTree>> columns = Maps.newHashMap();
             DataModel dataModel = request.getDataConfig().getDataModel();
             if (CollectionUtils.isNotEmpty(dataModel.getX())) {
-                List<String> colNameList = Lists.newArrayList();
+                List<String> colNameWDList = Lists.newArrayList();
+                List<String> colNameDLList = Lists.newArrayList();
                 for (int i = 0; i < dataModel.getX().size(); i++) {
                     String quota = dataModel.getX().get(i).getQuota();
+                    String colName = dataModel.getX().get(i).getId();
+                    if (StringUtils.isNotBlank(dataModel.getX().get(i).getAlias())) {
+                        colName = dataModel.getX().get(i).getAlias();
+                    }
                     if (StringUtils.equals(DataModelTypeEnum.WD.getCode(), quota)) {
-                        String colName = dataModel.getX().get(i).getId();
-                        if (StringUtils.isNotBlank(dataModel.getX().get(i).getAlias())) {
-                            colName = dataModel.getX().get(i).getAlias();
-                        }
-                        colNameList.add(colName);
+                        colNameWDList.add(colName);
+                    } else {
+                        colNameDLList.add(colName);
                     }
                 }
-                String[] colNameXArr =  colNameList.toArray(new String[0]);
+                String[] colNameWDArr =  colNameWDList.toArray(new String[0]);
+                String[] colNameDLArr =  colNameDLList.toArray(new String[0]);
 
                 //构造树形结构
-                List<ListTree> x = buildTree(rows, 0, colNameXArr);
+                List<ListTree> x = buildTree(rows, 0, colNameWDArr, colNameDLArr);
                 columns.put("x", x);
             }
 
@@ -88,14 +92,14 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         }
     }
 
-    private List<ListTree> buildTree(List<Map<String, Object>> rows, int currentNode, String[] colNameArr) {
+    private List<ListTree> buildTree(List<Map<String, Object>> rows, int currentNode, String[] colNameWDArr, String[] colNameDLArr) {
         List<ListTree> treeDataModels = Lists.newArrayList();
 
         Map<String, List<Map<String, Object>>> keyMap = Maps.newHashMap();
         for (Map<String, Object> row : rows) {
-            for (int i = 0; i < colNameArr.length; i++) {
+            for (int i = 0; i < colNameWDArr.length; i++) {
                 if (i == currentNode) {
-                    String name = MapUtils.getString(row, colNameArr[i]);
+                    String name = MapUtils.getString(row, colNameWDArr[i]);
                     if (keyMap.containsKey(name)) {
                         keyMap.get(name).add(row);
                     } else {
@@ -111,10 +115,25 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
             ListTree tree = new ListTree();
             tree.setTitle(key);
             tree.setDataIndex(key);
-            if (currentNode != colNameArr.length) {
+            if (currentNode != colNameWDArr.length) {
                 tree.setKey(key);
 //                tree.setKey(colNameArr[currentNode]);
-                tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameArr));
+                tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameWDArr, colNameDLArr));
+                //长度大于1才添加度量为最后一级
+                if (null != colNameDLArr && colNameDLArr.length > 1) {
+                    for (ListTree innerTree : tree.getChildren()) {
+                        List<ListTree> lastTree = Lists.newArrayList();
+                        for (String dl : colNameDLArr) {
+                            ListTree dlTree = new ListTree();
+                            dlTree.setKey(innerTree.getKey() + dl);
+                            dlTree.setTitle(dl);
+                            dlTree.setDataIndex(innerTree.getKey() + dl);
+                            dlTree.setChildren(Lists.newArrayList());
+                            lastTree.add(dlTree);
+                        }
+                        innerTree.setChildren(lastTree);
+                    }
+                }
                 treeDataModels.add(tree);
             }
         }
