@@ -7,6 +7,7 @@ import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @param dto
      * @return
      */
-    PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto);
+    PageResult<List<ModelResp>> getModelPage(GetModelPageDto dto);
 
     /**
      * 创建数据源
