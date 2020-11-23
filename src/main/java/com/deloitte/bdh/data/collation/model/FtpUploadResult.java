@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.model.resp;
+package com.deloitte.bdh.data.collation.model;
 
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
 import io.swagger.annotations.ApiModelProperty;

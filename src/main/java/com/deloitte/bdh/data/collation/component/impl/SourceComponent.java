@@ -89,7 +89,11 @@ public class SourceComponent implements ComponentHandler {
             TableField tableField = MapUtils.getObject(columnTypes, fieldName);
             // 字段描述为空时，使用字段名称作为描述
             if (StringUtils.isBlank(fieldDesc)) {
-                fieldDesc = fieldName;
+                if (StringUtils.isBlank(tableField.getDesc())) {
+                    fieldDesc = fieldName;
+                } else {
+                    fieldDesc = tableField.getDesc();
+                }
             }
             tableField.setDesc(fieldDesc);
             FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldDesc, fieldName,

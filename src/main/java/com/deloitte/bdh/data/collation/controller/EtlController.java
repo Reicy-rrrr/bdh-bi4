@@ -7,8 +7,8 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
-import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
+import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
+import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -126,14 +126,20 @@ public class EtlController {
 
     @ApiOperation(value = "处理组件", notes = "处理组件")
     @PostMapping("/component/handle")
-    public RetResult<ComponentVo> handle(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
+    public RetResult<ComponentResp> handle(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.handle(request.getData()));
     }
 
     @ApiOperation(value = "预览组件", notes = "预览组件")
     @PostMapping("/component/data/preview")
-    public RetResult<ComponentPreviewVo> previewData(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
+    public RetResult<ComponentPreviewResp> previewData(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.previewData(request.getData()));
+    }
+
+    @ApiOperation(value = "预览组件空值", notes = "预览组件空值")
+    @PostMapping("/component/nullData/preview")
+    public RetResult<ComponentPreviewResp> previewNullData(@RequestBody @Validated RetRequest<ComponentPreviewNullDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.previewNullData(request.getData()));
     }
 
     @ApiOperation(value = "查看sql", notes = "查看sql")

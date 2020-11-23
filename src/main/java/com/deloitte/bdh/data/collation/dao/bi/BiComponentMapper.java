@@ -2,7 +2,7 @@ package com.deloitte.bdh.data.collation.dao.bi;
 
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.common.base.Mapper;
-import com.deloitte.bdh.data.collation.model.resp.BiComponentTree;
+import com.deloitte.bdh.data.collation.model.BiComponentTree;
 import org.apache.ibatis.annotations.Param;
 
 /**

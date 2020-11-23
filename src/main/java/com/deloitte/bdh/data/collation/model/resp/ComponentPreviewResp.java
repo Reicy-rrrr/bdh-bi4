@@ -19,7 +19,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ComponentPreviewVo implements Serializable {
+public class ComponentPreviewResp implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

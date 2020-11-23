@@ -115,7 +115,7 @@ public class SqlserverArranger implements ArrangerSelector {
         String fieldName = leftMapping.getFinalFieldName() + "_combine";
         String tempName = getColumnAlias(leftMapping.getOriginalTableName() + sql_key_separator + fieldName);
         // 连接符为空
-        if (StringUtils.isBlank(connector)) {
+        if (StringUtils.isEmpty(connector)) {
             connector = "''";
         } else {
             connector = "'" + connector + "'";

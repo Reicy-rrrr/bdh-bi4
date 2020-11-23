@@ -22,7 +22,7 @@
     </resultMap>
 
     <!-- 组件树映射结果 -->
-    <resultMap id="BiComponentTreeResultMap" type="com.deloitte.bdh.data.collation.model.resp.BiComponentTree">
+    <resultMap id="BiComponentTreeResultMap" type="com.deloitte.bdh.data.collation.model.BiComponentTree">
         <id column="ID" property="id" />
         <result column="CODE" property="code" />
         <result column="NAME" property="name" />
@@ -39,7 +39,7 @@
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
         <collection column="{modelCode = REF_MODEL_CODE, componentCode = CODE}" property="from" javaType="java.util.ArrayList"
-                    select="selectByEnd" ofType="com.deloitte.bdh.data.collation.model.resp.BiComponentTree"/>
+                    select="selectByEnd" ofType="com.deloitte.bdh.data.collation.model.BiComponentTree"/>
     </resultMap>
 
     <select id="selectByEnd" resultMap="BiComponentTreeResultMap">

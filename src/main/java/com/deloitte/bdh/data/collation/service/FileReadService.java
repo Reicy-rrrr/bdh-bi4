@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.service;
 
 import com.deloitte.bdh.data.collation.database.po.TableField;
-import com.deloitte.bdh.data.collation.model.resp.FilePreReadResult;
+import com.deloitte.bdh.data.collation.model.FilePreReadResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;

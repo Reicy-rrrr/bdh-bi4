@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.service;
 
-import com.deloitte.bdh.data.collation.model.resp.FtpUploadResult;
+import com.deloitte.bdh.data.collation.model.FtpUploadResult;
 import org.springframework.web.multipart.MultipartFile;
 
 /**

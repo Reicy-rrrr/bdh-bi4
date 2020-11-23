@@ -2,8 +2,8 @@ package com.deloitte.bdh.data.collation.integration;
 
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewVo;
-import com.deloitte.bdh.data.collation.model.resp.ComponentVo;
+import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
+import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 
 
 public interface EtlService {
@@ -140,7 +140,7 @@ public interface EtlService {
      * @return ComponentVo
      * @throws Exception
      */
-    ComponentVo handle(ComponentPreviewDto dto) throws Exception;
+    ComponentResp handle(ComponentPreviewDto dto) throws Exception;
 
     /**
      * 预览组件数据
@@ -149,7 +149,16 @@ public interface EtlService {
      * @return ComponentPreviewVo
      * @throws Exception
      */
-    ComponentPreviewVo previewData(ComponentPreviewDto dto) throws Exception;
+    ComponentPreviewResp previewData(ComponentPreviewDto dto) throws Exception;
+
+    /**
+     * 预览组件空值数据
+     *
+     * @param dto 组件预览dto
+     * @return ComponentPreviewVo
+     * @throws Exception
+     */
+    ComponentPreviewResp previewNullData(ComponentPreviewNullDto dto) throws Exception;
 
     /**
      * 预览组件sql
