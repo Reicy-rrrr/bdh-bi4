@@ -41,6 +41,7 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
                 colName = dataModel.getX().get(0).getAlias();
             }
             BigDecimal value = NumberUtils.createBigDecimal(String.valueOf(data.get(colName)));
+            data.put("value", value);
             String progressTotal = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.PROGRESS_TOTAL);
             if (StringUtils.isNotBlank(progressTotal) && NumberUtils.isDigits(progressTotal)) {
                 BigDecimal total = NumberUtils.createBigDecimal(progressTotal);
