@@ -241,7 +241,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             importFields.put(importColumn, MapUtils.getObject(tableFieldMap, importColumn));
         }
         // 删除最后多余的“|”
-        errorMsg.deleteCharAt(errorMsg.lastIndexOf("|"));
+        if (errorMsg.lastIndexOf("|") >= 0) {
+            errorMsg.deleteCharAt(errorMsg.lastIndexOf("|"));
+        }
+
         errorMsg.append("在历史导入文件中不存在！");
         if (!validateFlag) {
             logger.error(errorMsg.toString());
