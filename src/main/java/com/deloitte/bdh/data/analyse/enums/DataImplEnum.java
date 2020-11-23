@@ -15,10 +15,14 @@ public enum DataImplEnum {
     GRAPHICS_RING("graphics", "ring", "graphicsDataImpl", "水波图"),
     //指标图
     QUOTA_WATER("quota", "water", "quotaWaterDataImpl", "水波图"),
-    QUOTA_CORE("quota", "core", "quotaCoreDataImpl","指标图"),
+    QUOTA_CORE("quota", "core", "quotaCoreDataImpl", "指标图"),
+    QUOTA_DASHBOARD("quota", "Dashboard", "quotaDashboardDataImpl", "仪表盘"),
     //过滤
     DATA_RANGE("filter", "range", "dataRangeDataImpl", "数据范围过滤"),
     BASE_DATA("filter", "base", "normalFilterDataImpl", "普通字段过滤"),
+    //图表
+    CHART_LINE("chart", "line", "lineChartDataImpl", "折线图"),
+    CHART_DLINE("chart", "dline", "lineDChartDataImpl", "双折线图"),
 
     ;
 

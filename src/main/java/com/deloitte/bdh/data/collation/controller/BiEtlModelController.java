@@ -5,15 +5,20 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.common.cron.CronUtil;
+import com.deloitte.bdh.common.cron.TaskScheduleModel;
+import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelContent;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,15 +51,23 @@ public class BiEtlModelController {
 
     @ApiOperation(value = "基于租户获取模型列表", notes = "基于租户获取模型列表")
     @PostMapping("/getModelPage")
-    public RetResult<PageResult<List<BiEtlModel>>> getModelPage(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
+    public RetResult<PageResult<List<ModelResp>>> getModelPage(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
         return RetResponse.makeOKRsp(biEtlModelService.getModelPage(request.getData()));
     }
 
     @ApiOperation(value = "查看单个Model详情", notes = "查看单个Model详情")
     @PostMapping("/getModel")
-    public RetResult<BiEtlModel> getModel(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(biEtlModelService.getById(request.getData()));
+    public RetResult<ModelResp> getModel(@RequestBody @Validated RetRequest<String> request) {
+        BiEtlModel model = biEtlModelService.getById(request.getData());
+        ModelResp resp = new ModelResp();
+        if (null != model) {
+            BeanUtils.copyProperties(model, resp);
+            if (!StringUtil.isEmpty(model.getCronData())) {
+                resp.setCronDesc(CronUtil.createDescription(model.getCronData()));
+            }
+        }
+        return RetResponse.makeOKRsp(resp);
     }
 
     @ApiOperation(value = "新增Model", notes = "新增Model")
@@ -110,5 +123,11 @@ public class BiEtlModelController {
     public RetResult<Void> trigger(@RequestBody @Validated RetRequest<String> request) throws Exception {
         biEtlModelService.trigger(request.getData());
         return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "解析cron", notes = "解析cron")
+    @PostMapping("/parseCron")
+    public RetResult<String> parseCron(@RequestBody @Validated RetRequest<TaskScheduleModel> request) {
+        return RetResponse.makeOKRsp(CronUtil.createCronExpression(request.getData()));
     }
 }

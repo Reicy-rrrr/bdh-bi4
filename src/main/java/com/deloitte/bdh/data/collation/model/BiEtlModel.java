@@ -123,6 +123,9 @@ public class BiEtlModel implements Serializable {
     @TableField("CRON_EXPRESSION")
     private String cronExpression;
 
+    @TableField("CRON_DATA")
+    private String cronData;
+
     /**
      * 模型内容：大json
      */
@@ -276,6 +279,13 @@ public class BiEtlModel implements Serializable {
     public void setCronExpression(String cronExpression) {
         this.cronExpression = cronExpression;
     }
+    public String getCronData() {
+        return cronData;
+    }
+
+    public void setCronData(String cronData) {
+        this.cronData = cronData;
+    }
     public String getContent() {
         return content;
     }
@@ -308,6 +318,7 @@ public class BiEtlModel implements Serializable {
         ", tenantId=" + tenantId +
         ", processGroupId=" + processGroupId +
         ", cronExpression=" + cronExpression +
+        ", cronData=" + cronData +
         ", content=" + content +
         "}";
     }

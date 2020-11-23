@@ -2,9 +2,11 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
@@ -31,6 +33,7 @@ import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -114,7 +117,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public PageResult<List<BiEtlModel>> getModelPage(GetModelPageDto dto) {
+    public PageResult<List<ModelResp>> getModelPage(GetModelPageDto dto) {
         LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
         fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
         if (!StringUtil.isEmpty(ThreadLocalHolder.getTenantId())) {
@@ -125,8 +128,22 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
         fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
-        PageInfo<BiEtlModel> pageInfo = new PageInfo(this.list(fUOLamQW));
-        PageResult<List<BiEtlModel>> pageResult = new PageResult(pageInfo);
+        List<BiEtlModel> list = biEtlModelMapper.selectList(fUOLamQW);
+
+        List<ModelResp> models = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (BiEtlModel model : list) {
+                ModelResp resp = new ModelResp();
+                BeanUtils.copyProperties(model, resp);
+                if (!StringUtil.isEmpty(model.getCronData())) {
+                    resp.setCronDesc(CronUtil.createDescription(model.getCronData()));
+                }
+                models.add(resp);
+            }
+        }
+
+        PageInfo<BiEtlModel> pageInfo = new PageInfo(models);
+        PageResult<List<ModelResp>> pageResult = new PageResult(pageInfo);
         return pageResult;
     }
 
@@ -217,6 +234,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             inf.setContent(dto.getContent());
         }
         if (YesOrNoEnum.NO.getKey().equals(inf.getIsFile())) {
+            if (!StringUtil.isEmpty(dto.getCronData())) {
+                inf.setCronData(dto.getCronData());
+                dto.setCronExpression(CronUtil.createCronExpression(dto.getCronData()));
+            }
             if (!StringUtil.isEmpty(dto.getCronExpression())) {
                 inf.setCronExpression(dto.getCronExpression());
                 //调用xxjob 设置调度任务
@@ -229,12 +250,15 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             }
 
             //调用nifi
-            Map<String, Object> reqNifi = Maps.newHashMap();
-            reqNifi.put("id", inf.getProcessGroupId());
-            reqNifi.put("name", inf.getName());
-            reqNifi.put("comments", inf.getComments());
-            Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
-            inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+            if (!StringUtil.isEmpty(dto.getComments())
+                    || !StringUtil.isEmpty(dto.getName())) {
+                Map<String, Object> reqNifi = Maps.newHashMap();
+                reqNifi.put("id", inf.getProcessGroupId());
+                reqNifi.put("name", inf.getName());
+                reqNifi.put("comments", inf.getComments());
+                Map<String, Object> sourceMap = nifiProcessService.updProcessGroup(reqNifi);
+                inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
+            }
 
             if (!StringUtil.isEmpty(dto.getFileCode())) {
                 inf.setParentCode(dto.getFileCode());
@@ -416,6 +440,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         reqNifi.put("position", JsonUtil.JsonStrToMap(NifiProcessUtil.randPosition()));
         Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
 
+        if (!StringUtil.isEmpty(dto.getCronData())) {
+            dto.setCronExpression(CronUtil.createCronExpression(dto.getCronData()));
+        }
         if (!StringUtil.isEmpty(dto.getCronExpression())) {
             Map<String, String> params = Maps.newHashMap();
             params.put("modelCode", inf.getCode());
