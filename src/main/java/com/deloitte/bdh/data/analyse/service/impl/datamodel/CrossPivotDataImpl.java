@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
@@ -163,6 +164,24 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
 
     @Override
     protected void validate(DataModel dataModel) {
-
+        if (CollectionUtils.isEmpty(dataModel.getX())) {
+            throw new BizException("请至少绑定一个维度字段");
+        }
+        int wd = 0;
+        int dl = 0;
+        for (DataModelField field : dataModel.getX()) {
+            if (StringUtils.equals(field.getQuota(), DataModelTypeEnum.WD.getCode())) {
+                wd += 1;
+            }
+            if (StringUtils.equals(field.getQuota(), DataModelTypeEnum.DL.getCode())) {
+                dl += 1;
+            }
+        }
+        if (wd == 0) {
+            throw new BizException("请至少绑定一个维度字段");
+        }
+        if (dl == 0) {
+            throw new BizException("请至少绑定一个度量字段");
+        }
     }
 }

@@ -5,7 +5,6 @@ public class CustomParamsConstants {
     //是否聚合
     public static final String TABLE_AGGREGATE = "tableAggregate";
 
-
     //以下为指标图所有
     //同比(true:false)
     public static final String CORE_YOY = "coreYoy";
@@ -17,4 +16,7 @@ public class CustomParamsConstants {
     public static final String CORE_DATE_KEY = "coreDateKey";
     //同比、环比时间类型（YEAR，YEAR_QUARTERLY，YEAR_MONTH，YEAR_MONTH_DAY）
     public static final String CORE_DATE_TYPE = "coreDateType";
+
+    //子弹图
+    public static final String PROGRESS_TOTAL = "progressTotal";
 }

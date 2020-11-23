@@ -21,10 +21,12 @@ public enum DataImplEnum {
     DATA_RANGE("filter", "range", "dataRangeDataImpl", "数据范围过滤"),
     BASE_DATA("filter", "base", "normalFilterDataImpl", "普通字段过滤"),
     //图表
-    CHART_LINE("chart", "line", "lineChartDataImpl", "折线图"),
-    CHART_DLINE("chart", "dline", "lineDChartDataImpl", "双折线图"),
+    CHART_LINE("chart", "line", "baseDataImpl", "折线图"),
+    CHART_DLINE("chart", "dline", "baseDataImpl", "双折线图"),
     //柱状图
-    BAR_SIMPLE("bar", "simple", "barSimpleDataImpl", "柱状图"),
+    BAR_SIMPLE("bar", "simple", "baseDataImpl", "柱状图"),
+    //子弹图
+    BAR_PROGRESS("bar", "progress", "barProgressImpl", "子弹图"),
     ;
 
     private final String type;

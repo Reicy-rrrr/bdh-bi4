@@ -7,10 +7,10 @@ import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import org.springframework.stereotype.Service;
 
 /**
- * 折线图
+ * 基础格式返回实现类
  */
-@Service("lineChartDataImpl")
-public class LineChartDataImpl extends AbstractDataService implements AnalyseDataService {
+@Service("baseDataImpl")
+public class BaseDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {

@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.model.datamodel;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
 @Data
 public class DataModelField {
@@ -9,18 +10,21 @@ public class DataModelField {
     @ApiModelProperty(value = "前端对应的key")
     String frontendId;
 
+    @NotBlank
     @ApiModelProperty(value = "数据库对应的cloumn,如果有抽象后对应的抽象的列id")
     String id;
 
     @ApiModelProperty("type")
     String type;
 
+    @NotBlank
     @ApiModelProperty(value = "数据类型")
     String dataType;
 
     @ApiModelProperty(value = "别名")
     String alias;
 
+    @NotBlank
     @ApiModelProperty("维度为WD,度量为DL")
     private String quota;
 

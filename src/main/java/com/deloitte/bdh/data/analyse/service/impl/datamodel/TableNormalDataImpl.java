@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -41,6 +42,8 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
 
     @Override
     protected void validate(DataModel dataModel) {
-        //todo
+        if (CollectionUtils.isNotEmpty(dataModel.getY())) {
+            throw new BizException("普通表格不可设置行");
+        }
     }
 }
