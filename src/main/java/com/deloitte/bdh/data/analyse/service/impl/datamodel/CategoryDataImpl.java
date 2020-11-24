@@ -43,7 +43,11 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             for (Map<String, Object> row : rows) {
                 List<String> categoryValue = Lists.newArrayList();
                 for (DataModelField category : dataModel.getCategory()) {
-                    categoryValue.add(MapUtils.getString(row,category.getId()));
+                    String colName = category.getId();
+                    if (StringUtils.isNotBlank(category.getAlias())) {
+                        colName = category.getAlias();
+                    }
+                    categoryValue.add(MapUtils.getString(row, colName));
                 }
                 row.put("category", StringUtils.join(categoryValue, "-"));
             }
