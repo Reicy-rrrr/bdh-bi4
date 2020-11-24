@@ -31,9 +31,6 @@ public class UpdateModelDto {
     @ApiModelProperty(value = "cron 实体json", example = "{}")
     private String cronData;
 
-    @ApiModelProperty(value = "模型内容", example = "模型内容")
-    private String content;
-
     @ApiModelProperty(value = "文件夹编码", example = "文件夹编码")
     private String fileCode;
 }
