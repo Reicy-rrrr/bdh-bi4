@@ -25,7 +25,8 @@ public enum DataImplEnum {
     LINE_DOUBLE("line", "double", "baseDataImpl", "双折线图"),
     LINE_AREA("line", "area", "baseDataImpl", "面积图"),
     //柱状图
-    BAR_SIMPLE("bar", "simple", "baseDataImpl", "柱状图"),
+    BAR_SIMPLE("column", "simple", "baseDataImpl", "柱状图"),
+    BAR_DUAL("column", "dual", "baseDataImpl", "柱线混合"),
     //子弹图
     BAR_PROGRESS("bar", "progress", "barProgressImpl", "子弹图"),
     ;
