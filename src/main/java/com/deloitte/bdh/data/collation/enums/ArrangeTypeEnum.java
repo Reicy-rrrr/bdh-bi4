@@ -14,7 +14,7 @@ public enum ArrangeTypeEnum {
     SPLIT("split", "拆分字段"),
     COMBINE("combine", "组合字段"),
     NON_NULL("non_null", "排除空值"),
-    CONVERT_TYPE("convert_type", "字段类型转换"),
+    MODIFY("modify", "字段修改"),
     RENAME("rename", "字段重命名"),
     GROUP("group", "字段分组"),
     LAYER("layer", "字段分层"),

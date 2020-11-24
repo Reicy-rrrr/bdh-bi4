@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.component;
 
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
@@ -121,7 +122,7 @@ public interface ArrangerSelector extends Component {
      * @param groupModel       分组属性
      * @param fromTable        源表名（上一个组件）
      * @param fromType         从组件类型
-     * @return
+     * @return ArrangeResultModel
      */
     ArrangeResultModel enumGroup(FieldMappingModel fromFieldMapping, ArrangeGroupEnumModel groupModel, String fromTable, ComponentTypeEnum fromType);
 
@@ -132,9 +133,21 @@ public interface ArrangerSelector extends Component {
      * @param groupModel       分组属性
      * @param fromTable        源表名（上一个组件）
      * @param fromType         从组件类型
-     * @return
+     * @return ArrangeResultModel
      */
     ArrangeResultModel sectGroup(FieldMappingModel fromFieldMapping, ArrangeGroupSectModel groupModel, String fromTable, ComponentTypeEnum fromType);
+
+    /**
+     * 修改字段
+     *
+     * @param fromFieldMapping 字段映射
+     * @param targetDesc       字段描述
+     * @param targetType       字段转换后类型
+     * @param fromTable        源表名（上一个组件）
+     * @param fromType         从组件类型
+     * @return ArrangeResultModel
+     */
+    ArrangeResultModel modify(FieldMappingModel fromFieldMapping, String targetDesc, DataTypeEnum targetType, String fromTable, ComponentTypeEnum fromType);
 
     /**
      * 获取合并字段后新字段的长度

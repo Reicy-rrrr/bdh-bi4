@@ -15,10 +15,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
-import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
-import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
@@ -386,13 +383,16 @@ public class DbHandlerImpl implements DbHandler {
         results.forEach(columnMap -> {
             TableField field = new TableField();
             field.setName(MapUtils.getString(columnMap, "COLUMN_NAME"));
-            field.setType("Text");
+
             if (StringUtils.isBlank(MapUtils.getString(columnMap, "COLUMN_COMMENT"))) {
                 field.setDesc(field.getName());
             } else {
                 field.setDesc(MapUtils.getString(columnMap, "COLUMN_COMMENT"));
             }
             field.setDataType(MapUtils.getString(columnMap, "DATA_TYPE"));
+            // 将mysql数据类型转换成本系统的数据类型
+            MysqlDataTypeEnum dataType = MysqlDataTypeEnum.values(field.getDataType().toLowerCase());
+            field.setType(dataType.getValue().getType());
             field.setColumnType(MapUtils.getString(columnMap, "COLUMN_TYPE"));
             columns.add(field);
         });

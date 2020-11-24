@@ -126,6 +126,15 @@ public interface EtlService {
     BiComponent arrangeGroup(ArrangeGroupDto dto) throws Exception;
 
     /**
+     * 引入字段修改整理组件（创建）
+     *
+     * @param dto 整理组件dto
+     * @return BiComponent
+     * @throws Exception
+     */
+    BiComponent arrangeModify(ArrangeModifyDto dto) throws Exception;
+
+    /**
      * 输出组件（创建）
      *
      * @param dto 输出组件dto

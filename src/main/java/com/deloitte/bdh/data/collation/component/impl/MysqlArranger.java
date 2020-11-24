@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -396,5 +397,70 @@ public class MysqlArranger implements ArrangerSelector {
         fieldBuilder.append(newFieldTemp);
         fieldBuilder.append(sql_key_blank);
         return new ArrangeResultModel(newMapping.getTempFieldName(), fieldBuilder.toString(), true, newMapping);
+    }
+
+    @Override
+    public ArrangeResultModel modify(FieldMappingModel fromFieldMapping, String targetDesc, DataTypeEnum targetType, String fromTable, ComponentTypeEnum fromType) {
+        String fieldName = fromFieldMapping.getOriginalFieldName();
+        String tempSegment = fieldName + " AS " + fromFieldMapping.getTempFieldName();
+        if (!ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            fieldName = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
+            tempSegment = fieldName;
+        }
+
+        FieldMappingModel mapping = fromFieldMapping.clone();
+        TableField field = mapping.getTableField();
+        // 修改字段
+        if (StringUtils.isNotBlank(targetDesc)) {
+            mapping.setFinalFieldDesc(targetDesc);
+            field.setDesc(targetDesc);
+        }
+
+        // 原始字段类型
+        String type = field.getType();
+        // 前后字段类型一致，不转换
+        if (targetType.getType().equals(type)) {
+            return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
+        }
+        StringBuilder segmentBuilder = new StringBuilder("CONVERT(");
+        segmentBuilder.append(fieldName);
+        segmentBuilder.append(", ");
+        switch (targetType) {
+            case Integer:
+                segmentBuilder.append("SIGNED");
+                field.setColumnType("bigint(32)");
+                field.setDataType("bigint");
+                field.setDataScope("32");
+                break;
+            case Float:
+                segmentBuilder.append("DECIMAL");
+                field.setColumnType("decimal(32,8)");
+                field.setDataType("decimal");
+                field.setDataScope("32,8");
+                break;
+            case Date:
+                segmentBuilder.append("DATE");
+                field.setColumnType("date");
+                field.setDataType("date");
+                field.setDataScope("");
+                break;
+            case DateTime:
+                segmentBuilder.append("DATETIME");
+                field.setColumnType("datetime");
+                field.setDataType("datetime");
+                field.setDataScope("");
+                break;
+            case Text:
+                segmentBuilder.append("CHAR");
+                field.setColumnType("varchar(255)");
+                field.setDataType("varchar(255)");
+                field.setDataScope("255");
+                break;
+            default:
+                segmentBuilder.append("CHAR");
+        }
+        segmentBuilder.append(") AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
     }
 }

@@ -117,6 +117,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeGroup(request.getData()));
     }
 
+    @ApiOperation(value = "引入整理组件(字段修改)", notes = "引入整理组件(字段修改)")
+    @PostMapping("/arrange/modify/join")
+    public RetResult<BiComponent> arrangeModify(@RequestBody @Validated RetRequest<ArrangeModifyDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeModify(request.getData()));
+    }
+
     @ApiOperation(value = "移除组件", notes = "移除组件")
     @PostMapping("/component/remove")
     public RetResult<Void> remove(@RequestBody @Validated RetRequest<String> request) throws Exception {

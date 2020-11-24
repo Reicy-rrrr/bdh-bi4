@@ -467,6 +467,23 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    public BiComponent arrangeModify(ArrangeModifyDto dto) throws Exception {
+        BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
+        if (null == biEtlModel) {
+            throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
+        }
+        // 保存组件信息
+        BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
+        // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.ARRANGE_PARAM_KEY_TYPE, ArrangeTypeEnum.MODIFY.getType());
+        params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
     public ComponentResp handle(ComponentPreviewDto dto) throws Exception {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);

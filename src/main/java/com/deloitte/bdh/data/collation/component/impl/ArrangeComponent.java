@@ -10,10 +10,7 @@ import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
-import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
-import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
+import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
@@ -125,8 +122,8 @@ public class ArrangeComponent implements ComponentHandler {
             case NON_NULL:
                 whereCases.addAll(nonNull(component, context));
                 break;
-            case CONVERT_TYPE:
-                System.out.println("CONVERT_TYPE");
+            case MODIFY:
+                arrangeCases.addAll(modify(component, context));
                 break;
             case RENAME:
                 System.out.println("RENAME");
@@ -479,6 +476,28 @@ public class ArrangeComponent implements ComponentHandler {
             String fieldName = numberModel.getName();
             FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
             ArrangeResultModel resultModel = arranger.sectGroup(mapping, numberModel, fromComponent.getTableName(), fromComponent.getTypeEnum());
+            resultModels.add(resultModel);
+        });
+        return resultModels;
+    }
+
+    private List<ArrangeResultModel> modify(ComponentModel component, String context) {
+        List<ArrangeModifyModel> modifyModels = JSONArray.parseArray(context, ArrangeModifyModel.class);
+        if (CollectionUtils.isEmpty(modifyModels)) {
+            throw new BizException("Arrange component group error: 修改的字段不能为空！");
+        }
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        modifyModels.forEach(modifyModel -> {
+            String fieldName = modifyModel.getName();
+            DataTypeEnum targetType = DataTypeEnum.values(modifyModel.getType());
+            String targetDesc = modifyModel.getDesc();
+            FieldMappingModel fromMapping = MapUtils.getObject(fromMappingMap, fieldName);
+            ArrangeResultModel resultModel = arranger.modify(fromMapping, targetDesc, targetType, fromComponent.getTableName(), fromComponent.getTypeEnum());
             resultModels.add(resultModel);
         });
         return resultModels;
