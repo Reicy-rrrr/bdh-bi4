@@ -255,7 +255,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 params.put("modelCode", inf.getCode());
                 params.put("tenantId", ThreadLocalHolder.getTenantId());
                 params.put("operator", ThreadLocalHolder.getOperator());
-                jobService.update(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
+                jobService.addOrUpdate(inf.getCode(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
                         dto.getCronExpression(), params);
             }
 
@@ -435,6 +435,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if ("0".equals(dto.getParentCode())) {
             throw new RuntimeException("请在文件夹下创建ETL模板");
         }
+        if (!StringUtil.isEmpty(dto.getCronExpression())) {
+            CronUtil.validate(dto.getCronExpression());
+        }
+
         //生效、失效的状态
         inf.setEffect(EffectEnum.ENABLE.getKey());
         //初始化 为未运行状态 对应nifi stopped RUNNIG
