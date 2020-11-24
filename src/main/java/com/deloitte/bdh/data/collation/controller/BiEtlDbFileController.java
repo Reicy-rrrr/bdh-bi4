@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.collation.controller;
 
 
-import com.deloitte.bdh.common.annotation.NoLocal;
+import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
@@ -29,7 +29,7 @@ public class BiEtlDbFileController {
 
     @ApiOperation(value = "上传文件", notes = "上传文件")
     @PostMapping("/upload")
-    @NoLocal
+    @NoInterceptor
     public RetResult<BiEtlDbFileUploadResp> upload(@ModelAttribute BiEtlDbFileUploadDto fileUploadDto) {
         return RetResponse.makeOKRsp(biEtlDbFileService.upload(fileUploadDto));
     }

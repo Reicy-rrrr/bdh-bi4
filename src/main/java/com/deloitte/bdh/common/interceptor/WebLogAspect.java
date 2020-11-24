@@ -39,7 +39,7 @@ public class WebLogAspect {
 
     @Pointcut("execution(public * com.deloitte.bdh..controller.*.*(..))"
             + "&& !@annotation(com.deloitte.bdh.common.annotation.NoLog)"
-            + "&& !@annotation(com.deloitte.bdh.common.annotation.NoLocal)")
+            + "&& !@annotation(com.deloitte.bdh.common.annotation.NoInterceptor)")
     public void logPointCut() {
     }
 
