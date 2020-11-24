@@ -97,8 +97,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .eq(BiComponentConnection::getRefModelCode, modelCode)
         );
 
-        if (CollectionUtils.isEmpty(components)) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置组件直接的关联关系");
+        if (CollectionUtils.isEmpty(connections)) {
+            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置组件之间的关联关系");
         }
         //基于输出组件往上推
         Optional<BiComponent> componentOptional = components.stream().filter(param -> param.getType()
