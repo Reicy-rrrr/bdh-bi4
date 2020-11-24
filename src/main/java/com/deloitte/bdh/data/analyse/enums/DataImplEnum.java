@@ -21,7 +21,7 @@ public enum DataImplEnum {
     DATA_RANGE("filter", "range", "dataRangeDataImpl", "数据范围过滤"),
     BASE_DATA("filter", "base", "normalFilterDataImpl", "普通字段过滤"),
     //图表
-    LINE_SIMPLE("line", "simple", "baseDataImpl", "折线图"),
+    LINE_SIMPLE("line", "simple", "lineChartDataImpl", "折线图"),
     LINE_DOUBLE("line", "double", "baseDataImpl", "双折线图"),
     LINE_AREA("line", "area", "baseDataImpl", "面积图"),
     //柱状图
