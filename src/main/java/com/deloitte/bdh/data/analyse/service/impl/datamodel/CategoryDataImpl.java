@@ -59,9 +59,6 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             throw new BizException("度量不能为空");
         }
         if (dataModel.getY().size() > 2) {
-            throw new BizException("最多可放入一个度量");
-        }
-        if (!StringUtils.equals(DataModelTypeEnum.DL.getCode(), dataModel.getX().get(0).getQuota())) {
             throw new BizException("最多可放入两个度量");
         }
         if (CollectionUtils.isNotEmpty(dataModel.getCategory())) {
