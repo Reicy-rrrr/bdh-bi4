@@ -160,8 +160,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public BiEtlModel effectModel(EffectModelDto dto) throws Exception {
-        //此次启用、停用 不调用nifi，只是bi来空则，但操作状态前提是未运行状态
+    public BiEtlModel effectModel(EffectModelDto dto) {
+        //此启用、停用不调用nifi，只是bi来控制，但操作状态前提是未运行状态
         BiEtlModel biEtlModel = biEtlModelMapper.selectById(dto.getId());
         if (YesOrNoEnum.YES.getKey().equals(biEtlModel.getSyncStatus())) {
             throw new RuntimeException("当前正在执行同步任务，不允许启、停操作");
@@ -226,7 +226,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Override
     public BiEtlModel updateModel(UpdateModelDto dto) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(dto.getId());
-
+        if (inf == null) {
+            throw new RuntimeException("未找到目标对象");
+        }
         if (YesOrNoEnum.YES.getKey().equals(inf.getSyncStatus())) {
             throw new RuntimeException("当前正在执行同步任务，不允许修改");
         }
@@ -239,9 +241,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         if (!StringUtil.isEmpty(dto.getComments())) {
             inf.setComments(dto.getComments());
-        }
-        if (!StringUtil.isEmpty(dto.getContent())) {
-            inf.setContent(dto.getContent());
         }
         if (YesOrNoEnum.NO.getKey().equals(inf.getIsFile())) {
             if (!StringUtil.isEmpty(dto.getCronData())) {
@@ -260,8 +259,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             }
 
             //调用nifi
-            if (!StringUtil.isEmpty(dto.getComments())
-                    || !StringUtil.isEmpty(dto.getName())) {
+            if (!StringUtil.isEmpty(dto.getName())) {
                 Map<String, Object> reqNifi = Maps.newHashMap();
                 reqNifi.put("id", inf.getProcessGroupId());
                 reqNifi.put("name", inf.getName());
@@ -285,10 +283,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 .eq(BiEtlModel::getCode, modelCode)
         );
         if (null == biEtlModel) {
-            throw new RuntimeException("EtlServiceImpl.runModel.error : 未找到目标 模型");
+            throw new RuntimeException("未找到目标对象");
         }
         if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
-            throw new RuntimeException("EtlServiceImpl.runModel.error : 失效状态下无法发布");
+            throw new RuntimeException("失效状态下无法发布");
         }
 
         RunStatusEnum runStatusEnum = RunStatusEnum.getEnum(biEtlModel.getStatus());
@@ -299,9 +297,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                     .isNull(BiEtlSyncPlan::getPlanResult)
             );
             if (CollectionUtils.isNotEmpty(planList)) {
-                throw new RuntimeException("EtlServiceImpl.runModel.error : 该任务正在执行，不允许停止");
-//                planList.forEach(s -> s.setPlanResult(PlanResultEnum.CANCEL.getValue()));
-//                syncPlanService.updateBatchById(planList);
+                throw new RuntimeException("有任务正在执行,不允许停止");
             }
             // 此时不会有待执行的执行计划，停止数据源组nifi 、停止与删除etl NIFI
             componentService.stopAndDelComponents(modelCode);
@@ -358,6 +354,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (StringUtil.isEmpty(biEtlModel.getCronExpression())) {
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
         }
+        CronUtil.validate(biEtlModel.getCronExpression());
+
         componentService.validate(modelCode);
     }
 

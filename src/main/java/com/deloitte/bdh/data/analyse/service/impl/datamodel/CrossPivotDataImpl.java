@@ -120,22 +120,23 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
                 tree.setKey(key);
 //                tree.setKey(colNameArr[currentNode]);
                 tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameWDArr, colNameDLArr));
+                treeDataModels.add(tree);
                 //长度大于1才添加度量为最后一级
                 if (null != colNameDLArr && colNameDLArr.length > 1) {
-                    for (ListTree innerTree : tree.getChildren()) {
+                    if (CollectionUtils.isEmpty(tree.getChildren())) {
                         List<ListTree> lastTree = Lists.newArrayList();
                         for (String dl : colNameDLArr) {
                             ListTree dlTree = new ListTree();
-                            dlTree.setKey(innerTree.getKey() + dl);
+                            dlTree.setKey(tree.getKey() + dl);
                             dlTree.setTitle(dl);
-                            dlTree.setDataIndex(innerTree.getKey() + dl);
+                            dlTree.setDataIndex(tree.getKey() + dl);
                             dlTree.setChildren(Lists.newArrayList());
                             lastTree.add(dlTree);
                         }
-                        innerTree.setChildren(lastTree);
+                        tree.setChildren(lastTree);
                     }
                 }
-                treeDataModels.add(tree);
+
             }
         }
         return treeDataModels;
