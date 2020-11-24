@@ -88,7 +88,7 @@ public class BiUiAnalysePublicShareController {
                 .eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId())
         );
         if ("2".equals(share.getType())) {
-            String md5 = Md5Util.getMD5(request.getData().getPassword(), ThreadLocalHolder.getTenantCode());
+            String md5 = Md5Util.getMD5(request.getData().getPassword(), encryptPass + ThreadLocalHolder.getTenantCode());
             if (!md5.equals(share.getPassword())) {
                 return RetResponse.makeOKRsp(false);
             }

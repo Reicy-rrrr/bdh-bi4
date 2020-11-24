@@ -48,7 +48,7 @@ public interface XxJobService {
      * @param
      * @return
      */
-    void update(String modelCode, String callBackAddress, String cron, Map<String, String> params) throws Exception;
+    void addOrUpdate(String modelCode, String callBackAddress, String cron, Map<String, String> params) throws Exception;
 
 
     /**

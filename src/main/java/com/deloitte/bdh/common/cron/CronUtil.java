@@ -3,8 +3,24 @@ package com.deloitte.bdh.common.cron;
 
 import com.deloitte.bdh.common.json.JsonUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.core.util.CronExpression;
 
 public class CronUtil {
+
+    /**
+     * 方法摘要：validate Cron表达式
+     *
+     * @param expression
+     * @return String
+     */
+    public static void validate(String expression) {
+        if (StringUtils.isBlank(expression)) {
+            throw new RuntimeException("cron 表达式为空");
+        }
+        if(!CronExpression.isValidExpression(expression)){
+            throw new RuntimeException("cron 表达式非法");
+        }
+    }
 
     /**
      * 方法摘要：构建Cron表达式
@@ -16,7 +32,7 @@ public class CronUtil {
         if (StringUtils.isBlank(cronDate)) {
             throw new RuntimeException("cron实体为空，无法生成表达式");
         }
-        TaskScheduleModel model = JsonUtil.StringToClass(cronDate,TaskScheduleModel.class);
+        TaskScheduleModel model = JsonUtil.StringToClass(cronDate, TaskScheduleModel.class);
         return createCronExpression(model);
     }
 
