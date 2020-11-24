@@ -6,6 +6,7 @@ import com.deloitte.bdh.data.collation.model.request.CreateResourcesDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateResourcesDto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -49,4 +50,12 @@ public interface AnalyseModelFieldService extends Service<BiUiModelField> {
      * @return
      */
     BiUiModelField updateResource(UpdateResourcesDto dto) throws Exception;
+
+    /**
+     * getTables
+     *
+     * @param tableName
+     * @return
+     */
+    Map<String, List<String>> getTables(String tableName);
 }

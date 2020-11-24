@@ -13,6 +13,7 @@ import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
@@ -86,6 +87,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private DbHandler dbHandler;
     @Autowired
     private BiEtlModelHandleService modelHandleService;
+    @Autowired
+    private AnalyseModelFieldService fieldService;
 
 
     @Override
@@ -311,8 +314,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             ComponentModel componentModel = modelHandleService.handleModel(modelCode);
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
-            // todo 看数据分析是否用到该表，且该表是否字段一致
 
+            // 此处只能校验最终的表名的字段在分析那面是否被用到
+            checkAnalyseField(componentModel.getTableName(), columns);
             //创建nifi 配置
             componentService.addOutComponent(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
             //创建表
@@ -471,6 +475,27 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         inf.setId(ThreadLocalHolder.getIp());
         biEtlModelMapper.insert(inf);
         return inf;
+    }
+
+    private void checkAnalyseField(String queryTableName, List<TableField> columns) {
+        Map<String, List<String>> analyseTable = fieldService.getTables(queryTableName);
+        if (null != analyseTable) {
+            List<String> analyseFields = analyseTable.get(queryTableName);
+            if (CollectionUtils.isNotEmpty(analyseFields)) {
+                analyseFields.forEach(field -> {
+                    boolean exit = false;
+                    for (TableField tableField : columns) {
+                        if (field.equals(tableField.getName())) {
+                            exit = true;
+                            break;
+                        }
+                    }
+                    if (!exit) {
+                        throw new RuntimeException("用于分析管理的表字段缺失:" + field);
+                    }
+                });
+            }
+        }
     }
 
 }
