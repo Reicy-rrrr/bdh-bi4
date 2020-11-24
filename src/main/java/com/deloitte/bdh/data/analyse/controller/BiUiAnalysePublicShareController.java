@@ -51,12 +51,12 @@ public class BiUiAnalysePublicShareController {
     @PostMapping("/get")
     public RetResult<BiUiAnalysePublicShare> get(@RequestBody @Validated RetRequest<String> request) {
         BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefId, request.getData())
+                .eq(BiUiAnalysePublicShare::getRefPageId, request.getData())
         );
 
         if (null == share) {
             share = new BiUiAnalysePublicShare();
-            share.setRefId(request.getData());
+            share.setRefPageId(request.getData());
             share.setType("0");
             share.setTenantId(ThreadLocalHolder.getTenantId());
             shareService.save(share);
@@ -85,7 +85,7 @@ public class BiUiAnalysePublicShareController {
     @PostMapping("/password/validate")
     public RetResult<Boolean> validate(@RequestBody @Validated RetRequest<AnalysePublicShareValidateDto> request) {
         BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefId, request.getData().getPageId())
+                .eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId())
         );
         if ("2".equals(share.getType())) {
             String md5 = Md5Util.getMD5(request.getData().getPassword(), ThreadLocalHolder.getTenantCode());

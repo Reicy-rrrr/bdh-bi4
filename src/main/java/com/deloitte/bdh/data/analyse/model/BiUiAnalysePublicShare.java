@@ -14,7 +14,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-11-23
+ * @since 2020-11-24
  */
 @TableName("BI_UI_ANALYSE_PUBLIC_SHARE")
 public class BiUiAnalysePublicShare implements Serializable {
@@ -27,20 +27,14 @@ public class BiUiAnalysePublicShare implements Serializable {
     /**
      * 关联报表ID
      */
-    @TableField("REF_ID")
-    private String refId;
+    @TableField("REF_PAGE_ID")
+    private String refPageId;
 
     /**
      * 公开类型（0：不公开，1：公开，2：加密公开）
      */
     @TableField("TYPE")
     private String type;
-
-    /**
-     * 是否加密
-     */
-    @TableField("IS_ENCRYPT")
-    private String isEncrypt;
 
     /**
      * 密码
@@ -82,12 +76,12 @@ public class BiUiAnalysePublicShare implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
-    public String getRefId() {
-        return refId;
+    public String getRefPageId() {
+        return refPageId;
     }
 
-    public void setRefId(String refId) {
-        this.refId = refId;
+    public void setRefPageId(String refPageId) {
+        this.refPageId = refPageId;
     }
     public String getType() {
         return type;
@@ -95,13 +89,6 @@ public class BiUiAnalysePublicShare implements Serializable {
 
     public void setType(String type) {
         this.type = type;
-    }
-    public String getIsEncrypt() {
-        return isEncrypt;
-    }
-
-    public void setIsEncrypt(String isEncrypt) {
-        this.isEncrypt = isEncrypt;
     }
     public String getPassword() {
         return password;
@@ -164,9 +151,8 @@ public class BiUiAnalysePublicShare implements Serializable {
     public String toString() {
         return "BiUiAnalysePublicShare{" +
         "id=" + id +
-        ", refId=" + refId +
+        ", refPageId=" + refPageId +
         ", type=" + type +
-        ", isEncrypt=" + isEncrypt +
         ", password=" + password +
         ", address=" + address +
         ", code=" + code +

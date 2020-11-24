@@ -42,7 +42,7 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
     @Override
     public String update(AnalysePublicShareDto dto) {
         BiUiAnalysePublicShare share = shareMapper.selectOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefId, dto.getPageId())
+                .eq(BiUiAnalysePublicShare::getRefPageId, dto.getPageId())
         );
         if (null == share) {
             throw new RuntimeException("未找到对应的目标对象:" + JsonUtil.readObjToJson(dto));

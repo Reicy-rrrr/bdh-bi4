@@ -5,9 +5,8 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare">
         <id column="ID" property="id" />
-        <result column="REF_ID" property="refId" />
+        <result column="REF_PAGE_ID" property="refPageId" />
         <result column="TYPE" property="type" />
-        <result column="IS_ENCRYPT" property="isEncrypt" />
         <result column="PASSWORD" property="password" />
         <result column="ADDRESS" property="address" />
         <result column="CODE" property="code" />
