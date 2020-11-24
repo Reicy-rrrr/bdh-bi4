@@ -19,8 +19,8 @@ import java.util.Map;
 /**
  * 带图例的实现类
  */
-@Service("baseDataImpl")
-public class BaseDataImpl extends AbstractDataService implements AnalyseDataService {
+@Service("categoryDataImpl")
+public class CategoryDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
