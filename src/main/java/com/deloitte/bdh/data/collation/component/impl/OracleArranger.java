@@ -47,7 +47,7 @@ public class OracleArranger implements ArrangerSelector {
         rightMapping.getTableField().setName(rightField);
         rightMapping.getTableField().setDesc(rightMapping.getFinalFieldDesc());
 
-        String fromField = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
+        String fromField = fromFieldMapping.getTempFieldName();
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fromField = fromFieldMapping.getOriginalFieldName();
         }
@@ -85,11 +85,12 @@ public class OracleArranger implements ArrangerSelector {
         rightMapping.getTableField().setName(rightField);
         rightMapping.getTableField().setDesc(rightMapping.getFinalFieldDesc());
 
-        String fromField = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
+        String fromField = fromFieldMapping.getTempFieldName();
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fromField = fromFieldMapping.getOriginalFieldName();
         }
-        String leftSql = "SUBSTR(" + fromField + ", 1, " + length + ") AS " + leftFieldTemp;;
+        String leftSql = "SUBSTR(" + fromField + ", 1, " + length + ") AS " + leftFieldTemp;
+        ;
         String rightSql = "SUBSTR(" + fromField + ", " + length + " + 1, LENGTH(" + fromField + ")) AS " + rightFieldTemp;
 
         List<ArrangeResultModel> result = Lists.newArrayList();
@@ -104,7 +105,7 @@ public class OracleArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             segment = "REPLACE (" + fromFieldMapping.getOriginalFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
         } else {
-            segment = "REPLACE (" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
+            segment = "REPLACE (" + fromFieldMapping.getTempFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
         }
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segment, false, fromFieldMapping);
     }
@@ -125,7 +126,6 @@ public class OracleArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             leftField = leftMapping.getOriginalFieldName();
             rightField = rightMapping.getOriginalFieldName();
-
         }
 
         StringBuilder fieldBuilder = new StringBuilder();
@@ -137,8 +137,6 @@ public class OracleArranger implements ArrangerSelector {
         fieldBuilder.append(connector);
         fieldBuilder.append(sql_key_comma);
         fieldBuilder.append("IFNULL(");
-        fieldBuilder.append(fromTable);
-        fieldBuilder.append(sql_key_separator);
         fieldBuilder.append(rightField);
         fieldBuilder.append(", '')) AS ");
         fieldBuilder.append(tempName);
@@ -171,7 +169,7 @@ public class OracleArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 results.add(fromMapping.getOriginalFieldName() + " IS NOT NULL");
             } else {
-                results.add(fromTable + sql_key_separator + fromMapping.getTempFieldName() + " IS NOT NULL");
+                results.add(fromMapping.getTempFieldName() + " IS NOT NULL");
             }
         });
         return results;
@@ -185,7 +183,7 @@ public class OracleArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 segment = "UPPER(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
             } else {
-                segment = "UPPER(" + fromTable + sql_key_separator + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
+                segment = "UPPER(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
             }
 
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
@@ -201,7 +199,7 @@ public class OracleArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 segment = "LOWER(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
             } else {
-                segment = "LOWER(" + fromTable + sql_key_separator + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
+                segment = "LOWER(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
             }
 
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
@@ -217,7 +215,7 @@ public class OracleArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 segment = "TRIM(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
             } else {
-                segment = "TRIM(" + fromTable + sql_key_separator + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
+                segment = "TRIM(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
             }
 
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
@@ -237,7 +235,7 @@ public class OracleArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fieldName = fromMapping.getOriginalFieldName();
         } else {
-            fieldName = fromTable + sql_key_separator + fromMapping.getTempFieldName();
+            fieldName = fromMapping.getTempFieldName();
         }
 
         if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_LEFT.equals(type) && length != null && length != 0) {
@@ -263,8 +261,6 @@ public class OracleArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fieldBuilder.append(fromFieldMapping.getOriginalFieldName());
         } else {
-            fieldBuilder.append(fromTable);
-            fieldBuilder.append(sql_key_separator);
             fieldBuilder.append(fromFieldMapping.getTempFieldName());
         }
         fieldBuilder.append(sql_key_blank);
@@ -325,7 +321,7 @@ public class OracleArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             sourceField = fromFieldMapping.getOriginalFieldName();
         } else {
-            sourceField = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
+            sourceField = fromFieldMapping.getTempFieldName();
         }
 
         // 初始化分组后的字段信息
