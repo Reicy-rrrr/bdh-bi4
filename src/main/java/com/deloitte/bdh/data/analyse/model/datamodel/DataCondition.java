@@ -3,6 +3,8 @@ package com.deloitte.bdh.data.analyse.model.datamodel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * Author:LIJUN
  * Date:18/11/2020
@@ -12,7 +14,7 @@ import lombok.Data;
 public class DataCondition {
 
     @ApiModelProperty("id")
-    private String id;
+    private List<String> id;
 
     @ApiModelProperty("quota")
     private String quota;

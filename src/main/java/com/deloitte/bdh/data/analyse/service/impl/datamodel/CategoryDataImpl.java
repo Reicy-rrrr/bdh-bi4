@@ -30,20 +30,17 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
-        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY2())) {
-            dataModel.getY2().forEach(field -> dataModel.getX().add(field));
-        }
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        buildCategory(request, response);
+        response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
+        response.setY2(buildCategory(request, response.getRows(), dataModel.getY2()));
         return response;
     }
 
-    private void buildCategory(BaseComponentDataRequest request, BaseComponentDataResponse response) {
-        List<Map<String, Object>> rows = response.getRows();
+    private List<Map<String, Object>> buildCategory(BaseComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList) {
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
         for (Map<String, Object> row : rows) {
@@ -68,10 +65,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             }
             String categoryPrefixName = StringUtils.join(categoryPrefix, "-");
             //重新赋值
-            //保存当前行数据,对value2进行赋值
-            List<Map<String, Object>> newRowsTemp = Lists.newArrayList();
-            //Y轴
-            for (DataModelField y : dataModel.getY()) {
+            for (DataModelField y : yList) {
                 String colName = y.getId();
                 if (StringUtils.isNotBlank(y.getAlias())) {
                     colName = y.getAlias();
@@ -79,7 +73,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 Map<String, Object> newRow = Maps.newHashMap();
                 newRow.put("name", StringUtils.join(xList, "-"));
                 if (StringUtils.isNotBlank(categoryPrefixName)) {
-                    if (dataModel.getY().size() > 1) {
+                    if (yList.size() > 1) {
                         newRow.put("category", categoryPrefixName + "-" + colName);
                     } else {
                         newRow.put("category", categoryPrefixName);
@@ -89,31 +83,10 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 }
 
                 newRow.put("value", MapUtils.getString(row, colName));
-                //暂时保存Y轴的数据
-                newRowsTemp.add(newRow);
-            }
-
-            //Y2轴
-            if (CollectionUtils.isNotEmpty(dataModel.getY2())) {
-                for (Map<String, Object> newRowTemp : newRowsTemp) {
-                    for (DataModelField y : dataModel.getY2()) {
-                        Map<String, Object> newRowTemp2 = Maps.newHashMap();
-                        //复制当前数据并添加,防止Y2多条时覆盖前面的数据
-                        newRowTemp2.putAll(newRowTemp);
-                        String colName = y.getId();
-                        if (StringUtils.isNotBlank(y.getAlias())) {
-                            colName = y.getAlias();
-                        }
-                        newRowTemp2.put("category", newRowTemp.get("category") + "-" + colName);
-                        newRowTemp2.put("value2", MapUtils.getString(row, colName));
-                        newRows.add(newRowTemp2);
-                    }
-                }
-            } else {
-                newRows.addAll(newRowsTemp);
+                newRows.add(newRow);
             }
         }
-        response.setRows(newRows);
+        return newRows;
     }
 
     @Override
