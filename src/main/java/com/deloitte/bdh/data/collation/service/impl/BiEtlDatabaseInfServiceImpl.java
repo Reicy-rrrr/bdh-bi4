@@ -22,6 +22,8 @@ import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
+import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageInfo;
@@ -73,6 +75,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private DbSelector dbSelector;
     @Autowired
     private DbHandler dbHandler;
+    @Autowired
+    private BiEtlSyncPlanService syncPlanService;
+    @Autowired
+    private BiEtlModelService modelService;
 
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
@@ -329,6 +335,38 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (!effect.equals(inf.getEffect())) {
             if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
+                //判断被引用的模板是否正在运行中
+                List<BiEtlMappingConfig> configList = configService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                        .eq(BiEtlMappingConfig::getRefSourceId, inf.getId()));
+                if (CollectionUtils.isNotEmpty(configList)) {
+                    Set<String> modelCodes = configList.stream().map(BiEtlMappingConfig::getRefModelCode).collect(Collectors.toSet());
+                    if (CollectionUtils.isNotEmpty(modelCodes)) {
+                        List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
+                                .eq(BiEtlModel::getSyncStatus, YesOrNoEnum.YES.getKey())
+                                .in(BiEtlModel::getCode, modelCodes));
+                        if (CollectionUtils.isNotEmpty(models)) {
+                            List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
+                            throw new BizException("有模板正在进行ETL任务中,请待任务完成后再操作,模板名称:" + StringUtils.join(names, ","));
+
+                        }
+                    }
+                }
+
+                Set<String> configCodeSet = configList.stream().map(BiEtlMappingConfig::getCode).collect(Collectors.toSet());
+                if (CollectionUtils.isNotEmpty(configCodeSet)) {
+                    List<BiEtlSyncPlan> runningPlan = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                            .in(BiEtlSyncPlan::getRefMappingCode, configCodeSet)
+                            .isNull(BiEtlSyncPlan::getPlanResult));
+                    if (CollectionUtils.isNotEmpty(runningPlan)) {
+                        List<String> modelCodes = runningPlan.stream().map(BiEtlSyncPlan::getRefModelCode).collect(Collectors.toList());
+                        List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
+                                .in(BiEtlModel::getCode, modelCodes));
+                        List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
+                        throw new BizException("有数据源正在进行同步任务中,请待同步完成后再操作,所属模板名称:" + StringUtils.join(names, ","));
+
+                    }
+                }
+
                 String controllerServiceId = inf.getControllerServiceId();
                 Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, effect);
                 inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
@@ -346,19 +384,20 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new RuntimeException("启用状态下,不允许删除");
         }
 
+        // 需要校验 该数据源是否已经被引用
+        List<BiEtlMappingConfig> configList = configService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getRefSourceId, inf.getId())
+        );
+        if (CollectionUtils.isNotEmpty(configList)) {
+            throw new RuntimeException("该数据源已被引用,不允许删除");
+        }
+
         if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
             String controllerServiceId = inf.getControllerServiceId();
-            // 需要校验 该数据源是否已经被引用
-            List<BiEtlMappingConfig> configList = configService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                    .eq(BiEtlMappingConfig::getRefSourceId, inf.getId())
-            );
-            if (CollectionUtils.isNotEmpty(configList)) {
-                throw new RuntimeException("该数据源已被引用,不允许删除");
-            }
+
             nifiProcessService.delControllerService(controllerServiceId);
         } else {
-            //todo 文件型需要删除 ,查询被哪些processor引用了,且是否运行中，先停止再删掉
-//            inf.getControllerServiceId()
+            //todo 文件型需要删除远程文件以及表数据
         }
         biEtlDatabaseInfMapper.deleteById(id);
     }
@@ -498,7 +537,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 .eq(BiEtlDatabaseInf::getTenantId, ThreadLocalHolder.getTenantId())
         );
         if (null != exitDb) {
-            throw new RuntimeException("模板数据源名字重复!");
+            throw new RuntimeException("数据源名字重复");
         }
 
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();

@@ -398,7 +398,7 @@ public class SyncServiceImpl implements SyncService {
         );
 
         if (null == model) {
-            log.error("Etl调度验证失败,模板不存, 调度模板编码:{}", modelCode);
+            log.error("Etl调度验证失败,模板不存在, 调度模板编码:{}", modelCode);
             return;
         }
 
