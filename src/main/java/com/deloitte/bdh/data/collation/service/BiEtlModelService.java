@@ -84,7 +84,7 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @param
      * @return
      */
-    void runValidate(String modelCode);
+    void runValidate(String modelCode) throws Exception;
 
 
     /**

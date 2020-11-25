@@ -335,38 +335,40 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (!effect.equals(inf.getEffect())) {
             if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
-                //判断被引用的模板是否正在运行中
-                List<BiEtlMappingConfig> configList = configService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                        .eq(BiEtlMappingConfig::getRefSourceId, inf.getId()));
-                if (CollectionUtils.isNotEmpty(configList)) {
-                    Set<String> modelCodes = configList.stream().map(BiEtlMappingConfig::getRefModelCode).collect(Collectors.toSet());
-                    if (CollectionUtils.isNotEmpty(modelCodes)) {
-                        List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
-                                .eq(BiEtlModel::getSyncStatus, YesOrNoEnum.YES.getKey())
-                                .in(BiEtlModel::getCode, modelCodes));
-                        if (CollectionUtils.isNotEmpty(models)) {
+                //禁用需要如下校验
+                if (EffectEnum.DISABLE.getKey().equals(effect)) {
+                    //判断被引用的模板是否正在运行中
+                    List<BiEtlMappingConfig> configList = configService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                            .eq(BiEtlMappingConfig::getRefSourceId, inf.getId()));
+                    if (CollectionUtils.isNotEmpty(configList)) {
+                        Set<String> modelCodes = configList.stream().map(BiEtlMappingConfig::getRefModelCode).collect(Collectors.toSet());
+                        if (CollectionUtils.isNotEmpty(modelCodes)) {
+                            List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
+                                    .eq(BiEtlModel::getSyncStatus, YesOrNoEnum.YES.getKey())
+                                    .in(BiEtlModel::getCode, modelCodes));
+                            if (CollectionUtils.isNotEmpty(models)) {
+                                List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
+                                throw new BizException("有模板正在进行ETL任务中,请待任务完成后再操作,模板名称:" + StringUtils.join(names, ","));
+
+                            }
+                        }
+                    }
+
+                    Set<String> configCodeSet = configList.stream().map(BiEtlMappingConfig::getCode).collect(Collectors.toSet());
+                    if (CollectionUtils.isNotEmpty(configCodeSet)) {
+                        List<BiEtlSyncPlan> runningPlan = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                                .in(BiEtlSyncPlan::getRefMappingCode, configCodeSet)
+                                .isNull(BiEtlSyncPlan::getPlanResult));
+                        if (CollectionUtils.isNotEmpty(runningPlan)) {
+                            List<String> modelCodes = runningPlan.stream().map(BiEtlSyncPlan::getRefModelCode).collect(Collectors.toList());
+                            List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
+                                    .in(BiEtlModel::getCode, modelCodes));
                             List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
-                            throw new BizException("有模板正在进行ETL任务中,请待任务完成后再操作,模板名称:" + StringUtils.join(names, ","));
+                            throw new BizException("有数据源正在进行同步任务中,请待同步完成后再操作,所属模板名称:" + StringUtils.join(names, ","));
 
                         }
                     }
                 }
-
-                Set<String> configCodeSet = configList.stream().map(BiEtlMappingConfig::getCode).collect(Collectors.toSet());
-                if (CollectionUtils.isNotEmpty(configCodeSet)) {
-                    List<BiEtlSyncPlan> runningPlan = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                            .in(BiEtlSyncPlan::getRefMappingCode, configCodeSet)
-                            .isNull(BiEtlSyncPlan::getPlanResult));
-                    if (CollectionUtils.isNotEmpty(runningPlan)) {
-                        List<String> modelCodes = runningPlan.stream().map(BiEtlSyncPlan::getRefModelCode).collect(Collectors.toList());
-                        List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
-                                .in(BiEtlModel::getCode, modelCodes));
-                        List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
-                        throw new BizException("有数据源正在进行同步任务中,请待同步完成后再操作,所属模板名称:" + StringUtils.join(names, ","));
-
-                    }
-                }
-
                 String controllerServiceId = inf.getControllerServiceId();
                 Map<String, Object> sourceMap = nifiProcessService.runControllerService(controllerServiceId, effect);
                 inf.setVersion(NifiProcessUtil.getVersion(sourceMap));
@@ -405,8 +407,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
-
-        //todo  被 process 引入的数据源是否不能修改
         if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
             throw new RuntimeException("启用中的数据源不允许修改");
         }

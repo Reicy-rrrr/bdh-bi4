@@ -392,7 +392,7 @@ public class SyncServiceImpl implements SyncService {
 
     @Override
     public void model(String modelCode) throws Exception {
-        //查询model信息，生成执行集计划
+        //查询model信息，生成执行计划集
         BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, modelCode)
         );
@@ -405,6 +405,7 @@ public class SyncServiceImpl implements SyncService {
         if (YesOrNoEnum.NO.getKey().equals(model.getValidate()) || EffectEnum.DISABLE.getKey().equals(model.getEffect())
                 || RunStatusEnum.STOP.getKey().equals(model.getStatus()) || YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
             log.error("Etl调度验证失败,模板状态不正常, 调度模板编码:{}", modelCode);
+            //todo 抛出事件修改model validate
             return;
         }
         //首先获取模板下的数据源组件
@@ -429,16 +430,21 @@ public class SyncServiceImpl implements SyncService {
             BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                     .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode())
                     .eq(BiEtlMappingConfig::getRefComponentCode, component.getCode()));
+
             //判断是否归属当前模板
             if (null == config) {
                 continue;
             }
+
+            //校验表结构
+            String result = configService.validateSource(config);
+            if (null != result) {
+                log.error("Etl调度验证失败:{}", result);
+                //todo 抛出事件修改model validate
+            }
+
             // 判断数据源是否被禁用，若有一个被禁用，则不生成调度计划
             BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfService.getById(config.getRefSourceId());
-            if (null == biEtlDatabaseInf || EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
-                log.error("Etl调度验证失败,数据源不存在或状态为失效, 调度模板编码:{}", modelCode);
-                return;
-            }
 
             if (SourceTypeEnum.File_Csv.getType().equals(biEtlDatabaseInf.getType())
                     || SourceTypeEnum.File_Excel.getType().equals(biEtlDatabaseInf.getType())) {
@@ -446,7 +452,7 @@ public class SyncServiceImpl implements SyncService {
                 continue;
             }
 
-            //直连&本地则返回
+            //直连 &本地则返回
             if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())
                     || config.getType().equals(SyncTypeEnum.LOCAL.getValue())) {
                 continue;

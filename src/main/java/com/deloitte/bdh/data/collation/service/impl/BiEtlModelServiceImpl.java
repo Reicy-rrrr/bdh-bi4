@@ -26,8 +26,6 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
@@ -36,7 +34,6 @@ import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
-import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
@@ -69,8 +66,6 @@ import java.util.stream.Collectors;
 @DS(DSConstant.BI_DB)
 public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiEtlModel> implements BiEtlModelService {
     private static final Logger logger = LoggerFactory.getLogger(BiEtlModelServiceImpl.class);
-    @Autowired
-    private BiEtlDatabaseInfService databaseInfService;
     @Resource
     private BiEtlModelMapper biEtlModelMapper;
     @Autowired
@@ -323,12 +318,13 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
             biEtlModel.setSyncStatus(YesOrNoEnum.NO.getKey());
         } else {
+            //校验模板配置
             runValidate(modelCode);
             ComponentModel componentModel = modelHandleService.handleModel(modelCode);
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
 
-            // 此处只能校验最终的表名的字段在分析那面是否被用到
+            // 校验最终表
             checkAnalyseField(componentModel.getTableName(), columns);
             //创建nifi 配置
             componentService.addOutComponent(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
@@ -343,24 +339,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public void runValidate(String modelCode) {
-        //1：校验数据源是否可用，2：校验是否配置cron 表达式，3：校验输入组件，输出组件，4：校验nifi配置
-        List<BiEtlMappingConfig> mappingConfigs = mappingConfigService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                .eq(BiEtlMappingConfig::getRefModelCode, modelCode)
-        );
-
-        if (CollectionUtils.isEmpty(mappingConfigs)) {
-            throw new RuntimeException("校验失败:该模板未关联数据源");
-        }
-
-        mappingConfigs.forEach(s -> {
-            BiEtlDatabaseInf databaseInf = databaseInfService.getById(s.getRefSourceId());
-            if (!databaseInf.getEffect().equals(EffectEnum.ENABLE.getKey())) {
-                throw new RuntimeException("校验失败:该模板关联的数据源状态为失效");
-            }
-            //todo 校验数据源的表以及数据结构是否发生变化
-        });
-
+    public void runValidate(String modelCode) throws Exception {
+        //1：校验模板状态
         BiEtlModel biEtlModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, modelCode)
         );
@@ -371,9 +351,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (StringUtil.isEmpty(biEtlModel.getCronExpression())) {
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
         }
+        //2：校验是否配置cron
         CronUtil.validate(biEtlModel.getCronExpression());
-
+        //3：校验输入组件，输出组件
         componentService.validate(modelCode);
+        //6：校验数据源是否可用
+        mappingConfigService.validateSource(modelCode);
+        //5：校验nifi配置
+        //todo
     }
 
     @Override
