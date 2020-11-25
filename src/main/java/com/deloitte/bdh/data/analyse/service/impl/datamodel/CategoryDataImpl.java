@@ -43,49 +43,47 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         List<Map<String, Object>> rows = response.getRows();
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
-        if (CollectionUtils.isNotEmpty(rows) && CollectionUtils.isNotEmpty(dataModel.getCategory())) {
-            for (Map<String, Object> row : rows) {
+        for (Map<String, Object> row : rows) {
 
-                //x轴名称
-                List<String> xList = Lists.newArrayList();
-                for (DataModelField x : dataModel.getX()) {
-                    String colName = x.getId();
-                    if (StringUtils.isNotBlank(x.getAlias())) {
-                        colName = x.getAlias();
-                    }
-                    xList.add(MapUtils.getString(row, colName));
+            //x轴名称
+            List<String> xList = Lists.newArrayList();
+            for (DataModelField x : dataModel.getX()) {
+                String colName = x.getId();
+                if (StringUtils.isNotBlank(x.getAlias())) {
+                    colName = x.getAlias();
                 }
-                //图例前缀
-                List<String> categoryPrefix = Lists.newArrayList();
-                for (DataModelField category : dataModel.getCategory()) {
-                    String colName = category.getId();
-                    if (StringUtils.isNotBlank(category.getAlias())) {
-                        colName = category.getAlias();
-                    }
-                    categoryPrefix.add(MapUtils.getString(row, colName));
+                xList.add(MapUtils.getString(row, colName));
+            }
+            //图例前缀
+            List<String> categoryPrefix = Lists.newArrayList();
+            for (DataModelField category : dataModel.getCategory()) {
+                String colName = category.getId();
+                if (StringUtils.isNotBlank(category.getAlias())) {
+                    colName = category.getAlias();
                 }
-                String categoryPrefixName = StringUtils.join(categoryPrefix, "-");
-                //重新赋值
-                for (DataModelField y : dataModel.getY()) {
-                    String colName = y.getId();
-                    if (StringUtils.isNotBlank(y.getAlias())) {
-                        colName = y.getAlias();
-                    }
-                    Map<String, Object> newRow = Maps.newHashMap();
-                    newRow.put("name", StringUtils.join(xList, "-"));
-                    if (StringUtils.isNotBlank(categoryPrefixName)) {
-                        if (dataModel.getY().size() > 1) {
-                            newRow.put("category", categoryPrefixName + "-" + colName);
-                        } else {
-                            newRow.put("category", categoryPrefixName);
-                        }
+                categoryPrefix.add(MapUtils.getString(row, colName));
+            }
+            String categoryPrefixName = StringUtils.join(categoryPrefix, "-");
+            //重新赋值
+            for (DataModelField y : dataModel.getY()) {
+                String colName = y.getId();
+                if (StringUtils.isNotBlank(y.getAlias())) {
+                    colName = y.getAlias();
+                }
+                Map<String, Object> newRow = Maps.newHashMap();
+                newRow.put("name", StringUtils.join(xList, "-"));
+                if (StringUtils.isNotBlank(categoryPrefixName)) {
+                    if (dataModel.getY().size() > 1) {
+                        newRow.put("category", categoryPrefixName + "-" + colName);
                     } else {
-                        newRow.put("category", colName);
+                        newRow.put("category", categoryPrefixName);
                     }
-
-                    newRow.put("value", MapUtils.getString(row, colName));
-                    newRows.add(newRow);
+                } else {
+                    newRow.put("category", colName);
                 }
+
+                newRow.put("value", MapUtils.getString(row, colName));
+                newRows.add(newRow);
             }
         }
         response.setRows(newRows);
