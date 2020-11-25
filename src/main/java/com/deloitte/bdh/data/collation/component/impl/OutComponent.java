@@ -71,8 +71,6 @@ public class OutComponent implements ComponentHandler {
     private void buildQuerySql(ComponentModel component) {
         StringBuilder sqlBuilder = new StringBuilder(sql_key_select);
         component.getFieldMappings().forEach(fieldMapping -> {
-            sqlBuilder.append(component.getTableName());
-            sqlBuilder.append(sql_key_separator);
             sqlBuilder.append(fieldMapping.getTempFieldName());
             sqlBuilder.append(sql_key_blank);
             sqlBuilder.append(sql_key_as);

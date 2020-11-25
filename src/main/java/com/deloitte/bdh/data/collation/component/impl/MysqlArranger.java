@@ -57,8 +57,8 @@ public class MysqlArranger implements ArrangerSelector {
             // 以下sql为没有匹配到分隔符，右边字段使用全与左边一致
             // rightSql = "SUBSTRING(" + fromFieldMapping.getOriginalFieldName() + ", INSTR(" + fromFieldMapping.getOriginalFieldName() + ", '" + separator + "') + 1) AS " + rightFieldTemp;
         } else {
-            leftSql = "SUBSTRING_INDEX(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "', 1) AS " + leftFieldTemp;
-            rightSql = "SUBSTRING(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", IF(INSTR(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "') > 0, INSTR(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "'), LENGTH(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ")) + 1) AS " + rightFieldTemp;
+            leftSql = "SUBSTRING_INDEX(" + fromFieldMapping.getTempFieldName() + ", '" + separator + "', 1) AS " + leftFieldTemp;
+            rightSql = "SUBSTRING(" + fromFieldMapping.getTempFieldName() + ", IF(INSTR(" + fromFieldMapping.getTempFieldName() + ", '" + separator + "') > 0, INSTR(" + fromFieldMapping.getTempFieldName() + ", '" + separator + "'), LENGTH(" + fromFieldMapping.getTempFieldName() + ")) + 1) AS " + rightFieldTemp;
             // 以下sql为没有匹配到分隔符，右边字段使用全与左边一致
             // rightSql = "SUBSTRING(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", INSTR(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + separator + "') + 1) AS " + rightFieldTemp;
         }
@@ -100,8 +100,8 @@ public class MysqlArranger implements ArrangerSelector {
             leftSql = "SUBSTRING(" + fromFieldMapping.getOriginalFieldName() + ", 1, " + length + ") AS " + leftFieldTemp;
             rightSql = "SUBSTRING(" + fromFieldMapping.getOriginalFieldName() + ", " + (length + 1) + ", LENGTH(" + fromFieldMapping.getOriginalFieldName() + ") - " + length + ") AS " + rightFieldTemp;
         } else {
-            leftSql = "SUBSTRING(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", 1, " + length + ") AS " + leftFieldTemp;
-            rightSql = "SUBSTRING(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", " + (length + 1) + ", LENGTH(" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ") - " + length + ") AS " + rightFieldTemp;
+            leftSql = "SUBSTRING(" + fromFieldMapping.getTempFieldName() + ", 1, " + length + ") AS " + leftFieldTemp;
+            rightSql = "SUBSTRING(" + fromFieldMapping.getTempFieldName() + ", " + (length + 1) + ", LENGTH(" + fromFieldMapping.getTempFieldName() + ") - " + length + ") AS " + rightFieldTemp;
         }
 
         List<ArrangeResultModel> result = Lists.newArrayList();
@@ -116,7 +116,7 @@ public class MysqlArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             segment = "REPLACE (" + fromFieldMapping.getOriginalFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
         } else {
-            segment = "REPLACE (" + fromTable + sql_key_separator + fromFieldMapping.getTempFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
+            segment = "REPLACE (" + fromFieldMapping.getTempFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
         }
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segment, false, fromFieldMapping);
     }
@@ -137,7 +137,6 @@ public class MysqlArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             leftField = leftMapping.getOriginalFieldName();
             rightField = rightMapping.getOriginalFieldName();
-
         }
 
         StringBuilder fieldBuilder = new StringBuilder();
@@ -149,8 +148,6 @@ public class MysqlArranger implements ArrangerSelector {
         fieldBuilder.append(connector);
         fieldBuilder.append(sql_key_comma);
         fieldBuilder.append("IFNULL(");
-        fieldBuilder.append(fromTable);
-        fieldBuilder.append(sql_key_separator);
         fieldBuilder.append(rightField);
         fieldBuilder.append(", '')) AS ");
         fieldBuilder.append(tempName);
@@ -184,7 +181,7 @@ public class MysqlArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 results.add(fromMapping.getOriginalFieldName() + " IS NOT NULL");
             } else {
-                results.add(fromTable + sql_key_separator + fromMapping.getTempFieldName() + " IS NOT NULL");
+                results.add(fromMapping.getTempFieldName() + " IS NOT NULL");
             }
         });
         return results;
@@ -198,7 +195,7 @@ public class MysqlArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 segment = "UPPER(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
             } else {
-                segment = "UPPER(" + fromTable + sql_key_separator + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
+                segment = "UPPER(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
             }
 
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
@@ -214,7 +211,7 @@ public class MysqlArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 segment = "LOWER(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
             } else {
-                segment = "LOWER(" + fromTable + sql_key_separator + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
+                segment = "LOWER(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
             }
 
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
@@ -230,7 +227,7 @@ public class MysqlArranger implements ArrangerSelector {
             if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                 segment = "TRIM(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
             } else {
-                segment = "TRIM(" + fromTable + sql_key_separator + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
+                segment = "TRIM(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
             }
 
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
@@ -250,7 +247,7 @@ public class MysqlArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fieldName = fromMapping.getOriginalFieldName();
         } else {
-            fieldName = fromTable + sql_key_separator + fromMapping.getTempFieldName();
+            fieldName = fromMapping.getTempFieldName();
         }
 
         if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_LEFT.equals(type) && length != null && length != 0) {
@@ -276,8 +273,6 @@ public class MysqlArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fieldBuilder.append(fromFieldMapping.getOriginalFieldName());
         } else {
-            fieldBuilder.append(fromTable);
-            fieldBuilder.append(sql_key_separator);
             fieldBuilder.append(fromFieldMapping.getTempFieldName());
         }
         fieldBuilder.append(sql_key_blank);
@@ -340,7 +335,7 @@ public class MysqlArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             sourceField = fromFieldMapping.getOriginalFieldName();
         } else {
-            sourceField = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
+            sourceField = fromFieldMapping.getTempFieldName();
         }
 
         // 初始化分组后的字段信息
@@ -410,7 +405,7 @@ public class MysqlArranger implements ArrangerSelector {
         String fieldName = fromFieldMapping.getOriginalFieldName();
         String tempSegment = fieldName + " AS " + fromFieldMapping.getTempFieldName();
         if (!ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fieldName = fromTable + sql_key_separator + fromFieldMapping.getTempFieldName();
+            fieldName = fromFieldMapping.getTempFieldName();
             tempSegment = fieldName;
         }
 

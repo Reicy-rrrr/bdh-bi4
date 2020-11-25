@@ -205,8 +205,6 @@ public class ArrangeComponent implements ComponentHandler {
                 selectBuilder.append(fromMapping.getTempFieldName());
                 selectBuilder.append(sql_key_comma);
             } else {
-                selectBuilder.append(fromTableName);
-                selectBuilder.append(sql_key_separator);
                 selectBuilder.append(fromMapping.getTempFieldName());
                 selectBuilder.append(sql_key_comma);
             }

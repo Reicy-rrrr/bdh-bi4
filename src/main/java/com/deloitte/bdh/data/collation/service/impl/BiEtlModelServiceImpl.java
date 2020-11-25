@@ -247,7 +247,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
 
         if (!StringUtil.isEmpty(dto.getName())) {
-            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getName, dto.getName()));
+            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                    .eq(BiEtlModel::getName, dto.getName())
+                    .ne(BiEtlModel::getId, inf.getId()));
             if (null != exitModel) {
                 throw new RuntimeException("名称已存在");
             }
@@ -321,7 +323,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setStatus(RunStatusEnum.STOP.getKey());
             biEtlModel.setSyncStatus(YesOrNoEnum.NO.getKey());
         } else {
-            validate(modelCode);
+            runValidate(modelCode);
             ComponentModel componentModel = modelHandleService.handleModel(modelCode);
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
@@ -341,7 +343,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public void validate(String modelCode) {
+    public void runValidate(String modelCode) {
         //1：校验数据源是否可用，2：校验是否配置cron 表达式，3：校验输入组件，输出组件，4：校验nifi配置
         List<BiEtlMappingConfig> mappingConfigs = mappingConfigService.list(new LambdaQueryWrapper<BiEtlMappingConfig>()
                 .eq(BiEtlMappingConfig::getRefModelCode, modelCode)
@@ -354,7 +356,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         mappingConfigs.forEach(s -> {
             BiEtlDatabaseInf databaseInf = databaseInfService.getById(s.getRefSourceId());
             if (!databaseInf.getEffect().equals(EffectEnum.ENABLE.getKey())) {
-                throw new RuntimeException("校验失败:该模板关联的数据源状态异常");
+                throw new RuntimeException("校验失败:该模板关联的数据源状态为失效");
             }
             //todo 校验数据源的表以及数据结构是否发生变化
         });

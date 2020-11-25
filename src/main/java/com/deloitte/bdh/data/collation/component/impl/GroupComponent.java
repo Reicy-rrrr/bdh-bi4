@@ -133,11 +133,7 @@ public class GroupComponent implements ComponentHandler {
                 sqlBuilder.append(fromFieldMappings.get(groupField).getTempFieldName());
                 groupBuilder.append(fromFieldMappings.get(groupField).getOriginalFieldName());
             } else {
-                sqlBuilder.append(fromTableName);
-                sqlBuilder.append(sql_key_separator);
                 sqlBuilder.append(groupField);
-                groupBuilder.append(fromTableName);
-                groupBuilder.append(sql_key_separator);
                 groupBuilder.append(groupField);
             }
             sqlBuilder.append(sql_key_comma);
@@ -182,8 +178,6 @@ public class GroupComponent implements ComponentHandler {
                 if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
                     sqlBuilder.append(fromMapping.getOriginalFieldName());
                 } else {
-                    sqlBuilder.append(fromTableName);
-                    sqlBuilder.append(sql_key_separator);
                     sqlBuilder.append(field);
                 }
                 sqlBuilder.append(sql_key_bracket_right);

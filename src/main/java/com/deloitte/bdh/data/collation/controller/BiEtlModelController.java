@@ -111,9 +111,9 @@ public class BiEtlModelController {
     }
 
     @ApiOperation(value = "validate model", notes = "validate Model")
-    @PostMapping("/validate")
-    public RetResult<Void> validate(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        biEtlModelService.validate(request.getData());
+    @PostMapping("/runValidate")
+    public RetResult<Void> runValidate(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        biEtlModelService.runValidate(request.getData());
         return RetResponse.makeOKRsp();
     }
 

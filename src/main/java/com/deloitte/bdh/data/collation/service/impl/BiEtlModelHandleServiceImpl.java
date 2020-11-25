@@ -120,8 +120,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
                 sqlBuilder.append(fieldMapping.getOriginalFieldName());
                 sqlBuilder.append(ComponentHandler.sql_key_comma);
             } else {
-                sqlBuilder.append(componentModel.getTableName());
-                sqlBuilder.append(ComponentHandler.sql_key_separator);
                 sqlBuilder.append(fieldMapping.getTempFieldName());
                 sqlBuilder.append(ComponentHandler.sql_key_blank);
                 sqlBuilder.append(ComponentHandler.sql_key_as);
@@ -165,8 +163,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
                 sqlBuilder.append(fieldMapping.getOriginalFieldName());
                 sqlBuilder.append(ComponentHandler.sql_key_comma);
             } else {
-                sqlBuilder.append(componentModel.getTableName());
-                sqlBuilder.append(ComponentHandler.sql_key_separator);
                 sqlBuilder.append(fieldMapping.getTempFieldName());
                 sqlBuilder.append(ComponentHandler.sql_key_blank);
                 sqlBuilder.append(ComponentHandler.sql_key_as);
@@ -240,8 +236,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         if (ComponentTypeEnum.DATASOURCE.equals(type)) {
             sqlBuilder.append(mapping.getOriginalFieldName());
         } else {
-            sqlBuilder.append(componentModel.getTableName());
-            sqlBuilder.append(ComponentHandler.sql_key_separator);
             sqlBuilder.append(mapping.getTempFieldName());
             sqlBuilder.append(ComponentHandler.sql_key_blank);
             sqlBuilder.append(ComponentHandler.sql_key_as);

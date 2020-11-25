@@ -79,12 +79,13 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
     void runModel(String modelCode) throws Exception;
 
     /**
-     * 检查当前模板是否配置成功
+     * 启动时校验
      *
      * @param
      * @return
      */
-    void validate(String modelCode);
+    void runValidate(String modelCode);
+
 
     /**
      * 运行/停止 Model
