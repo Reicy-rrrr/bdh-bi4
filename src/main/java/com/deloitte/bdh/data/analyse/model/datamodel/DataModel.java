@@ -21,6 +21,9 @@ public class DataModel {
     @ApiModelProperty(value = "纵向显示的字段", notes = "纵向显示的字段")
     List<DataModelField> y = Lists.newArrayList();
 
+    @ApiModelProperty(value = "双Y轴纵向显示的字段", notes = "双Y轴纵向显示的字段")
+    List<DataModelField> y2 = Lists.newArrayList();
+
     @ApiModelProperty(value = "图例", notes = "图例")
     List<DataModelField> category = Lists.newArrayList();
 

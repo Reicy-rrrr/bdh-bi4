@@ -30,6 +30,9 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
+        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY2())) {
+            dataModel.getY2().forEach(field -> dataModel.getX().add(field));
+        }
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
@@ -65,6 +68,9 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             }
             String categoryPrefixName = StringUtils.join(categoryPrefix, "-");
             //重新赋值
+            //保存当前行数据,对value2进行赋值
+            List<Map<String, Object>> newRowsTemp = Lists.newArrayList();
+            //Y轴
             for (DataModelField y : dataModel.getY()) {
                 String colName = y.getId();
                 if (StringUtils.isNotBlank(y.getAlias())) {
@@ -83,7 +89,28 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 }
 
                 newRow.put("value", MapUtils.getString(row, colName));
-                newRows.add(newRow);
+                //暂时保存Y轴的数据
+                newRowsTemp.add(newRow);
+            }
+
+            //Y2轴
+            if (CollectionUtils.isNotEmpty(dataModel.getY2())) {
+                for (Map<String, Object> newRowTemp : newRowsTemp) {
+                    for (DataModelField y : dataModel.getY2()) {
+                        Map<String, Object> newRowTemp2 = Maps.newHashMap();
+                        //复制当前数据并添加,防止Y2多条时覆盖前面的数据
+                        newRowTemp2.putAll(newRowTemp);
+                        String colName = y.getId();
+                        if (StringUtils.isNotBlank(y.getAlias())) {
+                            colName = y.getAlias();
+                        }
+                        newRowTemp2.put("category", newRowTemp.get("category") + "-" + colName);
+                        newRowTemp2.put("value2", MapUtils.getString(row, colName));
+                        newRows.add(newRowTemp2);
+                    }
+                }
+            } else {
+                newRows.addAll(newRowsTemp);
             }
         }
         response.setRows(newRows);
