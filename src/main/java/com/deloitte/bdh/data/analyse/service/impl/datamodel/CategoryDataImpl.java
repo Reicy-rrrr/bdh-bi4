@@ -73,12 +73,16 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                     }
                     Map<String, Object> newRow = Maps.newHashMap();
                     newRow.put("name", StringUtils.join(xList, "-"));
-                    //如果只有一个值轴，不用按值区分
-                    if (dataModel.getY().size() > 1) {
-                        newRow.put("category", categoryPrefixName + "-" + colName);
+                    if (StringUtils.isNotBlank(categoryPrefixName)) {
+                        if (dataModel.getY().size() > 1) {
+                            newRow.put("category", categoryPrefixName + "-" + colName);
+                        } else {
+                            newRow.put("category", categoryPrefixName);
+                        }
                     } else {
-                        newRow.put("category", categoryPrefixName);
+                        newRow.put("category", colName);
                     }
+
                     newRow.put("value", MapUtils.getString(row, colName));
                     newRows.add(newRow);
                 }
