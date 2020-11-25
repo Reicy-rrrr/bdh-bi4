@@ -600,6 +600,51 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
+    public List<Object> previewFieldData(ComponentPreviewFieldDto dto) throws Exception {
+        String modelId = dto.getModelId();
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            throw new BizException("未找到模板信息！");
+        }
+
+        String componentId = dto.getComponentId();
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            throw new BizException("未找到组件信息！");
+        }
+
+        String modelCode = model.getCode();
+        String componentCode = component.getCode();
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        biEtlModelHandleService.handlePreviewFieldSql(componentModel, dto.getField());
+
+        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
+        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
+        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
+        configWrapper.last("limit 1");
+        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
+
+        List<Map<String, Object>> rows = null;
+        // 直连方式直接查询数据源
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            String sourceId = mappingConfig.getRefSourceId();
+            DbContext context = new DbContext();
+            context.setDbId(sourceId);
+            context.setQuerySql(componentModel.getPreviewSql());
+            rows = dbSelector.executeQuery(context);
+        } else {
+            rows = dbHandler.executeQuery(componentModel.getPreviewSql());
+        }
+
+        List<Object> results = Lists.newArrayList();
+        rows.forEach(row -> {
+            results.addAll(row.values());
+        });
+        return results;
+    }
+
+    @Override
     public String previewSql(ComponentPreviewDto dto) throws Exception {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);

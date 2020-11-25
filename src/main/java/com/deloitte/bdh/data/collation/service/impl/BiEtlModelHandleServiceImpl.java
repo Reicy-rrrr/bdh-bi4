@@ -220,6 +220,50 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         componentModel.setPreviewSql(sqlBuilder.toString());
     }
 
+    @Override
+    public void handlePreviewFieldSql(ComponentModel componentModel, String field) {
+        if (!componentModel.isHandled()) {
+            throw new BizException("当前组件还未处理，不支持预览sql！");
+        }
+        ComponentTypeEnum type = componentModel.getTypeEnum();
+
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(ComponentHandler.sql_key_select);
+        sqlBuilder.append(ComponentHandler.sql_key_distinct);
+        Map<String, FieldMappingModel> mappings = componentModel.getFieldMappings().stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+        FieldMappingModel mapping = MapUtils.getObject(mappings, field);
+        if (mapping == null) {
+            throw new BizException("组件字段值预览失败，不存在的字段！");
+        }
+
+        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+            sqlBuilder.append(mapping.getOriginalFieldName());
+        } else {
+            sqlBuilder.append(componentModel.getTableName());
+            sqlBuilder.append(ComponentHandler.sql_key_separator);
+            sqlBuilder.append(mapping.getTempFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_as);
+            sqlBuilder.append(mapping.getFinalFieldName());
+        }
+
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_from);
+
+        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
+            sqlBuilder.append(componentModel.getTableName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+        } else {
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+            sqlBuilder.append(componentModel.getQuerySql());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(componentModel.getTableName());
+        }
+        componentModel.setPreviewSql(sqlBuilder.toString());
+    }
+
     /**
      * 处理组件
      *

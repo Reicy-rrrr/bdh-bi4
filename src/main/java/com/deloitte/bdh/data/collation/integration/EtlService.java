@@ -5,6 +5,8 @@ import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 
+import java.util.List;
+
 
 public interface EtlService {
 
@@ -168,6 +170,15 @@ public interface EtlService {
      * @throws Exception
      */
     ComponentPreviewResp previewNullData(ComponentPreviewNullDto dto) throws Exception;
+
+    /**
+     * 预览组件字段唯一值
+     *
+     * @param dto 组件预览dto
+     * @return List
+     * @throws Exception
+     */
+    List<Object> previewFieldData(ComponentPreviewFieldDto dto) throws Exception;
 
     /**
      * 预览组件sql

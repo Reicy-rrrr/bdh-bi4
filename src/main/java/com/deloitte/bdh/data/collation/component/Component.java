@@ -17,6 +17,7 @@ public interface Component {
     String sql_key_select = "SELECT ";
     String sql_key_create = "CREATE TABLE IF NOT EXISTS ";
     String sql_key_insert = "INSERT INTO ";
+    String sql_key_distinct = "DISTINCT ";
     String sql_key_from = "FROM ";
     String sql_key_inner_join = "INNER JOIN ";
     String sql_key_left_join = "LEFT JOIN ";

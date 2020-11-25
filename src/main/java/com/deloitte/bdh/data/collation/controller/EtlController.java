@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * <p>
  * 前端控制器
@@ -146,6 +148,12 @@ public class EtlController {
     @PostMapping("/component/nullData/preview")
     public RetResult<ComponentPreviewResp> previewNullData(@RequestBody @Validated RetRequest<ComponentPreviewNullDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.previewNullData(request.getData()));
+    }
+
+    @ApiOperation(value = "预览组件字段值", notes = "预览组件字段值")
+    @PostMapping("/component/fieldData/preview")
+    public RetResult<List> previewFieldData(@RequestBody @Validated RetRequest<ComponentPreviewFieldDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.previewFieldData(request.getData()));
     }
 
     @ApiOperation(value = "查看sql", notes = "查看sql")

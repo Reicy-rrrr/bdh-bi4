@@ -45,4 +45,13 @@ public interface BiEtlModelHandleService {
      * @return ComponentModel
      */
     void handlePreviewNullSql(ComponentModel componentModel, List<String> nullFields);
+
+    /**
+     * 处理组件预览字段唯一值sql（只有在处理完以后的组件才能处理预览sql）
+     *
+     * @param componentModel 组件模型
+     * @param field          预览字段
+     * @return ComponentModel
+     */
+    void handlePreviewFieldSql(ComponentModel componentModel, String field);
 }
