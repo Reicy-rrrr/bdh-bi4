@@ -200,22 +200,23 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
             sqlBuilder.append(componentModel.getQuerySql());
             sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(componentModel.getTableName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
             if (!CollectionUtils.isEmpty(nullFields)) {
                 sqlBuilder.append(ComponentHandler.sql_key_where);
                 for (int index = 0; index < nullFields.size(); index++) {
                     String nullField = nullFields.get(index);
                     FieldMappingModel mapping = MapUtils.getObject(mappingMap, nullField);
                     if (index > 0) {
-                        sqlBuilder.append(ComponentHandler.sql_key_and);
+                        sqlBuilder.append(ComponentHandler.sql_key_or);
                     }
                     sqlBuilder.append(mapping.getTempFieldName());
                     sqlBuilder.append(" IS NULL ");
                 }
             }
             sqlBuilder.append("LIMIT 10");
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(componentModel.getTableName());
         }
         componentModel.setPreviewSql(sqlBuilder.toString());
     }
