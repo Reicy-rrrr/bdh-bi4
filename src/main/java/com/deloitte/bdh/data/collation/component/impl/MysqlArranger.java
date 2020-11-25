@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
@@ -165,10 +166,11 @@ public class MysqlArranger implements ArrangerSelector {
         } else {
             columnDesc = desc + "(combine)";
         }
-        TableField tableField = new TableField(null, fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
+        TableField tableField = new TableField(DataTypeEnum.Text.getType(), fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
         FieldMappingModel newMapping = leftMapping.clone();
         newMapping.setTempFieldName(tempName);
         newMapping.setFinalFieldName(fieldName);
+        newMapping.setFinalFieldType(DataTypeEnum.Text.getType());
         newMapping.setFinalFieldDesc(columnDesc);
         newMapping.setOriginalColumnType(columnType);
         newMapping.setTableField(tableField);
@@ -284,6 +286,7 @@ public class MysqlArranger implements ArrangerSelector {
         String newField = fromFieldMapping.getFinalFieldName() + "_group";
         String newFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + newField);
         FieldMappingModel newMapping = fromFieldMapping.clone();
+        newMapping.setFinalFieldType(DataTypeEnum.Text.getType());
         newMapping.setFinalFieldName(newField);
         newMapping.setTempFieldName(newFieldTemp);
         String desc = fromFieldMapping.getTableField().getDesc();
@@ -292,6 +295,7 @@ public class MysqlArranger implements ArrangerSelector {
         } else {
             newMapping.setFinalFieldDesc(desc + "(group)");
         }
+        newMapping.getTableField().setType(DataTypeEnum.Text.getType());
         newMapping.getTableField().setName(newField);
         newMapping.getTableField().setColumnType("varchar(255)");
         newMapping.getTableField().setDataType("varchar");
@@ -344,6 +348,7 @@ public class MysqlArranger implements ArrangerSelector {
         String newFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + newField);
         FieldMappingModel newMapping = fromFieldMapping.clone();
         newMapping.setFinalFieldName(newField);
+        newMapping.setFinalFieldType(DataTypeEnum.Text.getType());
         newMapping.setTempFieldName(newFieldTemp);
         String desc = fromFieldMapping.getTableField().getDesc();
         if (StringUtils.isBlank(desc)) {
@@ -351,6 +356,7 @@ public class MysqlArranger implements ArrangerSelector {
         } else {
             newMapping.setFinalFieldDesc(desc + "(group)");
         }
+        newMapping.getTableField().setType(DataTypeEnum.Text.getType());
         newMapping.getTableField().setName(newField);
         newMapping.getTableField().setColumnType("varchar(255)");
         newMapping.getTableField().setDataType("varchar");
@@ -422,6 +428,10 @@ public class MysqlArranger implements ArrangerSelector {
         if (targetType.getType().equals(type)) {
             return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
         }
+
+        // 重置字段类型（系统中的数据类型）
+        mapping.setFinalFieldType(targetType.getType());
+        field.setType(targetType.getType());
         StringBuilder segmentBuilder = new StringBuilder("CONVERT(");
         segmentBuilder.append(fieldName);
         segmentBuilder.append(", ");
@@ -457,7 +467,7 @@ public class MysqlArranger implements ArrangerSelector {
                 field.setDataScope("255");
                 break;
             default:
-                segmentBuilder.append("CHAR");
+                throw new BizException("转换类型失败，暂不支持的类型！");
         }
         segmentBuilder.append(") AS ");
         segmentBuilder.append(mapping.getTempFieldName());
