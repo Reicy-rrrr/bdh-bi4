@@ -96,7 +96,7 @@ public class SourceComponent implements ComponentHandler {
                 }
             }
             tableField.setDesc(fieldDesc);
-            FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, fieldDesc, fieldName,
+            FieldMappingModel mapping = new FieldMappingModel(tempName, fieldName, tableField.getType(), fieldDesc, fieldName,
                     tableName, tableField.getColumnType(), tableField);
             fieldMappings.add(mapping);
         }
