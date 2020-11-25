@@ -83,9 +83,15 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
             throw new RuntimeException("数据源状态为失效,数据源名称:" + databaseInf.getName());
         }
 
-        List<BiEtlMappingField> recordfieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
+        List<BiEtlMappingField> recordFieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
                 .eq(BiEtlMappingField::getRefCode, config.getCode()));
+        if (CollectionUtils.isNotEmpty(recordFieldList)) {
+            throw new RuntimeException("未找到本地记录的字段信息,映射编码:" + config.getCode());
+        }
+        List<String> recordFields = recordFieldList.stream().map(BiEtlMappingField::getFieldName).collect(Collectors.toList());
+
         // 校验数据源的表以及数据结构是否发生变化
+        String diffFields = null;
         switch (Integer.parseInt(config.getType())) {
             case 0:
             case 1:
@@ -99,20 +105,14 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
                 if (!tables.contains(config.getFromTableName())) {
                     throw new RuntimeException("数据源发生变化,远程数据库没有找到表" + config.getFromTableName());
                 }
-                //校验表字段
                 dbContext.setTableName(config.getFromTableName());
 
-                if (CollectionUtils.isNotEmpty(recordfieldList)) {
-                    List<String> fromFields = dbSelector.getFields(dbContext);
-                    if (CollectionUtils.isEmpty(fromFields)) {
-                        throw new RuntimeException("数据源发生变化,远程数据源的表字段没有读取到");
-                    }
-                    List<String> recordFields = recordfieldList.stream().map(BiEtlMappingField::getFieldName).collect(Collectors.toList());
-                    String diff = findDiffFields(recordFields, fromFields);
-                    if (null != diff) {
-                        throw new RuntimeException("数据源发生变化,本地配置的以下字段无法找到:" + diff);
-                    }
+                List<String> fromFields = dbSelector.getFields(dbContext);
+                if (CollectionUtils.isEmpty(fromFields)) {
+                    throw new RuntimeException("数据源发生变化,远程数据源的表字段没有读取到");
                 }
+                diffFields = findDiffFields(recordFields, fromFields);
+
                 break;
             case 3:
                 List<String> localTables = dbHandler.getTables();
@@ -120,21 +120,18 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
                     throw new RuntimeException("数据源发生变化,本地库没有找到表" + config.getFromTableName());
                 }
 
-                if (CollectionUtils.isNotEmpty(recordfieldList)) {
-                    List<TableColumn> fromFields = dbHandler.getColumns(config.getFromTableName());
-                    if (CollectionUtils.isEmpty(fromFields)) {
-                        throw new RuntimeException("数据源发生变化,本地数据源的表字段没有读取到");
-                    }
-                    List<String> localFields = fromFields.stream().map(TableColumn::getName).collect(Collectors.toList());
-                    List<String> recordFields = recordfieldList.stream().map(BiEtlMappingField::getFieldName).collect(Collectors.toList());
-                    String diff = findDiffFields(recordFields, localFields);
-                    if (null != diff) {
-                        throw new RuntimeException("数据源发生变化,本地配置的以下字段无法找到:" + diff);
-                    }
+                List<TableColumn> tableColumns = dbHandler.getColumns(config.getFromTableName());
+                if (CollectionUtils.isEmpty(tableColumns)) {
+                    throw new RuntimeException("数据源发生变化,本地数据源的表字段没有读取到");
                 }
+                List<String> localFields = tableColumns.stream().map(TableColumn::getName).collect(Collectors.toList());
+                diffFields = findDiffFields(recordFields, localFields);
                 break;
             default:
                 throw new RuntimeException("未知的数据类型");
+        }
+        if (null != diffFields) {
+            throw new RuntimeException("数据源发生变化,本地配置的以下字段无法找到:" + diffFields);
         }
     }
 
