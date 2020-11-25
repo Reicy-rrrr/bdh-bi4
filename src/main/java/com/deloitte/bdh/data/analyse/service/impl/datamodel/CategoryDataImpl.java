@@ -35,8 +35,10 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         }
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
-        response.setY2(buildCategory(request, response.getRows(), dataModel.getY2()));
+        List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY());
+        List<Map<String, Object>> y2 = buildCategory(request, response.getRows(), dataModel.getY2());
+        response.setRows(y1);
+        response.setY2(y2);
         return response;
     }
 
