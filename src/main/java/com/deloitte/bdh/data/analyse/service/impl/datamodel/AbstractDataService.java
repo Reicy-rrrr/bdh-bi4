@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -99,10 +100,15 @@ public abstract class AbstractDataService {
         }
         if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
             for (DataCondition condition : dataModel.getConditions()) {
-                String express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getFormatType(), condition.getSymbol(), condition.getValue());
-                if (StringUtils.isNotBlank(express)) {
-                    list.add(express);
+                String express = "";
+                if (condition.getId().size() == 1) {
+                    express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), condition.getSymbol(), condition.getValue());
+                    if (StringUtils.isNotBlank(express)) {
+                    }
+                } else { //针对多个字段连接成一个value值的情况做特殊处理
+                    express = connectWhere(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getSymbol(), condition.getValue());
                 }
+                list.add(express);
             }
         }
 
@@ -182,4 +188,18 @@ public abstract class AbstractDataService {
     public interface Rows {
         List<Map<String, Object>> set(List<Map<String, Object>> list);
     }
+
+    private String connectWhere(String tableName, List<String> fields, String quota, String symbol, String value) {
+        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            return null;
+        }
+        List<String> expressList = Lists.newArrayList();
+        for (String field : fields) {
+            String express = "`" + tableName + "`.`" + field + "`";
+            expressList.add(express);
+        }
+        String connectExpress = StringUtils.join(expressList, ",");
+        return "CONCAT_WS('-'," + connectExpress + ")" + " " + symbol + " " + value;
+    }
+
 }
