@@ -103,8 +103,6 @@ public abstract class AbstractDataService {
                 String express = "";
                 if (condition.getId().size() == 1) {
                     express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), condition.getSymbol(), condition.getValue());
-                    if (StringUtils.isNotBlank(express)) {
-                    }
                 } else { //针对多个字段连接成一个value值的情况做特殊处理
                     express = connectWhere(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getSymbol(), condition.getValue());
                 }
