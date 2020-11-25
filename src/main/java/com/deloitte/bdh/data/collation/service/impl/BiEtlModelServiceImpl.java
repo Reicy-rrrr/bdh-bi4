@@ -247,7 +247,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
 
         if (!StringUtil.isEmpty(dto.getName())) {
-            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getName, dto.getName()));
+            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                    .eq(BiEtlModel::getName, dto.getName())
+                    .ne(BiEtlModel::getId, inf.getId()));
             if (null != exitModel) {
                 throw new RuntimeException("名称已存在");
             }
