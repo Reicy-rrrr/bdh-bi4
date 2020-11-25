@@ -30,9 +30,13 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
+        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY2())) {
+            dataModel.getY2().forEach(field -> dataModel.getX().add(field));
+        }
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
+
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
         List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY());
