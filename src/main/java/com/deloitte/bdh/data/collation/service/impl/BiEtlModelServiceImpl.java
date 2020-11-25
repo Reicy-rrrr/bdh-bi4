@@ -153,7 +153,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public BiEtlModel createModel(CreateModelDto dto) throws Exception {
+        BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getName, dto.getName())
+        );
+        if (null != model) {
+            throw new RuntimeException("名称已存在");
+        }
         String modelCode = GenerateCodeUtil.genModel();
+
         //处理文件夹
         if (YesOrNoEnum.YES.getKey().equals(dto.getIsFile())) {
             return doFile(modelCode, dto);
@@ -240,6 +247,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
 
         if (!StringUtil.isEmpty(dto.getName())) {
+            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getName, dto.getName()));
+            if (null != exitModel) {
+                throw new RuntimeException("名称已存在");
+            }
             inf.setName(dto.getName());
         }
         if (!StringUtil.isEmpty(dto.getComments())) {
@@ -392,42 +403,32 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
-        //文件夹
-        if (YesOrNoEnum.YES.getKey().equals(dto.getIsFile())) {
-            inf.setCode(modelCode);
-            if ("0".equals(dto.getParentCode())) {
-                inf.setRootCode(inf.getCode());
-            } else {
-                //查询上级是否是文件夹
-                Map<String, Object> query = Maps.newHashMap();
-                query.put("code", dto.getParentCode());
-                List<BiEtlModel> modelList = biEtlModelMapper.selectByMap(query);
-                if (CollectionUtils.isEmpty(modelList)) {
-                    throw new RuntimeException("未找到上级的文件夹信息");
-                }
-                if (YesOrNoEnum.NO.getKey().equals(modelList.get(0).getIsFile())) {
-                    throw new RuntimeException("只能在文件夹下面创建子文件");
-                }
+        inf.setCode(modelCode);
+        if ("0".equals(dto.getParentCode())) {
+            inf.setRootCode(inf.getCode());
+        } else {
+            //查询上级是否是文件夹
+            Map<String, Object> query = Maps.newHashMap();
+            query.put("code", dto.getParentCode());
+            List<BiEtlModel> modelList = biEtlModelMapper.selectByMap(query);
+            if (CollectionUtils.isEmpty(modelList)) {
+                throw new RuntimeException("未找到上级的文件夹信息");
             }
-            inf.setName(dto.getName());
-            inf.setComments(dto.getComments());
-            inf.setTenantId(ThreadLocalHolder.getTenantId());
-            inf.setVersion("0");
-            inf.setEffect(EffectEnum.ENABLE.getKey());
-            inf.setProcessGroupId(modelCode);
-            biEtlModelMapper.insert(inf);
+            if (YesOrNoEnum.NO.getKey().equals(modelList.get(0).getIsFile())) {
+                throw new RuntimeException("只能在文件夹下面创建子文件");
+            }
         }
+        inf.setName(dto.getName());
+        inf.setComments(dto.getComments());
+        inf.setTenantId(ThreadLocalHolder.getTenantId());
+        inf.setVersion("0");
+        inf.setEffect(EffectEnum.ENABLE.getKey());
+        inf.setProcessGroupId(modelCode);
+        biEtlModelMapper.insert(inf);
         return inf;
     }
 
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
-        BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
-                .eq(BiEtlModel::getName, dto.getName())
-                .eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey())
-        );
-        if (null != model) {
-            throw new RuntimeException("模板编码名字重复!");
-        }
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
         inf.setCode(modelCode);

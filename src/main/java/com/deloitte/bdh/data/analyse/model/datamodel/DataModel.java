@@ -21,6 +21,9 @@ public class DataModel {
     @ApiModelProperty(value = "纵向显示的字段", notes = "纵向显示的字段")
     List<DataModelField> y = Lists.newArrayList();
 
+    @ApiModelProperty(value = "图例", notes = "图例")
+    List<DataModelField> category = Lists.newArrayList();
+
     @ApiModelProperty(value = "页开始", notes = "1开始")
     Integer page;
 
