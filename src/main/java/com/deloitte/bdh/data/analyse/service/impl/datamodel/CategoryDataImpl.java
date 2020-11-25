@@ -26,6 +26,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
+        List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
@@ -33,6 +34,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
+        request.getDataConfig().getDataModel().setX(originalX);
         buildCategory(request, response);
         return response;
     }
@@ -70,10 +72,10 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                         colName = y.getAlias();
                     }
                     Map<String, Object> newRow = Maps.newHashMap();
-                    newRow.put("x", StringUtils.join(xList, "-"));
+                    newRow.put("name", StringUtils.join(xList, "-"));
                     //如果只有一个值轴，不用按值区分
                     if (dataModel.getY().size() > 1) {
-                        newRow.put("category", categoryPrefixName + colName);
+                        newRow.put("category", categoryPrefixName + "-" + colName);
                     } else {
                         newRow.put("category", categoryPrefixName);
                     }
