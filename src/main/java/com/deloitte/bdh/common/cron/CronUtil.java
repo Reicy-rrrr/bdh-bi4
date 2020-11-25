@@ -259,7 +259,7 @@ public class CronUtil {
             if (null == week) {
                 throw new RuntimeException("未配置周");
             }
-            if (taskScheduleModel.getHour() > 24 || taskScheduleModel.getHour() < 0) {
+            if (week > 7 || week < 1) {
                 throw new RuntimeException("周的区间不正确");
             }
         }
@@ -273,7 +273,7 @@ public class CronUtil {
             if (null == month) {
                 throw new RuntimeException("未配置月");
             }
-            if (taskScheduleModel.getHour() > 31 || taskScheduleModel.getHour() < 0) {
+            if (month > 12 || month < 1) {
                 throw new RuntimeException("月的区间不正确");
             }
         }
