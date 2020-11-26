@@ -25,11 +25,11 @@ public class ArrangeComponentDto {
 
     @ApiModelProperty(value = "modelId", example = "0", required = true)
     @NotNull(message = " 模板id 不能为空")
-    private String modelId;
+    protected String modelId;
 
     @ApiModelProperty(value = "字段列表", example = "")
-    private Object fields;
+    protected Object fields;
 
     @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
+    protected String position = NifiProcessUtil.randPosition();
 }
