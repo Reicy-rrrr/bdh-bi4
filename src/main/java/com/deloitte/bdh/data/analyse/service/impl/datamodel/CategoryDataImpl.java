@@ -55,7 +55,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> new MaxMinDto(v1.getMin(), v1.getMax())));
         Map<String, Object> extra = Maps.newHashMap();
         extra.put("maxmin", maxMinMap);
-        response.setOther(extra);
+        response.setExtra(extra);
         response.setRows(y1);
         response.setY2(y2);
         return response;
