@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * 整理组件（分组）请求参数
@@ -29,7 +28,7 @@ public class ArrangeGroupDto {
 
     @ApiModelProperty(value = "分组字段", example = "")
     @NotNull(message = " 分组字段 不能为空")
-    private List<ArrangeGroupModel> fields;
+    private ArrangeGroupModel fields;
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();
