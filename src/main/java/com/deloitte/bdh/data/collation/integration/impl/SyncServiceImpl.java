@@ -98,6 +98,11 @@ public class SyncServiceImpl implements SyncService {
 
                 //非调度发起的同步第一次
                 if (0 == count) {
+                    //校验表结构
+                    String result = configService.validateSource(config);
+                    if (null != result) {
+                        throw new RuntimeException(result);
+                    }
                     dbHandler.truncateTable(config.getToTableName());
                 }
                 //获取归属组件信息
