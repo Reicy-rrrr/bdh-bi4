@@ -131,7 +131,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 categoryMap.get(categoryName).add(MapUtils.getDouble(row, "value"));
             } else {
                 List<Object> valueList = Lists.newArrayList();
-                valueList.add(MapUtils.getString(row, "value"));
+                valueList.add(MapUtils.getObject(row, "value"));
                 categoryMap.put(categoryName, valueList);
             }
         }
@@ -148,14 +148,12 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 if (null == min) {
                     min = ob;
                 }
-                if (NumberUtils.isDigits(ob.toString())) {
-                    Double temp = Double.parseDouble(ob.toString());
-                    if (temp > Double.parseDouble(max.toString())) {
-                        max = ob;
-                    }
-                    if (temp < Double.parseDouble(min.toString())) {
-                        min = ob;
-                    }
+                Double temp = Double.parseDouble(ob.toString());
+                if (temp > Double.parseDouble(max.toString())) {
+                    max = ob;
+                }
+                if (temp < Double.parseDouble(min.toString())) {
+                    min = ob;
                 }
             }
             maxMinDto.setMin(min);
@@ -172,6 +170,20 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         }
         if (CollectionUtils.isEmpty(dataModel.getY())) {
             throw new BizException("度量不能为空");
+
+        } else {
+            for (DataModelField field : dataModel.getY()) {
+                if (!AnalyseConstants.MENSURE_TYPE.contains(field.getDataType().toUpperCase())) {
+                    throw new BizException(field.getId() + "数据格式不正确");
+                }
+            }
+        }
+        if (CollectionUtils.isNotEmpty(dataModel.getY2())) {
+            for (DataModelField field : dataModel.getY2()) {
+                if (!AnalyseConstants.MENSURE_TYPE.contains(field.getDataType().toUpperCase())) {
+                    throw new BizException(field.getId() + "数据格式不正确");
+                }
+            }
         }
         if (CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             for (DataModelField field : dataModel.getCategory()) {
