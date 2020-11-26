@@ -113,6 +113,11 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
     @Override
     public void removeResourceComponent(BiComponent component) throws Exception {
+        // 删除组件之前先删除连接
+        LambdaQueryWrapper<BiComponentConnection> wrapper = new LambdaQueryWrapper();
+        wrapper.eq(BiComponentConnection::getToComponentCode, component.getCode());
+        connectionService.remove(wrapper);
+
         //获取组件参数
         List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
@@ -186,6 +191,11 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
     @Override
     public void removeOut(BiComponent component) {
+        // 删除组件之前先删除连接
+        LambdaQueryWrapper<BiComponentConnection> wrapper = new LambdaQueryWrapper();
+        wrapper.eq(BiComponentConnection::getToComponentCode, component.getCode());
+        connectionService.remove(wrapper);
+
         String finalTableName = null;
         BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
@@ -209,6 +219,11 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
     @Override
     public void remove(BiComponent component) {
+        // 删除组件之前先删除连接
+        LambdaQueryWrapper<BiComponentConnection> wrapper = new LambdaQueryWrapper();
+        wrapper.eq(BiComponentConnection::getToComponentCode, component.getCode());
+        connectionService.remove(wrapper);
+
         biComponentMapper.deleteById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
