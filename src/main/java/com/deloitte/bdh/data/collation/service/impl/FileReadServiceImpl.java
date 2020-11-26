@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.bson.Document;
+import org.mozilla.universalchardet.UniversalDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,7 +243,7 @@ public class FileReadServiceImpl implements FileReadService {
         List<String> headers = new ArrayList();
         // 列数据类型
         Map<Integer, Set<DataTypeEnum>> dataTypes = Maps.newHashMap();
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), getCharsetName(file.getBytes())))) {
             // 第一行信息，为标题信息
             String[] headerItems = csvReader.readNext();
             if (headerItems == null || headerItems.length == 0) {
@@ -481,7 +482,7 @@ public class FileReadServiceImpl implements FileReadService {
      * @param file csv类型文件
      */
     private void readCsvIntoMongo(MultipartFile file, String collectionName) {
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), getCharsetName(file.getBytes())))) {
             // 第一行信息，为标题信息
             String[] headerItems = csvReader.readNext();
             if (headerItems == null || headerItems.length == 0) {
@@ -523,7 +524,7 @@ public class FileReadServiceImpl implements FileReadService {
      * @return com.deloitte.bdh.data.model.resp.FileReadResult
      */
     private void readCsvIntoMongo(byte[] bytes, String collectionName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), "GBK"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), getCharsetName(bytes)))) {
             readCsvIntoMongoByBufferedReader(reader, collectionName);
         } catch (Exception e) {
             logger.error("读取Csv文件失败，程序运行错误！", e);
@@ -579,7 +580,7 @@ public class FileReadServiceImpl implements FileReadService {
      * @param columns   字段信息
      */
     private void readCsvIntoDB(byte[] bytes, String tableName, Map<String, TableField> columns) {
-        try (CSVReader reader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8"))) {
+        try (CSVReader reader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(bytes), getCharsetName(bytes)))) {
             String[] headerItems = reader.readNext();
             if (headerItems == null || headerItems.length == 0) {
                 logger.error("读取CSV文件失败，上传文件首行内容为空！");
@@ -687,7 +688,7 @@ public class FileReadServiceImpl implements FileReadService {
                 columnTypes.put(headerName, DataTypeEnum.Float.getType());
             } else if (types.contains(DataTypeEnum.Integer)) {
                 columnTypes.put(headerName, DataTypeEnum.Integer.getType());
-            } else if (types.contains(DataTypeEnum.DateTime)){
+            } else if (types.contains(DataTypeEnum.DateTime)) {
                 columnTypes.put(headerName, DataTypeEnum.DateTime.getType());
             } else {
                 columnTypes.put(headerName, DataTypeEnum.Date.getType());
@@ -791,5 +792,24 @@ public class FileReadServiceImpl implements FileReadService {
 
         }
         return target;
+    }
+
+    /**
+     * 获取编码
+     *
+     * @param bytes 文件字节数组
+     * @return
+     */
+    private String getCharsetName(byte[] bytes) {
+        String DEFAULT_ENCODING = "UTF-8";
+        UniversalDetector detector = new UniversalDetector(null);
+        detector.handleData(bytes, 0, bytes.length);
+        detector.dataEnd();
+        String encoding = detector.getDetectedCharset();
+        detector.reset();
+        if (encoding == null) {
+            encoding = DEFAULT_ENCODING;
+        }
+        return encoding;
     }
 }

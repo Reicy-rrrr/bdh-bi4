@@ -386,6 +386,13 @@
             <artifactId>ngdbc</artifactId>
             <version>2.4.76</version>
         </dependency>
+
+        <!-- 文件编码探测 -->
+        <dependency>
+            <groupId>com.googlecode.juniversalchardet</groupId>
+            <artifactId>juniversalchardet</artifactId>
+            <version>1.0.3</version>
+        </dependency>
     </dependencies>
 
     <build>
