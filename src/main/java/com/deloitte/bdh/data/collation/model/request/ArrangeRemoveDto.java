@@ -1,14 +1,12 @@
 package com.deloitte.bdh.data.collation.model.request;
 
 
-import com.deloitte.bdh.common.util.NifiProcessUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -21,14 +19,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArrangeRemoveDto {
-    @ApiModelProperty(value = "modelId", example = "0", required = true)
-    @NotNull(message = " 模板id 不能为空")
-    private String modelId;
-
+public class ArrangeRemoveDto extends ArrangeComponentDto {
     @ApiModelProperty(value = "删除字段", example = "")
     private List<String> fields;
-
-    @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
 }

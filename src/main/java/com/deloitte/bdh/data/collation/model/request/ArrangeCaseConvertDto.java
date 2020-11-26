@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.model.request;
 
 
-import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.data.collation.component.model.ArrangeCaseConvertModel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,15 +21,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArrangeCaseConvertDto {
-    @ApiModelProperty(value = "modelId", example = "0", required = true)
-    @NotNull(message = " 模板id 不能为空")
-    private String modelId;
-
+public class ArrangeCaseConvertDto extends ArrangeComponentDto {
     @ApiModelProperty(value = "转换字段", example = "")
     @NotNull(message = " 转换字段 不能为空")
     private List<ArrangeCaseConvertModel> fields;
-
-    @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
 }

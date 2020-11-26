@@ -28,8 +28,7 @@ public class ArrangeComponentDto {
     private String modelId;
 
     @ApiModelProperty(value = "字段列表", example = "")
-    @NotNull(message = " 字段列表 不能为空")
-    private List<String> fields;
+    private Object fields;
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();

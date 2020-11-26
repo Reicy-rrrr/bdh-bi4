@@ -4,6 +4,7 @@ package com.deloitte.bdh.data.collation.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
@@ -58,71 +59,59 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.group(request.getData()));
     }
 
-//    @ApiOperation(value = "引入整理组件", notes = "引入整理组件")
-//    @PostMapping("/arrange/join")
-//    public RetResult<BiComponent> arrange(@RequestBody @Validated RetRequest<ArrangeComponentDto> request) throws Exception {
-//        return RetResponse.makeOKRsp(etlService.arrange(request.getData()));
-//    }
-
     @ApiOperation(value = "引入整理组件(拆分)", notes = "引入整理组件(拆分)")
     @PostMapping("/arrange/split/join")
     public RetResult<BiComponent> arrangeSplit(@RequestBody @Validated RetRequest<ArrangeSplitDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeSplit(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.SPLIT));
     }
 
     @ApiOperation(value = "引入整理组件(移除)", notes = "引入整理组件(移除)")
     @PostMapping("/arrange/remove/join")
     public RetResult<BiComponent> arrangeRemove(@RequestBody @Validated RetRequest<ArrangeRemoveDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeRemove(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.REMOVE));
     }
 
     @ApiOperation(value = "引入整理组件(替换)", notes = "引入整理组件(替换)")
     @PostMapping("/arrange/replace/join")
     public RetResult<BiComponent> arrangeReplace(@RequestBody @Validated RetRequest<ArrangeReplaceDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeReplace(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.REPLACE));
     }
 
     @ApiOperation(value = "引入整理组件(合并)", notes = "引入整理组件(合并)")
     @PostMapping("/arrange/combine/join")
     public RetResult<BiComponent> arrangeCombine(@RequestBody @Validated RetRequest<ArrangeCombineDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeCombine(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.COMBINE));
     }
 
     @ApiOperation(value = "引入整理组件(排空)", notes = "引入整理组件(排空)")
     @PostMapping("/arrange/nonnull/join")
     public RetResult<BiComponent> arrangeNonNull(@RequestBody @Validated RetRequest<ArrangeNonNullDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeNonNull(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.NON_NULL));
     }
 
 
     @ApiOperation(value = "引入整理组件(大小写转换)", notes = "引入整理组件(大小写转换)")
     @PostMapping("/arrange/case/join")
     public RetResult<BiComponent> arrangeCaseConvert(@RequestBody @Validated RetRequest<ArrangeCaseConvertDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeCaseConvert(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.CONVERT_CASE));
     }
-
-//    @ApiOperation(value = "引入整理组件(去前后空格)", notes = "引入整理组件(去前后空格)")
-//    @PostMapping("/arrange/trim/join")
-//    public RetResult<BiComponent> arrangeTrim(@RequestBody @Validated RetRequest<ArrangeTrimDto> request) throws Exception {
-//        return RetResponse.makeOKRsp(etlService.arrangeTrim(request.getData()));
-//    }
 
     @ApiOperation(value = "引入整理组件(去字段空格)", notes = "引入整理组件(去字段空格)")
     @PostMapping("/arrange/blank/join")
     public RetResult<BiComponent> arrangeBlank(@RequestBody @Validated RetRequest<ArrangeBlankDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeBlank(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.BLANK));
     }
 
     @ApiOperation(value = "引入整理组件(分组)", notes = "引入整理组件(分组)")
     @PostMapping("/arrange/group/join")
     public RetResult<BiComponent> arrangeGroup(@RequestBody @Validated RetRequest<ArrangeGroupDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeGroup(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.GROUP));
     }
 
     @ApiOperation(value = "引入整理组件(字段修改)", notes = "引入整理组件(字段修改)")
     @PostMapping("/arrange/modify/join")
     public RetResult<BiComponent> arrangeModify(@RequestBody @Validated RetRequest<ArrangeModifyDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeModify(request.getData()));
+        return RetResponse.makeOKRsp(etlService.arrange(request.getData(), ArrangeTypeEnum.MODIFY));
     }
 
     @ApiOperation(value = "移除组件", notes = "移除组件")
