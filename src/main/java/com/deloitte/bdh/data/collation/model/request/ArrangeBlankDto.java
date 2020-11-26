@@ -22,15 +22,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArrangeBlankDto {
-    @ApiModelProperty(value = "modelId", example = "0", required = true)
-    @NotNull(message = " 模板id 不能为空")
-    private String modelId;
-
+public class ArrangeBlankDto extends ArrangeComponentDto {
     @ApiModelProperty(value = "去除空格字段", example = "")
     @NotNull(message = " 去除空格字段 不能为空")
     private List<ArrangeBlankModel> fields;
-
-    @ApiModelProperty(value = "坐标", example = "1")
-    private String position = NifiProcessUtil.randPosition();
 }

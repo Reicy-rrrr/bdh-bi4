@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.integration;
 
+import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
@@ -40,107 +41,19 @@ public interface EtlService {
     /**
      * 引入整理组件（创建）
      *
-     * @param dto 整理组件dto
+     * @param dto         整理组件dto
+     * @param arrangeType 整理类型
      * @return BiComponent
      * @throws Exception
      */
-    BiComponent arrange(ArrangeComponentDto dto) throws Exception;
-
-    /**
-     * 引入拆分整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeSplit(ArrangeSplitDto dto) throws Exception;
-
-    /**
-     * 引入移除字段整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeRemove(ArrangeRemoveDto dto) throws Exception;
-
-    /**
-     * 引入替换字段内容整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeReplace(ArrangeReplaceDto dto) throws Exception;
-
-    /**
-     * 引入合并字段整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeCombine(ArrangeCombineDto dto) throws Exception;
-
-    /**
-     * 引入字段排空整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeNonNull(ArrangeNonNullDto dto) throws Exception;
-
-    /**
-     * 引入转换大小写整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeCaseConvert(ArrangeCaseConvertDto dto) throws Exception;
-
-    /**
-     * 引入去前后空格整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeTrim(ArrangeTrimDto dto) throws Exception;
-
-    /**
-     * 引入去字段空格整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeBlank(ArrangeBlankDto dto) throws Exception;
-
-    /**
-     * 引入分组整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeGroup(ArrangeGroupDto dto) throws Exception;
-
-    /**
-     * 引入字段修改整理组件（创建）
-     *
-     * @param dto 整理组件dto
-     * @return BiComponent
-     * @throws Exception
-     */
-    BiComponent arrangeModify(ArrangeModifyDto dto) throws Exception;
+    BiComponent arrange(ArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception;
 
     /**
      * 输出组件（创建）
      *
      * @param dto 输出组件dto
      * @return ComponentVo
+     * @throws Exception
      */
     BiComponent out(OutComponentDto dto) throws Exception;
 
