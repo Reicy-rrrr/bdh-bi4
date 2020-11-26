@@ -7,16 +7,22 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.model.datamodel.response.MaxMinDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 带图例的实现类
@@ -43,6 +49,13 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         int modelSize = dataModel.getY().size() + dataModel.getY2().size();
         List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY(), modelSize);
         List<Map<String, Object>> y2 = buildCategory(request, response.getRows(), dataModel.getY2(), modelSize);
+        Map<String, MaxMinDto> y1MaxMin = getMinMax(y1);
+        Map<String, MaxMinDto> y2MaxMin = getMinMax(y2);
+        Map<String, MaxMinDto> maxMinMap = Stream.concat(y1MaxMin.entrySet().stream(), y2MaxMin.entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> new MaxMinDto(v1.getMin(), v1.getMax())));
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("maxmin", maxMinMap);
+        response.setOther(extra);
         response.setRows(y1);
         response.setY2(y2);
         return response;
@@ -92,7 +105,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 }
 
                 //将度量的数据类型转为数字
-                if (y.getQuota().equals("DL")) {
+                if (StringUtils.equals(y.getQuota(), DataModelTypeEnum.DL.getCode())) {
                     if (AnalyseConstants.MENSURE_DECIMAL_TYPE.contains(y.getDataType().toUpperCase())) {
                         newRow.put("value", MapUtils.getDouble(row, colName));
                     } else if (AnalyseConstants.MENSURE_TYPE.contains(y.getDataType().toUpperCase())) {
@@ -103,11 +116,53 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 } else {
                     newRow.put("value", MapUtils.getString(row, colName));
                 }
-
                 newRows.add(newRow);
             }
         }
         return newRows;
+    }
+
+    private Map<String, MaxMinDto> getMinMax(List<Map<String, Object>> rows) {
+        Map<String, MaxMinDto> result = Maps.newHashMap();
+        Map<String, List<Object>> categoryMap = Maps.newHashMap();
+        for (Map<String, Object> row : rows) {
+            String categoryName = MapUtils.getString(row, "category");
+            if (categoryMap.keySet().toString().contains(categoryName)) {
+                categoryMap.get(categoryName).add(MapUtils.getDouble(row, "value"));
+            } else {
+                List<Object> valueList = Lists.newArrayList();
+                valueList.add(MapUtils.getString(row, "value"));
+                categoryMap.put(categoryName, valueList);
+            }
+        }
+
+        for (Map.Entry<String, List<Object>> entry : categoryMap.entrySet()) {
+            MaxMinDto maxMinDto = new MaxMinDto();
+            List<Object> valueList = entry.getValue();
+            Object max = null;
+            Object min = null;
+            for (Object ob : valueList) {
+                if (null == max) {
+                    max = ob;
+                }
+                if (null == min) {
+                    min = ob;
+                }
+                if (NumberUtils.isDigits(ob.toString())) {
+                    Double temp = Double.parseDouble(ob.toString());
+                    if (temp > Double.parseDouble(max.toString())) {
+                        max = ob;
+                    }
+                    if (temp < Double.parseDouble(min.toString())) {
+                        min = ob;
+                    }
+                }
+            }
+            maxMinDto.setMin(min);
+            maxMinDto.setMax(max);
+            result.put(entry.getKey(), maxMinDto);
+        }
+        return result;
     }
 
     @Override

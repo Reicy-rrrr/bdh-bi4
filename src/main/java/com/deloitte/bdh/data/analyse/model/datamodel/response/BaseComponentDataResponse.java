@@ -18,6 +18,9 @@ public class BaseComponentDataResponse {
     @ApiModelProperty(value = "双Y数据")
     List<Map<String, Object>> y2;
 
+    @ApiModelProperty(value = "其他数据")
+    Map<String, Object> extra;
+
     @ApiModelProperty(value = "总条数")
     private Long total;
 
