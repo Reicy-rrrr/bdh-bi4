@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
+import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -62,6 +63,13 @@ public class DbSelectorImpl implements DbSelector {
     public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
         context(context);
         List<Map<String, Object>> result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).executeQuery(context);
+        return result;
+    }
+
+    @Override
+    public PageInfo<Map<String, Object>> executePageQuery(DbContext context) throws Exception {
+        context(context);
+        PageInfo<Map<String, Object>> result = SpringUtil.getBean(context.getSourceTypeEnum().getTypeName(), DbSelector.class).executePageQuery(context);
         return result;
     }
 

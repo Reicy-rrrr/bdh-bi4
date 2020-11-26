@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.integration.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
@@ -485,12 +486,6 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     public ComponentResp handle(ComponentPreviewDto dto) throws Exception {
-        String modelId = dto.getModelId();
-        BiEtlModel model = biEtlModelService.getById(modelId);
-        if (model == null) {
-            throw new BizException("未找到模板信息！");
-        }
-
         String componentId = dto.getComponentId();
         BiComponent component = componentService.getById(componentId);
         if (component == null) {
@@ -500,49 +495,18 @@ public class EtlServiceImpl implements EtlService {
         ComponentResp vo = new ComponentResp();
         BeanUtils.copyProperties(component, vo);
 
-        ComponentModel componentModel = biEtlModelHandleService.handleComponent(
-                model.getCode(), component.getCode());
+        ComponentModel componentModel = handleComponent(dto.getModelId(), dto.getComponentId());
         vo.setModel(componentModel);
         return vo;
     }
 
     @Override
     public ComponentPreviewResp previewData(ComponentPreviewDto dto) throws Exception {
-        String modelId = dto.getModelId();
-        BiEtlModel model = biEtlModelService.getById(modelId);
-        if (model == null) {
-            throw new BizException("未找到模板信息！");
-        }
-
-        String componentId = dto.getComponentId();
-        BiComponent component = componentService.getById(componentId);
-        if (component == null) {
-            throw new BizException("未找到组件信息！");
-        }
-
-        String modelCode = model.getCode();
-        String componentCode = component.getCode();
-        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        ComponentModel componentModel = handleComponent(dto.getModelId(), dto.getComponentId());
         biEtlModelHandleService.handlePreviewSql(componentModel);
 
-        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
-        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
-        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
-        configWrapper.last("limit 1");
-        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
-
-        List<Map<String, Object>> rows = null;
-        // 直连方式直接查询数据源
-        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
-        if (SyncTypeEnum.DIRECT.equals(syncType)) {
-            String sourceId = mappingConfig.getRefSourceId();
-            DbContext context = new DbContext();
-            context.setDbId(sourceId);
-            context.setQuerySql(componentModel.getPreviewSql().replace("LIMIT 10", ""));
-            rows = dbSelector.executeQuery(context);
-        } else {
-            rows = dbHandler.executeQuery(componentModel.getPreviewSql());
-        }
+        // 执行预览sql
+        List<Map<String, Object>> rows = executePreviewQuery(componentModel, CommonConstant.DEFAULT_PAGE, CommonConstant.DEFAULT_PAGE_SIZE);
         ComponentPreviewResp previewVo = new ComponentPreviewResp();
         previewVo.setRows(rows);
 
@@ -555,41 +519,11 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     public ComponentPreviewResp previewNullData(ComponentPreviewNullDto dto) throws Exception {
-        String modelId = dto.getModelId();
-        BiEtlModel model = biEtlModelService.getById(modelId);
-        if (model == null) {
-            throw new BizException("未找到模板信息！");
-        }
-
-        String componentId = dto.getComponentId();
-        BiComponent component = componentService.getById(componentId);
-        if (component == null) {
-            throw new BizException("未找到组件信息！");
-        }
-
-        String modelCode = model.getCode();
-        String componentCode = component.getCode();
-        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        ComponentModel componentModel = handleComponent(dto.getModelId(), dto.getComponentId());
         biEtlModelHandleService.handlePreviewNullSql(componentModel, dto.getFields());
 
-        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
-        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
-        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
-        configWrapper.last("limit 1");
-        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
-
-        List<Map<String, Object>> rows = null;
-        // 直连方式直接查询数据源
-        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
-        if (SyncTypeEnum.DIRECT.equals(syncType)) {
-            String sourceId = mappingConfig.getRefSourceId();
-            DbContext context = new DbContext();
-            context.setDbId(sourceId);
-            context.setQuerySql(componentModel.getPreviewSql());
-            rows = dbSelector.executeQuery(context);
-        } else {
-            rows = dbHandler.executeQuery(componentModel.getPreviewSql());
-        }
+        // 执行预览sql
+        List<Map<String, Object>> rows = executePreviewQuery(componentModel, CommonConstant.DEFAULT_PAGE, CommonConstant.DEFAULT_PAGE_SIZE);
         ComponentPreviewResp previewVo = new ComponentPreviewResp();
         previewVo.setRows(rows);
 
@@ -601,43 +535,15 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     public List<Object> previewFieldData(ComponentPreviewFieldDto dto) throws Exception {
-        String modelId = dto.getModelId();
-        BiEtlModel model = biEtlModelService.getById(modelId);
-        if (model == null) {
-            throw new BizException("未找到模板信息！");
-        }
-
-        String componentId = dto.getComponentId();
-        BiComponent component = componentService.getById(componentId);
-        if (component == null) {
-            throw new BizException("未找到组件信息！");
-        }
-
-        String modelCode = model.getCode();
-        String componentCode = component.getCode();
-        ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
+        ComponentModel componentModel = handleComponent(dto.getModelId(), dto.getComponentId());
         biEtlModelHandleService.handlePreviewFieldSql(componentModel, dto.getField());
 
-        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
-        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
-        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
-        configWrapper.last("limit 1");
-        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
-
-        List<Map<String, Object>> rows = null;
-        // 直连方式直接查询数据源
-        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
-        if (SyncTypeEnum.DIRECT.equals(syncType)) {
-            String sourceId = mappingConfig.getRefSourceId();
-            DbContext context = new DbContext();
-            context.setDbId(sourceId);
-            context.setQuerySql(componentModel.getPreviewSql());
-            rows = dbSelector.executeQuery(context);
-        } else {
-            rows = dbHandler.executeQuery(componentModel.getPreviewSql());
-        }
-
+        // 执行预览sql
+        List<Map<String, Object>> rows = executePreviewQuery(componentModel, CommonConstant.DEFAULT_PAGE, 100);
         List<Object> results = Lists.newArrayList();
+        if (CollectionUtils.isEmpty(rows)) {
+            return results;
+        }
         rows.forEach(row -> {
             results.addAll(row.values());
         });
@@ -661,8 +567,6 @@ public class EtlServiceImpl implements EtlService {
         String modelCode = model.getCode();
         String componentCode = component.getCode();
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(modelCode, componentCode);
-//        System.out.println(new SQLFormatterUtil().format(componentModel.getQuerySql()));
-//        String querySql = SQLUtils.formatMySql(componentModel.getQuerySql(), SQLUtils.DEFAULT_FORMAT_OPTION);
         return SqlFormatUtil.format(componentModel.getQuerySql());
     }
 
@@ -839,5 +743,65 @@ public class EtlServiceImpl implements EtlService {
             }
         }
         return type.getValue() + number;
+    }
+
+    /**
+     * 处理组件
+     *
+     * @param modelId     模型id
+     * @param componentId 组件id
+     * @return ComponentModel
+     */
+    private ComponentModel handleComponent(String modelId, String componentId) {
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            throw new BizException("未找到模板信息！");
+        }
+
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            throw new BizException("未找到组件信息！");
+        }
+
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(
+                model.getCode(), component.getCode());
+        return componentModel;
+    }
+
+    /**
+     * 执行预览查询
+     *
+     * @param componentModel 组件模型
+     * @param page           查询页
+     * @param size           每页记录数
+     * @return List<Map < String, Object>>
+     * @throws Exception
+     */
+    private List<Map<String, Object>> executePreviewQuery(ComponentModel componentModel, Integer page, Integer size) throws Exception {
+        LambdaQueryWrapper<BiEtlMappingConfig> configWrapper = new LambdaQueryWrapper();
+        configWrapper.eq(BiEtlMappingConfig::getRefModelCode, componentModel.getRefModelCode());
+        configWrapper.orderByDesc(BiEtlMappingConfig::getId);
+        configWrapper.last("limit 1");
+        BiEtlMappingConfig mappingConfig = etlMappingConfigService.getOne(configWrapper);
+
+        List<Map<String, Object>> rows = null;
+        // 直连方式直接查询数据源
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(mappingConfig.getType());
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            String sourceId = mappingConfig.getRefSourceId();
+            DbContext context = new DbContext();
+            context.setDbId(sourceId);
+            context.setQuerySql(componentModel.getPreviewSql());
+            context.setPage(page);
+            context.setSize(size);
+            rows = dbSelector.executePageQuery(context).getList();
+        } else {
+            rows = dbHandler.executePageQuery(componentModel.getPreviewSql(), page, size).getList();
+        }
+
+        if (rows == null) {
+            return Lists.newArrayList();
+        }
+        return rows;
     }
 }

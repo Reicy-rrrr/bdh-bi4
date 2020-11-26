@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.github.pagehelper.PageInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -26,4 +27,11 @@ public interface DbSelector {
      * @return
      */
     List<Map<String, Object>> executeQuery(DbContext context) throws Exception;
+
+    /**
+     * 执行分页查询sql语句
+     * @param context
+     * @return
+     */
+    PageInfo<Map<String, Object>> executePageQuery(DbContext context) throws Exception;
 }

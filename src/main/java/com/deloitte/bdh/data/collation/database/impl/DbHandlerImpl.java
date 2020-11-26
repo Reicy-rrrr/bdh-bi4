@@ -21,6 +21,8 @@ import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.service.*;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
@@ -196,6 +198,18 @@ public class DbHandlerImpl implements DbHandler {
     @Override
     public List<Map<String, Object>> executeQuery(String querySql) {
         return biEtlDbMapper.executeQuery(querySql);
+    }
+
+    @Override
+    public PageInfo<Map<String, Object>> executePageQuery(String querySql, Integer page, Integer size) {
+        if (page == null) {
+            page = 1;
+        }
+        if (size == null) {
+            size = 10;
+        }
+        PageHelper.startPage(page, size);
+        return new PageInfo(biEtlDbMapper.executeQuery(querySql));
     }
 
     @Override

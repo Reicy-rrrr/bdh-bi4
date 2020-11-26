@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.github.pagehelper.PageInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -118,6 +119,16 @@ public interface DbHandler {
      * @return
      */
     List<Map<String, Object>> executeQuery(String querySql);
+
+    /**
+     * 执行分页查询sql
+     *
+     * @param querySql 查询sql
+     * @param page     当前页
+     * @param size     每页记录数
+     * @return PageInfo
+     */
+    PageInfo<Map<String, Object>> executePageQuery(String querySql, Integer page, Integer size);
 
     /**
      * 执行查询批量插入

@@ -107,7 +107,7 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         ComponentTypeEnum type = componentModel.getTypeEnum();
         // 输出组件直接使用查询语句
         if (ComponentTypeEnum.OUT.equals(type)) {
-            componentModel.setPreviewSql(componentModel.getQuerySql() + " LIMIT 10");
+            componentModel.setPreviewSql(componentModel.getQuerySql());
             return;
         }
 
@@ -135,12 +135,10 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         if (ComponentTypeEnum.DATASOURCE.equals(type)) {
             sqlBuilder.append(componentModel.getTableName());
             sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append("LIMIT 10");
         } else {
             sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
             sqlBuilder.append(componentModel.getQuerySql());
             sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append("LIMIT 10");
             sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
             sqlBuilder.append(ComponentHandler.sql_key_blank);
             sqlBuilder.append(componentModel.getTableName());
@@ -191,7 +189,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
                     sqlBuilder.append(" IS NULL ");
                 }
             }
-            sqlBuilder.append("LIMIT 10");
         } else {
             sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
             sqlBuilder.append(componentModel.getQuerySql());
@@ -212,7 +209,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
                     sqlBuilder.append(" IS NULL ");
                 }
             }
-            sqlBuilder.append("LIMIT 10");
         }
         componentModel.setPreviewSql(sqlBuilder.toString());
     }

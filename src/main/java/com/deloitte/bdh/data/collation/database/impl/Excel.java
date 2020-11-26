@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Service;
 
@@ -77,6 +78,11 @@ public class Excel extends AbstractProcess implements DbSelector {
     @Override
     public List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
         return super.executeQuery(context);
+    }
+
+    @Override
+    public PageInfo<Map<String, Object>> executePageQuery(DbContext context) throws Exception {
+        return super.executePageQuery(context);
     }
 
     @Override
