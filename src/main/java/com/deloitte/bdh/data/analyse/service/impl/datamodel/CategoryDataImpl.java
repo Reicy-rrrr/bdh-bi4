@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -39,14 +40,16 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
 
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY());
-        List<Map<String, Object>> y2 = buildCategory(request, response.getRows(), dataModel.getY2());
+        int modelSize = dataModel.getY().size() + dataModel.getY2().size();
+        List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY(), modelSize);
+        List<Map<String, Object>> y2 = buildCategory(request, response.getRows(), dataModel.getY2(), modelSize);
         response.setRows(y1);
         response.setY2(y2);
         return response;
     }
 
-    private List<Map<String, Object>> buildCategory(BaseComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList) {
+    private List<Map<String, Object>> buildCategory(BaseComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList, int modelSize) {
+
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
         for (Map<String, Object> row : rows) {
@@ -79,7 +82,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 Map<String, Object> newRow = Maps.newHashMap();
                 newRow.put("name", StringUtils.join(xList, "-"));
                 if (StringUtils.isNotBlank(categoryPrefixName)) {
-                    if (yList.size() > 1) {
+                    if (modelSize > 1) {
                         newRow.put("category", categoryPrefixName + "-" + colName);
                     } else {
                         newRow.put("category", categoryPrefixName);
@@ -88,7 +91,19 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                     newRow.put("category", colName);
                 }
 
-                newRow.put("value", MapUtils.getString(row, colName));
+                //将度量的数据类型转为数字
+                if (y.getQuota().equals("DL")) {
+                    if (AnalyseConstants.MENSURE_DECIMAL_TYPE.contains(y.getDataType().toUpperCase())) {
+                        newRow.put("value", MapUtils.getDouble(row, colName));
+                    } else if (AnalyseConstants.MENSURE_TYPE.contains(y.getDataType().toUpperCase())) {
+                        newRow.put("value", MapUtils.getIntValue(row, colName));
+                    } else {
+                        newRow.put("value", MapUtils.getString(row, colName));
+                    }
+                } else {
+                    newRow.put("value", MapUtils.getString(row, colName));
+                }
+
                 newRows.add(newRow);
             }
         }
