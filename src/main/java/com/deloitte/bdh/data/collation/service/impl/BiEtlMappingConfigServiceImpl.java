@@ -85,7 +85,7 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
 
         List<BiEtlMappingField> recordFieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
                 .eq(BiEtlMappingField::getRefCode, config.getCode()));
-        if (CollectionUtils.isNotEmpty(recordFieldList)) {
+        if (CollectionUtils.isEmpty(recordFieldList)) {
             throw new RuntimeException("未找到本地记录的字段信息,映射编码:" + config.getCode());
         }
         List<String> recordFields = recordFieldList.stream().map(BiEtlMappingField::getFieldName).collect(Collectors.toList());
@@ -112,11 +112,9 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
                     throw new RuntimeException("数据源发生变化,远程数据源的表字段没有读取到");
                 }
                 diffFields = findDiffFields(recordFields, fromFields);
-
                 break;
             case 3:
-                List<String> localTables = dbHandler.getTables();
-                if (!localTables.contains(config.getFromTableName())) {
+                if (!dbHandler.isTableExists(config.getFromTableName())) {
                     throw new RuntimeException("数据源发生变化,本地库没有找到表" + config.getFromTableName());
                 }
 
