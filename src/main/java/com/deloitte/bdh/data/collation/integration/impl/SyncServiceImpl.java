@@ -441,6 +441,7 @@ public class SyncServiceImpl implements SyncService {
             if (null != result) {
                 log.error("Etl调度验证失败:{}", result);
                 //todo 抛出事件修改model validate
+                return;
             }
 
             // 判断数据源是否被禁用，若有一个被禁用，则不生成调度计划
