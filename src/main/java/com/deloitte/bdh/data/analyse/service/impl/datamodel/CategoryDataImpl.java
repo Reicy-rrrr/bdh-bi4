@@ -131,7 +131,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 categoryMap.get(categoryName).add(MapUtils.getDouble(row, "value"));
             } else {
                 List<Object> valueList = Lists.newArrayList();
-                valueList.add(MapUtils.getString(row, "value"));
+                valueList.add(MapUtils.getObject(row, "value"));
                 categoryMap.put(categoryName, valueList);
             }
         }
