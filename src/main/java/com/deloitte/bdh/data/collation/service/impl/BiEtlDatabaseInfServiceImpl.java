@@ -472,9 +472,23 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
 
-        BiEtlDatabaseInf source = biEtlDatabaseInfMapper.selectById(dto.getId());
-        BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
-        BeanUtils.copyProperties(dto, biEtlDatabaseInf);
+        BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfMapper.selectById(dto.getId());
+        biEtlDatabaseInf.setName(dto.getName());
+        biEtlDatabaseInf.setComments(dto.getComments());
+        biEtlDatabaseInf.setType(dto.getType());
+        if(StringUtils.isNotBlank(dto.getDbName())){
+            biEtlDatabaseInf.setDbName(dto.getDbName());
+        }
+        if(StringUtils.isNotBlank(dto.getDbUser())){
+            biEtlDatabaseInf.setDbUser(dto.getDbUser());
+        }
+        if(StringUtils.isNotBlank(dto.getDbPassword())){
+            biEtlDatabaseInf.setDbPassword(dto.getDbPassword());
+        }
+        if(StringUtils.isNotBlank(dto.getPort())){
+            biEtlDatabaseInf.setPort(dto.getPort());
+        }
+
         //根据type 变更
         biEtlDatabaseInf.setDriverName(SourceTypeEnum.getDriverNameByType(biEtlDatabaseInf.getType()));
         biEtlDatabaseInf.setTypeName(SourceTypeEnum.getNameByType(biEtlDatabaseInf.getType()));
@@ -486,11 +500,11 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         properties.put("Password", biEtlDatabaseInf.getDbPassword());
         properties.put("Database Connection URL", NifiProcessUtil.getDbUrl(biEtlDatabaseInf.getType(),
                 biEtlDatabaseInf.getAddress(), biEtlDatabaseInf.getPort(), biEtlDatabaseInf.getDbName()));
-        properties.put("Database Driver Class Name", source.getDriverName());
-        properties.put("database-driver-locations", source.getDriverLocations());
+        properties.put("Database Driver Class Name", biEtlDatabaseInf.getDriverName());
+        properties.put("database-driver-locations", biEtlDatabaseInf.getDriverLocations());
 
         Map<String, Object> request = Maps.newHashMap();
-        request.put("id", source.getControllerServiceId());
+        request.put("id", biEtlDatabaseInf.getControllerServiceId());
         request.put("name", biEtlDatabaseInf.getName());
         request.put("comments", biEtlDatabaseInf.getComments());
         request.put("properties", properties);
