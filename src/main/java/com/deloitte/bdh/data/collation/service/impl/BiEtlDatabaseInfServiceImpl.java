@@ -119,6 +119,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             default:
                 throw new RuntimeException("未找到对应的数据模型的类型!");
         }
+        String id = inf.getId();
+        ThreadLocalHolder.async(() -> runResource(id, EffectEnum.ENABLE.getKey()));
         return inf;
     }
 
