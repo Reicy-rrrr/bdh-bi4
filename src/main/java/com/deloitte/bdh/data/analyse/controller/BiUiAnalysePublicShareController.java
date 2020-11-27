@@ -17,6 +17,7 @@ import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareValidateDto
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +40,7 @@ import java.util.Map;
 @Api(value = "分析管理-公开报表")
 @RestController
 @RequestMapping("/biUiAnalysePublicShare")
+@Slf4j
 public class BiUiAnalysePublicShareController {
     @Value("${bi.analyse.encryptPass}")
     private String encryptPass;
@@ -77,7 +79,9 @@ public class BiUiAnalysePublicShareController {
         if (StringUtil.isEmpty(request.getData())) {
             throw new RuntimeException("参数不能为空");
         }
-        Map<String, Object> result = JsonUtil.JsonStrToMap(AesUtil.decryptNoSymbol(request.getData(), encryptPass));
+        String str = AesUtil.decryptNoSymbol(request.getData(), encryptPass);
+        log.info("请求参数:{},解密后:{}", JsonUtil.readObjToJson(request), str);
+        Map<String, Object> result = JsonUtil.JsonStrToMap(str);
         return RetResponse.makeOKRsp(result);
     }
 

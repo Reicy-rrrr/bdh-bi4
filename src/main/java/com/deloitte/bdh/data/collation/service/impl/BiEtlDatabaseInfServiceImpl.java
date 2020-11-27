@@ -119,8 +119,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             default:
                 throw new RuntimeException("未找到对应的数据模型的类型!");
         }
-        String id = inf.getId();
-        ThreadLocalHolder.async(() -> runResource(id, EffectEnum.ENABLE.getKey()));
+        runResource(inf.getId(), EffectEnum.ENABLE.getKey());
         return inf;
     }
 
@@ -423,12 +422,16 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Override
     public String testConnection(TestConnectionDto dto) throws Exception {
+        return testConnection(dto.getDbType(), dto.getIp(), dto.getPort(), dto.getDbName(), dto.getDbUserName(), dto.getDbPassword());
+    }
+
+    private String testConnection(String dbType, String ip, String port, String dbName, String userName, String pwd) throws Exception {
         DbContext context = new DbContext();
-        context.setSourceTypeEnum(SourceTypeEnum.values(dto.getDbType()));
-        context.setDbUrl(NifiProcessUtil.getDbUrl(dto.getDbType(), dto.getIp(), dto.getPort(), dto.getDbName()));
-        context.setDbUserName(dto.getDbUserName());
-        context.setDbPassword(dto.getDbPassword());
-        context.setDriverName(SourceTypeEnum.getDriverNameByType(dto.getDbType()));
+        context.setSourceTypeEnum(SourceTypeEnum.values(dbType));
+        context.setDbUrl(NifiProcessUtil.getDbUrl(dbType, ip, port, dbName));
+        context.setDbUserName(userName);
+        context.setDbPassword(pwd);
+        context.setDriverName(SourceTypeEnum.getDriverNameByType(dbType));
         return dbSelector.test(context);
     }
 
@@ -472,20 +475,21 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
 
+        testConnection(dto.getType(), dto.getAddress(), dto.getPort(), dto.getDbName(), dto.getDbUser(), dto.getDbPassword());
         BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfMapper.selectById(dto.getId());
         biEtlDatabaseInf.setName(dto.getName());
         biEtlDatabaseInf.setComments(dto.getComments());
         biEtlDatabaseInf.setType(dto.getType());
-        if(StringUtils.isNotBlank(dto.getDbName())){
+        if (StringUtils.isNotBlank(dto.getDbName())) {
             biEtlDatabaseInf.setDbName(dto.getDbName());
         }
-        if(StringUtils.isNotBlank(dto.getDbUser())){
+        if (StringUtils.isNotBlank(dto.getDbUser())) {
             biEtlDatabaseInf.setDbUser(dto.getDbUser());
         }
-        if(StringUtils.isNotBlank(dto.getDbPassword())){
+        if (StringUtils.isNotBlank(dto.getDbPassword())) {
             biEtlDatabaseInf.setDbPassword(dto.getDbPassword());
         }
-        if(StringUtils.isNotBlank(dto.getPort())){
+        if (StringUtils.isNotBlank(dto.getPort())) {
             biEtlDatabaseInf.setPort(dto.getPort());
         }
 
@@ -556,6 +560,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new RuntimeException("数据源名字重复");
         }
 
+        testConnection(dto.getType(), dto.getAddress(), dto.getPort(), dto.getDbName(), dto.getDbUser(), dto.getDbPassword());
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
         inf.setTenantId(ThreadLocalHolder.getTenantId());
@@ -567,7 +572,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (SourceTypeEnum.Mysql.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
         } else if (SourceTypeEnum.Oracle.getType().equals(dto.getType())) {
-            inf.setDriverLocations("/usr/java/jdk1.8.0_171/ojdbc8-19.7.0.0.jar");
+            inf.setDriverLocations("/data/OJDBC-Full/ojdbc6.jar");
         } else if (SourceTypeEnum.SQLServer.getType().equals(dto.getType())) {
             inf.setDriverLocations("/usr/java/jdk1.8.0_171/sqljdbc4-4.0.jar");
         } else if (SourceTypeEnum.Hana.getType().equals(dto.getType())) {
