@@ -1,5 +1,7 @@
 package com.deloitte.bdh.common.util;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -46,14 +48,13 @@ public class AesUtil {
             cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(encryptPass));
             byte[] iv = cipher.getIV();
             assert iv.length == 12;
-            byte[] encryptData = cipher.doFinal(content.getBytes());
+            byte[] encryptData = cipher.doFinal(content.getBytes("utf-8"));
             assert encryptData.length == content.getBytes().length + 16;
             byte[] message = new byte[12 + content.getBytes().length + 16];
             System.arraycopy(iv, 0, message, 0, 12);
             System.arraycopy(encryptData, 0, message, 12, encryptData.length);
             return Base64.encodeBase64String(message);
-        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException
-                | BadPaddingException e) {
+        } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | UnsupportedEncodingException e) {
             logger.error(e.getMessage(), e);
         }
         return null;
@@ -78,7 +79,7 @@ public class AesUtil {
      * AES 解密操作
      */
     public static String decrypt(String base64Content, String encryptPass) {
-        byte[] content = Base64.decodeBase64(base64Content);
+        byte[] content = Base64.decodeBase64(base64Content.getBytes(StandardCharsets.UTF_8));
         if (content.length < 12 + 16) {
             throw new IllegalArgumentException();
         }
@@ -117,17 +118,9 @@ public class AesUtil {
     }
 
     public static void main(String[] args) {
-        Map<String, Object> params = Maps.newHashMap();
-        params.put("tenantCode", "0001");
-        params.put("refId", "123");
-        params.put("isEncrypt", "0");
+        String encoded = "wu6zdfn13RbUihuPw9gvSUjoo00oTdbjrctKRoo00osybZHlxH48DTH9uht0Bo000odgKcMFUFkNUPJX7aVlzQzo000o7vZQzkqmchKeePpbDRt72Bqm4o000oJLUdIO0O0O";
 
-        String pass = "1";
-        String encoded = encryptNoSymbol(JsonUtil.readObjToJson(params), pass);
 
-        logger.info("加密之前：{}", JsonUtil.readObjToJson(params));
-        logger.info("加密结果：{}", encoded);
-
-        logger.info("解密结果：{}", decryptNoSymbol(encoded, pass));
+        logger.info("解密结果：{}", decryptNoSymbol(encoded, "Qa1pMzs0"));
     }
 }
