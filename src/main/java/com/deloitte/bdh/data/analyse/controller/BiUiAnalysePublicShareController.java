@@ -79,7 +79,7 @@ public class BiUiAnalysePublicShareController {
         if (StringUtil.isEmpty(request.getData())) {
             throw new RuntimeException("参数不能为空");
         }
-        String str = AesUtil.decrypt(request.getData(), encryptPass);
+        String str = AesUtil.decryptNoSymbol(request.getData(), encryptPass);
         log.info("请求参数:{},解密后:{},密文{}", JsonUtil.readObjToJson(request), str, encryptPass);
         Map<String, Object> result = JsonUtil.JsonStrToMap(str);
         return RetResponse.makeOKRsp(result);

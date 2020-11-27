@@ -111,7 +111,9 @@ public class AesUtil {
     private static SecretKeySpec getSecretKey(String encryptPass) throws NoSuchAlgorithmException {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         // 初始化密钥生成器，AES要求密钥长度为128位、192位、256位
-        kg.init(128, new SecureRandom(encryptPass.getBytes()));
+        SecureRandom random=SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(encryptPass.getBytes());
+        kg.init(128, random);
         SecretKey secretKey = kg.generateKey();
         // 转换为AES专用密钥
         return new SecretKeySpec(secretKey.getEncoded(), KEY_ALGORITHM);
