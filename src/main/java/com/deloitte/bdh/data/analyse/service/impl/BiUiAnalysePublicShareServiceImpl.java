@@ -60,7 +60,7 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
                 params.put("isEncrypt", "1");
                 share.setPassword(Md5Util.getMD5(dto.getPassword(), encryptPass + ThreadLocalHolder.getTenantCode()));
             }
-            share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
+            share.setCode(AesUtil.encrypt(JsonUtil.readObjToJson(params), encryptPass));
             share.setAddress(publicAddress);
         }
         share.setType(dto.getType());
