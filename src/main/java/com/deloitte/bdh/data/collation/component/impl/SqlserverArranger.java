@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
@@ -48,10 +49,7 @@ public class SqlserverArranger implements ArrangerSelector {
         rightMapping.getTableField().setName(rightField);
         rightMapping.getTableField().setDesc(rightMapping.getFinalFieldDesc());
 
-        String fromField = fromFieldMapping.getTempFieldName();
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fromField = fromFieldMapping.getOriginalFieldName();
-        }
+        String fromField = getFromField(fromFieldMapping, fromType);
         String leftSql = "LEFT (" + fromField + ", CHARINDEX('" + separator + "', " + fromField + ", 0) - 1) AS " + leftFieldTemp;
         String rightSql = "RIGHT (" + fromField + ", LEN(" + fromField + ") - CHARINDEX('" + separator + "', " + fromField + ", 0)) AS " + rightFieldTemp;
 
@@ -86,11 +84,7 @@ public class SqlserverArranger implements ArrangerSelector {
         rightMapping.getTableField().setName(rightField);
         rightMapping.getTableField().setDesc(rightMapping.getFinalFieldDesc());
 
-        String fromField = fromFieldMapping.getTempFieldName();
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fromField = fromFieldMapping.getOriginalFieldName();
-        }
-
+        String fromField = getFromField(fromFieldMapping, fromType);
         String leftSql = "LEFT (" + fromField + ", " + length + ") AS " + leftFieldTemp;
         String rightSql = "RIGHT (" + fromField + ", LEN(" + fromField + ") - " + length + ") AS " + rightFieldTemp;
 
@@ -102,12 +96,8 @@ public class SqlserverArranger implements ArrangerSelector {
 
     @Override
     public ArrangeResultModel replace(FieldMappingModel fromFieldMapping, String source, String target, String fromTable, ComponentTypeEnum fromType) {
-        String segment;
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            segment = "REPLACE (" + fromFieldMapping.getOriginalFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
-        } else {
-            segment = "REPLACE (" + fromFieldMapping.getTempFieldName() + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
-        }
+        String fromField = getFromField(fromFieldMapping, fromType);
+        String segment = "REPLACE (" + fromField + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segment, false, fromFieldMapping);
     }
 
@@ -121,26 +111,17 @@ public class SqlserverArranger implements ArrangerSelector {
         } else {
             connector = "'" + connector + "'";
         }
-
-        String leftField = leftMapping.getTempFieldName();
-        String rightField = rightMapping.getTempFieldName();
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            leftField = leftMapping.getOriginalFieldName();
-            rightField = rightMapping.getOriginalFieldName();
-
-        }
+        String leftField = getFromField(leftMapping, fromType);
+        String rightField = getFromField(rightMapping, fromType);
 
         StringBuilder fieldBuilder = new StringBuilder();
         fieldBuilder.append("CONCAT(");
-        fieldBuilder.append("IFNULL(");
         fieldBuilder.append(leftField);
-        fieldBuilder.append(", '')");
-        fieldBuilder.append(sql_key_comma);
+        fieldBuilder.append(",");
         fieldBuilder.append(connector);
-        fieldBuilder.append(sql_key_comma);
-        fieldBuilder.append("IFNULL(");
+        fieldBuilder.append(",");
         fieldBuilder.append(rightField);
-        fieldBuilder.append(", '')) AS ");
+        fieldBuilder.append(") AS ");
         fieldBuilder.append(tempName);
 
         // 新字段的属性
@@ -154,10 +135,11 @@ public class SqlserverArranger implements ArrangerSelector {
         } else {
             columnDesc = desc + "(combine)";
         }
-        TableField tableField = new TableField(null, fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
+        TableField tableField = new TableField(DataTypeEnum.Text.getType(), fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
         FieldMappingModel newMapping = leftMapping.clone();
         newMapping.setTempFieldName(tempName);
         newMapping.setFinalFieldName(fieldName);
+        newMapping.setFinalFieldType(DataTypeEnum.Text.getType());
         newMapping.setFinalFieldDesc(columnDesc);
         newMapping.setOriginalColumnType(columnType);
         newMapping.setTableField(tableField);
@@ -168,11 +150,8 @@ public class SqlserverArranger implements ArrangerSelector {
     public List<String> nonNull(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<String> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                results.add(fromMapping.getOriginalFieldName() + " IS NOT NULL");
-            } else {
-                results.add(fromMapping.getTempFieldName() + " IS NOT NULL");
-            }
+            String fromField = getFromField(fromMapping, fromType);
+            results.add(fromField + " IS NOT NULL");
         });
         return results;
     }
@@ -181,13 +160,8 @@ public class SqlserverArranger implements ArrangerSelector {
     public List<ArrangeResultModel> toUpperCase(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<ArrangeResultModel> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String segment;
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                segment = "UPPER(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
-            } else {
-                segment = "UPPER(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
-            }
-
+            String fromField = getFromField(fromMapping, fromType);
+            String segment = "UPPER(" + fromField + ") AS " + fromMapping.getTempFieldName();
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
         });
         return results;
@@ -197,13 +171,8 @@ public class SqlserverArranger implements ArrangerSelector {
     public List<ArrangeResultModel> toLowerCase(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<ArrangeResultModel> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String segment;
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                segment = "LOWER(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
-            } else {
-                segment = "LOWER(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
-            }
-
+            String fromField = getFromField(fromMapping, fromType);
+            String segment = "LOWER(" + fromField + ") AS " + fromMapping.getTempFieldName();
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
         });
         return results;
@@ -213,13 +182,8 @@ public class SqlserverArranger implements ArrangerSelector {
     public List<ArrangeResultModel> trim(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<ArrangeResultModel> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String segment;
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                segment = "TRIM(" + fromMapping.getOriginalFieldName() + ") AS " + fromMapping.getTempFieldName();
-            } else {
-                segment = "TRIM(" + fromMapping.getTempFieldName() + ") AS " + fromMapping.getTempFieldName();
-            }
-
+            String fromField = getFromField(fromMapping, fromType);
+            String segment = "LTRIM(RTRIM((" + fromField + ")) AS " + fromMapping.getTempFieldName();
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
         });
         return results;
@@ -233,22 +197,16 @@ public class SqlserverArranger implements ArrangerSelector {
         String type = blankModel.getType();
         // 去除空格长度
         Integer length = blankModel.getLength();
-        String fieldName;
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fieldName = fromMapping.getOriginalFieldName();
-        } else {
-            fieldName = fromMapping.getTempFieldName();
-        }
-
+        String fromField = getFromField(fromMapping, fromType);
         if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_LEFT.equals(type) && length != null && length != 0) {
             // 从左侧开始，去除在长度为length的范围内的空字符
-            segment = "CONCAT(REPLACE(SUBSTRING(" + fieldName + ", 1, " + length + "), ' ', ''), SUBSTRING(" + fieldName + ", 11)) AS " + fromMapping.getTempFieldName();
+            segment = "CONCAT(REPLACE(LEFT(" + fromField + ", " + length + "), ' ', ''), RIGHT(" + fromField + ", LEN(" + fromField + ") - " + length + "))";
         } else if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_RIGHT.equals(type) && length != null && length != 0) {
             // 从右侧开始，去除在长度为length的范围内的空字符
-            segment = "CONCAT(SUBSTRING(" + fieldName + ", 1, LENGTH(" + fieldName + ") - " + length + "), REPLACE(SUBSTRING(" + fieldName + ", -" + length + "), ' ', ''))" + fromMapping.getTempFieldName();
+            segment = "CONCAT(LEFT(" + fromField + ", LEN(" + fromField + ") - " + length + "), REPLACE(RIGHT(" + fromField + ", " + length + "), ' ', ''))";
         } else {
             // 去除字段内的全部空格
-            segment = "REPLACE(" + fieldName + ", ' ', '') AS " + fromMapping.getTempFieldName();
+            segment = "REPLACE(" + fromField + ", ' ', '') AS " + fromMapping.getTempFieldName();
         }
         return new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping);
     }
@@ -271,6 +229,7 @@ public class SqlserverArranger implements ArrangerSelector {
         String newField = fromFieldMapping.getFinalFieldName() + "_group";
         String newFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + newField);
         FieldMappingModel newMapping = fromFieldMapping.clone();
+        newMapping.setFinalFieldType(DataTypeEnum.Text.getType());
         newMapping.setFinalFieldName(newField);
         newMapping.setTempFieldName(newFieldTemp);
         String desc = fromFieldMapping.getTableField().getDesc();
@@ -279,6 +238,7 @@ public class SqlserverArranger implements ArrangerSelector {
         } else {
             newMapping.setFinalFieldDesc(desc + "(group)");
         }
+        newMapping.getTableField().setType(DataTypeEnum.Text.getType());
         newMapping.getTableField().setName(newField);
         newMapping.getTableField().setColumnType("varchar(255)");
         newMapping.getTableField().setDataType("varchar");
@@ -331,6 +291,7 @@ public class SqlserverArranger implements ArrangerSelector {
         String newFieldTemp = getColumnAlias(fromFieldMapping.getOriginalTableName() + sql_key_separator + newField);
         FieldMappingModel newMapping = fromFieldMapping.clone();
         newMapping.setFinalFieldName(newField);
+        newMapping.setFinalFieldType(DataTypeEnum.Text.getType());
         newMapping.setTempFieldName(newFieldTemp);
         String desc = fromFieldMapping.getTableField().getDesc();
         if (StringUtils.isBlank(desc)) {
@@ -338,6 +299,7 @@ public class SqlserverArranger implements ArrangerSelector {
         } else {
             newMapping.setFinalFieldDesc(desc + "(group)");
         }
+        newMapping.getTableField().setType(DataTypeEnum.Text.getType());
         newMapping.getTableField().setName(newField);
         newMapping.getTableField().setColumnType("varchar(255)");
         newMapping.getTableField().setDataType("varchar");
@@ -388,6 +350,70 @@ public class SqlserverArranger implements ArrangerSelector {
 
     @Override
     public ArrangeResultModel modify(FieldMappingModel fromFieldMapping, String targetDesc, DataTypeEnum targetType, String fromTable, ComponentTypeEnum fromType) {
-        return null;
+        String fromField = fromFieldMapping.getOriginalFieldName();
+        String tempSegment = fromField + " AS " + fromFieldMapping.getTempFieldName();
+        if (!ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            fromField = fromFieldMapping.getTempFieldName();
+            tempSegment = fromField;
+        }
+
+        FieldMappingModel mapping = fromFieldMapping.clone();
+        TableField field = mapping.getTableField();
+        // 修改字段
+        if (StringUtils.isNotBlank(targetDesc)) {
+            mapping.setFinalFieldDesc(targetDesc);
+            field.setDesc(targetDesc);
+        }
+
+        // 原始字段类型
+        String type = field.getType();
+        // 前后字段类型一致，不转换
+        if (targetType.getType().equals(type)) {
+            return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
+        }
+
+        // 重置字段类型（系统中的数据类型）
+        mapping.setFinalFieldType(targetType.getType());
+        field.setType(targetType.getType());
+        StringBuilder segmentBuilder = new StringBuilder("CONVERT(");
+        switch (targetType) {
+            case Integer:
+                segmentBuilder.append("BIGINT");
+                field.setColumnType("bigint(32)");
+                field.setDataType("bigint");
+                field.setDataScope("32");
+                break;
+            case Float:
+                segmentBuilder.append("DECIMAL(32, 8)");
+                field.setColumnType("decimal(32,8)");
+                field.setDataType("decimal");
+                field.setDataScope("32,8");
+                break;
+            case Date:
+                segmentBuilder.append("DATE");
+                field.setColumnType("date");
+                field.setDataType("date");
+                field.setDataScope("");
+                break;
+            case DateTime:
+                segmentBuilder.append("DATETIME");
+                field.setColumnType("datetime");
+                field.setDataType("datetime");
+                field.setDataScope("");
+                break;
+            case Text:
+                segmentBuilder.append("VARCHAR(255)");
+                field.setColumnType("varchar(255)");
+                field.setDataType("varchar(255)");
+                field.setDataScope("255");
+                break;
+            default:
+                throw new BizException("转换类型失败，暂不支持的类型！");
+        }
+        segmentBuilder.append(", ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(") AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
     }
 }

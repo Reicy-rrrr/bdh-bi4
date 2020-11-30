@@ -495,6 +495,33 @@ public class ArrangeComponent implements ComponentHandler {
             DataTypeEnum targetType = DataTypeEnum.values(modifyModel.getType());
             String targetDesc = modifyModel.getDesc();
             FieldMappingModel fromMapping = MapUtils.getObject(fromMappingMap, fieldName);
+
+            DataTypeEnum sourceType = DataTypeEnum.values(fromMapping.getFinalFieldType());
+            switch (targetType) {
+                case Integer:
+                    if (DataTypeEnum.Date.equals(sourceType) || DataTypeEnum.DateTime.equals(sourceType)) {
+                        throw new BizException("不支持从日期或者日期时间类型转换为整数类型！");
+                    }
+                    break;
+                case Float:
+                    if (DataTypeEnum.Date.equals(sourceType) || DataTypeEnum.DateTime.equals(sourceType)) {
+                        throw new BizException("不支持从日期或者日期时间类型转换为浮点类型！");
+                    }
+                    break;
+                case Date:
+                    if (DataTypeEnum.Integer.equals(sourceType) || DataTypeEnum.Float.equals(sourceType)) {
+                        throw new BizException("不支持从整数或者浮点类型转换为日期类型！");
+                    }
+                    break;
+                case DateTime:
+                    if (DataTypeEnum.Integer.equals(sourceType) || DataTypeEnum.Float.equals(sourceType)) {
+                        throw new BizException("不支持从整数或者浮点类型转换为日期时间类型！");
+                    }
+                    break;
+                case Text:
+                    break;
+                default:
+            }
             ArrangeResultModel resultModel = arranger.modify(fromMapping, targetDesc, targetType, fromComponent.getTableName(), fromComponent.getTypeEnum());
             resultModels.add(resultModel);
         });
