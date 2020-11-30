@@ -117,6 +117,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(null);
             }
         } catch (Exception e1) {
+            e1.printStackTrace();
             log.error("sync.syncToExecuteNonTask:" + e1);
             count++;
             plan.setResultDesc(e1.getMessage());
@@ -154,6 +155,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(null);
             }
         } catch (Exception e1) {
+            e1.printStackTrace();
             log.error("sync.syncToExecuteTask:" + e1);
             count++;
             plan.setResultDesc(e1.getMessage());
@@ -221,6 +223,7 @@ public class SyncServiceImpl implements SyncService {
                 }
             }
         } catch (Exception e1) {
+            e1.printStackTrace();
             log.error("sync.syncExecutingTask:" + e1);
             plan.setResultDesc(e1.getMessage());
         } finally {
@@ -309,6 +312,7 @@ public class SyncServiceImpl implements SyncService {
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("etl.etlToExecuteTask:" + e);
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             plan.setResultDesc(e.getMessage());
