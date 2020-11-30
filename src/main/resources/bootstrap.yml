@@ -7,11 +7,11 @@ spring:
     nacos:
       server-addr: 10.81.128.50:8848
       config:
-        refresh-enabled:true
+        refresh-enabled: true
         group: bi
         shared-configs[0]:
           data-id: custom-common.properties
-          refresh:true
+          refresh: true
 server:
   port: 9002
   servlet:
