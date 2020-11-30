@@ -82,12 +82,21 @@ public class BiUiAnalysePublicShareController {
         }
         String str = AesUtil.decryptNoSymbol(request.getData(), encryptPass);
         log.info("请求参数:{},解密后:{},密文{}", JsonUtil.readObjToJson(request), str, encryptPass);
+
+        //设置租户编码
         Map<String, Object> result = JsonUtil.JsonStrToMap(str);
         ThreadLocalHolder.set("tenantCode", MapUtils.getString(result, "tenantCode"));
+
+        //检查状态
         BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
                 .eq(BiUiAnalysePublicShare::getRefPageId, MapUtils.getString(result, "refPageId")));
         if (null == share || "0".equals(share.getType())) {
             result.put("refPageId", null);
+        } else {
+            result.put("isEncrypt", "0");
+            if ("2".equals(share.getType())) {
+                result.put("isEncrypt", "1");
+            }
         }
         return RetResponse.makeOKRsp(result);
     }
