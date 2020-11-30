@@ -23,5 +23,5 @@ public interface SyncService {
      * @param
      * @return
      */
-    void model(String modelCode) throws Exception;
+    void model(String modelCode,String isTrigger) throws Exception;
 }

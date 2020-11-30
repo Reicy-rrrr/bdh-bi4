@@ -35,6 +35,11 @@ public interface XxJobService {
     String TRIGGER_PATH = "/bdh-job-admin/bdhJob/trigger?jobDesc=";
 
     /**
+     * trigger
+     */
+    String TRIGGER_PARAMS_PATH = "/bdh-job-admin/bdhJob/triggerWithParams";
+
+    /**
      * add
      *
      * @param
@@ -85,4 +90,11 @@ public interface XxJobService {
      */
     void trigger(String modelCode) throws Exception;
 
+    /**
+     * triggerParams
+     *
+     * @param
+     * @return
+     */
+    void triggerParams(String modelCode, Map<String, String> params) throws Exception;
 }

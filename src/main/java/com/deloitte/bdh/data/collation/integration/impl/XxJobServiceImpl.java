@@ -55,6 +55,17 @@ public class XxJobServiceImpl implements XxJobService {
         HttpClientUtil.get(ip + TRIGGER_PATH + modelCode);
     }
 
+    @Override
+    public void triggerParams(String modelCode, Map<String, String> params) throws Exception {
+        log.info("XxJobServiceImpl.triggerParams, modelCode:{} ", modelCode);
+        Map<String, Object> reqXxJob = Maps.newHashMap();
+        reqXxJob.put("jobDesc", modelCode);
+        reqXxJob.put("params", params);
+        //追加类型
+        reqXxJob.put("type", "1");
+        HttpClientUtil.post(ip + TRIGGER_PARAMS_PATH, null, reqXxJob);
+    }
+
 
     private Map<String, Object> assembleParams(String modelCode, String callBackAddress, String cron, Map<String, String> params) {
         CronUtil.validate(cron);
