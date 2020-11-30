@@ -35,7 +35,7 @@ public class DataModel {
     Integer pageSize = 10;
 
     @ApiModelProperty(value = "自定义参数")
-    Map<String, String> customParams;
+    Map<String, Object> customParams;
 
     @ApiModelProperty(value = "条件")
     List<DataCondition> conditions;

@@ -25,7 +25,7 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
-        Map<String, String> customParams = request.getDataConfig().getDataModel().getCustomParams();
+        Map<String, Object> customParams = request.getDataConfig().getDataModel().getCustomParams();
         if (MapUtils.isNotEmpty(customParams)) {
             String tableAggregate = MapUtils.getString(customParams, CustomParamsConstants.TABLE_AGGREGATE);
             if (StringUtils.equals(tableAggregate, "true")) {
