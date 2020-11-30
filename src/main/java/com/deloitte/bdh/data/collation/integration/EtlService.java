@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
+import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
 
 import java.util.List;
 
@@ -19,6 +20,15 @@ public interface EtlService {
      * @throws Exception
      */
     BiComponent resource(ResourceComponentDto dto) throws Exception;
+
+    /**
+     * 数据源组件同步状态实时查看
+     *
+     * @param code 数据源组件编码
+     * @return ResourceViewResp
+     * @throws Exception
+     */
+    ResourceViewResp realTimeView(String code);
 
     /**
      * 引入关联组件（创建）

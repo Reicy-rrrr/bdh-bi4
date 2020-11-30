@@ -23,6 +23,7 @@ import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
+import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -194,6 +196,62 @@ public class EtlServiceImpl implements EtlService {
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
         return component;
+    }
+
+    @Override
+    public ResourceViewResp realTimeView(String code) {
+        ResourceViewResp resp = new ResourceViewResp();
+
+        //获取数据源配置信息，当为同步类型的时候，获取调度任务信息
+        BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getCode, code));
+        if (null == component) {
+            throw new RuntimeException("EtlServiceImpl.realTimeView.error : 未找到目标");
+        }
+        resp.setEffect(component.getEffect());
+        BiComponentParams dulicateParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, code)
+                .eq(BiComponentParams::getParamKey, ComponentCons.DULICATE));
+
+        //引用副本
+        if (dulicateParam.getParamValue().equals(YesOrNoEnum.NO.getKey())) {
+            resp.setPlanStage(PlanStageEnum.NON_EXECUTE.getKey());
+            resp.setPlanStageDesc(PlanStageEnum.NON_EXECUTE.getValue());
+            resp.setProgressRate("100");
+            return resp;
+        }
+
+        //独立副本
+        BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode()));
+        if (null == config) {
+            throw new RuntimeException("EtlServiceImpl.realTimeView.error : 未找到目标");
+        }
+        //文件类型
+        if (config.getType().equals(String.valueOf(SyncTypeEnum.LOCAL.getKey()))) {
+            resp.setPlanStage(PlanStageEnum.NON_EXECUTE.getKey());
+            resp.setPlanStageDesc(PlanStageEnum.NON_EXECUTE.getValue());
+            resp.setProgressRate("100");
+            return resp;
+        }
+
+        BiEtlSyncPlan syncPlan = syncPlanService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getRefMappingCode, config.getCode()));
+        if (null == syncPlan) {
+            throw new RuntimeException("EtlServiceImpl.realTimeView.error : 未找到目标");
+        }
+
+        resp.setPlanStage(syncPlan.getPlanStage());
+        resp.setPlanStageDesc(PlanStageEnum.getValue(syncPlan.getPlanStage()));
+        resp.setPlanResult(syncPlan.getPlanResult());
+        resp.setResultDesc(PlanResultEnum.getValue(syncPlan.getPlanResult()));
+        resp.setSqlCount(syncPlan.getSqlCount());
+        resp.setSqlLocalCount(syncPlan.getSqlLocalCount());
+        BigDecimal rate = new BigDecimal(syncPlan.getSqlLocalCount())
+                .divide(new BigDecimal(syncPlan.getSqlCount()), 4, BigDecimal.ROUND_HALF_UP)
+                .multiply(new BigDecimal("100"));
+        resp.setProgressRate(rate.toString());
+        return resp;
     }
 
     @Override

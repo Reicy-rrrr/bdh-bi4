@@ -10,6 +10,7 @@ import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
+import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +40,12 @@ public class EtlController {
     @PostMapping("/resource/join")
     public RetResult<BiComponent> resource(@RequestBody @Validated RetRequest<ResourceComponentDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.resource(request.getData()));
+    }
+
+    @ApiOperation(value = "数据源组件同步状态实时查看", notes = "数据源组件同步状态实时查看")
+    @PostMapping("/resource/realTimeView")
+    public RetResult<ResourceViewResp> realTimeView(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.realTimeView(request.getData()));
     }
 
     @ApiOperation(value = "引入输出组件", notes = "引入输出组件")
