@@ -180,4 +180,19 @@ public interface ArrangerSelector extends Component {
                 .map(Integer::valueOf).collect(Collectors.toList());
         return numbers;
     }
+
+    /**
+     * 获取从组件字段
+     *
+     * @param fromMapping 从组件映射
+     * @param fromType    从组件类型
+     * @return
+     */
+    default String getFromField(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = fromMapping.getTempFieldName();
+        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            fromField = fromMapping.getOriginalFieldName();
+        }
+        return fromField;
+    }
 }
