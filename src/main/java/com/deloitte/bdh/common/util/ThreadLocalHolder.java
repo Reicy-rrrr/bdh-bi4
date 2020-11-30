@@ -85,6 +85,11 @@ public final class ThreadLocalHolder {
         threadLocal.remove();
     }
 
+    public static boolean isEmpty() {
+        return null == threadLocal.get();
+    }
+
+
     public static void async(Async async) {
         AsyncTaskExecutor executor = SpringUtil.getBean("taskExecutor", AsyncTaskExecutor.class);
         Map<String, Object> local = getThreadLocal();
