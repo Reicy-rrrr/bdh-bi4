@@ -9,16 +9,13 @@ import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRe
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.MaxMinDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,11 +43,17 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
 
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        int modelSize = dataModel.getY().size() + dataModel.getY2().size();
+        int modelSize = 0;
+        List<Map<String, Object>> y2 = Lists.newArrayList();
+        Map<String, MaxMinDto> y2MaxMin = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(dataModel.getY2())) {
+            modelSize = dataModel.getY().size() + dataModel.getY2().size();
+            y2 = buildCategory(request, response.getRows(), dataModel.getY2(), modelSize);
+            y2MaxMin = getMinMax(y2);
+        }
+
         List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY(), modelSize);
-        List<Map<String, Object>> y2 = buildCategory(request, response.getRows(), dataModel.getY2(), modelSize);
         Map<String, MaxMinDto> y1MaxMin = getMinMax(y1);
-        Map<String, MaxMinDto> y2MaxMin = getMinMax(y2);
         Map<String, MaxMinDto> maxMinMap = Stream.concat(y1MaxMin.entrySet().stream(), y2MaxMin.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> new MaxMinDto(v1.getMin(), v1.getMax())));
         Map<String, Object> extra = Maps.newHashMap();
@@ -104,18 +107,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                     newRow.put("category", colName);
                 }
 
-                //将度量的数据类型转为数字
-                if (StringUtils.equals(y.getQuota(), DataModelTypeEnum.DL.getCode())) {
-                    if (AnalyseConstants.MENSURE_DECIMAL_TYPE.contains(y.getDataType().toUpperCase())) {
-                        newRow.put("value", MapUtils.getDouble(row, colName));
-                    } else if (AnalyseConstants.MENSURE_TYPE.contains(y.getDataType().toUpperCase())) {
-                        newRow.put("value", MapUtils.getIntValue(row, colName));
-                    } else {
-                        newRow.put("value", MapUtils.getString(row, colName));
-                    }
-                } else {
-                    newRow.put("value", MapUtils.getString(row, colName));
-                }
+                newRow.put("value", MapUtils.getString(row, colName));
                 newRows.add(newRow);
             }
         }
@@ -148,7 +140,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 if (null == min) {
                     min = ob;
                 }
-                Double temp = Double.parseDouble(ob.toString());
+                double temp = Double.parseDouble(ob.toString());
                 if (temp > Double.parseDouble(max.toString())) {
                     max = ob;
                 }

@@ -27,8 +27,12 @@ public enum DataImplEnum {
     //柱状图
     BAR_SIMPLE("column", "simple", "categoryDataImpl", "柱状图"),
     BAR_DUAL("column", "dual", "categoryDataImpl", "柱线混合"),
+    BAR_STACK("column", "stack", "categoryDataImpl", "堆叠柱状图"),
     //子弹图
     BAR_PROGRESS("bar", "progress", "barProgressImpl", "子弹图"),
+    BAR_RADAR("bar", "radar", "radarDataImpl", "雷达图"),
+
+    WORD_CLOUD("word", "cloud", "wordCloudDataImpl", "词云图"),
     ;
 
     private final String type;
