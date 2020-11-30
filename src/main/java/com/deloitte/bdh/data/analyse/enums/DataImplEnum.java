@@ -31,6 +31,7 @@ public enum DataImplEnum {
     //子弹图
     BAR_PROGRESS("bar", "progress", "barProgressImpl", "子弹图"),
     BAR_RADAR("bar", "radar", "radarDataImpl", "雷达图"),
+    BAR_SCATTER("bar", "scatter", "scatterDataImpl", "散点图"),
 
     WORD_CLOUD("word", "cloud", "wordCloudDataImpl", "词云图"),
     ;
