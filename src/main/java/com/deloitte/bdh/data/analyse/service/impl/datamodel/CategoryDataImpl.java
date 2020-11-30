@@ -52,8 +52,12 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             y2MaxMin = getMinMax(y2);
         }
 
-        List<Map<String, Object>> y1 = buildCategory(request, response.getRows(), dataModel.getY(), modelSize);
-        Map<String, MaxMinDto> y1MaxMin = getMinMax(y1);
+        List<Map<String, Object>> y1 = Lists.newArrayList();
+        Map<String, MaxMinDto> y1MaxMin = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(dataModel.getY())) {
+            y1 = buildCategory(request, response.getRows(), dataModel.getY(), modelSize);
+            y1MaxMin = getMinMax(y1);
+        }
         Map<String, MaxMinDto> maxMinMap = Stream.concat(y1MaxMin.entrySet().stream(), y2MaxMin.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> new MaxMinDto(v1.getMin(), v1.getMax())));
         Map<String, Object> extra = Maps.newHashMap();
@@ -160,7 +164,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         if (CollectionUtils.isEmpty(dataModel.getX())) {
             throw new BizException("维度不能为空");
         }
-        if (CollectionUtils.isEmpty(dataModel.getY())) {
+        if (CollectionUtils.isEmpty(dataModel.getY()) && CollectionUtils.isEmpty(dataModel.getY2())) {
             throw new BizException("度量不能为空");
 
         } else {

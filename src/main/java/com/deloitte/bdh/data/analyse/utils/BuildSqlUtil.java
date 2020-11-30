@@ -37,7 +37,7 @@ public class BuildSqlUtil {
                 fieldExpress = ifNull(fieldExpress);
             }
         } else {
-            if (StringUtils.isNotBlank(formatType)) {
+            if (StringUtils.isNotBlank(formatType) && AnalyseConstants.DATE_TYPE.contains(dataType)) {
                 fieldExpress = format(fieldExpress, formatType);
             }
         }
@@ -67,11 +67,11 @@ public class BuildSqlUtil {
         return condition(fieldExpress, symbol, value);
     }
 
-    public static String groupBy(String tableName, String field, String quota, String formatType) {
+    public static String groupBy(String tableName, String field, String quota, String formatType, String dataType) {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             return null;
         }
-        if (StringUtils.isNotBlank(formatType)) {
+        if (StringUtils.isNotBlank(formatType) && AnalyseConstants.DATE_TYPE.contains(dataType)) {
             return format(field, formatType);
         } else {
             return selectField(tableName, field);

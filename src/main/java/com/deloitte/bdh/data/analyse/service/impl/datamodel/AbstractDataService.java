@@ -117,7 +117,7 @@ public abstract class AbstractDataService {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType());
+                String express = BuildSqlUtil.groupBy(dataModel.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
