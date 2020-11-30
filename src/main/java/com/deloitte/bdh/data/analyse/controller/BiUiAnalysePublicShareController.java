@@ -18,6 +18,7 @@ import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,6 +83,12 @@ public class BiUiAnalysePublicShareController {
         String str = AesUtil.decryptNoSymbol(request.getData(), encryptPass);
         log.info("请求参数:{},解密后:{},密文{}", JsonUtil.readObjToJson(request), str, encryptPass);
         Map<String, Object> result = JsonUtil.JsonStrToMap(str);
+        ThreadLocalHolder.set("tenantCode", MapUtils.getString(result, "tenantCode"));
+        BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
+                .eq(BiUiAnalysePublicShare::getRefPageId, MapUtils.getString(result, "refPageId")));
+        if (null == share || "0".equals(share.getType())) {
+            result.put("refPageId", null);
+        }
         return RetResponse.makeOKRsp(result);
     }
 

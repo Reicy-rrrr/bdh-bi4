@@ -75,6 +75,13 @@ public class AesUtil {
                 .replace("/", "oo00o");
     }
 
+    public static String encrypt(String content, String encryptPass, String defaultValue) {
+        if (null == content || "".equals(content)) {
+            return defaultValue;
+        }
+        return encrypt(content, encryptPass);
+    }
+
     /**
      * AES 解密操作
      */
@@ -105,13 +112,20 @@ public class AesUtil {
         return decrypt(base64Content, encryptPass);
     }
 
+    public static String decrypt(String base64Content, String encryptPass, String defaultValue) {
+        if (null == base64Content || "".equals(base64Content)) {
+            return defaultValue;
+        }
+        return decrypt(base64Content, encryptPass);
+    }
+
     /**
      * 生成加密秘钥
      */
     private static SecretKeySpec getSecretKey(String encryptPass) throws NoSuchAlgorithmException {
         KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
         // 初始化密钥生成器，AES要求密钥长度为128位、192位、256位
-        SecureRandom random=SecureRandom.getInstance("SHA1PRNG");
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.setSeed(encryptPass.getBytes());
         kg.init(128, random);
         SecretKey secretKey = kg.generateKey();
