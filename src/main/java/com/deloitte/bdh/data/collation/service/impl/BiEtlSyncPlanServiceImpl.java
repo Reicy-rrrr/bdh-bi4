@@ -76,7 +76,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
                 .eq(BiEtlModel::getCode, plan.getModelCode()));
         // 查询历史最近的一次任务，创建时间作为本次任务的上次执行时间
         BiEtlSyncPlan hisPlan = this.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
                 .eq(BiEtlSyncPlan::getRefModelCode, plan.getModelCode())
                 .eq(BiEtlSyncPlan::getRefMappingCode, plan.getRefCode())
                 .eq(BiEtlSyncPlan::getPlanType, plan.getPlanType())
