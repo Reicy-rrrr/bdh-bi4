@@ -117,8 +117,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(null);
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            log.error("sync.syncToExecuteNonTask:" + e1);
+            log.error("sync.syncToExecuteNonTask:", e1);
             count++;
             plan.setResultDesc(e1.getMessage());
             plan.setProcessCount(String.valueOf(count));
@@ -155,8 +154,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(null);
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            log.error("sync.syncToExecuteTask:" + e1);
+            log.error("sync.syncToExecuteTask:", e1);
             count++;
             plan.setResultDesc(e1.getMessage());
             plan.setProcessCount(String.valueOf(count));
@@ -223,8 +221,7 @@ public class SyncServiceImpl implements SyncService {
                 }
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            log.error("sync.syncExecutingTask:" + e1);
+            log.error("sync.syncExecutingTask:", e1);
             plan.setResultDesc(e1.getMessage());
         } finally {
             plan.setProcessCount(String.valueOf(count));
@@ -312,10 +309,14 @@ public class SyncServiceImpl implements SyncService {
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("etl.etlToExecuteTask:" , e);
+            log.error("etl.etlToExecuteTask:", e);
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             plan.setResultDesc(e.getMessage());
+
+            //改变model的运行状态
+            BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, plan.getRefModelCode()));
+            model.setSyncStatus(YesOrNoEnum.NO.getKey());
+            modelService.updateById(model);
         } finally {
             syncPlanService.updateById(plan);
         }
@@ -345,11 +346,11 @@ public class SyncServiceImpl implements SyncService {
                 .eq(BiEtlModel::getCode, plan.getRefModelCode())
         );
 
-        boolean syncStatus = false;
+        boolean syncStatus = true;
         try {
             //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
-                syncStatus = true;
+                syncStatus = false;
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
@@ -370,7 +371,7 @@ public class SyncServiceImpl implements SyncService {
                     // 等待下次再查询
                     plan.setSqlLocalCount(localCount);
                 } else {
-                    syncStatus = true;
+                    syncStatus = false;
                     //已同步完成
                     plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
@@ -391,13 +392,13 @@ public class SyncServiceImpl implements SyncService {
                 }
             }
         } catch (Exception e1) {
-            log.error("etl.etlExecutingTask:" + e1);
+            log.error("etl.etlExecutingTask:", e1);
             plan.setResultDesc(e1.getMessage());
         } finally {
             plan.setProcessCount(String.valueOf(count));
             syncPlanService.updateById(plan);
-            if (syncStatus) {
-                //改变model状态
+            if (!syncStatus) {
+                //改变model状态为非运行
                 model.setSyncStatus(YesOrNoEnum.NO.getKey());
                 modelService.updateById(model);
             }
