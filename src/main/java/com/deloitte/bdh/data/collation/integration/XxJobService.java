@@ -16,23 +16,23 @@ public interface XxJobService {
     /**
      * REMOVE
      */
-    String REMOVE_PATH = "/bdh-job-admin/bdhJob/remove?jobDesc=";
+    String REMOVE_PATH = "/bdh-job-admin/bdhJob/remove";
 
     /**
      * START
      */
-    String START_PATH = "/bdh-job-admin/bdhJob/start?jobDesc=";
+    String START_PATH = "/bdh-job-admin/bdhJob/start";
 
 
     /**
      * STOP
      */
-    String STOP_PATH = "/bdh-job-admin/bdhJob/stop?jobDesc=";
+    String STOP_PATH = "/bdh-job-admin/bdhJob/stop";
 
     /**
      * trigger
      */
-    String TRIGGER_PATH = "/bdh-job-admin/bdhJob/trigger?jobDesc=";
+    String TRIGGER_PATH = "/bdh-job-admin/bdhJob/trigger";
 
     /**
      * trigger

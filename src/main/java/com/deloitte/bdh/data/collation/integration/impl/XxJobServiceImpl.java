@@ -34,25 +34,37 @@ public class XxJobServiceImpl implements XxJobService {
     @Override
     public void remove(String modelCode) throws Exception {
         log.info("XxJobServiceImpl.remove, modelCode:{} ", modelCode);
-        HttpClientUtil.get(ip + REMOVE_PATH + modelCode);
+        Map<String, Object> reqXxJob = Maps.newHashMap();
+        reqXxJob.put("jobDesc", modelCode);
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
+        HttpClientUtil.post(ip + REMOVE_PATH, null, reqXxJob);
     }
 
     @Override
     public void start(String modelCode) throws Exception {
         log.info("XxJobServiceImpl.start, modelCode:{} ", modelCode);
-        HttpClientUtil.get(ip + START_PATH + modelCode);
+        Map<String, Object> reqXxJob = Maps.newHashMap();
+        reqXxJob.put("jobDesc", modelCode);
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
+        HttpClientUtil.post(ip + START_PATH, null, reqXxJob);
     }
 
     @Override
     public void stop(String modelCode) throws Exception {
         log.info("XxJobServiceImpl.stop, modelCode:{} ", modelCode);
-        HttpClientUtil.get(ip + STOP_PATH + modelCode);
+        Map<String, Object> reqXxJob = Maps.newHashMap();
+        reqXxJob.put("jobDesc", modelCode);
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
+        HttpClientUtil.post(ip + STOP_PATH, null, reqXxJob);
     }
 
     @Override
     public void trigger(String modelCode) throws Exception {
         log.info("XxJobServiceImpl.trigger, modelCode:{} ", modelCode);
-        HttpClientUtil.get(ip + TRIGGER_PATH + modelCode);
+        Map<String, Object> reqXxJob = Maps.newHashMap();
+        reqXxJob.put("jobDesc", modelCode);
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
+        HttpClientUtil.post(ip + TRIGGER_PATH, null, reqXxJob);
     }
 
     @Override
