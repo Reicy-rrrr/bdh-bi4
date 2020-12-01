@@ -14,18 +14,15 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.PlanTypeEnum;
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlanResult;
 import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.model.request.BiEtlSyncPlanListDto;
-import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,9 +47,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     @Resource
     private BiEtlSyncPlanMapper syncPlanMapper;
 
-    @Autowired
-    private BiEtlModelService biEtlModelService;
-
     @Override
     public void createFirstPlan(RunPlan plan) {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
@@ -71,26 +65,26 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         syncPlan.setPlanResult(null);
         syncPlan.setSqlCount(plan.getCount());
 
-        // 查询模板(cron表达式)
-        BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
-                .eq(BiEtlModel::getCode, plan.getModelCode()));
-        // 查询历史最近的一次任务，创建时间作为本次任务的上次执行时间
-        BiEtlSyncPlan hisPlan = this.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getRefModelCode, plan.getModelCode())
-                .eq(BiEtlSyncPlan::getRefMappingCode, plan.getRefCode())
-                .eq(BiEtlSyncPlan::getPlanType, plan.getPlanType())
-                .orderByDesc(BiEtlSyncPlan::getCreateDate)
-                .last("limit 1"));
+        //初次配置同步的时候，可能没有cron 表达式，这是否需要设置？ todo
+        if (StringUtils.isNotBlank(plan.getCronExpression())) {
+            // 查询历史最近的一次任务，创建时间作为本次任务的上次执行时间
+            BiEtlSyncPlan hisPlan = this.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                    .eq(BiEtlSyncPlan::getRefModelCode, plan.getModelCode())
+                    .eq(BiEtlSyncPlan::getRefMappingCode, plan.getRefCode())
+                    .eq(BiEtlSyncPlan::getPlanType, plan.getPlanType())
+                    .orderByDesc(BiEtlSyncPlan::getCreateDate)
+                    .last("limit 1"));
 
-        if (hisPlan != null) {
-            syncPlan.setLastExecuteDate(hisPlan.getCreateDate());
+            if (hisPlan != null) {
+                syncPlan.setLastExecuteDate(hisPlan.getCreateDate());
+            }
+            LocalDateTime now = LocalDateTime.now();
+            // 当前时间的上次执行时间为本次的计划时间
+            LocalDateTime currExecuteTime = getLastExecuteTime(plan.getCronExpression(), now);
+            LocalDateTime nextExecuteTime = getNextExecuteTime(plan.getCronExpression(), now);
+            syncPlan.setCurrExecuteDate(currExecuteTime);
+            syncPlan.setNextExecuteDate(nextExecuteTime);
         }
-        LocalDateTime now = LocalDateTime.now();
-        // 当前时间的上次执行时间为本次的计划时间
-        LocalDateTime currExecuteTime = getLastExecuteTime(model.getCronExpression(), now);
-        LocalDateTime nextExecuteTime = getNextExecuteTime(model.getCronExpression(), now);
-        syncPlan.setCurrExecuteDate(currExecuteTime);
-        syncPlan.setNextExecuteDate(nextExecuteTime);
         syncPlanMapper.insert(syncPlan);
     }
 

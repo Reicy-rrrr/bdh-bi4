@@ -15,6 +15,7 @@ public class RunPlan {
     private String planType;
     private String first;
     private String modelCode;
+    private String cronExpression;
     private BiEtlMappingConfig config;
     private String count;
 
@@ -43,6 +44,11 @@ public class RunPlan {
 
     public RunPlan modelCode(String modelCode) {
         this.modelCode = modelCode;
+        return this;
+    }
+
+    public RunPlan cronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
         return this;
     }
 

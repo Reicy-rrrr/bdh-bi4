@@ -169,9 +169,13 @@ public class EtlServiceImpl implements EtlService {
 
                 //step2.1.1：获取数据源的count
                 RunPlan runPlan = RunPlan.builder()
-                        .groupCode("0").planType("0")
-                        .first(YesOrNoEnum.YES.getKey()).modelCode(biEtlModel.getCode())
-                        .mappingConfigCode(mappingConfig).synCount();
+                        .groupCode("0")
+                        .planType("0")
+                        .first(YesOrNoEnum.YES.getKey())
+                        .modelCode(biEtlModel.getCode())
+                        .cronExpression(biEtlModel.getCronExpression())
+                        .mappingConfigCode(mappingConfig)
+                        .synCount();
 
 
                 //step2.1.2: 调用NIFI生成processors

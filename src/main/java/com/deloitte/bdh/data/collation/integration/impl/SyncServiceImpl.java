@@ -476,18 +476,29 @@ public class SyncServiceImpl implements SyncService {
                     continue;
                 }
 
-                RunPlan runPlan = RunPlan.builder().groupCode(groupCode).planType("0")
-                        .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).mappingConfigCode(config)
+                RunPlan runPlan = RunPlan.builder()
+                        .groupCode(groupCode)
+                        .planType("0")
+                        .first(YesOrNoEnum.NO.getKey())
+                        .modelCode(modelCode)
+                        .cronExpression(model.getCronExpression())
+                        .mappingConfigCode(config)
                         .synCount();
                 runPlans.add(runPlan);
             }
         }
 
         //out 当前未count
-        RunPlan outPlan = RunPlan.builder().groupCode(groupCode).planType("1")
-                .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).refCode(out.getCode());
+        RunPlan outPlan = RunPlan.builder()
+                .groupCode(groupCode)
+                .planType("1")
+                .first(YesOrNoEnum.NO.getKey())
+                .modelCode(modelCode)
+                .cronExpression(model.getCronExpression())
+                .refCode(out.getCode());
         runPlans.add(outPlan);
 
+        //执行
         runPlans.forEach(s -> syncPlanService.createFirstPlan(s));
 
         //状态变为正在同步中
