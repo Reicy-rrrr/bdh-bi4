@@ -106,46 +106,32 @@ public class BiEtlSyncPlanResult implements Serializable {
     private String percentage;
 
     /**
-     * 创建时间
-     */
-    @JsonIgnore
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createDate;
-
-    /**
-     * 修改时间
-     */
-    @JsonIgnore
-    @ApiModelProperty(value = "修改时间")
-    private LocalDateTime modifiedDate;
-
-    /**
      * 上次执行时间
      */
     @ApiModelProperty(value = "上次执行时间")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime lastExecuteTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime lastExecuteDate;
 
     /**
      * 下次执行时间
      */
     @ApiModelProperty(value = "下次执行时间")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime nextExecuteTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime nextExecuteDate;
 
     /**
      * 计划执行时间
      */
     @ApiModelProperty(value = "计划执行时间")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime planExecuteTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime currExecuteDate;
 
     /**
      * 实际执行时间
      */
     @ApiModelProperty(value = "实际执行时间")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    private LocalDateTime actualExecuteTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private LocalDateTime actualExecuteDate;
 
     /**
      * 模板code
@@ -159,25 +145,4 @@ public class BiEtlSyncPlanResult implements Serializable {
      */
     @ApiModelProperty(value = "模板名称")
     private String modelName;
-
-    /**
-     * 模板cron表达式
-     */
-    @JsonIgnore
-    @ApiModelProperty(value = "模板cron表达式")
-    private String modelCronExpression;
-
-    /**
-     * 模板创建时间
-     */
-    @JsonIgnore
-    @ApiModelProperty(value = "模板创建时间")
-    private LocalDateTime modelCreateDate;
-
-    /**
-     * 模板修改时间
-     */
-    @JsonIgnore
-    @ApiModelProperty(value = "模板修改时间")
-    private LocalDateTime modelModifiedDate;
 }

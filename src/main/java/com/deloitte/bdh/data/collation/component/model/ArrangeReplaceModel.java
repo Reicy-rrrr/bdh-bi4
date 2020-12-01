@@ -21,6 +21,6 @@ public class ArrangeReplaceModel {
     @ApiModelProperty(value = "字段名称", example = "name", required = true)
     private String name;
     /** 替换内容 */
-    @ApiModelProperty(value = "替换内容", example = "zhangsan", required = true)
+    @ApiModelProperty(value = "替换内容", example = "", required = true)
     private List<ArrangeReplaceContentModel> contents;
 }

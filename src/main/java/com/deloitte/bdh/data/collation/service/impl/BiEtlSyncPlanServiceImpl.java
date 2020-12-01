@@ -1,24 +1,31 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.enums.*;
-import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
+import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
+import com.deloitte.bdh.data.collation.enums.PlanTypeEnum;
+import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
+import com.deloitte.bdh.data.collation.model.BiEtlSyncPlanResult;
+import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.model.request.BiEtlSyncPlanListDto;
-import com.deloitte.bdh.data.collation.service.*;
-import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.data.collation.service.BiEtlModelService;
+import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -43,6 +50,9 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     @Resource
     private BiEtlSyncPlanMapper syncPlanMapper;
 
+    @Autowired
+    private BiEtlModelService biEtlModelService;
+
     @Override
     public void createFirstPlan(RunPlan plan) {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
@@ -60,6 +70,28 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         syncPlan.setProcessCount("0");
         syncPlan.setPlanResult(null);
         syncPlan.setSqlCount(plan.getCount());
+
+        // 查询模板(cron表达式)
+        BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, plan.getModelCode()));
+        // 查询历史最近的一次任务，创建时间作为本次任务的上次执行时间
+        BiEtlSyncPlan hisPlan = this.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                .eq(BiEtlSyncPlan::getRefModelCode, plan.getModelCode())
+                .eq(BiEtlSyncPlan::getRefMappingCode, plan.getRefCode())
+                .eq(BiEtlSyncPlan::getPlanType, plan.getPlanType())
+                .orderByDesc(BiEtlSyncPlan::getCreateDate)
+                .last("limit 1"));
+
+        if (hisPlan != null) {
+            syncPlan.setLastExecuteDate(hisPlan.getCreateDate());
+        }
+        LocalDateTime now = LocalDateTime.now();
+        // 当前时间的上次执行时间为本次的计划时间
+        LocalDateTime currExecuteTime = getLastExecuteTime(model.getCronExpression(), now);
+        LocalDateTime nextExecuteTime = getNextExecuteTime(model.getCronExpression(), now);
+        syncPlan.setCurrExecuteDate(currExecuteTime);
+        syncPlan.setNextExecuteDate(nextExecuteTime);
         syncPlanMapper.insert(syncPlan);
     }
 
@@ -70,21 +102,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         if (CollectionUtils.isNotEmpty(result.getList())) {
             List<BiEtlSyncPlanResult> plans = result.getList();
             for (BiEtlSyncPlanResult plan : plans) {
-                // 执行时间默认为任务创建时间
-                LocalDateTime executeTime = plan.getCreateDate();
-                String cronExpression = plan.getModelCronExpression();
-                if (StringUtils.isNotBlank(cronExpression)) {
-                    // 下次任务的计划执行时间
-                    LocalDateTime nextExecuteTime = getNextExecuteTime(cronExpression, executeTime);
-                    // 本次任务的计划执行时间
-                    LocalDateTime currExecuteTime = getLastExecuteTime(cronExpression, nextExecuteTime);
-                    // 上次任务的计划执行时间
-                    LocalDateTime lastExecuteTime = getLastExecuteTime(cronExpression, currExecuteTime);
-                    plan.setPlanExecuteTime(currExecuteTime);
-                    plan.setLastExecuteTime(lastExecuteTime);
-                    plan.setNextExecuteTime(nextExecuteTime);
-                }
-                plan.setActualExecuteTime(executeTime);
                 plan.setPlanTypeDesc(PlanTypeEnum.values(Integer.valueOf(plan.getPlanType())).getDesc());
                 plan.setPlanStageDesc(PlanStageEnum.getValue(plan.getPlanStage()));
 

@@ -37,13 +37,14 @@
         <result column="RESULT_DESC" property="resultDesc"/>
         <result column="SQL_COUNT" property="sqlCount"/>
         <result column="SQL_LOCAL_COUNT" property="sqlLocalCount"/>
-        <result column="CREATE_DATE" property="createDate"/>
-        <result column="MODIFIED_DATE" property="modifiedDate"/>
+
+        <result column="LAST_EXECUTE_DATE" property="lastExecuteDate"/>
+        <result column="CURR_EXECUTE_DATE" property="currExecuteDate"/>
+        <result column="ACTUAL_EXECUTE_DATE" property="actualExecuteDate"/>
+        <result column="NEXT_EXECUTE_DATE" property="nextExecuteDate"/>
+
         <result column="MODEL_CODE" property="modelCode"/>
         <result column="MODEL_NAME" property="modelName"/>
-        <result column="MODEL_CRON_EXPRESSION" property="modelCronExpression"/>
-        <result column="MODEL_CREATE_DATE" property="modelCreateDate"/>
-        <result column="MODEL_MODIFIED_DATE" property="modelModifiedDate"/>
     </resultMap>
 
     <select id="selectPlanList" resultMap="SyncPlanResultMap" parameterType="com.deloitte.bdh.data.collation.model.request.BiEtlSyncPlanListDto">
@@ -57,13 +58,12 @@
             t1.RESULT_DESC,
             t1.SQL_COUNT,
             t1.SQL_LOCAL_COUNT,
-            t1.CREATE_DATE,
-            t1.MODIFIED_DATE,
+            t1.LAST_EXECUTE_DATE,
+            t1.CURR_EXECUTE_DATE,
+            t1.NEXT_EXECUTE_DATE,
+            t1.CREATE_DATE AS ACTUAL_EXECUTE_DATE,
             t1.REF_MODEL_CODE MODEL_CODE,
             t2.NAME MODEL_NAME,
-            t2.CRON_EXPRESSION MODEL_CRON_EXPRESSION,
-            t2.CREATE_DATE MODEL_CREATE_DATE,
-            t2.MODIFIED_DATE MODEL_MODIFIED_DATE,
             CASE WHEN t4.NAME IS NULL THEN t2.NAME ELSE t4.NAME END AS PLAN_NAME
         FROM
             BI_ETL_SYNC_PLAN t1
@@ -81,7 +81,7 @@
                 AND t1.PLAN_TYPE = #{planType}
             </if>
             <if test="planResult != null and planResult != ''">
-                AND t1.PLAN_TYPE = #{planResult}
+                AND t1.PLAN_RESULT = #{planResult}
             </if>
         </where>
     </select>
