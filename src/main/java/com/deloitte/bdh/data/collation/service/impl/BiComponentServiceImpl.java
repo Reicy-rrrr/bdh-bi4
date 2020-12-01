@@ -113,11 +113,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
     @Override
     public void removeResourceComponent(BiComponent component) throws Exception {
-        // 删除组件之前先删除连接
-        LambdaQueryWrapper<BiComponentConnection> wrapper = new LambdaQueryWrapper();
-        wrapper.eq(BiComponentConnection::getToComponentCode, component.getCode());
-        connectionService.remove(wrapper);
-
         //获取组件参数
         List<BiComponentParams> paramsList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
@@ -271,6 +266,26 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .eq(BiProcessors::getCode, componentParams.getParamValue())
         );
         return processors.getProcessGroupId();
+    }
+
+    @Override
+    public boolean isSync(String componentCode) {
+        BiComponentParams componentParams = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, componentCode)
+                .eq(BiComponentParams::getParamKey, ComponentCons.DULICATE)
+        );
+        if (YesOrNoEnum.NO.getKey().equals(componentParams.getParamValue())) {
+            return false;
+        }
+
+        BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                .eq(BiEtlMappingConfig::getRefComponentCode, componentCode));
+
+        List<BiEtlSyncPlan> syncPlans = planService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getRefMappingCode, config.getCode())
+                .isNull(BiEtlSyncPlan::getPlanResult));
+
+        return CollectionUtils.isNotEmpty(syncPlans);
     }
 
     private void validate(BiComponent component, List<BiComponent> components, List<BiComponentConnection> connections) {

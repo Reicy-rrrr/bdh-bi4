@@ -183,6 +183,14 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
+    public void dropFields(String tableName, String... field) {
+        for (String args : field) {
+            String deleteSql = "ALTER table  `" + tableName + "` DROP " + args;
+            biEtlDbMapper.truncateTable(deleteSql);
+        }
+    }
+
+    @Override
     public boolean isTableExists(String tableName) {
         if (StringUtils.isBlank(tableName)) {
             throw new BizException("Check table exists error: 表名不能为空！");

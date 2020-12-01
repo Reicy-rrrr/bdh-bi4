@@ -98,6 +98,24 @@ public class BiEtlSyncPlan implements Serializable {
     @TableField("SQL_LOCAL_COUNT")
     private String sqlLocalCount;
 
+    /**
+     * 上次执行时间
+     */
+    @TableField(value = "LAST_EXECUTE_DATE")
+    private LocalDateTime lastExecuteDate;
+
+    /**
+     * 本次执行时间
+     */
+    @TableField(value = "CURR_EXECUTE_DATE")
+    private LocalDateTime currExecuteDate;
+
+    /**
+     * 下次执行时间
+     */
+    @TableField(value = "NEXT_EXECUTE_DATE")
+    private LocalDateTime nextExecuteDate;
+
     @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
 
@@ -115,6 +133,10 @@ public class BiEtlSyncPlan implements Serializable {
 
     @TableField("TENANT_ID")
     private String tenantId;
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -228,6 +250,30 @@ public class BiEtlSyncPlan implements Serializable {
         this.sqlLocalCount = sqlLocalCount;
     }
 
+    public LocalDateTime getLastExecuteDate() {
+        return lastExecuteDate;
+    }
+
+    public void setLastExecuteDate(LocalDateTime lastExecuteDate) {
+        this.lastExecuteDate = lastExecuteDate;
+    }
+
+    public LocalDateTime getCurrExecuteDate() {
+        return currExecuteDate;
+    }
+
+    public void setCurrExecuteDate(LocalDateTime currExecuteDate) {
+        this.currExecuteDate = currExecuteDate;
+    }
+
+    public LocalDateTime getNextExecuteDate() {
+        return nextExecuteDate;
+    }
+
+    public void setNextExecuteDate(LocalDateTime nextExecuteDate) {
+        this.nextExecuteDate = nextExecuteDate;
+    }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -293,6 +339,9 @@ public class BiEtlSyncPlan implements Serializable {
                 ", planSql=" + planSql +
                 ", sqlCount=" + sqlCount +
                 ", sqlLocalCount=" + sqlLocalCount +
+                ", lastExecuteDate=" + lastExecuteDate +
+                ", currExecuteDate=" + currExecuteDate +
+                ", nextExecuteDate=" + nextExecuteDate +
                 ", createDate=" + createDate +
                 ", createUser=" + createUser +
                 ", modifiedDate=" + modifiedDate +

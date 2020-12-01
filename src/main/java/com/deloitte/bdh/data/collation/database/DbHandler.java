@@ -105,6 +105,14 @@ public interface DbHandler {
     void drop(String tableName);
 
     /**
+     * 删除字段
+     *
+     * @param tableName 表名
+     * @return
+     */
+    void dropFields(String tableName,String ...field);
+
+    /**
      * 检查表是否存在
      *
      * @param tableName 表名

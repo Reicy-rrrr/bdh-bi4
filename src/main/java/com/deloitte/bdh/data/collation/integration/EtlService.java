@@ -19,7 +19,16 @@ public interface EtlService {
      * @return BiComponent
      * @throws Exception
      */
-    BiComponent resource(ResourceComponentDto dto) throws Exception;
+    BiComponent resourceJoin(ResourceComponentDto dto) throws Exception;
+
+    /**
+     * 修改数据源组件
+     *
+     * @param dto 数据源组件dto
+     * @return BiComponent
+     * @throws Exception
+     */
+    BiComponent resourceUpdate(UpdateResourceComponentDto dto) throws Exception;
 
     /**
      * 数据源组件同步状态实时查看
