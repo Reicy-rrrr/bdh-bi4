@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -116,6 +117,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(null);
             }
         } catch (Exception e1) {
+            e1.printStackTrace();
             log.error("sync.syncToExecuteNonTask:" + e1);
             count++;
             plan.setResultDesc(e1.getMessage());
@@ -153,6 +155,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(null);
             }
         } catch (Exception e1) {
+            e1.printStackTrace();
             log.error("sync.syncToExecuteTask:" + e1);
             count++;
             plan.setResultDesc(e1.getMessage());
@@ -220,6 +223,7 @@ public class SyncServiceImpl implements SyncService {
                 }
             }
         } catch (Exception e1) {
+            e1.printStackTrace();
             log.error("sync.syncExecutingTask:" + e1);
             plan.setResultDesc(e1.getMessage());
         } finally {
@@ -273,15 +277,19 @@ public class SyncServiceImpl implements SyncService {
                     .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
             );
 
-            for (BiEtlSyncPlan syncPlan : synclist) {
-                if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
-                    throw new RuntimeException("依赖的同步任务失败:" + syncPlan.getCode());
-                }
-                //有任务正在运行中，直接返回待下次处理
-                if (null == syncPlan.getPlanResult()) {
-                    return;
+            //触发情况下，不会有数据源的同步
+            if (!CollectionUtils.isEmpty(synclist)) {
+                for (BiEtlSyncPlan syncPlan : synclist) {
+                    if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
+                        throw new RuntimeException("依赖的同步任务失败:" + syncPlan.getCode());
+                    }
+                    //有任务正在运行中，直接返回待下次处理
+                    if (null == syncPlan.getPlanResult()) {
+                        return;
+                    }
                 }
             }
+
             //同步任务已经执行完成，开始etl
             ComponentModel componentModel = modelHandleService.handleModel(plan.getRefModelCode());
 
@@ -304,7 +312,8 @@ public class SyncServiceImpl implements SyncService {
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
-            log.error("etl.etlToExecuteTask:" + e);
+            e.printStackTrace();
+            log.error("etl.etlToExecuteTask:" , e);
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             plan.setResultDesc(e.getMessage());
         } finally {
@@ -396,7 +405,7 @@ public class SyncServiceImpl implements SyncService {
     }
 
     @Override
-    public void model(String modelCode) throws Exception {
+    public void model(String modelCode, String isTrigger) throws Exception {
         //查询model信息，生成执行计划集
         BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, modelCode)
@@ -428,48 +437,50 @@ public class SyncServiceImpl implements SyncService {
         final String groupCode = GenerateCodeUtil.generate();
         List<RunPlan> runPlans = Lists.newArrayList();
 
-        //database
-        List<BiComponent> dbComponents = components.stream()
-                .filter(s -> s.getType().equals(ComponentTypeEnum.DATASOURCE.getKey())).collect(Collectors.toList());
-        for (BiComponent component : dbComponents) {
-            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                    .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode())
-                    .eq(BiEtlMappingConfig::getRefComponentCode, component.getCode()));
+        //不是触发的则同步数据源
+        if (YesOrNoEnum.NO.getKey().equals(isTrigger)) {
+            //database
+            List<BiComponent> dbComponents = components.stream()
+                    .filter(s -> s.getType().equals(ComponentTypeEnum.DATASOURCE.getKey())).collect(Collectors.toList());
+            for (BiComponent component : dbComponents) {
+                BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                        .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode())
+                        .eq(BiEtlMappingConfig::getRefComponentCode, component.getCode()));
 
-            //判断是否归属当前模板
-            if (null == config) {
-                continue;
+                //判断是否归属当前模板
+                if (null == config) {
+                    continue;
+                }
+
+                //校验表结构
+                String result = configService.validateSource(config);
+                if (null != result) {
+                    log.error("Etl调度验证失败:{}", result);
+                    //todo 抛出事件修改model validate
+                    return;
+                }
+
+                // 判断数据源是否被禁用，若有一个被禁用，则不生成调度计划
+                BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfService.getById(config.getRefSourceId());
+
+                if (SourceTypeEnum.File_Csv.getType().equals(biEtlDatabaseInf.getType())
+                        || SourceTypeEnum.File_Excel.getType().equals(biEtlDatabaseInf.getType())) {
+                    log.warn("文件型数据源,不需要同步, 组件编码:{}", component.getCode());
+                    continue;
+                }
+
+                //直连 &本地则返回
+                if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())
+                        || config.getType().equals(SyncTypeEnum.LOCAL.getValue())) {
+                    continue;
+                }
+
+                RunPlan runPlan = RunPlan.builder().groupCode(groupCode).planType("0")
+                        .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).mappingConfigCode(config)
+                        .synCount();
+                runPlans.add(runPlan);
             }
-
-            //校验表结构
-            String result = configService.validateSource(config);
-            if (null != result) {
-                log.error("Etl调度验证失败:{}", result);
-                //todo 抛出事件修改model validate
-                return;
-            }
-
-            // 判断数据源是否被禁用，若有一个被禁用，则不生成调度计划
-            BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfService.getById(config.getRefSourceId());
-
-            if (SourceTypeEnum.File_Csv.getType().equals(biEtlDatabaseInf.getType())
-                    || SourceTypeEnum.File_Excel.getType().equals(biEtlDatabaseInf.getType())) {
-                log.warn("文件型数据源,不需要同步, 组件编码:{}", component.getCode());
-                continue;
-            }
-
-            //直连 &本地则返回
-            if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())
-                    || config.getType().equals(SyncTypeEnum.LOCAL.getValue())) {
-                continue;
-            }
-
-            RunPlan runPlan = RunPlan.builder().groupCode(groupCode).planType("0")
-                    .first(YesOrNoEnum.NO.getKey()).modelCode(modelCode).mappingConfigCode(config)
-                    .synCount();
-            runPlans.add(runPlan);
         }
-
 
         //out 当前未count
         RunPlan outPlan = RunPlan.builder().groupCode(groupCode).planType("1")

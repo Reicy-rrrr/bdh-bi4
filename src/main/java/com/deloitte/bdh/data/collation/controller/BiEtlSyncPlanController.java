@@ -4,6 +4,7 @@ package com.deloitte.bdh.data.collation.controller;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.SyncService;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.MapUtils;
@@ -46,7 +47,7 @@ public class BiEtlSyncPlanController {
     public RetResult<Void> model(@RequestBody Map<String, Object> map) throws Exception {
         ThreadLocalHolder.set("tenantId", MapUtils.getString(map, "tenantId"));
         ThreadLocalHolder.set("operator", MapUtils.getString(map, "operator"));
-        sync.model(MapUtils.getString(map, "modelCode"));
+        sync.model(MapUtils.getString(map, "modelCode"), MapUtils.getString(map, "isTrigger", YesOrNoEnum.NO.getKey()));
         return RetResponse.makeOKRsp();
     }
 }

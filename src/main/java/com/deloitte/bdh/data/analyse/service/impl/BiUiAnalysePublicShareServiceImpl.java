@@ -55,9 +55,7 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
             Map<String, Object> params = Maps.newHashMap();
             params.put("tenantCode", ThreadLocalHolder.getTenantCode());
             params.put("refPageId", dto.getPageId());
-            params.put("isEncrypt", "0");
             if ("2".equals(dto.getType())) {
-                params.put("isEncrypt", "1");
                 share.setPassword(Md5Util.getMD5(dto.getPassword(), encryptPass + ThreadLocalHolder.getTenantCode()));
             }
             share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));

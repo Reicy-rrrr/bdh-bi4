@@ -382,7 +382,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         //未执行任务才执行
         if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getSyncStatus())) {
-            jobService.trigger(modelCode);
+            Map<String, String> req = Maps.newHashMap();
+            req.put("isTrigger", YesOrNoEnum.YES.getKey());
+            jobService.triggerParams(modelCode, req);
         }
 
     }
