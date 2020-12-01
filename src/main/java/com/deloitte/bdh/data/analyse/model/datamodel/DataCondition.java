@@ -26,6 +26,9 @@ public class DataCondition {
     @ApiModelProperty("formatType")
     private String formatType;
 
+    @ApiModelProperty("聚合方式")
+    private String aggregateType;
+
     @NotBlank
     @ApiModelProperty("symbol")
     private String symbol;
