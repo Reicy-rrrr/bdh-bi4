@@ -47,4 +47,12 @@ public interface BiComponentService extends Service<BiComponent> {
 
     String getProcessorsGroupId(String componentCode);
 
+    /**
+     * 判断数据源组件是否正在同步过程中
+     *
+     * @param componentCode
+     * @return
+     */
+    boolean isSync(String componentCode);
+
 }

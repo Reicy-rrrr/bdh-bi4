@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.integration.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.beust.jcommander.internal.Sets;
 import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
@@ -19,6 +20,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.EtlService;
+import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
@@ -41,6 +43,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,6 +61,8 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiComponentParamsService componentParamsService;
     @Autowired
+    private BiComponentConnectionService connectionService;
+    @Autowired
     private BiEtlMappingConfigService configService;
     @Autowired
     private BiEtlMappingFieldService fieldService;
@@ -73,10 +78,12 @@ public class EtlServiceImpl implements EtlService {
     private BiEtlMappingConfigService etlMappingConfigService;
     @Resource
     private Transfer transfer;
+    @Autowired
+    private NifiProcessService nifiProcessService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent resource(ResourceComponentDto dto) throws Exception {
+    public BiComponent resourceJoin(ResourceComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
             throw new RuntimeException("EtlServiceImpl.joinResource.error : 未找到目标 数据源");
@@ -142,7 +149,7 @@ public class EtlServiceImpl implements EtlService {
                 }
 
                 if (StringUtils.isBlank(dto.getOffsetField())) {
-                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 同步时,偏移字段不能为空");
+                    throw new RuntimeException("EtlServiceImpl.joinResource.error : 独立副本时，偏移字段不能为空");
                 }
 
                 Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
@@ -196,6 +203,77 @@ public class EtlServiceImpl implements EtlService {
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
         return component;
+    }
+
+    @Override
+    public BiComponent resourceUpdate(UpdateResourceComponentDto dto) throws Exception {
+        //获取数据源相关信息，先判断是否只删除了字段，只删除则修改表结构
+        BiComponent oldComponent = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getCode, dto.getComponentCode()));
+        if (null == oldComponent) {
+            throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 未找到目标");
+        }
+
+        BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, oldComponent.getRefMappingCode()));
+        if (null == model) {
+            throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 未找到目标");
+        }
+        // 校验当前组件未同步，且当前model 未运行
+        if (componentService.isSync(oldComponent.getCode())) {
+            throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 数据源组件当前正在同步中，不允许修改");
+        }
+        if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus()) || RunStatusEnum.RUNNING.getKey().equals(model.getStatus())) {
+            throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 模板状态非法");
+        }
+
+        // 若只是删除了个别字段，或组件名字变更，不需要重构同步
+        if (!isRefactor(dto, oldComponent)) {
+            if (!oldComponent.getName().equals(dto.getComponentName())) {
+                Map<String, Object> reqNifi = Maps.newHashMap();
+                reqNifi.put("id", componentService.getProcessorsGroupId(oldComponent.getCode()));
+                reqNifi.put("name", dto.getComponentName());
+                nifiProcessService.updProcessGroup(reqNifi);
+
+                oldComponent.setName(dto.getComponentName());
+                componentService.updateById(oldComponent);
+            }
+            updateForFields(dto, oldComponent);
+            return oldComponent;
+        } else {
+            //删除连接
+            BiComponentConnection connection = connectionService.getOne(new LambdaQueryWrapper<BiComponentConnection>()
+                    .eq(BiComponentConnection::getFromComponentCode, oldComponent.getCode()));
+            if (null == connection) {
+                throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 未找到目标");
+            }
+            connectionService.removeById(connection);
+
+            //删除数据源组件
+            this.remove(oldComponent.getCode());
+
+            //新增数据源数据
+            ResourceComponentDto componentDto = new ResourceComponentDto();
+            componentDto.setModelId(model.getId());
+            componentDto.setComponentName(dto.getComponentName());
+            componentDto.setSourceId(dto.getSourceId());
+            componentDto.setTableName(dto.getTableName());
+            componentDto.setDuplicate(dto.getDuplicate());
+            componentDto.setBelongMappingCode(dto.getBelongMappingCode());
+            componentDto.setSyncType(dto.getSyncType());
+            componentDto.setOffsetField(dto.getOffsetField());
+            componentDto.setOffsetValue(dto.getOffsetValue());
+            componentDto.setFields(dto.getFields());
+            BiComponent newComponent = this.resourceJoin(componentDto);
+
+            //创建连接
+            ComponentLinkDto linkDto = new ComponentLinkDto();
+            linkDto.setModelId(model.getId());
+            linkDto.setFromComponentCode(newComponent.getCode());
+            linkDto.setToComponentCode(connection.getToComponentCode());
+            connectionService.link(linkDto);
+            return newComponent;
+        }
     }
 
     @Override
@@ -573,6 +651,79 @@ public class EtlServiceImpl implements EtlService {
         });
         processors.setProcessGroupId(processGroupId);
         processorsService.save(processors);
+    }
+
+    private boolean isRefactor(UpdateResourceComponentDto dto, BiComponent oldComponent) {
+        String sourceId = dto.getSourceId();
+        String tableName = dto.getTableName();
+        String duplicate = dto.getDuplicate();
+        String belongMappingCode = dto.getBelongMappingCode();
+        String offsetField = dto.getOffsetField();
+//        String offsetValue = dto.getOffsetValue();
+
+        BiComponentParams dulicateParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, oldComponent.getCode())
+                .eq(BiComponentParams::getParamKey, ComponentCons.DULICATE));
+
+        //副本类型变更
+        if (!dulicateParam.getParamValue().equals(duplicate)) {
+            return true;
+        }
+
+        if (YesOrNoEnum.NO.getKey().equals(duplicate)) {
+            //引用副本时，引用编码变更
+            return !belongMappingCode.equals(oldComponent.getRefMappingCode());
+        } else {
+            BiEtlMappingConfig config = etlMappingConfigService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>().eq(BiEtlMappingConfig::getCode, oldComponent.getRefMappingCode()));
+            //增量value变更
+//            if (!config.getOffsetValue().equals(offsetValue)) {
+//                return true;
+//            }
+            //数据源变更
+            if (!config.getRefSourceId().equals(sourceId)) {
+                return true;
+            }
+            //表变更
+            if (!config.getFromTableName().equals(tableName)) {
+                return true;
+            }
+            //增量标识变更
+            return !config.getOffsetField().equals(offsetField);
+        }
+    }
+
+    private void updateForFields(UpdateResourceComponentDto dto, BiComponent oldComponent) {
+        if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
+            ComponentModel componentModel = biEtlModelHandleService.handleComponent(oldComponent.getRefModelCode(), oldComponent.getCode());
+            Set<String> newFieldSet = Sets.newHashSet();
+            Set<String> oldFieldSet = Sets.newHashSet();
+
+            for (TableField newField : dto.getFields()) {
+                newFieldSet.add(newField.getName());
+            }
+            for (FieldMappingModel fieldMappingModel : componentModel.getFieldMappings()) {
+                if (newFieldSet.contains(fieldMappingModel.getTableField().getName())) {
+                    newFieldSet.remove(fieldMappingModel.getTableField().getName());
+                } else {
+                    oldFieldSet.add(fieldMappingModel.getTableField().getName());
+                }
+            }
+            if (newFieldSet.isEmpty()) {
+                //删除多余的字段
+                BiEtlMappingConfig config = etlMappingConfigService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>().eq(BiEtlMappingConfig::getCode, oldComponent.getRefMappingCode()));
+                dbHandler.dropFields(config.getToTableName(), oldFieldSet.toArray(new String[oldFieldSet.size()]));
+                //删除field集合
+                List<BiEtlMappingField> fieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
+                        .eq(BiEtlMappingField::getRefCode, config.getCode()));
+                List<BiEtlMappingField> delFields = Lists.newArrayList();
+                for (BiEtlMappingField mappingField : fieldList) {
+                    if (oldFieldSet.contains(mappingField.getFieldName())) {
+                        delFields.add(mappingField);
+                    }
+                }
+                fieldService.removeByIds(delFields);
+            }
+        }
     }
 
     /**

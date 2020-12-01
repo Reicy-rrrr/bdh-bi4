@@ -38,8 +38,14 @@ public class EtlController {
 
     @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
     @PostMapping("/resource/join")
-    public RetResult<BiComponent> resource(@RequestBody @Validated RetRequest<ResourceComponentDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.resource(request.getData()));
+    public RetResult<BiComponent> resourceJoin(@RequestBody @Validated RetRequest<ResourceComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.resourceJoin(request.getData()));
+    }
+
+    @ApiOperation(value = "修改数据源组件", notes = "修改数据源组件")
+    @PostMapping("/resource/update")
+    public RetResult<BiComponent> resourceUpdate(@RequestBody @Validated RetRequest<UpdateResourceComponentDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.resourceUpdate(request.getData()));
     }
 
     @ApiOperation(value = "数据源组件同步状态实时查看", notes = "数据源组件同步状态实时查看")
