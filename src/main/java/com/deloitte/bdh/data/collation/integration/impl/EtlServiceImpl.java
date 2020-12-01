@@ -687,9 +687,25 @@ public class EtlServiceImpl implements EtlService {
             if (!config.getFromTableName().equals(tableName)) {
                 return true;
             }
+            //字段变更或增加
+            if (fieldsChange(dto, oldComponent)) {
+                return true;
+            }
             //增量标识变更
             return !config.getOffsetField().equals(offsetField);
         }
+    }
+
+    private boolean fieldsChange(UpdateResourceComponentDto dto, BiComponent oldComponent) {
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(oldComponent.getRefModelCode(), oldComponent.getCode());
+        Set<String> newFieldSet = Sets.newHashSet();
+        for (TableField newField : dto.getFields()) {
+            newFieldSet.add(newField.getName());
+        }
+        for (FieldMappingModel fieldMappingModel : componentModel.getFieldMappings()) {
+            newFieldSet.remove(fieldMappingModel.getTableField().getName());
+        }
+        return !newFieldSet.isEmpty();
     }
 
     private void updateForFields(UpdateResourceComponentDto dto, BiComponent oldComponent) {
@@ -709,19 +725,21 @@ public class EtlServiceImpl implements EtlService {
                 }
             }
             if (newFieldSet.isEmpty()) {
-                //删除多余的字段
-                BiEtlMappingConfig config = etlMappingConfigService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>().eq(BiEtlMappingConfig::getCode, oldComponent.getRefMappingCode()));
-                dbHandler.dropFields(config.getToTableName(), oldFieldSet.toArray(new String[oldFieldSet.size()]));
-                //删除field集合
-                List<BiEtlMappingField> fieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
-                        .eq(BiEtlMappingField::getRefCode, config.getCode()));
-                List<BiEtlMappingField> delFields = Lists.newArrayList();
-                for (BiEtlMappingField mappingField : fieldList) {
-                    if (oldFieldSet.contains(mappingField.getFieldName())) {
-                        delFields.add(mappingField);
+                if (oldFieldSet.size() > 0) {
+                    //删除多余的字段
+                    BiEtlMappingConfig config = etlMappingConfigService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>().eq(BiEtlMappingConfig::getCode, oldComponent.getRefMappingCode()));
+                    dbHandler.dropFields(config.getToTableName(), oldFieldSet.toArray(new String[oldFieldSet.size()]));
+                    //删除field集合
+                    List<BiEtlMappingField> fieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
+                            .eq(BiEtlMappingField::getRefCode, config.getCode()));
+                    List<BiEtlMappingField> delFields = Lists.newArrayList();
+                    for (BiEtlMappingField mappingField : fieldList) {
+                        if (oldFieldSet.contains(mappingField.getFieldName())) {
+                            delFields.add(mappingField);
+                        }
                     }
+                    fieldService.removeByIds(delFields);
                 }
-                fieldService.removeByIds(delFields);
             }
         }
     }
