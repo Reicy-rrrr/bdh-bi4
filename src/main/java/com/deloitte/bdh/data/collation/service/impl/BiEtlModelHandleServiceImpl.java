@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiComponentTree;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
@@ -85,11 +86,25 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         modelWrapper.eq(BiEtlModel::getCode, modelCode);
         BiEtlModel model = biEtlModelService.getOne(modelWrapper);
         if (model == null) {
-            log.error("根据模板id[{}]未查询到模板信息！", modelCode);
+            log.error("根据模板code[{}]未查询到模板信息！", modelCode);
             throw new BizException("未查询到模板信息！");
         }
+
+        LambdaQueryWrapper<BiComponent> componentWrapper = new LambdaQueryWrapper();
+        componentWrapper.eq(BiComponent::getRefModelCode, modelCode);
+        componentWrapper.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
+        List<BiComponent> outComps = biComponentService.list(componentWrapper);
+        if (CollectionUtils.isEmpty(outComps)) {
+            log.error("根据模板code[{}]未查询到输出组件！", modelCode);
+            throw new BizException("模板未查询到输出组件信息！");
+        }
+
+        if (outComps.size() > 1) {
+            log.error("根据模板code[{}]查询到多个输出组件信息！", modelCode);
+            throw new BizException("模板不允许有多个输出组件！");
+        }
         // 根据模板查询组件树
-        BiComponentTree componentTree = biComponentService.selectTree(model.getCode(), null);
+        BiComponentTree componentTree = biComponentService.selectTree(model.getCode(), outComps.get(0).getCode());
         // 根据组件查询组件树
         ComponentModel componentModel = new ComponentModel();
         convertToModel(componentTree, componentModel);
