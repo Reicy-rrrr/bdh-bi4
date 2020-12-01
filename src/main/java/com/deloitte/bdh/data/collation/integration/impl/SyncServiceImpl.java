@@ -313,7 +313,7 @@ public class SyncServiceImpl implements SyncService {
             plan.setResultDesc(null);
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("etl.etlToExecuteTask:" + e);
+            log.error("etl.etlToExecuteTask:" , e);
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
             plan.setResultDesc(e.getMessage());
         } finally {
