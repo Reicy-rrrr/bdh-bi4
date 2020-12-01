@@ -14,8 +14,11 @@ public class WordCloudDataImpl extends AbstractDataService implements AnalyseDat
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
-
-        return execute(buildSql(request.getDataConfig().getDataModel()));
+        DataModel dataModel = request.getDataConfig().getDataModel();
+        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
+            dataModel.getY().forEach(y -> dataModel.getX().add(y));
+        }
+        return execute(buildSql(dataModel));
     }
 
     @Override

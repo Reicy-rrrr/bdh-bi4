@@ -13,9 +13,6 @@ public class RadarDataImpl extends CategoryDataImpl implements AnalyseDataServic
     @Override
     protected void validate(DataModel dataModel) {
 
-        if (dataModel.getX().size() > 1) {
-            throw new BizException("最多可拖入1个外圈");
-        }
         if (dataModel.getCategory().size() > 1) {
             throw new BizException("最多可拖入1个颜色图例");
         }
