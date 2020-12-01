@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiComponentTree;
@@ -200,8 +201,18 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
                     if (index > 0) {
                         sqlBuilder.append(ComponentHandler.sql_key_and);
                     }
-                    sqlBuilder.append(mapping.getFinalFieldName());
-                    sqlBuilder.append(" IS NULL ");
+                    // 日期类型不能用 ='' 判断
+                    if (DataTypeEnum.Date.getType().equals(mapping.getFinalFieldType()) || DataTypeEnum.DateTime.getType().equals(mapping.getFinalFieldType())) {
+                        sqlBuilder.append(mapping.getFinalFieldName());
+                        sqlBuilder.append(" IS NULL ");
+                    } else {
+                        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+                        sqlBuilder.append(mapping.getFinalFieldName());
+                        sqlBuilder.append(" IS NULL OR ");
+                        sqlBuilder.append(mapping.getFinalFieldName());
+                        sqlBuilder.append(" = ''");
+                        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+                    }
                 }
             }
         } else {

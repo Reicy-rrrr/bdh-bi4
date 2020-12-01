@@ -43,13 +43,12 @@ public interface ArrangerSelector extends Component {
      * 替换字段内容
      *
      * @param fromFieldMapping 字段映射
-     * @param source           替换内容
-     * @param target           替换目标
+     * @param contents         替换内容
      * @param fromTable        源表名（上一个组件）
      * @param fromType         从组件类型
      * @return
      */
-    ArrangeResultModel replace(FieldMappingModel fromFieldMapping, String source, String target, String fromTable, ComponentTypeEnum fromType);
+    ArrangeResultModel replace(FieldMappingModel fromFieldMapping, List<ArrangeReplaceContentModel> contents, String fromTable, ComponentTypeEnum fromType);
 
     /**
      * 合并字段

@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.component.model.GroupModel;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -184,7 +185,7 @@ public class GroupComponent implements ComponentHandler {
                 sqlBuilder.append(sql_key_as);
                 sqlBuilder.append(newTempName);
                 sqlBuilder.append(sql_key_comma);
-
+                // 聚合函数结果字段类型使用源字段类型
                 FieldMappingModel currMapping = fromMapping.clone();
                 currMapping.setTempFieldName(newTempName);
                 currMapping.setFinalFieldName(newFinalName);
@@ -193,6 +194,15 @@ public class GroupComponent implements ComponentHandler {
                 TableField tableField = currMapping.getTableField();
                 tableField.setName(newFinalName);
                 tableField.setDesc(newFinalDesc);
+
+                // count函数结果字段类型使用bigint
+                if (param_key_count.equals(paramKey)) {
+                    currMapping.setFinalFieldType(DataTypeEnum.Integer.getType());
+                    tableField.setType(DataTypeEnum.Integer.getType());
+                    tableField.setDataType(DataTypeEnum.Integer.getValue());
+                    tableField.setColumnType(DataTypeEnum.Integer.getValue());
+                    tableField.setDataScope("");
+                }
                 currFieldMappings.add(currMapping);
             }
         }

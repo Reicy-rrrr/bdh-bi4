@@ -330,12 +330,9 @@ public class ArrangeComponent implements ComponentHandler {
         List<ArrangeResultModel> resultModels = Lists.newArrayList();
         replaceCases.forEach(replaceCase -> {
             String fieldName = replaceCase.getName();
-
-            String source = replaceCase.getSource();
-            String target = replaceCase.getTarget();
-
+            List<ArrangeReplaceContentModel> contents = replaceCase.getContents();
             FieldMappingModel fromMapping = MapUtils.getObject(fromMappingMap, fieldName);
-            ArrangeResultModel resultModel = arranger.replace(fromMapping, source, target, fromTableName, fromType);
+            ArrangeResultModel resultModel = arranger.replace(fromMapping, contents, fromTableName, fromType);
             resultModels.add(resultModel);
         });
         return resultModels;

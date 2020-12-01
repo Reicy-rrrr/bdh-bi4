@@ -94,10 +94,22 @@ public class OracleArranger implements ArrangerSelector {
     }
 
     @Override
-    public ArrangeResultModel replace(FieldMappingModel fromFieldMapping, String source, String target, String fromTable, ComponentTypeEnum fromType) {
+    public ArrangeResultModel replace(FieldMappingModel fromFieldMapping, List<ArrangeReplaceContentModel> contents, String fromTable, ComponentTypeEnum fromType) {
         String fromField = getFromField(fromFieldMapping, fromType);
-        String segment = "REPLACE (" + fromField + ", '" + source + "', '" + target + "' ) AS " + fromFieldMapping.getTempFieldName();
-        return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segment, false, fromFieldMapping);
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < contents.size(); i++) {
+            ArrangeReplaceContentModel replaceContent = contents.get(i);
+            String source = replaceContent.getSource();
+            String target = replaceContent.getTarget();
+            if (i == 0) {
+                builder.append("REPLACE (" + fromField + ", '" + source + "', '" + target + "' )");
+            } else {
+                builder.append("REPLACE (" + builder.toString() + ", '" + source + "', '" + target + "' )");
+            }
+        }
+        builder.append(" AS ");
+        builder.append(fromFieldMapping.getTempFieldName());
+        return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), builder.toString(), false, fromFieldMapping);
     }
 
     @Override
@@ -150,7 +162,12 @@ public class OracleArranger implements ArrangerSelector {
         List<String> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
             String fromField = getFromField(fromMapping, fromType);
-            results.add(fromField + " IS NOT NULL");
+            // 日期类型不能用 ='' 判断
+            if (DataTypeEnum.Date.getType().equals(fromMapping.getFinalFieldType()) || DataTypeEnum.DateTime.getType().equals(fromMapping.getFinalFieldType())) {
+                results.add(fromField + " IS NOT NULL");
+            } else {
+                results.add(fromField + " IS NOT NULL AND " + fromField + " != ''");
+            }
         });
         return results;
     }
