@@ -37,7 +37,7 @@ public class BuildSqlUtil {
                 fieldExpress = ifNull(fieldExpress);
             }
         } else {
-            if (StringUtils.isNotBlank(formatType) && AnalyseConstants.DATE_TYPE.contains(dataType)) {
+            if (StringUtils.isNotBlank(formatType) && AnalyseConstants.DATE_TYPE.contains(dataType.toUpperCase())) {
                 fieldExpress = format(fieldExpress, formatType);
             }
         }
