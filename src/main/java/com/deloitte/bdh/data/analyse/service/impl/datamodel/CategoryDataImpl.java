@@ -43,7 +43,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
 
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        int modelSize = 0;
+        int modelSize = dataModel.getY().size();
         List<Map<String, Object>> y2 = Lists.newArrayList();
         Map<String, MaxMinDto> y2MaxMin = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(dataModel.getY2())) {
@@ -111,7 +111,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                     newRow.put("category", colName);
                 }
 
-                newRow.put("value", MapUtils.getString(row, colName));
+                newRow.put("value", MapUtils.getObject(row, colName));
                 newRows.add(newRow);
             }
         }

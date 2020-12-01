@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -137,6 +138,17 @@ public abstract class AbstractDataService {
                     , s.getAggregateType(), s.getSymbol(), s.getValue());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+            for (DataCondition condition : dataModel.getConditions()) {
+                if (StringUtils.equals(condition.getQuota(), DataModelTypeEnum.DL.getCode()) &&
+                        StringUtils.isNotBlank(condition.getAggregateType())) {
+                    String express = BuildSqlUtil.having(dataModel.getTableName(), condition.getId().get(0), condition.getQuota(),
+                            condition.getAggregateType(), condition.getSymbol(), condition.getValue());
+                    list.add(express);
+                }
+
             }
         }
         if (CollectionUtils.isEmpty(list)) {
