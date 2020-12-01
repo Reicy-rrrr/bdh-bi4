@@ -10,16 +10,7 @@ import org.springframework.stereotype.Service;
 
 
 @Service("wordCloudDataImpl")
-public class WordCloudDataImpl extends AbstractDataService implements AnalyseDataService {
-
-    @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
-        DataModel dataModel = request.getDataConfig().getDataModel();
-        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
-            dataModel.getY().forEach(y -> dataModel.getX().add(y));
-        }
-        return execute(buildSql(dataModel));
-    }
+public class WordCloudDataImpl extends CategoryDataImpl implements AnalyseDataService {
 
     @Override
     protected void validate(DataModel dataModel) {
