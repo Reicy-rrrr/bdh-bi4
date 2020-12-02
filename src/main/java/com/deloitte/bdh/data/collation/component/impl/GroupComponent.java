@@ -57,7 +57,6 @@ public class GroupComponent implements ComponentHandler {
             throw new BizException("聚合组件只能有一个上层组件，处理失败！");
         }
 
-        component.setTableName(component.getCode());
         component.setTableName(componentCode);
         buildQuerySql(component);
     }
@@ -109,14 +108,18 @@ public class GroupComponent implements ComponentHandler {
         // 被用做分组字段
         Set<String> groupFields = (Set<String>) MapUtils.getObject(paramMap, param_key_group);
         ComponentModel fromComponent = component.getFrom().get(0);
-        // 从组件的表名
-        String fromTableName = fromComponent.getTableName();
         List<String> fromFields = fromComponent.getFields();
         // 从组件类型
         ComponentTypeEnum fromType = fromComponent.getTypeEnum();
         // 从组件字段映射
         Map<String, FieldMappingModel> fromFieldMappings = fromComponent.getFieldMappings().stream()
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, fieldMapping -> fieldMapping));
+
+        // 校验聚合字段
+        Set<String> validFields = Sets.newHashSet();
+        paramMap.forEach((k, v) -> validFields.addAll(v));
+        validGroupFields(component.getName(), fromFieldMappings.keySet(), validFields);
+
         // 用于记录当前组件的字段映射（因为聚合会产生新的字段，不能复用从组件的映射）
         List<FieldMappingModel> currFieldMappings = Lists.newArrayList();
 
@@ -266,12 +269,33 @@ public class GroupComponent implements ComponentHandler {
         GroupModel model = JSON.parseObject(groupParam.getParamValue(), GroupModel.class);
         result.put(param_key_group, Sets.newLinkedHashSet(model.getGroup()));
         LinkedHashSet<String> countFields = Sets.newLinkedHashSet();
-        countFields.add(model.getCount());
+        if (StringUtils.isNotBlank(model.getCount())) {
+            countFields.add(model.getCount());
+        }
         result.put(param_key_count, countFields);
         result.put(param_key_max, Sets.newLinkedHashSet(model.getMax()));
         result.put(param_key_min, Sets.newLinkedHashSet(model.getMin()));
         result.put(param_key_sum, Sets.newLinkedHashSet(model.getSum()));
         result.put(param_key_avg, Sets.newLinkedHashSet(model.getAvg()));
         return result;
+    }
+
+    private void validGroupFields(String componentName, Set<String> fromFields, Set<String> groupFields) {
+        if (CollectionUtils.isEmpty(fromFields)) {
+            log.error("聚合组件[{}]验证失败，从组件字段不能为空！", componentName);
+            throw new BizException("聚合组件[" + componentName + "]验证失败，从组件字段不能为空！");
+        }
+
+        if (CollectionUtils.isEmpty(groupFields)) {
+            log.error("聚合组件[{}]验证失败，聚合字段不能为空！", componentName);
+            throw new BizException("聚合组件[" + componentName + "]验证失败，聚合字段不能为空！");
+        }
+
+        for (String groupField : groupFields) {
+            if (!fromFields.contains(groupField)) {
+                log.error("聚合组件[{}]验证失败，存在错误的字段在从组件中未找到！", componentName);
+                throw new BizException("聚合组件[" + componentName + "]验证失败，存在错误的字段在从组件中未找到！");
+            }
+        }
     }
 }

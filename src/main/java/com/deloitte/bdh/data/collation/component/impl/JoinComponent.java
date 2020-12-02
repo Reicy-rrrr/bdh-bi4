@@ -49,6 +49,8 @@ public class JoinComponent implements ComponentHandler {
                 .collect(Collectors.toMap(BiComponentParams::getParamKey, param -> param));
 
         JoinModel joinModel = buildJoinModel(componentCode, paramsMap);
+        Map<String, ComponentModel> fromComponents = component.getFrom().stream().collect(Collectors.toMap(ComponentModel::getCode, model -> model));
+        validJoinComponents(component.getName(), fromComponents, joinModel);
 
         // 查询设定的需要的字段信息
         LambdaQueryWrapper<BiEtlMappingField> fieldWrapper = new LambdaQueryWrapper();
@@ -267,5 +269,52 @@ public class JoinComponent implements ComponentHandler {
             }
         }
         joinModel.setRight(rights);
+    }
+
+    /**
+     * 验证所关联的组件是否存在
+     *
+     * @param fromComponents 从组件
+     * @param joinModel      关联模型
+     */
+    private void validJoinComponents(String componentName, Map<String, ComponentModel> fromComponents, JoinModel joinModel) {
+        if (CollectionUtils.isEmpty(fromComponents) || fromComponents.size() < 2) {
+            log.error("关联组件[{}]验证失败，所关联的组件少于2个！", componentName);
+            throw new BizException("关联组件[" + componentName + "]验证失败，所关联的组件少于2个！");
+        }
+        String tableName = joinModel.getTableName();
+        ComponentModel component = null;
+        if (!fromComponents.containsKey(tableName) || (component = fromComponents.get(tableName)) == null) {
+            log.error("关联组件[{}]验证失败，所关联的组件[{}]未查询到！", componentName, tableName);
+            throw new BizException("关联组件[" + componentName + "]验证失败，所关联的组件[" + tableName + "]未查询到！");
+        }
+        // 组件所有字段
+        List<String> fields = component.getFields();
+        // 当前组件的关联字段模型，右侧为当前组件字段
+        List<JoinFieldModel> currJoinFields = joinModel.getJoinFields();
+        for (JoinFieldModel fieldModel : currJoinFields) {
+            if (!fields.contains(fieldModel.getRightField())) {
+                log.error("关联组件[{}]验证失败，字段[{}]在组件[{}]中不存在！", componentName, fieldModel.getRightField(), component.getTableName());
+                throw new BizException("关联组件[" + componentName + "]验证失败，字段[" + fieldModel.getRightField() + "]在组件[" + component.getTableName() + "]中不存在！");
+            }
+        }
+
+        List<JoinModel> rights = joinModel.getRight();
+        if (CollectionUtils.isEmpty(rights)) {
+            return;
+        }
+
+        for (JoinModel rightModel : rights) {
+            // 右边组件关联字段模型，左侧字段为当前组件字段
+            List<JoinFieldModel> rightJoinFields = rightModel.getJoinFields();
+            for (JoinFieldModel fieldModel : rightJoinFields) {
+                if (!fields.contains(fieldModel.getLeftField())) {
+                    log.error("关联组件[{}]验证失败，字段[]在组件[]中不存在！", componentName, fieldModel.getLeftField(), component.getTableName());
+                    throw new BizException("关联组件[" + componentName + "]验证失败，字段[" + fieldModel.getLeftField() + "]在组件[" + component.getTableName() + "]中不存在！");
+                }
+            }
+            // 递归遍历
+            validJoinComponents(componentName, fromComponents, rightModel);
+        }
     }
 }
