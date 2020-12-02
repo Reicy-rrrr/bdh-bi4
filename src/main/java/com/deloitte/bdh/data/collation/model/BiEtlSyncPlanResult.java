@@ -25,14 +25,12 @@ public class BiEtlSyncPlanResult implements Serializable {
     /**
      * 计划id
      */
-    @JsonIgnore
     @ApiModelProperty(value = "计划id")
     private String id;
 
     /**
      * 计划编码
      */
-    @JsonIgnore
     @ApiModelProperty(value = "计划编码")
     private String code;
 
