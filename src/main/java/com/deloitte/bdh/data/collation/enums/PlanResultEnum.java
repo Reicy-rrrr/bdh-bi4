@@ -7,7 +7,7 @@ public enum PlanResultEnum {
 
     SUCCESS("1", "成功"),
     FAIL("0", "失败"),
-    CANCEL("2", "取消"),
+    CANCEL("2", "终止"),
 
     ;
 
