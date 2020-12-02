@@ -105,9 +105,8 @@ public class BiEtlModelController {
 
     @ApiOperation(value = "运行/停止 model", notes = "运行/停止 Model")
     @PostMapping("/run")
-    public RetResult<Void> run(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        biEtlModelService.runModel(request.getData());
-        return RetResponse.makeOKRsp();
+    public RetResult<BiEtlModel> run(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(biEtlModelService.runModel(request.getData()));
     }
 
     @ApiOperation(value = "validate model", notes = "validate Model")

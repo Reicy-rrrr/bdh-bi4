@@ -289,7 +289,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public void runModel(String modelCode) throws Exception {
+    public BiEtlModel runModel(String modelCode) throws Exception {
         BiEtlModel biEtlModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, modelCode)
         );
@@ -336,6 +336,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
         }
         biEtlModelMapper.updateById(biEtlModel);
+        return biEtlModel;
     }
 
     @Override
@@ -427,11 +428,13 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if ("0".equals(dto.getParentCode())) {
             throw new RuntimeException("请在文件夹下创建ETL模板");
         }
-        if (StringUtil.isEmpty(dto.getCronExpression())) {
+        if (StringUtil.isEmpty(dto.getCronExpression()) && StringUtil.isEmpty(dto.getCronData())) {
             throw new RuntimeException("请配置调度时间");
         }
-        CronUtil.validate(dto.getCronExpression());
 
+        if (!StringUtil.isEmpty(dto.getCronExpression())) {
+            CronUtil.validate(dto.getCronExpression());
+        }
         //生效、失效的状态
         inf.setEffect(EffectEnum.ENABLE.getKey());
         //初始化 为未运行状态 对应nifi stopped RUNNIG
