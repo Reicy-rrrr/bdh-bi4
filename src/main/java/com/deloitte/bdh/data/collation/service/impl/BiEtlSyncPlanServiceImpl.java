@@ -65,8 +65,8 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         syncPlan.setPlanResult(null);
         syncPlan.setSqlCount(plan.getCount());
 
-        //初次配置同步的时候，可能没有cron 表达式，这是否需要设置？ todo
-        if (StringUtils.isNotBlank(plan.getCronExpression())) {
+        // 初次配置同步的时候，可能没有cron 表达式，这是否需要设置？
+        if ("0".equals(plan.getFirst()) && StringUtils.isNotBlank(plan.getCronExpression())) {
             // 查询历史最近的一次任务，创建时间作为本次任务的上次执行时间
             BiEtlSyncPlan hisPlan = this.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
                     .eq(BiEtlSyncPlan::getRefModelCode, plan.getModelCode())
