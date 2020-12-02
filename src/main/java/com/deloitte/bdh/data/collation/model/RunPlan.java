@@ -11,6 +11,8 @@ import org.apache.commons.lang.StringUtils;
 @Data
 public class RunPlan {
     private String groupCode;
+    // 任务名称
+    private String planName;
     //0数据同步、1数据整理
     private String planType;
     private String first;
@@ -29,6 +31,11 @@ public class RunPlan {
 
     public RunPlan groupCode(String groupCode) {
         this.groupCode = groupCode;
+        return this;
+    }
+
+    public RunPlan planName(String planName) {
+        this.planName = planName;
         return this;
     }
 

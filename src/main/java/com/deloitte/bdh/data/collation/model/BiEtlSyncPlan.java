@@ -2,8 +2,8 @@ package com.deloitte.bdh.data.collation.model;
 
 import com.baomidou.mybatisplus.annotation.*;
 
-import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -26,6 +26,12 @@ public class BiEtlSyncPlan implements Serializable {
      */
     @TableField("CODE")
     private String code;
+
+    /**
+     * 计划名称
+     */
+    @TableField("NAME")
+    private String name;
 
     /**
      * 计划组编码
@@ -134,10 +140,6 @@ public class BiEtlSyncPlan implements Serializable {
     @TableField("TENANT_ID")
     private String tenantId;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
     public String getId() {
         return id;
     }
@@ -152,6 +154,14 @@ public class BiEtlSyncPlan implements Serializable {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getGroupCode() {
@@ -327,6 +337,7 @@ public class BiEtlSyncPlan implements Serializable {
         return "BiEtlSyncPlan{" +
                 "id=" + id +
                 ", code=" + code +
+                ", name=" + name +
                 ", groupCode=" + groupCode +
                 ", planType=" + planType +
                 ", refModelCode=" + refModelCode +

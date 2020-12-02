@@ -479,6 +479,7 @@ public class SyncServiceImpl implements SyncService {
                 RunPlan runPlan = RunPlan.builder()
                         .groupCode(groupCode)
                         .planType("0")
+                        .planName(component.getName())
                         .first(YesOrNoEnum.NO.getKey())
                         .modelCode(modelCode)
                         .cronExpression(model.getCronExpression())
@@ -491,6 +492,7 @@ public class SyncServiceImpl implements SyncService {
         //out 当前未count
         RunPlan outPlan = RunPlan.builder()
                 .groupCode(groupCode)
+                .planName(model.getName())
                 .planType("1")
                 .first(YesOrNoEnum.NO.getKey())
                 .modelCode(modelCode)

@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -51,6 +50,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     public void createFirstPlan(RunPlan plan) {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
         syncPlan.setCode(GenerateCodeUtil.generate());
+        syncPlan.setName(plan.getPlanName());
         syncPlan.setGroupCode(plan.getGroupCode());
         //0数据同步、1数据整理
         syncPlan.setPlanType(plan.getPlanType());
@@ -97,25 +97,6 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             for (BiEtlSyncPlanResult plan : plans) {
                 plan.setPlanTypeDesc(PlanTypeEnum.values(Integer.valueOf(plan.getPlanType())).getDesc());
                 plan.setPlanStageDesc(PlanStageEnum.getValue(plan.getPlanStage()));
-
-                // 计算计划执行百分比
-                double executePercent = 0D;
-                if (StringUtils.isBlank(plan.getSqlCount())) {
-                    plan.setPercentage("100%");
-                    continue;
-                }
-                if (StringUtils.isBlank(plan.getSqlLocalCount())) {
-                    plan.setPercentage("0%");
-                    continue;
-                }
-
-                Integer finishCount = Integer.valueOf(plan.getSqlLocalCount());
-                Integer totalCount = Integer.valueOf(plan.getSqlCount());
-                executePercent = BigDecimal.valueOf(finishCount * 100).divide(BigDecimal.valueOf(totalCount)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                if (executePercent > 100) {
-                    executePercent = 100D;
-                }
-                plan.setPercentage(executePercent + "%");
             }
         }
         return result;

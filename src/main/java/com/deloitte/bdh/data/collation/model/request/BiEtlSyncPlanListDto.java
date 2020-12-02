@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 文件预读取结果
@@ -19,6 +18,12 @@ import java.time.LocalDateTime;
 public class BiEtlSyncPlanListDto extends PageDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 执行计划名称
+     */
+    @ApiModelProperty(value = "执行计划名称")
+    private String name;
 
     /**
      * 执行计划类型（数据同步、数据整理）
@@ -43,18 +48,6 @@ public class BiEtlSyncPlanListDto extends PageDto implements Serializable {
      */
     @ApiModelProperty(value = "执行结果描述")
     private String resultDesc;
-
-    /**
-     * 最小执行时间
-     */
-    @ApiModelProperty(value = "最小执行时间")
-    private LocalDateTime minExecuteTime;
-
-    /**
-     * 最大执行时间
-     */
-    @ApiModelProperty(value = "最大执行时间")
-    private LocalDateTime maxExecuteTime;
 
     /**
      * 模板code

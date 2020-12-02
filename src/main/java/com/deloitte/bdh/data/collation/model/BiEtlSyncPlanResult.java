@@ -102,6 +102,7 @@ public class BiEtlSyncPlanResult implements Serializable {
     /**
      * 执行百分百
      */
+    @JsonIgnore
     @ApiModelProperty(value = "执行百分百")
     private String percentage;
 

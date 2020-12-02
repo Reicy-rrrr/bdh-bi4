@@ -170,6 +170,7 @@ public class EtlServiceImpl implements EtlService {
                 //step2.1.1：获取数据源的count
                 RunPlan runPlan = RunPlan.builder()
                         .groupCode("0")
+                        .planName(dto.getComponentName())
                         .planType("0")
                         .first(YesOrNoEnum.YES.getKey())
                         .modelCode(biEtlModel.getCode())
