@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Map;
 
 public abstract class AbstractNifiProcess implements NifiProcessService {
-    @Value("${nifi.url}")
-    protected String URL;
+    @Value("${nifi.transfer.url}")
+    protected String url;
     private static final Integer expiredTime = 60 * 24 * 7;
 
     @Autowired
@@ -30,7 +30,7 @@ public abstract class AbstractNifiProcess implements NifiProcessService {
             Map<String, Object> req = Maps.newHashMap();
             req.put("username", username);
             req.put("password", password);
-            nifiToken = HttpClientUtil.httpPostRequest(URL + NifiEnum.ACCESS_TOKEN.getKey(), req);
+            nifiToken = HttpClientUtil.httpPostRequest(url + NifiEnum.ACCESS_TOKEN.getKey(), req);
             redisClusterUtil.STRINGS.set(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, nifiToken);
             redisClusterUtil.KEYS.expired(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, expiredTime);
         }
