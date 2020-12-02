@@ -427,9 +427,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if ("0".equals(dto.getParentCode())) {
             throw new RuntimeException("请在文件夹下创建ETL模板");
         }
-        if (!StringUtil.isEmpty(dto.getCronExpression())) {
-            CronUtil.validate(dto.getCronExpression());
+        if (StringUtil.isEmpty(dto.getCronExpression())) {
+            throw new RuntimeException("请配置调度时间");
         }
+        CronUtil.validate(dto.getCronExpression());
 
         //生效、失效的状态
         inf.setEffect(EffectEnum.ENABLE.getKey());

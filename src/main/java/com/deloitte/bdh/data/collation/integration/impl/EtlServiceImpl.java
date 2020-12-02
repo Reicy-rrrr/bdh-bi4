@@ -330,10 +330,13 @@ public class EtlServiceImpl implements EtlService {
         resp.setResultDesc(PlanResultEnum.getValue(syncPlan.getPlanResult()));
         resp.setSqlCount(syncPlan.getSqlCount());
         resp.setSqlLocalCount(syncPlan.getSqlLocalCount());
-        BigDecimal rate = new BigDecimal(syncPlan.getSqlLocalCount())
-                .divide(new BigDecimal(syncPlan.getSqlCount()), 4, BigDecimal.ROUND_HALF_UP)
-                .multiply(new BigDecimal("100"));
-        resp.setProgressRate(rate.toString());
+        resp.setProgressRate("100.00");
+        if (new BigDecimal(syncPlan.getSqlCount()).compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal rate = new BigDecimal(syncPlan.getSqlLocalCount())
+                    .divide(new BigDecimal(syncPlan.getSqlCount()), 4, BigDecimal.ROUND_HALF_UP)
+                    .multiply(new BigDecimal("100"));
+            resp.setProgressRate(rate.toString());
+        }
         return resp;
     }
 
