@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -9,11 +10,13 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,8 +46,72 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
 
         BaseComponentDataResponse response = execute(buildSql(dataModel));
         response.setRows(buildCategory(request, response.getRows()));
+        Map<String, Object> extra = Maps.newHashMap();
+        extra.put("maxmin", getMinMax(dataModel, response.getRows()));
+        response.setExtra(extra);
         return response;
     }
+
+
+    private Map<String, Object> getMinMax(DataModel dataModel, List<Map<String, Object>> rows) {
+
+        Map<String, Object> result = Maps.newHashMap();
+        Map<String, Object> minMaxMap = Maps.newHashMap();
+
+        DataModelField cateModel = dataModel.getCategory().get(0);
+        DataModelField yModel = dataModel.getY().get(0);
+        //获取Y轴
+        String yColName = getColName(yModel);
+
+        //维度正常处理
+        if (cateModel.getQuota().equals(DataModelTypeEnum.WD.getCode())){
+            Map<String, List<Object>> categoryMap = Maps.newHashMap();
+            //获取所有的category
+            for (Map<String, Object> row : rows) {
+                String categoryName = MapUtils.getString(row, "category");
+                if (categoryMap.keySet().toString().contains(categoryName)) {
+                    categoryMap.get(categoryName).add(MapUtils.getObject(row, yColName));
+                } else {
+                    List<Object> valueList = Lists.newArrayList();
+                    valueList.add(MapUtils.getObject(row, yColName));
+                    categoryMap.put(categoryName, valueList);
+                }
+            }
+
+            //比较选取最大最小
+            for (Map.Entry<String, List<Object>> entry : categoryMap.entrySet()) {
+
+                double min = new Double("0");
+                double max = new Double("0");
+                List<Object> list = entry.getValue();
+                for (Object o : list) {
+                    if (min > Double.parseDouble(o.toString())) {
+                        min = Double.parseDouble(o.toString());
+                    }
+                    if (max < Double.parseDouble(o.toString())) {
+                        max = Double.parseDouble(o.toString());
+                    }
+                }
+                minMaxMap.put("min", min);
+                minMaxMap.put("max", max);
+                result.put(entry.getKey(), minMaxMap);
+            }
+        }
+        //度量取Y轴的最大最小
+        else {
+
+            List<Double> yList = Lists.newArrayList();
+            for (Map<String, Object> row : rows) {
+                double value = MapUtils.getDouble(row, yColName);
+                yList.add(value);
+            }
+            minMaxMap.put("min", Collections.min(yList));
+            minMaxMap.put("max", Collections.max(yList));
+            result.put(getColName(cateModel), minMaxMap);
+        }
+        return result;
+    }
+
 
     private List<Map<String, Object>> buildCategory(BaseComponentDataRequest request, List<Map<String, Object>> rows) {
 
@@ -66,7 +133,9 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
                 DataModelField cateModel = category.get(0);
                 String cateColName = getColName(cateModel);
                 String cateName = MapUtils.getString(row, cateColName);
-                row.put("category", cateName);
+                if (cateModel.getQuota().equals(DataModelTypeEnum.WD.getCode())) {
+                    row.put("category", cateName);
+                }
                 if (StringUtils.isNotEmpty(scatterName)) {
                     if (cateModel.getQuota().equals(DataModelTypeEnum.DL.getCode())) {
                         row.put("name", scatterName);
@@ -98,8 +167,21 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
     @Override
     protected void validate(DataModel dataModel) {
         if (dataModel.getY().size() > 1) {
-            throw new BizException("最多可拖入1个字段");
+            throw new BizException("Y轴最多可拖入1个字段");
         }
+        if (dataModel.getCategory().size() > 1) {
+            throw new BizException("颜色最多可拖入1个字段");
+        }
+        //剔除重复的字段
+        List<String> ids = Lists.newArrayList();
+        List<DataModelField> newX = Lists.newArrayList();
+        for (DataModelField field : dataModel.getX()) {
+            if (!ids.contains(field.getId())) {
+                ids.add(field.getId());
+                newX.add(field);
+            }
+        }
+        dataModel.setX(newX);
     }
 
 }
