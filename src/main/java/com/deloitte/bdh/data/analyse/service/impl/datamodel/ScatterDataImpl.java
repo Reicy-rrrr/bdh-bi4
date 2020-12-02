@@ -56,7 +56,6 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
     private Map<String, Object> getMinMax(DataModel dataModel, List<Map<String, Object>> rows) {
 
         Map<String, Object> result = Maps.newHashMap();
-        Map<String, Object> minMaxMap = Maps.newHashMap();
 
         DataModelField cateModel = dataModel.getCategory().get(0);
         DataModelField yModel = dataModel.getY().get(0);
@@ -81,9 +80,10 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
             //比较选取最大最小
             for (Map.Entry<String, List<Object>> entry : categoryMap.entrySet()) {
 
-                double min = new Double("0");
-                double max = new Double("0");
                 List<Object> list = entry.getValue();
+                double first = Double.parseDouble(list.get(0).toString());
+                double min = first;
+                double max = first;
                 for (Object o : list) {
                     if (min > Double.parseDouble(o.toString())) {
                         min = Double.parseDouble(o.toString());
@@ -92,6 +92,7 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
                         max = Double.parseDouble(o.toString());
                     }
                 }
+                Map<String, Object> minMaxMap = Maps.newHashMap();
                 minMaxMap.put("min", min);
                 minMaxMap.put("max", max);
                 result.put(entry.getKey(), minMaxMap);
@@ -105,6 +106,7 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
                 double value = MapUtils.getDouble(row, yColName);
                 yList.add(value);
             }
+            Map<String, Object> minMaxMap = Maps.newHashMap();
             minMaxMap.put("min", Collections.min(yList));
             minMaxMap.put("max", Collections.max(yList));
             result.put(getColName(cateModel), minMaxMap);
