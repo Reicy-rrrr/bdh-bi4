@@ -14,6 +14,7 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.PlanTypeEnum;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlanResult;
 import com.deloitte.bdh.data.collation.model.RunPlan;
@@ -66,7 +67,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
         syncPlan.setSqlCount(plan.getCount());
 
         // 初次配置同步的时候，可能没有cron 表达式，这是否需要设置？
-        if ("0".equals(plan.getFirst()) && StringUtils.isNotBlank(plan.getCronExpression())) {
+        if (YesOrNoEnum.NO.getKey().equals(plan.getFirst()) && StringUtils.isNotBlank(plan.getCronExpression())) {
             // 查询历史最近的一次任务，创建时间作为本次任务的上次执行时间
             BiEtlSyncPlan hisPlan = this.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
                     .eq(BiEtlSyncPlan::getRefModelCode, plan.getModelCode())

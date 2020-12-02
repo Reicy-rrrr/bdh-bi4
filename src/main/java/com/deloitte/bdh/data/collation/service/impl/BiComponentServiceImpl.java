@@ -139,7 +139,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .ne(BiComponent::getCode, component.getCode())
         );
         if (CollectionUtils.isNotEmpty(sameRefList)) {
-            //todo 待确定是否还能删除
             throw new RuntimeException("EtlServiceImpl.removeResource.error : 该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
         }
 
