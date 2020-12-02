@@ -355,7 +355,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         CronUtil.validate(biEtlModel.getCronExpression());
         //3：校验输入组件，输出组件
         componentService.validate(modelCode);
-        //6：校验数据源是否可用
+        //4：校验数据源是否可用
         mappingConfigService.validateSource(modelCode);
         //5：校验nifi配置
         //todo

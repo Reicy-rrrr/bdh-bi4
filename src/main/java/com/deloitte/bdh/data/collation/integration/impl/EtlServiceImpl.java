@@ -542,6 +542,11 @@ public class EtlServiceImpl implements EtlService {
         if (null == component) {
             throw new RuntimeException("EtlServiceImpl.remove.error : 未找到目标 组件对象");
         }
+        BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getCode, component.getRefModelCode()));
+        if (RunStatusEnum.RUNNING.getKey().equals(model.getStatus())) {
+            throw new RuntimeException("EtlServiceImpl.remove.error : 运行中的模板，不允许删除组件");
+        }
 
         switch (ComponentTypeEnum.values(component.getType())) {
             case DATASOURCE:
