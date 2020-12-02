@@ -313,7 +313,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
             Optional<BiComponent> fromComponents = components.stream().filter(s -> s.getCode().equals(fromCode)).findAny();
             if (!fromComponents.isPresent()) {
-                throw new RuntimeException("EtlServiceImpl.runModel.validate : 未找到该组件的来源组件，" + component.getName());
+                throw new RuntimeException("EtlServiceImpl.runModel.validate : 未找到该组件的来源组件,组件名称:" + component.getName());
             }
             validate(fromComponents.get(), components, connections);
         });

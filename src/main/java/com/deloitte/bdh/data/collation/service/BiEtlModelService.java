@@ -76,7 +76,7 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @param modelCode
      * @return
      */
-    void runModel(String modelCode) throws Exception;
+    BiEtlModel runModel(String modelCode) throws Exception;
 
     /**
      * 启动时校验
