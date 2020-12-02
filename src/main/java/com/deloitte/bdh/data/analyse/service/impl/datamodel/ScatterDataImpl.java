@@ -57,13 +57,13 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
 
         Map<String, Object> result = Maps.newHashMap();
 
-        DataModelField cateModel = dataModel.getCategory().get(0);
+        List<DataModelField> cateModelList = dataModel.getCategory();
         DataModelField yModel = dataModel.getY().get(0);
         //获取Y轴
         String yColName = getColName(yModel);
 
         //维度正常处理
-        if (cateModel.getQuota().equals(DataModelTypeEnum.WD.getCode())){
+        if (CollectionUtils.isNotEmpty(cateModelList) && cateModelList.get(0).getQuota().equals(DataModelTypeEnum.WD.getCode())) {
             Map<String, List<Object>> categoryMap = Maps.newHashMap();
             //获取所有的category
             for (Map<String, Object> row : rows) {
@@ -109,7 +109,7 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
             Map<String, Object> minMaxMap = Maps.newHashMap();
             minMaxMap.put("min", Collections.min(yList));
             minMaxMap.put("max", Collections.max(yList));
-            result.put(getColName(cateModel), minMaxMap);
+            result.put(yColName, minMaxMap);
         }
         return result;
     }
