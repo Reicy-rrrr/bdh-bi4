@@ -64,7 +64,7 @@ public class CronUtil {
         //每隔几分钟
         if (taskScheduleModel.getJobType() == 4) {
             validateMin(taskScheduleModel);
-            cronExp.append("* ");
+            cronExp.append("0 ");
             cronExp.append("0/").append(taskScheduleModel.getMinute());
             cronExp.append(" ");
             cronExp.append("* ");
