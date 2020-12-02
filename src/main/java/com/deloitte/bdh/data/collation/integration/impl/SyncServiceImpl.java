@@ -288,7 +288,7 @@ public class SyncServiceImpl implements SyncService {
             if (!CollectionUtils.isEmpty(synclist)) {
                 for (BiEtlSyncPlan syncPlan : synclist) {
                     if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
-                        throw new RuntimeException("依赖的同步任务失败:" + syncPlan.getCode());
+                        throw new RuntimeException("依赖的同步任务失败:任务名称" + syncPlan.getName());
                     }
                     //有任务正在运行中，直接返回待下次处理
                     if (null == syncPlan.getPlanResult()) {
