@@ -87,10 +87,11 @@ public class SyncServiceImpl implements SyncService {
     private void syncToExecuteNonTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            //判断已处理次数,超过3次则动作完成。
-            if (3 < count) {
+            //判断已处理次数,超过5次则动作完成。
+            if (5 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+                plan.setResultDesc("任务处理超时");
             } else {
                 //组装数据 启动nifi 改变执行状态
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -116,10 +117,12 @@ public class SyncServiceImpl implements SyncService {
                 plan.setProcessCount("0");
                 plan.setResultDesc(null);
             }
-        } catch (Exception e1) {
-            log.error("sync.syncToExecuteNonTask:", e1);
+        } catch (Exception e) {
+            log.error("sync.syncToExecuteNonTask:", e);
             count++;
-            plan.setResultDesc(e1.getMessage());
+            plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+            plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+            plan.setResultDesc(e.getMessage());
             plan.setProcessCount(String.valueOf(count));
         } finally {
             syncPlanService.updateById(plan);
@@ -129,10 +132,11 @@ public class SyncServiceImpl implements SyncService {
     private void syncToExecuteTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            //判断已处理次数,超过3次则动作完成。
-            if (3 < count) {
+            //判断已处理次数,超过5次则动作完成。
+            if (5 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+                plan.setResultDesc("任务处理超时");
             } else {
                 //组装数据 启动nifi 改变执行状态
                 BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -153,10 +157,12 @@ public class SyncServiceImpl implements SyncService {
                 plan.setProcessCount("0");
                 plan.setResultDesc(null);
             }
-        } catch (Exception e1) {
-            log.error("sync.syncToExecuteTask:", e1);
+        } catch (Exception e) {
+            log.error("sync.syncToExecuteTask:", e);
             count++;
-            plan.setResultDesc(e1.getMessage());
+            plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+            plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+            plan.setResultDesc(e.getMessage());
             plan.setProcessCount(String.valueOf(count));
         } finally {
             syncPlanService.updateById(plan);
@@ -174,6 +180,8 @@ public class SyncServiceImpl implements SyncService {
             if (10 < count) {
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
                 plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+                plan.setResultDesc("任务处理超时");
+
                 //调用nifi 停止与清空
                 String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
                 transfer.stop(processorsGroupId);
@@ -220,9 +228,11 @@ public class SyncServiceImpl implements SyncService {
                     componentService.updateById(component);
                 }
             }
-        } catch (Exception e1) {
-            log.error("sync.syncExecutingTask:", e1);
-            plan.setResultDesc(e1.getMessage());
+        } catch (Exception e) {
+            log.error("sync.syncExecutingTask:", e);
+            plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+            plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+            plan.setResultDesc(e.getMessage());
         } finally {
             plan.setProcessCount(String.valueOf(count));
             syncPlanService.updateById(plan);
