@@ -1,8 +1,12 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.SqlFormatUtil;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -116,10 +120,12 @@ public abstract class AbstractDataService {
         if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
             for (DataCondition condition : dataModel.getConditions()) {
                 String express = "";
+                String value = convertValue(condition.getSymbol(), condition.getValue());
+                String symbol = WildcardEnum.get(condition.getSymbol()).getCode();
                 if (condition.getId().size() == 1) {
-                    express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), condition.getSymbol(), condition.getValue());
+                    express = BuildSqlUtil.where(dataModel.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), symbol, value);
                 } else { //针对多个字段连接成一个value值的情况做特殊处理
-                    express = connectWhere(dataModel.getTableName(), condition.getId(), condition.getQuota(), condition.getSymbol(), condition.getValue());
+                    express = connectWhere(dataModel.getTableName(), condition.getId(), condition.getQuota(), symbol, value);
                 }
                 list.add(express);
             }
@@ -156,10 +162,12 @@ public abstract class AbstractDataService {
         }
         if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
             for (DataCondition condition : dataModel.getConditions()) {
+                String value = convertValue(condition.getSymbol(), condition.getValue());
+                String symbol = WildcardEnum.get(condition.getSymbol()).getCode();
                 if (StringUtils.equals(condition.getQuota(), DataModelTypeEnum.DL.getCode()) &&
                         StringUtils.isNotBlank(condition.getAggregateType())) {
                     String express = BuildSqlUtil.having(dataModel.getTableName(), condition.getId().get(0), condition.getQuota(),
-                            condition.getAggregateType(), condition.getSymbol(), condition.getValue());
+                            condition.getAggregateType(), symbol, value);
                     list.add(express);
                 }
 
@@ -224,6 +232,19 @@ public abstract class AbstractDataService {
         }
         String connectExpress = StringUtils.join(expressList, ",");
         return "CONCAT_WS('-'," + connectExpress + ")" + " " + symbol + " " + value;
+    }
+
+    private String convertValue(String symbol, List<String> valueList) {
+        List<String> convertValueList = Lists.newArrayList();
+        for (String value : valueList) {
+            for (String escape : AnalyseConstants.ESCAPE_CHARACTER) {
+                if (value.contains(escape)) {
+                    value = value.replace(escape, "\\" + escape);
+                }
+            }
+            convertValueList.add(value);
+        }
+        return WildcardEnum.get(symbol).expression(convertValueList);
     }
 
 }

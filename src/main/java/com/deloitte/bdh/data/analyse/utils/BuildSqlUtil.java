@@ -124,7 +124,7 @@ public class BuildSqlUtil {
         if (StringUtils.isBlank(symbol) || StringUtils.isBlank(value)) {
             return null;
         }
-        return field + " " + symbol + "" + value;
+        return field + " " + symbol + " " + value;
     }
 
     public static String append(String sql, String insertField, int type) {

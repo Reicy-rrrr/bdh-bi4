@@ -35,6 +35,6 @@ public class DataCondition {
 
     @NotBlank
     @ApiModelProperty("value")
-    private String value;
+    private List<String> value;
 
 }

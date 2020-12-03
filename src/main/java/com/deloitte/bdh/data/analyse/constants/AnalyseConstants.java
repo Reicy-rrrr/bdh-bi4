@@ -28,4 +28,7 @@ public class AnalyseConstants {
     public static final List<String> DATE_TYPE = Lists.newArrayList(
             "DATE", "TIME", "DATETIME", "TIMESTAMP");
 
+    public static final List<String> ESCAPE_CHARACTER = Lists.newArrayList(
+            "'", "_", "\"", "%");
+
 }
