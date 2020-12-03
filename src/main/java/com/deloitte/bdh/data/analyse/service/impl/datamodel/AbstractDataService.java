@@ -1,16 +1,14 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
-import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
-import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
-import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
+import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -58,6 +56,8 @@ public abstract class AbstractDataService {
 
     final protected String buildSql(DataModel dataModel) {
         validate(dataModel);
+        //剔除重复的字段
+        duplicateRemove(dataModel);
         return buildSelect(dataModel)
                 + buildFrom(dataModel)
                 + buildWhere(dataModel)
@@ -65,6 +65,20 @@ public abstract class AbstractDataService {
                 + buildHaving(dataModel)
                 + buildOrder(dataModel)
                 + limit(dataModel);
+    }
+
+    //剔除重复的字段
+    private void duplicateRemove(DataModel dataModel) {
+
+        List<String> ids = Lists.newArrayList();
+        List<DataModelField> newX = Lists.newArrayList();
+        for (DataModelField field : dataModel.getX()) {
+            if (!ids.contains(field.getId())) {
+                ids.add(field.getId());
+                newX.add(field);
+            }
+        }
+        dataModel.setX(newX);
     }
 
     protected String buildSelect(DataModel dataModel) {
