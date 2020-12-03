@@ -71,7 +71,7 @@ public class BuildSqlUtil {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             return null;
         }
-        if (StringUtils.isNotBlank(formatType) && AnalyseConstants.DATE_TYPE.contains(dataType)) {
+        if (StringUtils.isNotBlank(formatType) && AnalyseConstants.DATE_TYPE.contains(dataType.toUpperCase())) {
             return format(field, formatType);
         } else {
             return selectField(tableName, field);

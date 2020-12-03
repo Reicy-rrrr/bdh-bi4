@@ -46,9 +46,9 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
 
         BaseComponentDataResponse response = execute(buildSql(dataModel));
         response.setRows(buildCategory(request, response.getRows()));
-        Map<String, Object> extra = Maps.newHashMap();
-        extra.put("maxmin", getMinMax(dataModel, response.getRows()));
-        response.setExtra(extra);
+//        Map<String, Object> extra = Maps.newHashMap();
+//        extra.put("maxmin", getMinMax(dataModel, response.getRows()));
+//        response.setExtra(extra);
         return response;
     }
 
@@ -174,16 +174,6 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
         if (dataModel.getCategory().size() > 1) {
             throw new BizException("颜色最多可拖入1个字段");
         }
-        //剔除重复的字段
-        List<String> ids = Lists.newArrayList();
-        List<DataModelField> newX = Lists.newArrayList();
-        for (DataModelField field : dataModel.getX()) {
-            if (!ids.contains(field.getId())) {
-                ids.add(field.getId());
-                newX.add(field);
-            }
-        }
-        dataModel.setX(newX);
     }
 
 }
