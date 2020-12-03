@@ -98,7 +98,7 @@ public class BiSourceController {
 
     @ApiOperation(value = "测试连接", notes = "测试连接")
     @PostMapping("/testConnection")
-    public RetResult<String> testConnection(@RequestBody @Validated RetRequest<TestConnectionDto> request) throws Exception {
+    public RetResult<String> testConnection(@RequestBody @Validated RetRequest<TestConnectionDto> request) {
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.testConnection(request.getData()));
     }
 

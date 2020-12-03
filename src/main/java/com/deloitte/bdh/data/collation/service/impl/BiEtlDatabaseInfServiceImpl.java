@@ -421,18 +421,25 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public String testConnection(TestConnectionDto dto) throws Exception {
+    public String testConnection(TestConnectionDto dto) {
         return testConnection(dto.getDbType(), dto.getIp(), dto.getPort(), dto.getDbName(), dto.getDbUserName(), dto.getDbPassword());
     }
 
-    private String testConnection(String dbType, String ip, String port, String dbName, String userName, String pwd) throws Exception {
-        DbContext context = new DbContext();
-        context.setSourceTypeEnum(SourceTypeEnum.values(dbType));
-        context.setDbUrl(NifiProcessUtil.getDbUrl(dbType, ip, port, dbName));
-        context.setDbUserName(userName);
-        context.setDbPassword(pwd);
-        context.setDriverName(SourceTypeEnum.getDriverNameByType(dbType));
-        return dbSelector.test(context);
+    private String testConnection(String dbType, String ip, String port, String dbName, String userName, String pwd) {
+        String result = "连接成功";
+        try {
+            DbContext context = new DbContext();
+            context.setSourceTypeEnum(SourceTypeEnum.values(dbType));
+            context.setDbUrl(NifiProcessUtil.getDbUrl(dbType, ip, port, dbName));
+            context.setDbUserName(userName);
+            context.setDbPassword(pwd);
+            context.setDriverName(SourceTypeEnum.getDriverNameByType(dbType));
+            dbSelector.test(context);
+        } catch (Exception e) {
+            log.error("数据库连接失败：" + e);
+            result = "连接失败";
+        }
+        return result;
     }
 
     @Override
