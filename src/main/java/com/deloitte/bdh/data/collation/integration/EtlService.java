@@ -46,7 +46,16 @@ public interface EtlService {
      * @return BiComponent
      * @throws Exception
      */
-    BiComponent join(JoinComponentDto dto) throws Exception;
+    BiComponent joinCreate(JoinComponentDto dto) throws Exception;
+
+    /**
+     * 修改关联组件
+     *
+     * @param dto 修改关联组件dto
+     * @return BiComponent
+     * @throws Exception
+     */
+    BiComponent joinUpdate(UpdateJoinComponentDto dto) throws Exception;
 
     /**
      * 引入聚合组件（创建）
@@ -55,7 +64,16 @@ public interface EtlService {
      * @return BiComponent
      * @throws Exception
      */
-    BiComponent group(GroupComponentDto dto) throws Exception;
+    BiComponent groupCreate(GroupComponentDto dto) throws Exception;
+
+    /**
+     * 修改聚合组件
+     *
+     * @param dto 修改聚合组件dto
+     * @return BiComponent
+     * @throws Exception
+     */
+    BiComponent groupUpdate(UpdateGroupComponentDto dto) throws Exception;
 
     /**
      * 引入整理组件（创建）
@@ -65,7 +83,17 @@ public interface EtlService {
      * @return BiComponent
      * @throws Exception
      */
-    BiComponent arrange(ArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception;
+    BiComponent arrangeCreate(ArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception;
+
+    /**
+     * 修改整理组件
+     *
+     * @param dto         修改整理组件dto
+     * @param arrangeType 整理类型
+     * @return BiComponent
+     * @throws Exception
+     */
+    BiComponent arrangeUpdate(UpdateArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception;
 
     /**
      * 输出组件（创建）
@@ -74,7 +102,16 @@ public interface EtlService {
      * @return ComponentVo
      * @throws Exception
      */
-    BiComponent out(OutComponentDto dto) throws Exception;
+    BiComponent outCreate(OutComponentDto dto) throws Exception;
+
+    /**
+     * 修改输出组件
+     *
+     * @param dto 修改输出组件dto
+     * @return ComponentVo
+     * @throws Exception
+     */
+    BiComponent outUpdate(UpdateOutComponentDto dto) throws Exception;
 
     /**
      * 处理组件

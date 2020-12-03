@@ -349,7 +349,7 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent out(OutComponentDto dto) throws Exception {
+    public BiComponent outCreate(OutComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.out.error : 未找到目标 模型");
@@ -374,26 +374,69 @@ public class EtlServiceImpl implements EtlService {
 
         // 设置组件参数：创建最终表,表名默认为模板编码
         String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
-        Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.TO_TABLE_NAME, tableName);
-
         // 校验表名是否重复
-        List<String> tables = dbHandler.getTables();
-        if (CollectionUtils.isNotEmpty(tables)) {
-            Optional<String> optional = tables.stream().filter(s -> s.equalsIgnoreCase(tableName)).findAny();
-            if (optional.isPresent()) {
-                throw new RuntimeException("EtlServiceImpl.out.error : 表名已存在");
-            }
+        boolean tableExists = dbHandler.isTableExists(tableName);
+        if (tableExists) {
+            throw new BizException("EtlServiceImpl.out.error : 表名已存在");
         }
 
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.TO_TABLE_NAME, tableName);
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
 
     @Override
+    public BiComponent outUpdate(UpdateOutComponentDto dto) throws Exception {
+        // 查询原组件信息
+        BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getCode, dto.getComponentCode()));
+        if (null == component) {
+            throw new RuntimeException("EtlServiceImpl.component.update.error : 未找到目标");
+        }
+        // 查询原始最终表名
+        BiComponentParams tableNameParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode())
+                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME));
+        // 原始表名
+        String oldTableName = tableNameParam.getParamValue();
+        // 如果未传递新表名，就使用原始表名
+        String tableName = StringUtils.isBlank(dto.getTableName()) ? oldTableName : dto.getTableName();
+        // 如果使用新表名，校验表名是否重复
+        if (!tableName.equals(oldTableName)) {
+            // 校验表名是否重复
+            boolean tableExists = dbHandler.isTableExists(tableName);
+            if (tableExists) {
+                throw new BizException("EtlServiceImpl.out.error : 表名已存在");
+            }
+        }
+        // 删除已配置字段
+        fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
+                .eq(BiEtlMappingField::getRefCode, dto.getComponentCode()));
+        // 删除组件参数
+        componentParamsService.remove((new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode())));
+        // 保存字段及属性
+        List<BiEtlMappingField> fields = transferFieldsByName(dto.getComponentCode(), dto.getFields());
+        fieldService.saveBatch(fields);
+
+        // 设置组件参数：创建最终表,表名默认为模板编码
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.TO_TABLE_NAME, tableName);
+        List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        // 更新组件信息
+        if (StringUtils.isNotBlank(dto.getComponentName())) {
+            component.setName(dto.getComponentName());
+            componentService.updateById(component);
+        }
+        return component;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent join(JoinComponentDto dto) throws Exception {
+    public BiComponent joinCreate(JoinComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
@@ -416,7 +459,30 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent group(GroupComponentDto dto) throws Exception {
+    public BiComponent joinUpdate(UpdateJoinComponentDto dto) throws Exception {
+        // 查询原组件信息并清空组件配置的参数
+        BiComponent component = clearComponentParams(dto.getComponentCode());
+        // 保存最新字段
+        if (CollectionUtils.isNotEmpty(dto.getFields())) {
+            List<BiEtlMappingField> fields = transferFieldsByName(component.getCode(), dto.getFields());
+            fieldService.saveBatch(fields);
+        }
+        // 保存最新组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.JOIN_PARAM_KEY_TABLES, JSON.toJSONString(dto.getTables()));
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        // 更新组件信息
+        if (StringUtils.isNotBlank(dto.getComponentName())) {
+            component.setName(dto.getComponentName());
+            componentService.updateById(component);
+        }
+        return component;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public BiComponent groupCreate(GroupComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
@@ -439,7 +505,30 @@ public class EtlServiceImpl implements EtlService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BiComponent arrange(ArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception {
+    public BiComponent groupUpdate(UpdateGroupComponentDto dto) throws Exception {
+        // 查询原组件信息并清空组件配置的参数
+        BiComponent component = clearComponentParams(dto.getComponentCode());
+        // 保存最新字段
+        if (CollectionUtils.isNotEmpty(dto.getFields())) {
+            List<BiEtlMappingField> fields = transferFieldsByName(component.getCode(), dto.getFields());
+            fieldService.saveBatch(fields);
+        }
+        // 保存最新组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getGroups()));
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        // 更新组件信息
+        if (StringUtils.isNotBlank(dto.getComponentName())) {
+            component.setName(dto.getComponentName());
+            componentService.updateById(component);
+        }
+        return component;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public BiComponent arrangeCreate(ArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
             throw new RuntimeException("EtlServiceImpl.join.error : 未找到目标 模型");
@@ -448,6 +537,20 @@ public class EtlServiceImpl implements EtlService {
         BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
 
         // 设置组件参数
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(ComponentCons.ARRANGE_PARAM_KEY_TYPE, arrangeType.getType());
+        params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        componentParamsService.saveBatch(biComponentParams);
+        return component;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public BiComponent arrangeUpdate(UpdateArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception {
+        // 查询原组件信息并清空组件配置的参数
+        BiComponent component = clearComponentParams(dto.getComponentCode());
+        // 保存最新组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.ARRANGE_PARAM_KEY_TYPE, arrangeType.getType());
         params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
@@ -871,5 +974,27 @@ public class EtlServiceImpl implements EtlService {
             return Lists.newArrayList();
         }
         return rows;
+    }
+
+    /**
+     * 清空组件参数
+     *
+     * @param componentCode 组件code
+     * @return BiComponent
+     */
+    private BiComponent clearComponentParams(String componentCode) {
+        // 查询原组件信息
+        BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getCode, componentCode));
+        if (null == component) {
+            throw new RuntimeException("EtlServiceImpl.component.update.error : 未找到目标");
+        }
+        // 删除已配置字段
+        fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
+                .eq(BiEtlMappingField::getRefCode, componentCode));
+        // 删除组件参数
+        componentParamsService.remove((new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, componentCode)));
+        return component;
     }
 }
