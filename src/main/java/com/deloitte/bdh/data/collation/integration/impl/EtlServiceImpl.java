@@ -220,7 +220,7 @@ public class EtlServiceImpl implements EtlService {
         }
 
         BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
-                .eq(BiEtlModel::getCode, oldComponent.getRefMappingCode()));
+                .eq(BiEtlModel::getCode, oldComponent.getRefModelCode()));
         if (null == model) {
             throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 未找到目标");
         }
@@ -246,13 +246,15 @@ public class EtlServiceImpl implements EtlService {
             updateForFields(dto, oldComponent);
             return oldComponent;
         } else {
-            //删除连接
+            //check 连接
             BiComponentConnection connection = connectionService.getOne(new LambdaQueryWrapper<BiComponentConnection>()
                     .eq(BiComponentConnection::getFromComponentCode, oldComponent.getCode()));
-            if (null == connection) {
-                throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 未找到目标");
+
+            //是否有连线
+            boolean noConnection = null == connection;
+            if(!noConnection){
+                connectionService.removeById(connection);
             }
-            connectionService.removeById(connection);
 
             //删除数据源组件
             this.remove(oldComponent.getCode());
@@ -271,12 +273,14 @@ public class EtlServiceImpl implements EtlService {
             componentDto.setFields(dto.getFields());
             BiComponent newComponent = this.resourceJoin(componentDto);
 
-            //创建连接
-            ComponentLinkDto linkDto = new ComponentLinkDto();
-            linkDto.setModelId(model.getId());
-            linkDto.setFromComponentCode(newComponent.getCode());
-            linkDto.setToComponentCode(connection.getToComponentCode());
-            connectionService.link(linkDto);
+            if(!noConnection){
+                //创建连接
+                ComponentLinkDto linkDto = new ComponentLinkDto();
+                linkDto.setModelId(model.getId());
+                linkDto.setFromComponentCode(newComponent.getCode());
+                linkDto.setToComponentCode(connection.getToComponentCode());
+                connectionService.link(linkDto);
+            }
             return newComponent;
         }
     }
