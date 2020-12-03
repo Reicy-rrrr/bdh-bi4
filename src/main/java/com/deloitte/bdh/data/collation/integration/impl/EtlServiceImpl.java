@@ -318,8 +318,11 @@ public class EtlServiceImpl implements EtlService {
             return resp;
         }
 
+        //针对数据源主键被修改，则取最新创建的那一条数据
         BiEtlSyncPlan syncPlan = syncPlanService.getOne(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getRefMappingCode, config.getCode()));
+                .eq(BiEtlSyncPlan::getRefMappingCode, config.getCode())
+                .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                .last("limit 1"));
         if (null == syncPlan) {
             throw new RuntimeException("EtlServiceImpl.realTimeView.error : 未找到目标");
         }
