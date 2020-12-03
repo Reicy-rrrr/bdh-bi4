@@ -321,6 +321,7 @@ public class SyncServiceImpl implements SyncService {
         } catch (Exception e) {
             log.error("etl.etlToExecuteTask:", e);
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+            plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
             plan.setResultDesc(e.getMessage());
 
             //改变model的运行状态
