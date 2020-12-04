@@ -1,6 +1,8 @@
 package com.deloitte.bdh.data.collation.model;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.deloitte.bdh.common.annotation.EncryptDecryptClass;
+import com.deloitte.bdh.common.annotation.EncryptDecryptField;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
@@ -13,6 +15,7 @@ import java.io.Serializable;
  * @author lw
  * @since 2020-09-27
  */
+@EncryptDecryptClass
 @TableName("BI_ETL_DATABASE_INF")
 public class BiEtlDatabaseInf implements Serializable {
 
@@ -60,12 +63,14 @@ public class BiEtlDatabaseInf implements Serializable {
     /**
      * 用户名
      */
+    @EncryptDecryptField
     @TableField("DB_USER")
     private String dbUser;
 
     /**
      * 密码
      */
+    @EncryptDecryptField
     @TableField("DB_PASSWORD")
     private String dbPassword;
 
