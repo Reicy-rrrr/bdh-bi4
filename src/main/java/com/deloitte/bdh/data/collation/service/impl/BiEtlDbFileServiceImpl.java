@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbFileMapper;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
@@ -49,19 +50,24 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
 
     @Override
     public BiEtlDbFileUploadResp upload(BiEtlDbFileUploadDto fileUploadDto) {
-        MultipartFile file = fileUploadDto.getFile();
         // 租户id
         String tenantId = fileUploadDto.getTenantId();
         if (StringUtils.isBlank(tenantId)) {
             log.error("接收到的租户id为空，上传文件失败");
             throw new BizException("租户id不能为空");
         }
+        // 设置全局租户id
+        ThreadLocalHolder.set("tenantId", tenantId);
 
         String operator = fileUploadDto.getOperator();
         if (StringUtils.isBlank(operator)) {
             log.error("接收到的当前操作人id为空，上传文件失败");
             throw new BizException("操作人id不能为空");
         }
+        // 设置全局用户
+        ThreadLocalHolder.set("operator", operator);
+
+        MultipartFile file = fileUploadDto.getFile();
         // TODO 校验租户正确性，级租户与当前用户的管理关系
         FtpUploadResult uploadResult = ftpService.uploadExcelFile(file, tenantId);
         if (uploadResult == null) {
