@@ -92,7 +92,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public AnalysePageDto createAnalysePage(RetRequest<CreateAnalysePageDto> request) {
-        checkBiUiAnalysePageByName(request.getData().getName(), request.getTenantId(), null);
+        checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), request.getTenantId(), null);
         BiUiAnalysePage entity = new BiUiAnalysePage();
         BeanUtils.copyProperties(request.getData(), entity);
         entity.setTenantId(request.getTenantId());
@@ -107,7 +107,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public AnalysePageDto copyAnalysePage(CopyAnalysePageDto request) {
-        checkBiUiAnalysePageByName(request.getName(), request.getTenantId(), null);
+        checkBiUiAnalysePageByName(request.getCode(), request.getName(), request.getTenantId(), null);
         BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
         if (null == fromPage) {
             throw new BizException("源报表不存在");
@@ -166,7 +166,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (null == entity) {
             throw new BizException("报表错误");
         }
-        checkBiUiAnalysePageByName(request.getData().getName(), entity.getTenantId(), entity.getId());
+        checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), entity.getTenantId(), entity.getId());
         entity.setName(request.getData().getName());
         entity.setDes(request.getData().getDes());
         entity.setModifiedDate(LocalDateTime.now());
@@ -266,16 +266,26 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
     }
 
-    private void checkBiUiAnalysePageByName(String name, String tenantId, String currentId) {
+    private void checkBiUiAnalysePageByName(String code, String name, String tenantId, String currentId) {
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePage::getTenantId, tenantId);
         query.eq(BiUiAnalysePage::getName, name);
         if (currentId != null) {
             query.ne(BiUiAnalysePage::getId, currentId);
         }
-        List<BiUiAnalysePage> pageList = list(query);
-        if (CollectionUtils.isNotEmpty(pageList)) {
+        List<BiUiAnalysePage> nameList = list(query);
+        if (CollectionUtils.isNotEmpty(nameList)) {
             throw new BizException("存在同名报表");
+        }
+        query.clear();
+        query.eq(BiUiAnalysePage::getTenantId, tenantId);
+        query.eq(BiUiAnalysePage::getCode, code);
+        if (currentId != null) {
+            query.ne(BiUiAnalysePage::getId, currentId);
+        }
+        List<BiUiAnalysePage> codeList = list(query);
+        if (CollectionUtils.isNotEmpty(codeList)) {
+            throw new BizException("存在同名编码");
         }
     }
 

@@ -31,7 +31,7 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> createProcessGroup(Map<String, Object> map, String id) throws Exception;
+    Map<String, Object> createProcessGroup(Map<String, Object> map, String id);
 
     /**
      * function:查询 processGroup
@@ -45,42 +45,42 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> getProcessGroupFull(String id) throws Exception;
+    Map<String, Object> getProcessGroupFull(String id);
 
     /**
      * function:删除 processGroup
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> delProcessGroup(String id) throws Exception;
+    Map<String, Object> delProcessGroup(String id);
 
     /**
      * function:upd processGroup
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> updProcessGroup(Map<String, Object> map) throws Exception;
+    Map<String, Object> updProcessGroup(Map<String, Object> map);
 
     /**
      * function:  启动与停止
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> runState(String id, String state, boolean isGroup) throws Exception;
+    Map<String, Object> runState(String id, String state, boolean isGroup);
 
     /**
      * function:  清除组件计数器
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> clearRequest(String processorId) throws Exception;
+    Map<String, Object> clearRequest(String processorId);
 
     /**
      * function:  终止
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> terminate(String processorId) throws Exception;
+    Map<String, Object> terminate(String processorId);
 
     /**
      * function:  获取当前最大值
@@ -94,21 +94,21 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> createControllerService(Map<String, Object> map) throws Exception;
+    Map<String, Object> createControllerService(Map<String, Object> map);
 
     /**
      * function:创建除DB类型外的 ControllerService
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> createOtherControllerService(Map<String, Object> map) throws Exception;
+    Map<String, Object> createOtherControllerService(Map<String, Object> map);
 
     /**
      * function:  启动与停止
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> runControllerService(String id, String state) throws Exception;
+    Map<String, Object> runControllerService(String id, String state);
 
     /**
      * function:查询 单个ControllerService
@@ -122,14 +122,14 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> delControllerService(String id) throws Exception;
+    Map<String, Object> delControllerService(String id);
 
     /**
      * function:修改 单个ControllerService
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> updControllerService(Map<String, Object> map) throws Exception;
+    Map<String, Object> updControllerService(Map<String, Object> map);
 
     /**
      * function:创建 createProcessor
@@ -178,7 +178,7 @@ public interface NifiProcessService {
      *
      * @return Map<String, Object>
      */
-    Map<String, Object> dropConnections(String id) throws Exception;
+    Map<String, Object> dropConnections(String id);
 
     /**
      * function:delConnections
@@ -220,6 +220,6 @@ public interface NifiProcessService {
      *
      * @return json
      */
-    Map<String, Object> createByTemplate(String id, String json) throws Exception;
+    Map<String, Object> createByTemplate(String id, String json);
 
 }
