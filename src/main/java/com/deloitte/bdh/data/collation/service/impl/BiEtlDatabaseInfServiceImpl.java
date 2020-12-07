@@ -19,11 +19,7 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
-import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
-import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
+import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageInfo;
@@ -400,7 +396,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
             nifiProcessService.delControllerService(controllerServiceId);
         } else {
-            //todo 文件型需要删除远程文件以及表数据
+            // 文件型数据源需要删除文件信息和上传到ftp的文件
+            biEtlDbFileService.deleteByDbId(id);
+            // 删除本地数据表(文件型数据源的dbName存储的为本地表名称)
+            String tableName = inf.getDbName();
+            if (StringUtils.isNotBlank(tableName)) {
+                dbHandler.drop(tableName);
+            }
         }
         biEtlDatabaseInfMapper.deleteById(id);
     }
@@ -528,14 +530,20 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     private BiEtlDatabaseInf updateResourceFromFile(UpdateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf source = biEtlDatabaseInfMapper.selectById(dto.getId());
-        if (!source.getAddress().equals(dto.getAddress())) {
-            //todo 若修改文件型数据源的地址， 该数据源已经有processor，需停止processor 后，再修改
-
+        if (source == null) {
+            throw new BizException("Datasource update error: 未查询到数据源信息！");
         }
-        BiEtlDatabaseInf biEtlDatabaseInf = new BiEtlDatabaseInf();
-        BeanUtils.copyProperties(dto, biEtlDatabaseInf);
-        biEtlDatabaseInfMapper.updateById(biEtlDatabaseInf);
-        return biEtlDatabaseInf;
+        // 文件型数据源只提供修改数据源名称和备注
+        BiEtlDatabaseInf updateObj = new BiEtlDatabaseInf();
+        BeanUtils.copyProperties(dto, updateObj);
+        if (StringUtils.isNotBlank(dto.getName())) {
+            updateObj.setName(dto.getName());
+        }
+        if (StringUtils.isNotBlank(dto.getComments())) {
+            updateObj.setName(dto.getComments());
+        }
+        biEtlDatabaseInfMapper.updateById(updateObj);
+        return updateObj;
     }
 
     private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) throws Exception {
