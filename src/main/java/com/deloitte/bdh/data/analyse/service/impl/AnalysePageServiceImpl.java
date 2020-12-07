@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -276,6 +277,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<BiUiAnalysePage> nameList = list(query);
         if (CollectionUtils.isNotEmpty(nameList)) {
             throw new BizException("存在同名报表");
+        }
+        //字母和数字
+        String regEx="[A-Z,a-z,0-9,-]*";
+        Pattern pattern = Pattern.compile(regEx);
+        if (!pattern.matcher(code).matches()) {
+            throw new BizException("编码只能由字母和数字组成");
         }
         query.clear();
         query.eq(BiUiAnalysePage::getTenantId, tenantId);
