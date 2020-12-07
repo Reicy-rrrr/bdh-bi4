@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
-import com.deloitte.bdh.common.base.MongoHelper;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ExcelUtils;
@@ -21,7 +20,6 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.bson.Document;
 import org.mozilla.universalchardet.UniversalDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,9 +49,6 @@ public class FileReadServiceImpl implements FileReadService {
      * 默认批量提交到数据库的记录数
      */
     private static final int BATCH_COMMIT_COUNT = 1000;
-
-    @Autowired
-    private MongoHelper mongoHelper;
 
     @Autowired
     private DbHandler dbHandler;
@@ -81,46 +75,6 @@ public class FileReadServiceImpl implements FileReadService {
                 throw new BizException("错误的文件类型，系统暂不支持！");
         }
         return readResult;
-    }
-
-    @Override
-    public void readIntoMongo(MultipartFile file, Map<String, String> columnTypes, String collectionName) {
-        switch (FileTypeEnum.values(file.getContentType())) {
-            case Csv:
-                readCsvIntoMongo(file, collectionName);
-                break;
-            case Excel_Xls:
-                readExcelIntoMongo(file, collectionName);
-                break;
-            case Excel_Xlsx:
-                readExcelIntoMongo(file, collectionName);
-                break;
-            case Excel_Xlsm:
-                readExcelIntoMongo(file, collectionName);
-                break;
-            default:
-                throw new BizException("错误的文件类型，系统暂不支持！");
-        }
-    }
-
-    @Override
-    public void readIntoMongo(byte[] bytes, String fileType, Map<String, String> columnTypes, String collectionName) {
-        switch (FileTypeEnum.values(fileType)) {
-            case Csv:
-                readCsvIntoMongo(bytes, collectionName);
-                break;
-            case Excel_Xls:
-                readExcelIntoMongo(bytes, collectionName);
-                break;
-            case Excel_Xlsx:
-                readExcelIntoMongo(bytes, collectionName);
-                break;
-            case Excel_Xlsm:
-                readExcelIntoMongo(bytes, collectionName);
-                break;
-            default:
-                throw new BizException("错误的文件类型，系统暂不支持！");
-        }
     }
 
     @Override
@@ -195,10 +149,10 @@ public class FileReadServiceImpl implements FileReadService {
             }
 
             readResult.setHeaders(headers);
-            List<Document> lines = Lists.newArrayList();
+            List<Map<String, Object>> lines = Lists.newArrayList();
             for (int rowIndex = 1; rowIndex < dataSheet.getLastRowNum(); rowIndex++) {
                 Row row = dataSheet.getRow(rowIndex);
-                Document document = new Document();
+                Map<String, Object> document = Maps.newHashMap();
                 for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
                     Cell cell = row.getCell(cellIndex);
                     if (cell == null) {
@@ -258,10 +212,10 @@ public class FileReadServiceImpl implements FileReadService {
             }
             readResult.setHeaders(headers);
 
-            List<Document> lines = Lists.newArrayList();
+            List<Map<String, Object>> lines = Lists.newArrayList();
             String[] lineItems = null;
             while ((lineItems = csvReader.readNext()) != null) {
-                Document document = new Document();
+                Map<String, Object> document = Maps.newHashMap();
                 for (int index = 0; index < lineItems.length; index++) {
                     document.put(fields.get(index), lineItems[index]);
 
@@ -286,107 +240,6 @@ public class FileReadServiceImpl implements FileReadService {
             throw new BizException("读取Csv文件失败，程序运行错误！");
         }
         return readResult;
-    }
-
-    /**
-     * 读取excel类型文件并存储数据到mongodb
-     *
-     * @param file Excel类型文件
-     * @return com.deloitte.bdh.data.model.resp.FileReadResult
-     */
-    private void readExcelIntoMongo(MultipartFile file, String collectionName) {
-        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
-            if (workbook == null) {
-                logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
-            }
-            Sheet dataSheet = workbook.getSheetAt(0);
-            // poi 行号从0开始
-            if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
-                logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
-            }
-            readSheetIntoMongo(dataSheet, collectionName);
-        } catch (IOException e) {
-            logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
-        } catch (InvalidFormatException e) {
-            logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
-        }
-    }
-
-    private void readExcelIntoMongo(byte[] bytes, String collectionName) {
-        try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
-            if (workbook == null) {
-                logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
-            }
-            Sheet dataSheet = workbook.getSheetAt(0);
-            // poi 行号从0开始
-            if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
-                logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
-            }
-            readSheetIntoMongo(dataSheet, collectionName);
-        } catch (IOException e) {
-            logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
-        } catch (InvalidFormatException e) {
-            logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
-        }
-    }
-
-    /**
-     * 读取excel类型文件并存储数据到mongodb
-     *
-     * @param sheet Excel数据表格
-     * @return com.deloitte.bdh.data.model.resp.FileReadResult
-     */
-    private void readSheetIntoMongo(Sheet sheet, String collectionName) {
-        Row headerRow = sheet.getRow(0);
-        int lastCellNum = 0;
-        if (headerRow == null || (lastCellNum = headerRow.getLastCellNum()) <= 1) {
-            logger.error("读取Excel文件失败，上传文件首行内容为空！");
-            throw new BizException("读取Excel文件失败，上传文件首行内容不能为空！");
-        }
-
-        Map<Integer, String> fields = Maps.newHashMap();
-        for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
-            Cell cell = headerRow.getCell(cellIndex);
-            if (cell == null) {
-                cell = headerRow.createCell(cellIndex);
-            }
-            String field = ExcelUtils.getCellStringValue(cell);
-            if (StringUtils.isBlank(field)) {
-                logger.error("读取Excel文件失败，上传文件首行单元格[{}]内容为空！", cell.getAddress());
-                throw new BizException("读取Excel文件失败，上传文件首行单元格[" + cell.getAddress() + "]内容为空！");
-            }
-            fields.put(cellIndex, field);
-        }
-
-        List<Document> documents = Lists.newArrayList();
-        for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-            Document document = new Document();
-            for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
-                Cell cell = row.getCell(cellIndex);
-                if (cell == null) {
-                    cell = row.createCell(cellIndex);
-                }
-                Object value = ExcelUtils.getCellValue(cell);
-                document.put(fields.get(cellIndex), value);
-            }
-            documents.add(document);
-            if (documents.size() >= BATCH_COMMIT_COUNT) {
-                mongoHelper.insertBatch(documents, collectionName);
-                documents.clear();
-            }
-        }
-        if (CollectionUtils.isNotEmpty(documents)) {
-            mongoHelper.insertBatch(documents, collectionName);
-        }
     }
 
     /**
@@ -473,102 +326,6 @@ public class FileReadServiceImpl implements FileReadService {
         }
         if (CollectionUtils.isNotEmpty(lines)) {
             dbHandler.executeInsert(tableName, lines);
-        }
-    }
-
-    /**
-     * 读取csv类型文件并存储数据到mongodb
-     *
-     * @param file csv类型文件
-     */
-    private void readCsvIntoMongo(MultipartFile file, String collectionName) {
-        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), getCharsetName(file.getBytes())))) {
-            // 第一行信息，为标题信息
-            String[] headerItems = csvReader.readNext();
-            if (headerItems == null || headerItems.length == 0) {
-                logger.error("初始化JSON转换模板失败，上传文件首行内容为空！");
-                throw new BizException("初始化JSON转换模板失败，上传文件首行内容为空！");
-            }
-
-            Map<Integer, String> fields = Maps.newHashMap();
-            for (int i = 0; i < headerItems.length; i++) {
-                fields.put(i, headerItems[i]);
-            }
-
-            List<Document> documents = Lists.newArrayList();
-            String[] lineItems = null;
-            while ((lineItems = csvReader.readNext()) != null) {
-                Document document = new Document();
-                for (int i = 0; i < lineItems.length; i++) {
-                    document.put(fields.get(i), lineItems[i]);
-                }
-                documents.add(document);
-                if (documents.size() >= BATCH_COMMIT_COUNT) {
-                    mongoHelper.insertBatch(documents, collectionName);
-                    documents.clear();
-                }
-            }
-            if (CollectionUtils.isNotEmpty(documents)) {
-                mongoHelper.insertBatch(documents, collectionName);
-            }
-        } catch (Exception e) {
-            logger.error("读取Csv文件失败，程序运行错误！", e);
-            throw new BizException("读取Csv文件失败，程序运行错误！");
-        }
-    }
-
-    /**
-     * 读取csv类型文件并存储数据到mongodb
-     *
-     * @param bytes csv类型文件字节数组
-     * @return com.deloitte.bdh.data.model.resp.FileReadResult
-     */
-    private void readCsvIntoMongo(byte[] bytes, String collectionName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), getCharsetName(bytes)))) {
-            readCsvIntoMongoByBufferedReader(reader, collectionName);
-        } catch (Exception e) {
-            logger.error("读取Csv文件失败，程序运行错误！", e);
-            throw new BizException("读取Csv文件失败，程序运行错误！");
-        }
-    }
-
-    /**
-     * 读取csv类型文件并存储数据到mongodb
-     *
-     * @param reader
-     * @return com.deloitte.bdh.data.model.resp.FileReadResult
-     */
-    private void readCsvIntoMongoByBufferedReader(BufferedReader reader, String collectionName) throws IOException {
-        // 第一行信息，为标题信息
-        String headerLine = reader.readLine();
-        if (StringUtils.isBlank(headerLine)) {
-            logger.error("初始化JSON转换模板失败，上传文件首行内容为空！");
-            throw new BizException("初始化JSON转换模板失败，上传文件首行内容为空！");
-        }
-
-        String[] items = headerLine.split(",");
-        Map<Integer, String> fields = Maps.newHashMap();
-        for (int i = 0; i < items.length; i++) {
-            fields.put(i, items[i]);
-        }
-
-        List<Document> documents = Lists.newArrayList();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            String[] values = line.split(",");
-            Document document = new Document();
-            for (int i = 0; i < values.length; i++) {
-                document.put(fields.get(i), values[i]);
-            }
-            documents.add(document);
-            if (documents.size() >= BATCH_COMMIT_COUNT) {
-                mongoHelper.insertBatch(documents, collectionName);
-                documents.clear();
-            }
-        }
-
-        if (CollectionUtils.isNotEmpty(documents)) {
-            mongoHelper.insertBatch(documents, collectionName);
         }
     }
 

@@ -1,16 +1,13 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
-import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
-import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -97,4 +94,27 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp();
     }
 
+    @ApiOperation(value = "设置主页", notes = "设置主页")
+    @PostMapping("/setHomePage")
+    public RetResult<Void> setHomePage(@RequestBody @Validated RetRequest<String> request) {
+        BiUiAnalysePage homePage = analysePageService.getOne(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getHomePage, "1"));
+        if (null != homePage) {
+            homePage.setHomePage("0");
+            analysePageService.updateById(homePage);
+        }
+        BiUiAnalysePage newHomePage = analysePageService.getById(request.getData());
+        newHomePage.setHomePage("1");
+        analysePageService.updateById(newHomePage);
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "获取主页的ID", notes = "获取主页的ID")
+    @PostMapping("/getHomePageId")
+    public RetResult<String> getHomePageId(@RequestBody @Validated RetRequest<Void> request) {
+        BiUiAnalysePage homePage = analysePageService.getOne(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getHomePage, "1"));
+        if (null != homePage) {
+            return RetResponse.makeOKRsp(homePage.getId());
+        }
+        return RetResponse.makeOKRsp(null);
+    }
 }

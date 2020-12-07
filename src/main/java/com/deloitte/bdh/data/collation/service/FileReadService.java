@@ -19,25 +19,6 @@ public interface FileReadService {
     FilePreReadResult preRead(MultipartFile file);
 
     /**
-     * 读取文件数据，并存储到mongodb中
-     *
-     * @param file           文件（上传文件）
-     * @param columnTypes    字段类型
-     * @param collectionName 集合类型（建议：租户id + "_" + yyyyMMdd + "_" + dbId）
-     */
-    void readIntoMongo(MultipartFile file, Map<String, String> columnTypes, String collectionName);
-
-    /**
-     * 读取文件数据，并存储到mongodb中
-     *
-     * @param bytes          文件输字节数组
-     * @param fileType       文件类型
-     * @param columnTypes    字段类型
-     * @param collectionName 集合类型（建议：租户id + "_" + yyyyMMdd + "_" + dbId）
-     */
-    void readIntoMongo(byte[] bytes, String fileType, Map<String, String> columnTypes, String collectionName);
-
-    /**
      * 读取文件数据，并存储到关系型数据库中
      *
      * @param bytes       文件输字节数组

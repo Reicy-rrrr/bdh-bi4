@@ -252,7 +252,7 @@ public class EtlServiceImpl implements EtlService {
 
             //是否有连线
             boolean noConnection = null == connection;
-            if(!noConnection){
+            if (!noConnection) {
                 connectionService.removeById(connection);
             }
 
@@ -273,7 +273,7 @@ public class EtlServiceImpl implements EtlService {
             componentDto.setFields(dto.getFields());
             BiComponent newComponent = this.resourceJoin(componentDto);
 
-            if(!noConnection){
+            if (!noConnection) {
                 //创建连接
                 ComponentLinkDto linkDto = new ComponentLinkDto();
                 linkDto.setModelId(model.getId());
@@ -855,13 +855,15 @@ public class EtlServiceImpl implements EtlService {
                     //删除field集合
                     List<BiEtlMappingField> fieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
                             .eq(BiEtlMappingField::getRefCode, config.getCode()));
-                    List<BiEtlMappingField> delFields = Lists.newArrayList();
+                    List<String> delFields = Lists.newArrayList();
                     for (BiEtlMappingField mappingField : fieldList) {
                         if (oldFieldSet.contains(mappingField.getFieldName())) {
-                            delFields.add(mappingField);
+                            delFields.add(mappingField.getId());
                         }
                     }
-                    fieldService.removeByIds(delFields);
+                    if (CollectionUtils.isNotEmpty(delFields)) {
+                        fieldService.removeByIds(delFields);
+                    }
                 }
             }
         }

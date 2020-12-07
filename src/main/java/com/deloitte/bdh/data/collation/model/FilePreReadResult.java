@@ -4,10 +4,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.Document;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件预读取结果
@@ -28,5 +28,5 @@ public class FilePreReadResult {
     private List<String> headers;
 
     @ApiModelProperty(value = "导入预览", example = "id:1, code:01, value:01", required = true)
-    private List<Document> lines;
+    private List<Map<String, Object>> lines;
 }

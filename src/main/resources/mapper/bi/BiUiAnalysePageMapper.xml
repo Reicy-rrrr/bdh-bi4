@@ -18,6 +18,7 @@
         <result column="MODIFIED_USER" property="modifiedUser" />
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
+        <result column="HOME_PAGE" property="homePage" />
     </resultMap>
 
 </mapper>
