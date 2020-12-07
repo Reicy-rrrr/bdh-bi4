@@ -87,36 +87,33 @@ public class SyncServiceImpl implements SyncService {
     private void syncToExecuteNonTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            //判断已处理次数,超过5次则动作完成。
             if (5 < count) {
-                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
-                plan.setResultDesc("任务处理超时");
-            } else {
-                //组装数据 启动nifi 改变执行状态
-                BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                        .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
-                );
-
-                //非调度发起的同步第一次
-                if (0 == count) {
-                    //校验表结构
-                    String result = configService.validateSource(config);
-                    if (null != result) {
-                        throw new RuntimeException(result);
-                    }
-                    dbHandler.truncateTable(config.getToTableName());
-                }
-                //获取归属组件信息
-                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
-                //启动NIFI
-                transfer.run(processorsGroupId);
-                //修改plan 执行状态
-                plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
-                //重置
-                plan.setProcessCount("0");
-                plan.setResultDesc(null);
+                //判断已处理次数,超过5次则动作完成。
+                throw new RuntimeException("任务处理超时");
             }
+            //组装数据 启动nifi 改变执行状态
+            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                    .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
+            );
+
+            //非调度发起的同步第一次
+            if (0 == count) {
+                //校验表结构
+                String result = configService.validateSource(config);
+                if (null != result) {
+                    throw new RuntimeException(result);
+                }
+                dbHandler.truncateTable(config.getToTableName());
+            }
+            //获取归属组件信息
+            String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
+            //启动NIFI
+            transfer.run(processorsGroupId);
+            //修改plan 执行状态
+            plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
+            //重置
+            plan.setProcessCount("0");
+            plan.setResultDesc(null);
         } catch (Exception e) {
             log.error("sync.syncToExecuteNonTask:", e);
             count++;
@@ -132,31 +129,28 @@ public class SyncServiceImpl implements SyncService {
     private void syncToExecuteTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            //判断已处理次数,超过5次则动作完成。
             if (5 < count) {
-                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
-                plan.setResultDesc("任务处理超时");
-            } else {
-                //组装数据 启动nifi 改变执行状态
-                BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                        .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
-                );
-                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
-                SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
-                //第一次执行时，当为全量则清空，增量不处理
-                if (0 == count && SyncTypeEnum.FULL == typeEnum) {
-                    dbHandler.truncateTable(config.getToTableName());
-                    transfer.clear(processorsGroupId);
-                }
-                //启动NIFI
-                transfer.run(processorsGroupId);
-                //修改plan 执行状态
-                plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
-                //重置
-                plan.setProcessCount("0");
-                plan.setResultDesc(null);
+                //判断已处理次数,超过5次则动作完成。
+                throw new RuntimeException("任务处理超时");
             }
+            //组装数据 启动nifi 改变执行状态
+            BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
+                    .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
+            );
+            String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
+            SyncTypeEnum typeEnum = SyncTypeEnum.getEnumByKey(config.getType());
+            //第一次执行时，当为全量则清空，增量不处理
+            if (0 == count && SyncTypeEnum.FULL == typeEnum) {
+                dbHandler.truncateTable(config.getToTableName());
+                transfer.clear(processorsGroupId);
+            }
+            //启动NIFI
+            transfer.run(processorsGroupId);
+            //修改plan 执行状态
+            plan.setPlanStage(PlanStageEnum.EXECUTING.getKey());
+            //重置
+            plan.setProcessCount("0");
+            plan.setResultDesc(null);
         } catch (Exception e) {
             log.error("sync.syncToExecuteTask:", e);
             count++;
@@ -176,57 +170,53 @@ public class SyncServiceImpl implements SyncService {
         );
 
         try {
-            //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
-                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
-                plan.setResultDesc("任务处理超时");
+                //调用nifi 停止与清空
+                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
+                transfer.stop(processorsGroupId);
+
+                //判断已处理次数,超过10次则动作完成。
+                throw new RuntimeException("任务处理超时");
+                //判断是全量还是增量，是否清空表与 nifi偏移量？todo
+            }
+            count++;
+            //基于条件实时查询 localCount
+            String condition = assemblyCondition(plan.getIsFirst(), config);
+            long nowCount = dbHandler.getCount(config.getToTableName(), condition);
+
+            //判断目标数据库与源数据库的表count
+            String sqlCount = plan.getSqlCount();
+            String localCount = String.valueOf(nowCount);
+            if (Long.parseLong(localCount) < Long.parseLong(sqlCount)) {
+                // 等待下次再查询
+                plan.setSqlLocalCount(localCount);
+            } else {
+                //已同步完成
+                plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
 
                 //调用nifi 停止与清空
                 String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
                 transfer.stop(processorsGroupId);
 
-                //判断是全量还是增量，是否清空表与 nifi偏移量？todo
-            } else {
-                count++;
-                //基于条件实时查询 localCount
-                String condition = assemblyCondition(plan.getIsFirst(), config);
-                long nowCount = dbHandler.getCount(config.getToTableName(), condition);
+                //修改plan 执行状态
+                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+                plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
+                plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
 
-                //判断目标数据库与源数据库的表count
-                String sqlCount = plan.getSqlCount();
-                String localCount = String.valueOf(nowCount);
-                if (Long.parseLong(localCount) < Long.parseLong(sqlCount)) {
-                    // 等待下次再查询
-                    plan.setSqlLocalCount(localCount);
-                } else {
-                    //已同步完成
-                    plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
-
-                    //调用nifi 停止与清空
-                    String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
-                    transfer.stop(processorsGroupId);
-
-                    //修改plan 执行状态
-                    plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                    plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
-                    plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
-
-                    //获取停止nifi后的本地最新的数据count
-                    nowCount = dbHandler.getCount(config.getToTableName(), condition);
-                    plan.setSqlLocalCount(String.valueOf(nowCount));
-                    // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
-                    config.setLocalCount(String.valueOf(nowCount));
+                //获取停止nifi后的本地最新的数据count
+                nowCount = dbHandler.getCount(config.getToTableName(), condition);
+                plan.setSqlLocalCount(String.valueOf(nowCount));
+                // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
+                config.setLocalCount(String.valueOf(nowCount));
 //                    config.setOffsetValue();
-                    configService.updateById(config);
+                configService.updateById(config);
 
-                    //设置Component 状态为可用
-                    BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
-                            .eq(BiComponent::getCode, config.getRefComponentCode())
-                    );
-                    component.setEffect(EffectEnum.ENABLE.getKey());
-                    componentService.updateById(component);
-                }
+                //设置Component 状态为可用
+                BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                        .eq(BiComponent::getCode, config.getRefComponentCode())
+                );
+                component.setEffect(EffectEnum.ENABLE.getKey());
+                componentService.updateById(component);
             }
         } catch (Exception e) {
             log.error("sync.syncExecutingTask:", e);
@@ -357,62 +347,63 @@ public class SyncServiceImpl implements SyncService {
                 .eq(BiEtlModel::getCode, plan.getRefModelCode())
         );
 
-        boolean syncStatus = true;
         try {
-            //判断已处理次数,超过10次则动作完成。
             if (10 < count) {
-                syncStatus = false;
-                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                plan.setPlanResult(PlanResultEnum.FAIL.getKey());
                 //调用nifi 停止与清空
                 BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
                         .eq(BiProcessors::getCode, processorsCode)
                 );
                 transfer.stop(processors.getProcessGroupId());
-            } else {
-                count++;
-                //基于条件实时查询 localCount
-//                String condition = assemblyCondition(plan.getIsFirst(), config);
-                long nowCount = dbHandler.getCount(tableName, null);
 
-                //判断目标数据库与源数据库的表count
-                String sqlCount = plan.getSqlCount();
-                String localCount = String.valueOf(nowCount);
-                if (Long.parseLong(localCount) < Long.parseLong(sqlCount)) {
-                    // 等待下次再查询
-                    plan.setSqlLocalCount(localCount);
-                } else {
-                    syncStatus = false;
-                    //已同步完成
-                    plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
-
-                    //调用nifi 停止与清空
-                    BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                            .eq(BiProcessors::getCode, processorsCode)
-                    );
-                    transfer.stop(processors.getProcessGroupId());
-
-                    //修改plan 执行状态
-                    plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
-                    plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
-                    plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
-
-                    //获取停止nifi后的本地最新的数据count
-                    nowCount = dbHandler.getCount(tableName, null);
-                    plan.setSqlLocalCount(String.valueOf(nowCount));
-                }
+                //判断已处理次数,超过10次则动作完成。
+                throw new RuntimeException("任务处理超时");
             }
-        } catch (Exception e1) {
-            log.error("etl.etlExecutingTask:", e1);
-            plan.setResultDesc(e1.getMessage());
-        } finally {
-            plan.setProcessCount(String.valueOf(count));
-            syncPlanService.updateById(plan);
-            if (!syncStatus) {
+            count++;
+            //基于条件实时查询 localCount
+//                String condition = assemblyCondition(plan.getIsFirst(), config);
+            long nowCount = dbHandler.getCount(tableName, null);
+
+            //判断目标数据库与源数据库的表count
+            String sqlCount = plan.getSqlCount();
+            String localCount = String.valueOf(nowCount);
+            if (Long.parseLong(localCount) < Long.parseLong(sqlCount)) {
+                // 等待下次再查询
+                plan.setSqlLocalCount(localCount);
+            } else {
+                //已同步完成
+                plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
+
+                //调用nifi 停止与清空
+                BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                        .eq(BiProcessors::getCode, processorsCode)
+                );
+                transfer.stop(processors.getProcessGroupId());
+
+                //修改plan 执行状态
+                plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+                plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
+                plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
+
+                //获取停止nifi后的本地最新的数据count
+                nowCount = dbHandler.getCount(tableName, null);
+                plan.setSqlLocalCount(String.valueOf(nowCount));
+
                 //改变model状态为非运行
                 model.setSyncStatus(YesOrNoEnum.NO.getKey());
                 modelService.updateById(model);
             }
+        } catch (Exception e) {
+            log.error("etl.etlExecutingTask:", e);
+            plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
+            plan.setPlanResult(PlanResultEnum.FAIL.getKey());
+            plan.setResultDesc(e.getMessage());
+
+            //改变model状态为非运行
+            model.setSyncStatus(YesOrNoEnum.NO.getKey());
+            modelService.updateById(model);
+        } finally {
+            plan.setProcessCount(String.valueOf(count));
+            syncPlanService.updateById(plan);
         }
     }
 
