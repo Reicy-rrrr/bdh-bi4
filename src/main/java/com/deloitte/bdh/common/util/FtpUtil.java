@@ -112,7 +112,7 @@ public class FtpUtil {
                     this.createDirectories(path);
                 }
                 // 设置被动模式，开通一个端口来传输数据
-                ftpClient.enterLocalPassiveMode();
+//                ftpClient.enterLocalPassiveMode();
                 // 上传文件
                 flag = ftpClient.storeFile(new String(fileName.getBytes(localCharset), serverCharset), is);
             } catch (Exception e) {
@@ -155,7 +155,7 @@ public class FtpUtil {
                     this.createDirectories(path);
                 }
                 // 设置被动模式，开通一个端口来传输数据
-                ftpClient.enterLocalPassiveMode();
+//                ftpClient.enterLocalPassiveMode();
                 // 上传文件
                 flag = ftpClient.storeFile(new String(fileName.getBytes(localCharset), serverCharset), fis);
             } catch (Exception e) {
@@ -206,7 +206,7 @@ public class FtpUtil {
                     this.createDirectories(path);
                 }
                 // 设置被动模式，开通一个端口来传输数据
-                ftpClient.enterLocalPassiveMode();
+//                ftpClient.enterLocalPassiveMode();
                 // 上传文件
                 flag = ftpClient.storeFile(new String(fileName.getBytes(localCharset), serverCharset), input);
             } catch (Exception e) {
@@ -251,7 +251,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return flag;
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String[] listNames = ftpClient.listNames();
                 // 判断该目录下是否有文件
                 if (listNames == null || listNames.length == 0) {
@@ -298,7 +298,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return flag;
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String[] fs = ftpClient.listNames();
                 // 判断该目录下是否有文件
                 if (fs == null || fs.length == 0) {
@@ -342,7 +342,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return map;
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String[] fs = ftpClient.listNames();
                 // 判断该目录下是否有文件
                 if (fs == null || fs.length == 0) {
@@ -392,7 +392,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return byteStream.toByteArray();
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String[] fs = ftpClient.listNames();
                 // 判断该目录下是否有文件
                 if (fs == null || fs.length == 0) {
@@ -442,7 +442,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return flag;
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 FTPFile[] ftpFiles = ftpClient.listFiles();
                 if (ftpFiles == null || ftpFiles.length == 0) {
                     logger.error(BASE_PATH + ftpPath + " no file found");
@@ -487,7 +487,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return byteStream.toByteArray();
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 FTPFile[] ftpFiles = ftpClient.listFiles();
                 if (ftpFiles == null || ftpFiles.length == 0) {
                     logger.error(BASE_PATH + ftpPath + " no file found");
@@ -536,7 +536,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return map;
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String[] fs = ftpClient.listNames();
                 // 判断该目录下是否有文件
                 if (fs == null || fs.length == 0) {
@@ -577,7 +577,7 @@ public class FtpUtil {
                     logger.error(BASE_PATH + ftpPath + " not exists");
                     return input;
                 }
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String[] fs = ftpClient.listNames();
                 // 判断该目录下是否有文件
                 if (fs == null || fs.length == 0) {
@@ -635,7 +635,7 @@ public class FtpUtil {
         boolean flag = false;
         if (ftpClient != null) {
             try {
-                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
+//                ftpClient.enterLocalPassiveMode();  // 设置被动模式，开通一个端口来传输数据
                 String path = initPath(dirPath);
                 String[] fs = ftpClient.listNames(path);
                 // 判断该目录下是否有文件
