@@ -34,6 +34,9 @@ public enum DataImplEnum {
     BAR_SCATTER("bar", "scatter", "scatterDataImpl", "散点图"),
 
     WORD_CLOUD("word", "cloud", "wordCloudDataImpl", "词云图"),
+
+    MAP_SYMBOL("map", "symbol", "mapDataImpl", "符号地图"),
+    MAP_FILL("map", "fill", "mapDataImpl", "填充地图"),
     ;
 
     private final String type;
