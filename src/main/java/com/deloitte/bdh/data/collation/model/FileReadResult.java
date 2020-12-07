@@ -4,10 +4,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.Document;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件读取结果
@@ -31,5 +31,5 @@ public class FileReadResult {
     private LinkedHashMap<String, String> columns;
 
     @ApiModelProperty(value = "预览数据", example = "{[{id:1, code:01, value:01},{id:2, code:02, value:02}]}", required = true)
-    private List<Document> lines;
+    private List<Map<String, Object>> lines;
 }
