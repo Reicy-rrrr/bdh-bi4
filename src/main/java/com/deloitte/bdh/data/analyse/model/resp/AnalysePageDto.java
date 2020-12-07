@@ -72,4 +72,9 @@ public class AnalysePageDto implements Serializable {
     @ApiModelProperty("ICON")
     private String icon;
 
+    /**
+     * 主页
+     */
+    @ApiModelProperty("HOMEPAGE")
+    private String homePage;
 }
