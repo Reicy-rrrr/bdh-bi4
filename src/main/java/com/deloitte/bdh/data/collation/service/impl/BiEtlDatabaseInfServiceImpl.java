@@ -398,6 +398,11 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         } else {
             // 文件型数据源需要删除文件信息和上传到ftp的文件
             biEtlDbFileService.deleteByDbId(id);
+            // 删除本地数据表(文件型数据源的dbName存储的为本地表名称)
+            String tableName = inf.getDbName();
+            if (StringUtils.isNotBlank(tableName)) {
+                dbHandler.drop(tableName);
+            }
         }
         biEtlDatabaseInfMapper.deleteById(id);
     }
