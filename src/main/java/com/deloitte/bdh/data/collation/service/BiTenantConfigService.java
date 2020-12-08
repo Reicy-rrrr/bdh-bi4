@@ -15,4 +15,8 @@ public interface BiTenantConfigService extends Service<BiTenantConfig> {
 
     void init() throws Exception;
 
+    String getGroupId();
+
+    String getControllerServiceId();
+
 }

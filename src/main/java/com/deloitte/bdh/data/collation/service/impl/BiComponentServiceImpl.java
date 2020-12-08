@@ -55,6 +55,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private BiEtlMappingFieldService fieldService;
     @Autowired
     private Transfer transfer;
+    @Autowired
+    private BiTenantConfigService biTenantConfigService;
 
     @Override
     public BiComponentTree selectTree(String modelCode, String componentCode) {
@@ -228,10 +230,10 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     public String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception {
         String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null).getKey(), () -> {
             OutSql sql = new OutSql();
-            sql.setDttDatabaseServieId("a5b9fc8e-0174-1000-0000-000039bf90cc");
+            sql.setDttDatabaseServieId(biTenantConfigService.getControllerServiceId());
             sql.setDttSqlQuery(querySql);
             sql.setDttPutReader("a5994ef0-0174-1000-0000-00006d114be3");
-            sql.setDttPutServiceId("a5b9fc8e-0174-1000-0000-000039bf90cc");
+            sql.setDttPutServiceId(biTenantConfigService.getControllerServiceId());
             sql.setDttPutTableName(tableName);
             sql.setDttComponentName("输出组件");
             return sql;

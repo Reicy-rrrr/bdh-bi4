@@ -52,8 +52,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
     @Override
     public void init() throws Exception {
         //每个租户只会有一条数据
-        BiTenantConfig config = configMapper.selectOne(new LambdaQueryWrapper<BiTenantConfig>()
-                .eq(BiTenantConfig::getTenantId, ThreadLocalHolder.getTenantCode()));
+        BiTenantConfig config = configMapper.selectOne(new LambdaQueryWrapper<>());
 
         boolean insert = false;
         if (null == config) {
@@ -84,6 +83,18 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         config.setEffect(EffectEnum.ENABLE.getKey());
         configMapper.updateById(config);
 
+    }
+
+    @Override
+    public String getGroupId() {
+        BiTenantConfig config = configMapper.selectOne(new LambdaQueryWrapper<>());
+        return config.getRootGroupId();
+    }
+
+    @Override
+    public String getControllerServiceId() {
+        BiTenantConfig config = configMapper.selectOne(new LambdaQueryWrapper<>());
+        return config.getControllerServiceId();
     }
 
     private String initNifiGroup() {

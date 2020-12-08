@@ -75,6 +75,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private BiEtlModelService modelService;
+    @Autowired
+    private BiTenantConfigService biTenantConfigService;
 
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
@@ -554,11 +556,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         inf.setTenantId(ThreadLocalHolder.getTenantId());
 
         // 调用nifi 创建 获取rootgroupid
-        Map<String, Object> sourceMap = nifiProcessService.getRootGroupInfo();
         inf.setVersion("1");
         inf.setControllerServiceId(null);
-        Map groupFlow = MapUtils.getMap(sourceMap, "processGroupFlow");
-        inf.setRootGroupId(MapUtils.getString(groupFlow, "id"));
+        inf.setRootGroupId(biTenantConfigService.getGroupId());
         biEtlDatabaseInfMapper.insert(inf);
         return inf;
     }
@@ -597,6 +597,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         //调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();
+        createParams.put("id", biTenantConfigService.getGroupId());
         //连接池类型
         createParams.put("type", inf.getPoolType());
         createParams.put("name", inf.getName());
@@ -632,6 +633,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         // 调用nifi 创建 controllerService
         Map<String, Object> createParams = Maps.newHashMap();
+        createParams.put("id", biTenantConfigService.getGroupId());
         // 连接池类型
         createParams.put("type", inf.getPoolType());
         createParams.put("name", inf.getName());

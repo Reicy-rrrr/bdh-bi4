@@ -80,6 +80,8 @@ public class EtlServiceImpl implements EtlService {
     private Transfer transfer;
     @Autowired
     private NifiProcessService nifiProcessService;
+    @Autowired
+    private BiTenantConfigService biTenantConfigService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -768,7 +770,7 @@ public class EtlServiceImpl implements EtlService {
             }
             syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
             syncSql.setDttPutReader("a5994ef0-0174-1000-0000-00006d114be3");
-            syncSql.setDttPutServiceId("a5b9fc8e-0174-1000-0000-000039bf90cc");
+            syncSql.setDttPutServiceId(biTenantConfigService.getControllerServiceId());
             syncSql.setDttPutTableName(mappingConfig.getToTableName());
             return syncSql;
         });
