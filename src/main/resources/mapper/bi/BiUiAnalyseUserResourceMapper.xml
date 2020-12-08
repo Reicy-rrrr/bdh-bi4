@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource">
+        <id column="USER_RESOURCE_ID" property="userResourceId" />
+        <result column="USER_ID" property="userId" />
+        <result column="RESOURCE_ID" property="resourceId" />
+        <result column="RESOURCE_TYPE" property="resourceType" />
+        <result column="PERMITTED_ACTION" property="permittedAction" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+    </resultMap>
+
+</mapper>
