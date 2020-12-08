@@ -47,7 +47,6 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         try {
             //id为空取rootGroup
             if (StringUtil.isEmpty(id)) {
-                //todo 基于租户有个独立的group ，要查询的
                 Map<String, Object> rootGroupInfos = this.getRootGroupInfo();
                 // 校验权限
                 NifiProcessUtil.checkPermissions(rootGroupInfos);

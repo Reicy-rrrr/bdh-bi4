@@ -28,6 +28,7 @@ import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
+import com.deloitte.bdh.data.collation.model.BiTenantConfig;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
@@ -38,6 +39,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
+import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -84,7 +86,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private AnalyseModelFieldService fieldService;
-
+    @Autowired
+    private BiTenantConfigService biTenantConfigService;
 
     @Override
     public List<BiEtlModel> getModelTree() {
@@ -448,7 +451,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         reqNifi.put("name", inf.getName());
         reqNifi.put("comments", inf.getComments());
         reqNifi.put("position", JsonUtil.JsonStrToMap(NifiProcessUtil.randPosition()));
-        Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
+        Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, biTenantConfigService.getGroupId());
 
         if (!StringUtil.isEmpty(dto.getCronData())) {
             dto.setCronExpression(CronUtil.createCronExpression(dto.getCronData()));
