@@ -19,4 +19,5 @@ public interface BiTenantConfigService extends Service<BiTenantConfig> {
 
     String getControllerServiceId();
 
+    String getReaderId();
 }

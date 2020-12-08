@@ -14,25 +14,27 @@ import java.util.Map;
 public abstract class AbstractNifiProcess implements NifiProcessService {
     @Value("${nifi.transfer.url}")
     protected String url;
-    private static final Integer expiredTime = 60 * 24 * 7;
+    @Value("${nifi.transfer.username}")
+    protected String username;
+    @Value("${nifi.transfer.password}")
+    protected String password;
+    @Value("${nifi.transfer.expiredTime}")
+    protected String expiredTime;
+
 
     @Autowired
     private RedisClusterUtil redisClusterUtil;
 
     @Override
     public String getToken() throws Exception {
-        //todo 数据库读取用户和密码
-        String username = "login/bidw@NIFI.COM";
-        String password = "REQ51sRHZ";
-        String nifiToken = null;
-//        String nifiToken = redisClusterUtil.STRINGS.get(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username);
+        String nifiToken = redisClusterUtil.STRINGS.get(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username);
         if (StringUtil.isEmpty(nifiToken)) {
             Map<String, Object> req = Maps.newHashMap();
             req.put("username", username);
             req.put("password", password);
             nifiToken = HttpClientUtil.httpPostRequest(url + NifiEnum.ACCESS_TOKEN.getKey(), req);
             redisClusterUtil.STRINGS.set(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, nifiToken);
-            redisClusterUtil.KEYS.expired(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, expiredTime);
+            redisClusterUtil.KEYS.expired(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, Integer.parseInt(expiredTime));
         }
         return nifiToken;
     }

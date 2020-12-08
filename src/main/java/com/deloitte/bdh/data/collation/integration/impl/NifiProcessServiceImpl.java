@@ -62,7 +62,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.createProcessGroup.error:" + e);
+            logger.error("NifiProcessServiceImpl.createProcessGroup.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -91,7 +91,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.getProcessGroupFull.error:" + e);
+            logger.error("NifiProcessServiceImpl.getProcessGroupFull.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -115,7 +115,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.delProcessGroup.error:" + e);
+            logger.error("NifiProcessServiceImpl.delProcessGroup.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -136,7 +136,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.updProcessGroup.error:" + e);
+            logger.error("NifiProcessServiceImpl.updProcessGroup.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -172,7 +172,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.runState.error:" + e);
+            logger.error("NifiProcessServiceImpl.runState.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -189,7 +189,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.clearRequest.error:" + e);
+            logger.error("NifiProcessServiceImpl.clearRequest.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -207,7 +207,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.terminate.error:" + e);
+            logger.error("NifiProcessServiceImpl.terminate.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -260,7 +260,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.createControllerService.error:" + e);
+            logger.error("NifiProcessServiceImpl.createControllerService.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -291,6 +291,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             properties.remove("type");
             properties.remove("name");
             properties.remove("comments");
+            properties.remove("id");
             param.put("properties", properties);
 
             Map<String, Object> req = NifiProcessUtil.postParam(param);
@@ -300,7 +301,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.createOtherControllerService.error:" + e);
+            logger.error("NifiProcessServiceImpl.createOtherControllerService.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -325,7 +326,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.runControllerService.error:" + e);
+            logger.error("NifiProcessServiceImpl.runControllerService.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -362,7 +363,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.delControllerService.error:" + e);
+            logger.error("NifiProcessServiceImpl.delControllerService.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -383,7 +384,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.updControllerService.error:" + e);
+            logger.error("NifiProcessServiceImpl.updControllerService.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -515,7 +516,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.dropConnections.error:" + e);
+            logger.error("NifiProcessServiceImpl.dropConnections.error:", e);
             throw new RuntimeException("系统异常");
         }
     }
@@ -628,7 +629,7 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
             });
         } catch (Exception e) {
-            logger.error("NifiProcessServiceImpl.createByTemplate.error:" + e);
+            logger.error("NifiProcessServiceImpl.createByTemplate.error:", e);
             throw new RuntimeException("系统异常");
         }
     }

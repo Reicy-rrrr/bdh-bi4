@@ -70,6 +70,9 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         if (null != config.getRootGroupId() && null == config.getControllerServiceId()) {
             config.setControllerServiceId(initNifiControllerService(config.getRootGroupId()));
         }
+        if (null != config.getRootGroupId() && null == config.getReaderId()) {
+            config.setReaderId(initReader(config.getRootGroupId()));
+        }
         if (insert) {
             configMapper.insert(config);
         } else {
@@ -97,6 +100,12 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         return config.getControllerServiceId();
     }
 
+    @Override
+    public String getReaderId() {
+        BiTenantConfig config = configMapper.selectOne(new LambdaQueryWrapper<>());
+        return config.getReaderId();
+    }
+
     private String initNifiGroup() {
         try {
             //调用NIFI 创建模板
@@ -107,7 +116,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
             return MapUtils.getString(sourceMap, "id");
         } catch (Exception e) {
-            log.error("initNifiGroup error:" + e);
+            log.error("initNifiGroup error:", e);
             return null;
         }
     }
@@ -139,7 +148,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             nifiProcessService.runControllerService(MapUtils.getString(sourceMap, "id"), EffectEnum.ENABLE.getKey());
             return MapUtils.getString(sourceMap, "id");
         } catch (Exception e) {
-            log.error("initNifiControllerService error:" + e);
+            log.error("initNifiControllerService error:", e);
             return null;
         }
     }
@@ -168,6 +177,25 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             jobService.add(code, GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/etl",
                     "0 */2 * * * ?", null);
             jobService.start(code);
+        }
+    }
+
+
+    private String initReader(String rootGroupId) {
+        try {
+            // 调用nifi 创建 CSVReader
+            Map<String, Object> createReaderParams = Maps.newHashMap();
+            createReaderParams.put("id", rootGroupId);
+            createReaderParams.put("type", "org.apache.nifi.avro.AvroReader");
+            createReaderParams.put("name", ThreadLocalHolder.getTenantCode() + "_CSVReader");
+            createReaderParams.put("cache-size", "2000");
+
+            Map<String, Object> sourceMap = nifiProcessService.createOtherControllerService(createReaderParams);
+            nifiProcessService.runControllerService(MapUtils.getString(sourceMap, "id"), EffectEnum.ENABLE.getKey());
+            return MapUtils.getString(sourceMap, "id");
+        } catch (Exception e) {
+            log.error("initReader error:", e);
+            return null;
         }
     }
 }

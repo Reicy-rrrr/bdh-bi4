@@ -36,6 +36,12 @@ public class BiTenantConfig implements Serializable {
     private String controllerServiceId;
 
     /**
+     * READER_ID
+     */
+    @TableField("READER_ID")
+    private String readerId;
+
+    /**
      * ROOT_GROUP_ID
      */
     @TableField("ROOT_GROUP_ID")
@@ -79,6 +85,13 @@ public class BiTenantConfig implements Serializable {
 
     public void setControllerServiceId(String controllerServiceId) {
         this.controllerServiceId = controllerServiceId;
+    }
+    public String getReaderId() {
+        return readerId;
+    }
+
+    public void setReaderId(String readerId) {
+        this.readerId = readerId;
     }
     public String getRootGroupId() {
         return rootGroupId;
@@ -129,6 +142,7 @@ public class BiTenantConfig implements Serializable {
         "id=" + id +
         ", type=" + type +
         ", controllerServiceId=" + controllerServiceId +
+        ", readerId=" + readerId +
         ", rootGroupId=" + rootGroupId +
         ", effect=" + effect +
         ", createDate=" + createDate +

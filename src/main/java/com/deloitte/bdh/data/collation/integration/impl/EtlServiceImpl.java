@@ -769,7 +769,7 @@ public class EtlServiceImpl implements EtlService {
                 syncSql.setDttWhereClause(dto.getOffsetField() + " > " + dto.getOffsetValue());
             }
             syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
-            syncSql.setDttPutReader("a5994ef0-0174-1000-0000-00006d114be3");
+            syncSql.setDttPutReader(biTenantConfigService.getReaderId());
             syncSql.setDttPutServiceId(biTenantConfigService.getControllerServiceId());
             syncSql.setDttPutTableName(mappingConfig.getToTableName());
             return syncSql;

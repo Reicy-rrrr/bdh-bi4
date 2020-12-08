@@ -232,7 +232,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             OutSql sql = new OutSql();
             sql.setDttDatabaseServieId(biTenantConfigService.getControllerServiceId());
             sql.setDttSqlQuery(querySql);
-            sql.setDttPutReader("a5994ef0-0174-1000-0000-00006d114be3");
+            sql.setDttPutReader(biTenantConfigService.getReaderId());
             sql.setDttPutServiceId(biTenantConfigService.getControllerServiceId());
             sql.setDttPutTableName(tableName);
             sql.setDttComponentName("输出组件");
