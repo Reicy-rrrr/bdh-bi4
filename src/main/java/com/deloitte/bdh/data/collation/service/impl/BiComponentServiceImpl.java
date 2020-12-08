@@ -243,7 +243,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         processors.setType(BiProcessorsTypeEnum.ETL_SOURCE.getType());
         processors.setName(BiProcessorsTypeEnum.getTypeDesc(processors.getType()) + System.currentTimeMillis());
         processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
-        processors.setStatus(YesOrNoEnum.NO.getKey());
+        processors.setStatus(YesOrNoEnum.YES.getKey());
         processors.setEffect(EffectEnum.ENABLE.getKey());
         processors.setValidate(YesOrNoEnum.NO.getKey());
         processors.setRelModelCode(biEtlModel.getCode());

@@ -85,6 +85,7 @@ public class XxJobServiceImpl implements XxJobService {
     public void triggerParams(String modelCode, Map<String, String> params) throws Exception {
         log.info("XxJobServiceImpl.triggerParams, modelCode:{} ", modelCode);
         Map<String, Object> reqXxJob = Maps.newHashMap();
+        reqXxJob.put("tenantCode",ThreadLocalHolder.getTenantCode());
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("params", params);
         //追加类型

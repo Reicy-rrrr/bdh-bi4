@@ -751,7 +751,7 @@ public class EtlServiceImpl implements EtlService {
         processors.setType(BiProcessorsTypeEnum.SYNC_SOURCE.getType());
         processors.setName(dto.getComponentName());
         processors.setTypeDesc(BiProcessorsTypeEnum.getTypeDesc(processors.getType()));
-        processors.setStatus(YesOrNoEnum.NO.getKey());
+        processors.setStatus(YesOrNoEnum.YES.getKey());
         processors.setEffect(EffectEnum.ENABLE.getKey());
         processors.setValidate(YesOrNoEnum.NO.getKey());
         processors.setRelModelCode(biEtlModel.getCode());
