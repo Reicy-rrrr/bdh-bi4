@@ -1,10 +1,14 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
+import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,6 +26,26 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
+        DataConfig dataConfig = request.getDataConfig();
+        //符号地图增加经纬度
+        if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
+            //经度
+            DataModelField longitude = new DataModelField();
+            longitude.setType(DataTypeEnum.Text.getType());
+            longitude.setQuota(DataModelTypeEnum.WD.getCode());
+            longitude.setDataType(DataTypeEnum.Text.getValue());
+            longitude.setId("");
+            longitude.setAlias("经度");
+            //dataModel.getX().add(longitude);
+            //纬度
+            DataModelField lantitude = new DataModelField();
+            lantitude.setType(DataTypeEnum.Text.getType());
+            lantitude.setQuota(DataModelTypeEnum.WD.getCode());
+            lantitude.setDataType(DataTypeEnum.Text.getValue());
+            lantitude.setId("");
+            lantitude.setAlias("纬度");
+            //dataModel.getX().add(lantitude);
+        }
         List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
@@ -57,7 +81,8 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                 if (StringUtils.isNotBlank(category.getAlias())) {
                     colName = category.getAlias();
                 }
-                categoryPrefix.add(MapUtils.getString(row, colName));
+                String categoryName = StringUtils.join(colName,": ",MapUtils.getString(row, colName));
+                categoryPrefix.add(categoryName);
             }
             //重新赋值
             for (DataModelField y : yList) {
@@ -71,7 +96,16 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                     newRow.put("category", categoryPrefix);
                 }
 
-                newRow.put("value", MapUtils.getObject(row, colName));
+                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())){
+                    List<Object> valueList = Lists.newArrayList();
+                    valueList.add("");//经度
+                    valueList.add("");//纬度
+                    valueList.add(MapUtils.getObject(row, colName));
+                    newRow.put("value", valueList);
+                }
+                else{
+                    newRow.put("value", MapUtils.getObject(row, colName));
+                }
                 newRows.add(newRow);
             }
         }
