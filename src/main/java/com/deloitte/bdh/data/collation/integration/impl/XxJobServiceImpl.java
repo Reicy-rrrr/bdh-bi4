@@ -60,7 +60,7 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        HttpClientUtil.post(url + START_PATH, null, reqXxJob);
+        returnCheck(HttpClientUtil.post(url + START_PATH, null, reqXxJob));
     }
 
     @Override
@@ -69,7 +69,7 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        HttpClientUtil.post(url + STOP_PATH, null, reqXxJob);
+        returnCheck(HttpClientUtil.post(url + STOP_PATH, null, reqXxJob));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        HttpClientUtil.post(url + TRIGGER_PATH, null, reqXxJob);
+        returnCheck(HttpClientUtil.post(url + TRIGGER_PATH, null, reqXxJob));
     }
 
     @Override
@@ -89,7 +89,7 @@ public class XxJobServiceImpl implements XxJobService {
         reqXxJob.put("params", params);
         //追加类型
         reqXxJob.put("type", "1");
-        HttpClientUtil.post(url + TRIGGER_PARAMS_PATH, null, reqXxJob);
+        returnCheck(HttpClientUtil.post(url + TRIGGER_PARAMS_PATH, null, reqXxJob));
     }
 
     @Override

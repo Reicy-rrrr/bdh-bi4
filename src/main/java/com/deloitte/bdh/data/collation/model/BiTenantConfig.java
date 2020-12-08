@@ -41,17 +41,17 @@ public class BiTenantConfig implements Serializable {
     @TableField("ROOT_GROUP_ID")
     private String rootGroupId;
 
+    /**
+     * 是否可用
+     */
+    @TableField("EFFECT")
+    private String effect;
+
     @TableField("CREATE_DATE")
     private LocalDateTime createDate;
 
     @TableField("CREATE_USER")
     private String createUser;
-
-    @TableField("MODIFIED_DATE")
-    private LocalDateTime modifiedDate;
-
-    @TableField("MODIFIED_USER")
-    private String modifiedUser;
 
     @TableField("IP")
     private String ip;
@@ -87,6 +87,13 @@ public class BiTenantConfig implements Serializable {
     public void setRootGroupId(String rootGroupId) {
         this.rootGroupId = rootGroupId;
     }
+    public String getEffect() {
+        return effect;
+    }
+
+    public void setEffect(String effect) {
+        this.effect = effect;
+    }
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -100,20 +107,6 @@ public class BiTenantConfig implements Serializable {
 
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
-    }
-    public LocalDateTime getModifiedDate() {
-        return modifiedDate;
-    }
-
-    public void setModifiedDate(LocalDateTime modifiedDate) {
-        this.modifiedDate = modifiedDate;
-    }
-    public String getModifiedUser() {
-        return modifiedUser;
-    }
-
-    public void setModifiedUser(String modifiedUser) {
-        this.modifiedUser = modifiedUser;
     }
     public String getIp() {
         return ip;
@@ -137,10 +130,9 @@ public class BiTenantConfig implements Serializable {
         ", type=" + type +
         ", controllerServiceId=" + controllerServiceId +
         ", rootGroupId=" + rootGroupId +
+        ", effect=" + effect +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
-        ", modifiedDate=" + modifiedDate +
-        ", modifiedUser=" + modifiedUser +
         ", ip=" + ip +
         ", tenantId=" + tenantId +
         "}";

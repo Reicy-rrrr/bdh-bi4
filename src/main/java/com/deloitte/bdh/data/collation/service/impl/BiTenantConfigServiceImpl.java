@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.net.SocketException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -53,9 +54,16 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         //每个租户只会有一条数据
         BiTenantConfig config = configMapper.selectOne(new LambdaQueryWrapper<BiTenantConfig>()
                 .eq(BiTenantConfig::getTenantId, ThreadLocalHolder.getTenantCode()));
+
+        boolean insert = false;
         if (null == config) {
+            insert = true;
             config = new BiTenantConfig();
+            config.setCreateDate(LocalDateTime.now());
+            config.setCreateUser("system");
             config.setType(SourceTypeEnum.Mysql.getType());
+            config.setEffect(EffectEnum.DISABLE.getKey());
+            config.setTenantId(ThreadLocalHolder.getTenantId());
         }
         if (null == config.getRootGroupId()) {
             config.setRootGroupId(initNifiGroup());
@@ -63,10 +71,18 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         if (null != config.getRootGroupId() && null == config.getControllerServiceId()) {
             config.setControllerServiceId(initNifiControllerService(config.getRootGroupId()));
         }
+        if (insert) {
+            configMapper.insert(config);
+        } else {
+            configMapper.updateById(config);
+        }
+
+        //调度校验
         checkTaskGroup();
         initBiTask();
         initEtlTask();
-        configMapper.insert(config);
+        config.setEffect(EffectEnum.ENABLE.getKey());
+        configMapper.updateById(config);
 
     }
 

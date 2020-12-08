@@ -8,10 +8,9 @@
         <result column="TYPE" property="type" />
         <result column="CONTROLLER_SERVICE_ID" property="controllerServiceId" />
         <result column="ROOT_GROUP_ID" property="rootGroupId" />
+        <result column="EFFECT" property="effect" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
-        <result column="MODIFIED_DATE" property="modifiedDate" />
-        <result column="MODIFIED_USER" property="modifiedUser" />
         <result column="IP" property="ip" />
         <result column="TENANT_ID" property="tenantId" />
     </resultMap>
