@@ -6,6 +6,11 @@ public interface XxJobService {
     /**
      * ADD
      */
+    String GET_JOB = "/bdh-job-admin/bdhJob/getJob";
+
+    /**
+     * ADD
+     */
     String ADD_PATH = "/bdh-job-admin/bdhJob/addBdhJobObj";
 
     /**
@@ -38,6 +43,24 @@ public interface XxJobService {
      * trigger
      */
     String TRIGGER_PARAMS_PATH = "/bdh-job-admin/bdhJob/triggerWithParams";
+
+    /**
+     * getGroup
+     */
+    String LOAD_BY_TENANT = "/bdh-job-admin/bdhJob/loadByTenantCode";
+
+    /**
+     * saveGroup
+     */
+    String saveGroup = "/bdh-job-admin/bdhJob/saveGroup";
+
+    /**
+     * getJob
+     *
+     * @param
+     * @return
+     */
+    String getJob(String jobDesc);
 
     /**
      * add
@@ -97,4 +120,21 @@ public interface XxJobService {
      * @return
      */
     void triggerParams(String modelCode, Map<String, String> params) throws Exception;
+
+    /**
+     * getGroupByTenant
+     *
+     * @param
+     * @return
+     */
+    String getGroupByTenant();
+
+    /**
+     * saveGroup
+     *
+     * @param
+     * @return
+     */
+    boolean saveGroup();
+
 }
