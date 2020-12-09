@@ -371,6 +371,7 @@ public class EtlServiceImpl implements EtlService {
         component.setVersion("1");
         component.setPosition(dto.getPosition());
         component.setTenantId(ThreadLocalHolder.getTenantId());
+        component.setComments(dto.getComments());
         componentService.save(component);
 
         // 保存字段及属性
@@ -387,6 +388,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
+        params.put(ComponentCons.TO_TABLE_DESC, tableName);
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
@@ -431,11 +433,14 @@ public class EtlServiceImpl implements EtlService {
         // 设置组件参数：创建最终表,表名默认为模板编码
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
+        params.put(ComponentCons.TO_TABLE_DESC, tableName);
         List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         // 更新组件信息
-        if (StringUtils.isNotBlank(dto.getComponentName())) {
+        if (StringUtils.isNotBlank(dto.getComponentName())
+                || StringUtils.isNotBlank(dto.getComments())) {
             component.setName(dto.getComponentName());
+            component.setComments(dto.getComments());
             componentService.updateById(component);
         }
         return component;

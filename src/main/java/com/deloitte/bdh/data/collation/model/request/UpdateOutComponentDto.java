@@ -38,4 +38,7 @@ public class UpdateOutComponentDto {
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();
+
+    @ApiModelProperty(value = "comments", example = "0")
+    private String comments;
 }

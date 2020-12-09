@@ -54,8 +54,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -390,11 +392,18 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             List<String> codeList = modelList.stream().map(BiEtlModel::getCode).collect(Collectors.toList());
 
             List<BiComponentParams> tableList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME)
+                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
                     .in(BiComponentParams::getRefModelCode, codeList)
             );
 
             if (CollectionUtils.isNotEmpty(tableList)) {
+                Set<String> componentCodeList = tableList.stream().map(BiComponentParams::getRefComponentCode)
+                        .collect(Collectors.toSet());
+                List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
+                        .in(BiComponent::getCode, new ArrayList<>(componentCodeList))
+                );
+
+
                 for (BiComponentParams params : tableList) {
                     for (BiEtlModel model : modelList) {
                         if (params.getRefModelCode().equals(model.getCode())) {
@@ -402,8 +411,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                             resp.setModelCode(model.getCode());
                             resp.setModelName(model.getName());
                             resp.setTableName(params.getParamValue());
-                            resp.setDescription("null");
                             resp.setNextExecuteDate(model.getCreateDate().toString());
+                            resp.setComments(getComments(componentList, params.getRefComponentCode()));
                             result.add(resp);
                             break;
                         }
@@ -508,5 +517,15 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         return biEtlModelMapper.selectList(fUOLamQW);
     }
 
+    private String getComments(List<BiComponent> components, String code) {
+        if (CollectionUtils.isNotEmpty(components)) {
+            for (BiComponent component : components) {
+                if (component.getCode().equals(code)) {
+                    return component.getComments();
+                }
+            }
+        }
+        return null;
+    }
 
 }

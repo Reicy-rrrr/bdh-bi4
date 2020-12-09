@@ -24,7 +24,7 @@ public class DataSetResp implements Serializable {
     private String tableName;
 
     @ApiModelProperty(value = "描述")
-    private String description;
+    private String comments;
 
     @ApiModelProperty(value = "上次刷新时间")
     private String nextExecuteDate;

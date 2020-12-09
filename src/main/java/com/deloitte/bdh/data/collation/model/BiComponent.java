@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 /**
  * <p>
- *
+ * 
  * </p>
  *
  * @author lw
- * @since 2020-11-03
+ * @since 2020-12-09
  */
 @TableName("BI_COMPONENT")
 public class BiComponent implements Serializable {
@@ -64,6 +64,12 @@ public class BiComponent implements Serializable {
     private String version;
 
     /**
+     * 描述
+     */
+    @TableField("COMMENTS")
+    private String comments;
+
+    /**
      * 坐标
      */
     @TableField("POSITION")
@@ -94,7 +100,6 @@ public class BiComponent implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
-
     public String getCode() {
         return code;
     }
@@ -102,7 +107,6 @@ public class BiComponent implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-
     public String getName() {
         return name;
     }
@@ -110,7 +114,6 @@ public class BiComponent implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
     public String getType() {
         return type;
     }
@@ -118,7 +121,6 @@ public class BiComponent implements Serializable {
     public void setType(String type) {
         this.type = type;
     }
-
     public String getEffect() {
         return effect;
     }
@@ -126,7 +128,6 @@ public class BiComponent implements Serializable {
     public void setEffect(String effect) {
         this.effect = effect;
     }
-
     public String getRefModelCode() {
         return refModelCode;
     }
@@ -134,7 +135,6 @@ public class BiComponent implements Serializable {
     public void setRefModelCode(String refModelCode) {
         this.refModelCode = refModelCode;
     }
-
     public String getRefMappingCode() {
         return refMappingCode;
     }
@@ -142,7 +142,6 @@ public class BiComponent implements Serializable {
     public void setRefMappingCode(String refMappingCode) {
         this.refMappingCode = refMappingCode;
     }
-
     public String getVersion() {
         return version;
     }
@@ -150,7 +149,13 @@ public class BiComponent implements Serializable {
     public void setVersion(String version) {
         this.version = version;
     }
+    public String getComments() {
+        return comments;
+    }
 
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
     public String getPosition() {
         return position;
     }
@@ -158,7 +163,6 @@ public class BiComponent implements Serializable {
     public void setPosition(String position) {
         this.position = position;
     }
-
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -166,7 +170,6 @@ public class BiComponent implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
-
     public String getCreateUser() {
         return createUser;
     }
@@ -174,7 +177,6 @@ public class BiComponent implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
-
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -182,7 +184,6 @@ public class BiComponent implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
-
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -190,7 +191,6 @@ public class BiComponent implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
-
     public String getIp() {
         return ip;
     }
@@ -198,7 +198,6 @@ public class BiComponent implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
-
     public String getTenantId() {
         return tenantId;
     }
@@ -210,21 +209,22 @@ public class BiComponent implements Serializable {
     @Override
     public String toString() {
         return "BiComponent{" +
-                "id=" + id +
-                ", code=" + code +
-                ", name=" + name +
-                ", type=" + type +
-                ", effect=" + effect +
-                ", refModelCode=" + refModelCode +
-                ", refMappingCode=" + refMappingCode +
-                ", version=" + version +
-                ", position=" + position +
-                ", createDate=" + createDate +
-                ", createUser=" + createUser +
-                ", modifiedDate=" + modifiedDate +
-                ", modifiedUser=" + modifiedUser +
-                ", ip=" + ip +
-                ", tenantId=" + tenantId +
-                "}";
+        "id=" + id +
+        ", code=" + code +
+        ", name=" + name +
+        ", type=" + type +
+        ", effect=" + effect +
+        ", refModelCode=" + refModelCode +
+        ", refMappingCode=" + refMappingCode +
+        ", version=" + version +
+        ", comments=" + comments +
+        ", position=" + position +
+        ", createDate=" + createDate +
+        ", createUser=" + createUser +
+        ", modifiedDate=" + modifiedDate +
+        ", modifiedUser=" + modifiedUser +
+        ", ip=" + ip +
+        ", tenantId=" + tenantId +
+        "}";
     }
 }
