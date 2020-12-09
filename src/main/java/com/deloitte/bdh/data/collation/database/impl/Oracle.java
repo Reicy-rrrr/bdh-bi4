@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
@@ -62,12 +63,16 @@ public class Oracle extends AbstractProcess implements DbSelector {
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
             TableField field = new TableField();
-            field.setName(result.getString("COLUMN_NAME"));//列名
-            // field.setType(result.getString("DATA_TYPE")); //数据类型
-            // field.setDesc(result.getString("COMMENTS"));//备注
-            field.setDesc(field.getName());//备注
-
+            // 列名
+            field.setName(result.getString("COLUMN_NAME"));
+            // 备注
+            // field.setDesc(result.getString("COMMENTS"));
+            field.setDesc(field.getName());
+            // 数据类型
             String dataType = result.getString("DATA_TYPE");
+            field.setDataType(dataType);
+            field.setType(OracleDataTypeEnum.values(dataType.toUpperCase()).getValue().getType());
+
             String dataPrecision = result.getString("DATA_PRECISION");
             String dataScale = result.getString("DATA_SCALE");
             String dataLength = result.getString("DATA_LENGTH");

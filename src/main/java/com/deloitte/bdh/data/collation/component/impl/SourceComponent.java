@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -54,8 +55,13 @@ public class SourceComponent implements ComponentHandler {
             throw new BizException("源表组件配置映射信息不能为空！");
         }
         BiEtlMappingConfig config = configs.get(0);
-        // 使用目标表名（落库后的表）
+        // 同步方式
+        SyncTypeEnum syncType = SyncTypeEnum.getEnumByKey(config.getType());
+        // 直连使用原表名，其他使用目标表名（落库后的表）
         String tableName = config.getToTableName();
+        if (SyncTypeEnum.DIRECT.equals(syncType)) {
+            tableName = config.getFromTableName();
+        }
         component.setTableName(tableName);
 
         // 查询映射字段

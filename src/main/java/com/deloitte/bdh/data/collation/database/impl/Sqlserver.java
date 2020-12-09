@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.deloitte.bdh.data.collation.enums.SQLServerDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
@@ -63,9 +64,13 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
             TableField field = new TableField();
             // 列名
             field.setName(result.getString("COLUMN_NAME"));
-            field.setName(field.getName());
+            field.setDesc(field.getName());
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
+            field.setDataType(dataType);
+            SQLServerDataTypeEnum type = SQLServerDataTypeEnum.values(dataType.toLowerCase());
+            field.setType(type.getValue().getType());
+
             // 字符串最大长度
             String characterMaximumLength = result.getString("CHARACTER_MAXIMUM_LENGTH");
             String numericScale = result.getString("NUMERIC_SCALE");
