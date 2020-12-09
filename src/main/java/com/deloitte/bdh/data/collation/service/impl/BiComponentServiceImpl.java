@@ -82,7 +82,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 transfer.stop(processorsGroupId);
             }
         }
-        //输出组件要删除
+        //#10001 删除输出组件，在启动时容错，再次执行删除
         transfer.del(processors.getProcessGroupId());
         processorsService.removeById(processors.getId());
     }
@@ -229,7 +229,15 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     }
 
     @Override
-    public String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception {
+    public String addOutComponentForNifi(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception {
+        //#10001 容错删除旧输出组件的NIFI配置
+        BiProcessors oldOutProcessor = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getRelModelCode, biEtlModel.getCode())
+                .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
+        );
+        transfer.del(oldOutProcessor.getProcessGroupId());
+        processorsService.removeById(oldOutProcessor.getId());
+
         String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null).getKey(), () -> {
             OutSql sql = new OutSql();
             sql.setDttDatabaseServieId(biTenantConfigService.getControllerServiceId());

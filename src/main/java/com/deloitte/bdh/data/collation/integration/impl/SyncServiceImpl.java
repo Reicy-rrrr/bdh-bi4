@@ -142,6 +142,9 @@ public class SyncServiceImpl implements SyncService {
             //第一次执行时，当为全量则清空，增量不处理
             if (0 == count && SyncTypeEnum.FULL == typeEnum) {
                 dbHandler.truncateTable(config.getToTableName());
+                //#10002此处容错，保证当前是停止的
+                transfer.stop(processorsGroupId);
+                //清空
                 transfer.clear(processorsGroupId);
             }
             //启动NIFI
@@ -168,13 +171,10 @@ public class SyncServiceImpl implements SyncService {
         BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                 .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
         );
-
+        String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
+        boolean retry = false;
         try {
             if (10 < count) {
-                //调用nifi 停止与清空
-                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
-                transfer.stop(processorsGroupId);
-
                 //判断已处理次数,超过10次则动作完成。
                 throw new RuntimeException("任务处理超时");
                 //判断是全量还是增量，是否清空表与 nifi偏移量？todo
@@ -188,15 +188,12 @@ public class SyncServiceImpl implements SyncService {
             String sqlCount = plan.getSqlCount();
             String localCount = String.valueOf(nowCount);
             if (Long.parseLong(localCount) < Long.parseLong(sqlCount)) {
+                retry = true;
                 // 等待下次再查询
                 plan.setSqlLocalCount(localCount);
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
-
-                //调用nifi 停止与清空
-                String processorsGroupId = componentService.getProcessorsGroupId(config.getRefComponentCode());
-                transfer.stop(processorsGroupId);
 
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
@@ -226,6 +223,16 @@ public class SyncServiceImpl implements SyncService {
         } finally {
             plan.setProcessCount(String.valueOf(count));
             syncPlanService.updateById(plan);
+
+            //不再重试
+            if (!retry) {
+                try {
+                    //#10002 此处需要容错
+                    transfer.stop(processorsGroupId);
+                } catch (Exception e1) {
+                    log.error("sync.syncExecutingTask.stop NIFI:", e1);
+                }
+            }
         }
     }
 
@@ -347,14 +354,13 @@ public class SyncServiceImpl implements SyncService {
                 .eq(BiEtlModel::getCode, plan.getRefModelCode())
         );
 
+        BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
+                .eq(BiProcessors::getCode, processorsCode)
+        );
+
+        boolean retry = false;
         try {
             if (10 < count) {
-                //调用nifi 停止与清空
-                BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                        .eq(BiProcessors::getCode, processorsCode)
-                );
-                transfer.stop(processors.getProcessGroupId());
-
                 //判断已处理次数,超过10次则动作完成。
                 throw new RuntimeException("任务处理超时");
             }
@@ -367,17 +373,12 @@ public class SyncServiceImpl implements SyncService {
             String sqlCount = plan.getSqlCount();
             String localCount = String.valueOf(nowCount);
             if (Long.parseLong(localCount) < Long.parseLong(sqlCount)) {
+                retry = true;
                 // 等待下次再查询
                 plan.setSqlLocalCount(localCount);
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
-
-                //调用nifi 停止与清空
-                BiProcessors processors = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                        .eq(BiProcessors::getCode, processorsCode)
-                );
-                transfer.stop(processors.getProcessGroupId());
 
                 //修改plan 执行状态
                 plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
@@ -404,6 +405,16 @@ public class SyncServiceImpl implements SyncService {
         } finally {
             plan.setProcessCount(String.valueOf(count));
             syncPlanService.updateById(plan);
+
+            //不再重试
+            if (!retry) {
+                try {
+                    //#10002 此处需要容错
+                    transfer.stop(processors.getProcessGroupId());
+                } catch (Exception e1) {
+                    log.error("sync.syncExecutingTask.stop NIFI:", e1);
+                }
+            }
         }
     }
 
@@ -426,7 +437,6 @@ public class SyncServiceImpl implements SyncService {
             return;
         }
         //首先获取模板下的数据源组件
-        //DATASOURCE
         List<BiComponent> components = componentService.list(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getRefModelCode, modelCode)
                 .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())

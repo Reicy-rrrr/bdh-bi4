@@ -37,6 +37,13 @@ public class EtlTransferImpl extends AbstractTransfer {
 
     @Override
     public void del(String processGroupId) throws Exception {
+        //删除前先校验是否存在
+        try {
+            nifiProcessService.getProcessGroup(processGroupId);
+        } catch (Exception e) {
+            logger.warn("未找到要删除的nifi配置信息,processGroupid:" + processGroupId);
+            return;
+        }
         stop(processGroupId);
         nifiProcessService.delProcessGroup(processGroupId);
     }

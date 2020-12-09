@@ -327,10 +327,10 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
 
-            // 校验最终表
+            // 校验最终表 todo 移动到修改输出组件位置
             checkAnalyseField(componentModel.getTableName(), columns);
-            //创建nifi 配置
-            componentService.addOutComponent(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
+            //创建输出组件的nifi配置
+            componentService.addOutComponentForNifi(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
             //创建表
             dbHandler.createTable(componentModel.getTableName(), columns);
             //启动模板 ，启动xxjob，有job去生成执行计划
