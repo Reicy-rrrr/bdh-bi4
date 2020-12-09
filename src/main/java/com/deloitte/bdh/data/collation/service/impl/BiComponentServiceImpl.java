@@ -78,7 +78,9 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         //数据源组件只停止
         for (BiComponent s : components) {
             String processorsGroupId = getProcessorsGroupId(s.getCode());
-            transfer.stop(processorsGroupId);
+            if (null != processorsGroupId) {
+                transfer.stop(processorsGroupId);
+            }
         }
         //输出组件要删除
         transfer.del(processors.getProcessGroupId());
