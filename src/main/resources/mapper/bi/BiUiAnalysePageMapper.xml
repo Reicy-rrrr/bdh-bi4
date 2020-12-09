@@ -4,21 +4,78 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiAnalysePage">
-        <id column="ID" property="id" />
-        <result column="CODE" property="code" />
-        <result column="NAME" property="name" />
-        <result column="DES" property="des" />
-        <result column="TYPE" property="type" />
-        <result column="PARENT_ID" property="parentId" />
-        <result column="ICON" property="icon" />
-        <result column="IS_EDIT" property="isEdit" />
-        <result column="CREATE_DATE" property="createDate" />
-        <result column="CREATE_USER" property="createUser" />
-        <result column="MODIFIED_DATE" property="modifiedDate" />
-        <result column="MODIFIED_USER" property="modifiedUser" />
-        <result column="IP" property="ip" />
-        <result column="TENANT_ID" property="tenantId" />
-        <result column="HOME_PAGE" property="homePage" />
+        <id column="ID" property="id"/>
+        <result column="CODE" property="code"/>
+        <result column="NAME" property="name"/>
+        <result column="DES" property="des"/>
+        <result column="TYPE" property="type"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="ICON" property="icon"/>
+        <result column="IS_EDIT" property="isEdit"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="MODIFIED_DATE" property="modifiedDate"/>
+        <result column="MODIFIED_USER" property="modifiedUser"/>
+        <result column="IP" property="ip"/>
+        <result column="TENANT_ID" property="tenantId"/>
+        <result column="HOME_PAGE" property="homePage"/>
     </resultMap>
+
+    <select id="selectPublishedPage" resultMap="BaseResultMap">
+        -- 查询有权限的报表
+        SELECT
+            t1.ID,
+            t1.`CODE`,
+            t1.`NAME`,
+            t1.DES,
+            t1.TYPE,
+            t1.ICON,
+            t1.PARENT_ID,
+            t1.EDIT_ID,
+            t1.PUBLISH_ID,
+            t1.IS_EDIT,
+            t1.HOME_PAGE,
+            t1.IP,
+            t1.TENANT_ID
+        FROM
+            BI_UI_ANALYSE_PAGE t1
+            LEFT JOIN (
+            -- 查询没有权限的报表
+        SELECT
+            t2.RESOURCE_ID
+        FROM
+            BI_UI_ANALYSE_USER_RESOURCE t2
+            LEFT JOIN (
+        SELECT
+            t3.RESOURCE_ID
+        FROM
+            BI_UI_ANALYSE_USER_RESOURCE t3
+        WHERE
+            t3.USER_ID = #{selectPublishedPageDto.userId,jdbcType=VARCHAR}
+            AND t3.RESOURCE_TYPE = #{selectPublishedPageDto.resourceType,jdbcType=VARCHAR}
+            AND LOCATE( #{selectPublishedPageDto.permittedAction,jdbcType=VARCHAR}, t3.PERMITTED_ACTION ) > 0
+        GROUP BY
+            t3.RESOURCE_ID
+            ) t4 ON t2.RESOURCE_ID = t4.RESOURCE_ID
+        WHERE
+            t4.RESOURCE_ID IS NULL
+            ) t5 ON t1.ID = t5.RESOURCE_ID
+        WHERE
+            t5.RESOURCE_ID IS NULL
+            AND t1.PUBLISH_ID IS NOT NULL
+            <if test="selectPublishedPageDto.name != null and selectPublishedPageDto.name != ''">
+                AND t1.`NAME` LIKE '%' || #{selectPublishedPageDto.name,jdbcType=VARCHAR} || '%'
+            </if>
+            <if test="selectPublishedPageDto.categoryId != null and selectPublishedPageDto.categoryId != ''">
+                AND t1.PARENT_ID = #{selectPublishedPageDto.categoryId,jdbcType=VARCHAR}
+            </if>
+            <if test="selectPublishedPageDto.isEdit != null and selectPublishedPageDto.isEdit != ''">
+                AND t1.IS_EDIT = #{selectPublishedPageDto.isEdit,jdbcType=VARCHAR}
+            </if>
+            <if test="selectPublishedPageDto.tenantId != null and selectPublishedPageDto.tenantId != ''">
+                AND t1.TENANT_ID = #{selectPublishedPageDto.tenantId,jdbcType=VARCHAR}
+            </if>
+        ORDER BY t1.CREATE_DATE DESC
+    </select>
 
 </mapper>

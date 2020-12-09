@@ -12,6 +12,8 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.*;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -46,35 +48,35 @@ import java.util.regex.Pattern;
 public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMapper, BiUiAnalysePage> implements AnalysePageService {
 
     @Resource
-    AnalysePageConfigService configService;
+    private AnalysePageConfigService configService;
 
     @Resource
-    AnalyseModelFolderService folderService;
+    private AnalyseModelFolderService folderService;
 
     @Resource
-    AnalyseModelFieldService fieldService;
+    private AnalyseModelFieldService fieldService;
 
     @Resource
-    AnalyseUserResourceService userResourceService;
+    private AnalyseUserResourceService userResourceService;
 
     @Resource
-    AnalyseUserDataService userDataService;
+    private AnalyseUserDataService userDataService;
+
+    @Resource
+    private BiUiAnalysePageMapper analysePageMapper;
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
-        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalysePage::getTenantId, ThreadLocalHolder.getTenantId());
-        if (StringUtils.isNotBlank(request.getData().getName())) {
-            query.like(BiUiAnalysePage::getName, request.getData().getName());
-        }
-        if (StringUtils.isNotBlank(request.getData().getCategoryId())) {
-            query.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
-        }
-        query.isNotNull(BiUiAnalysePage::getPublishId);
-        query.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode());
-        query.orderByDesc(BiUiAnalysePage::getCreateDate);
-        List<BiUiAnalysePage> pageList = this.list(query);
+        SelectPublishedPageDto dto = new SelectPublishedPageDto();
+        dto.setUserId(ThreadLocalHolder.getOperator());
+        dto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+        dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+        dto.setTenantId(ThreadLocalHolder.getTenantId());
+        dto.setName(request.getData().getName());
+        dto.setCategoryId(request.getData().getCategoryId());
+        dto.setIsEdit(YnTypeEnum.NO.getCode());
+        List<BiUiAnalysePage> pageList = analysePageMapper.selectPublishedPage(dto);
         return getAnalysePageDtoPageResult(pageList);
     }
 
@@ -276,7 +278,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         List<BiUiAnalysePage> nameList = list(query);
         if (CollectionUtils.isNotEmpty(nameList)) {
-            throw new BizException("存在同名报表");
+            throw new BizException("已存在相同报表名称");
         }
         //字母和数字
         String regEx="[A-Z,a-z,0-9,-]*";
@@ -292,7 +294,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         List<BiUiAnalysePage> codeList = list(query);
         if (CollectionUtils.isNotEmpty(codeList)) {
-            throw new BizException("存在同名编码");
+            throw new BizException("已存在相同报表编码");
         }
     }
 
