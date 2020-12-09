@@ -54,6 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -411,7 +412,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                             resp.setModelCode(model.getCode());
                             resp.setModelName(model.getName());
                             resp.setTableName(params.getParamValue());
-                            resp.setNextExecuteDate(model.getCreateDate().toString());
+                            if (null != model.getLastExecuteDate()) {
+                                resp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                            }
                             resp.setComments(getComments(componentList, params.getRefComponentCode()));
                             result.add(resp);
                             break;

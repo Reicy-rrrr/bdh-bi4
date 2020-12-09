@@ -27,6 +27,7 @@
         <result column="CRON_EXPRESSION" property="cronExpression" />
         <result column="CRON_DATA" property="cronData" />
         <result column="CONTENT" property="content" />
+        <result column="LAST_EXECUTE_DATE" property="lastExecuteDate" />
     </resultMap>
 
 </mapper>

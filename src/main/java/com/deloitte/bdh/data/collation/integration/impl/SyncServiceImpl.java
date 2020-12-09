@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -391,6 +392,7 @@ public class SyncServiceImpl implements SyncService {
 
                 //改变model状态为非运行
                 model.setSyncStatus(YesOrNoEnum.NO.getKey());
+                model.setLastExecuteDate(LocalDateTime.now());
                 modelService.updateById(model);
             }
         } catch (Exception e) {
@@ -513,7 +515,7 @@ public class SyncServiceImpl implements SyncService {
         runPlans.add(outPlan);
 
         //执行
-        runPlans.forEach(s -> syncPlanService.createFirstPlan(s));
+        runPlans.forEach(s -> syncPlanService.createPlan(s));
 
         //状态变为正在同步中
         model.setSyncStatus(YesOrNoEnum.YES.getKey());

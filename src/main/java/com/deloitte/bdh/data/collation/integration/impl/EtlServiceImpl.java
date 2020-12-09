@@ -191,7 +191,7 @@ public class EtlServiceImpl implements EtlService {
                 dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
 
                 //step2.1.4 生成同步的第一次的调度计划
-                syncPlanService.createFirstPlan(runPlan);
+                syncPlanService.createPlan(runPlan);
 
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);

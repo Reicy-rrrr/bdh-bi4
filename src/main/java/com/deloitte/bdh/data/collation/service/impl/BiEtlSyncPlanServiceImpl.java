@@ -48,7 +48,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private BiEtlSyncPlanMapper syncPlanMapper;
 
     @Override
-    public void createFirstPlan(RunPlan plan) {
+    public void createPlan(RunPlan plan) {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
         syncPlan.setCode(GenerateCodeUtil.generate());
         syncPlan.setName(plan.getPlanName());

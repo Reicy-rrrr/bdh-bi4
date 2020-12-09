@@ -27,7 +27,7 @@ public class DataSetResp implements Serializable {
     private String comments;
 
     @ApiModelProperty(value = "上次刷新时间")
-    private String nextExecuteDate;
+    private String lastExecuteDate;
 
 
 }

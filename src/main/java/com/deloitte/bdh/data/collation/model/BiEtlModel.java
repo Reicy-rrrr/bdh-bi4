@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 /**
  * <p>
- *
+ * 
  * </p>
  *
  * @author lw
- * @since 2020-11-11
+ * @since 2020-12-09
  */
 @TableName("BI_ETL_MODEL")
 public class BiEtlModel implements Serializable {
@@ -131,6 +131,12 @@ public class BiEtlModel implements Serializable {
      */
     @TableField(value = "CONTENT")
     private String content;
+
+    /**
+     * 上次执行时间
+     */
+    @TableField("LAST_EXECUTE_DATE")
+    private LocalDateTime lastExecuteDate;
 
     public String getId() {
         return id;
@@ -293,6 +299,13 @@ public class BiEtlModel implements Serializable {
     public void setContent(String content) {
         this.content = content;
     }
+    public LocalDateTime getLastExecuteDate() {
+        return lastExecuteDate;
+    }
+
+    public void setLastExecuteDate(LocalDateTime lastExecuteDate) {
+        this.lastExecuteDate = lastExecuteDate;
+    }
 
     @Override
     public String toString() {
@@ -320,6 +333,7 @@ public class BiEtlModel implements Serializable {
         ", cronExpression=" + cronExpression +
         ", cronData=" + cronData +
         ", content=" + content +
+        ", lastExecuteDate=" + lastExecuteDate +
         "}";
     }
 }
