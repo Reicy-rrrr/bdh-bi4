@@ -419,7 +419,7 @@ public class OracleArranger implements ArrangerSelector {
      */
     private ArrangeResultModel toInteger(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
         String fromField = getFromField(fromMapping, fromType);
-        String type = fromMapping.getTableField().getDataType();
+        String type = fromMapping.getTableField().getType();
         DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
         StringBuilder segmentBuilder = new StringBuilder();
         switch (sourceType) {
@@ -461,7 +461,7 @@ public class OracleArranger implements ArrangerSelector {
      */
     private ArrangeResultModel toFloat(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
         String fromField = getFromField(fromMapping, fromType);
-        String type = fromMapping.getTableField().getDataType();
+        String type = fromMapping.getTableField().getType();
         DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
         StringBuilder segmentBuilder = new StringBuilder();
         switch (sourceType) {
@@ -503,7 +503,7 @@ public class OracleArranger implements ArrangerSelector {
      */
     private ArrangeResultModel toDate(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
         String fromField = getFromField(fromMapping, fromType);
-        String type = fromMapping.getTableField().getDataType();
+        String type = fromMapping.getTableField().getType();
         FieldMappingModel mapping = fromMapping.clone();
         DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
         StringBuilder segmentBuilder = new StringBuilder();
@@ -545,7 +545,7 @@ public class OracleArranger implements ArrangerSelector {
      */
     private ArrangeResultModel toDateTime(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
         String fromField = getFromField(fromMapping, fromType);
-        String type = fromMapping.getTableField().getDataType();
+        String type = fromMapping.getTableField().getType();
         FieldMappingModel mapping = fromMapping.clone();
         DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
         StringBuilder segmentBuilder = new StringBuilder();
@@ -588,7 +588,7 @@ public class OracleArranger implements ArrangerSelector {
      */
     private ArrangeResultModel toText(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
         String fromField = getFromField(fromMapping, fromType);
-        String type = fromMapping.getTableField().getDataType();
+        String type = fromMapping.getTableField().getType();
         FieldMappingModel mapping = fromMapping.clone();
         DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
         StringBuilder segmentBuilder = new StringBuilder();
