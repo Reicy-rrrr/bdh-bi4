@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
 import com.deloitte.bdh.data.analyse.enums.CategoryTreeChildrenTypeEnum;
@@ -14,6 +15,7 @@ import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.BatchDeleteAnalyseDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseCategoryDto;
@@ -24,6 +26,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalyseDefaultCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,9 +58,12 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     @Resource
     AnalysePageService pageService;
 
+    @Resource
+    AnalyseUserResourceService userResourceService;
+
     @Override
     public AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
-        checkBiUiAnalyseCategoryByName(request.getData().getName(), request.getTenantId(), null);
+        checkBiUiAnalyseCategoryByName(request.getData().getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
         if (parent == null) {
             throw new BizException("上级文件夹不存在");
@@ -71,12 +77,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         BeanUtils.copyProperties(request.getData(), category);
         category.setType(CategoryTypeEnum.CUSTOMER.getCode());
         //创建的自定义文件夹都在我的分析下面
-        BiUiAnalyseCategory customerTop = getCustomerTop(request.getTenantId());
+        BiUiAnalyseCategory customerTop = getCustomerTop(ThreadLocalHolder.getTenantId());
         category.setParentId(customerTop.getId());
-        //设置通用字段
-        category.setCreateDate(LocalDateTime.now());
-        category.setCreateUser(request.getOperator());
-        category.setTenantId(request.getTenantId());
+        category.setTenantId(ThreadLocalHolder.getTenantId());
         this.save(category);
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
         BeanUtils.copyProperties(category, dto);
@@ -89,9 +92,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId());
         entity.setName(request.getData().getName());
         entity.setDes(request.getData().getDes());
-        //设置通用字段
-        entity.setModifiedDate(LocalDateTime.now());
-        entity.setModifiedUser(request.getOperator());
         this.updateById(entity);
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
         BeanUtils.copyProperties(entity, dto);
@@ -102,8 +102,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     public List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request) {
         //查询文件夹
         LambdaQueryWrapper<BiUiAnalyseCategory> categoryQueryWrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(request.getTenantId())) {
-            categoryQueryWrapper.eq(BiUiAnalyseCategory::getTenantId, request.getTenantId());
+        if (StringUtils.isNotBlank(ThreadLocalHolder.getTenantId())) {
+            categoryQueryWrapper.eq(BiUiAnalyseCategory::getTenantId, ThreadLocalHolder.getTenantId());
         }
         if (StringUtils.isNotBlank(request.getData().getType())) {
             categoryQueryWrapper.eq(BiUiAnalyseCategory::getType, request.getData().getType());
@@ -237,7 +237,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
     @Override
     public void initTenantAnalyse(RetRequest<Void> request) {
-        if (StringUtils.isBlank(request.getTenantId())) {
+        if (StringUtils.isBlank(ThreadLocalHolder.getTenantId())) {
             throw new BizException("租户id不能为空");
         }
         List<BiUiAnalyseCategory> initCategoryList = Lists.newArrayList();
@@ -245,7 +245,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         List<BiUiAnalyseDefaultCategory> defaultCategoryList = analyseDefaultCategoryService.list();
         //查询已存在文件夹
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalyseCategory::getTenantId, request.getTenantId());
+        query.eq(BiUiAnalyseCategory::getTenantId, ThreadLocalHolder.getTenantId());
         List<BiUiAnalyseCategory> existAnalyseCategoryList = this.list(query);
 
         Map<String, BiUiAnalyseCategory> existCategoryNameMap = Maps.newHashMap();
@@ -263,11 +263,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             if (category == null) {
                 category = new BiUiAnalyseCategory();
                 BeanUtils.copyProperties(defaultCategory, category);
-                category.setCreateDate(LocalDateTime.now());
-                category.setCreateUser(request.getOperator());
-                category.setModifiedUser(null);
-                category.setModifiedDate(null);
-                category.setTenantId(request.getTenantId());
+                category.setTenantId(ThreadLocalHolder.getTenantId());
                 this.save(category);
                 initCategoryList.add(category);
             }
@@ -290,10 +286,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
     @Override
     public void delAnalyseCategory(RetRequest<String> request) {
-
         List<String> ids = Arrays.asList(request.getData().split(" "));
-        String tenatId = request.getTenantId();
-        delAnalyseCategories(ids, tenatId);
+        delAnalyseCategories(ids, ThreadLocalHolder.getTenantId());
     }
 
     @Override
@@ -301,8 +295,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     public void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request) {
 
         List<String> ids = request.getData().getIds();
-        String tenatId = request.getTenantId();
-        delAnalyseCategories(ids, tenatId);
+        delAnalyseCategories(ids, ThreadLocalHolder.getTenantId());
     }
 
     //删除文件夹和批量删除文件夹公用方法
@@ -343,6 +336,11 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             }
             //删除
             this.removeByIds(parentIdList);
+
+            //删除可见编辑权限
+            LambdaQueryWrapper<BiUiAnalyseUserResource> resourceQueryWrapper = new LambdaQueryWrapper<>();
+            resourceQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, parentIdList);
+            userResourceService.remove(resourceQueryWrapper);
         }
     }
 

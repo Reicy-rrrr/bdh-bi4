@@ -28,7 +28,7 @@ import java.util.List;
  * Date:12/11/2020
  * Description:
  */
-@Api(value = "分析管理-文件夹")
+@Api(tags = "分析管理-文件夹")
 @RestController
 @RequestMapping("/ui/analyse/category")
 public class AnalyseCategoryController {

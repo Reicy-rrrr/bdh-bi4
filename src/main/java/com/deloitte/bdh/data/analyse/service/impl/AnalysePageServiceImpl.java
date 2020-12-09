@@ -9,20 +9,15 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
-import com.deloitte.bdh.data.analyse.model.BiUiModelField;
-import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
+import com.deloitte.bdh.data.analyse.model.*;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
-import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
-import com.deloitte.bdh.data.analyse.service.AnalysePageService;
+import com.deloitte.bdh.data.analyse.service.*;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -59,11 +54,17 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Resource
     AnalyseModelFieldService fieldService;
 
+    @Resource
+    AnalyseUserResourceService userResourceService;
+
+    @Resource
+    AnalyseUserDataService userDataService;
+
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
+        query.eq(BiUiAnalysePage::getTenantId, ThreadLocalHolder.getTenantId());
         if (StringUtils.isNotBlank(request.getData().getName())) {
             query.like(BiUiAnalysePage::getName, request.getData().getName());
         }
@@ -93,13 +94,11 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public AnalysePageDto createAnalysePage(RetRequest<CreateAnalysePageDto> request) {
-        checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), request.getTenantId(), null);
+        checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage entity = new BiUiAnalysePage();
         BeanUtils.copyProperties(request.getData(), entity);
-        entity.setTenantId(request.getTenantId());
+        entity.setTenantId(ThreadLocalHolder.getTenantId());
         entity.setIsEdit(YnTypeEnum.YES.getCode());
-        entity.setCreateUser(request.getOperator());
-        entity.setCreateDate(LocalDateTime.now());
         this.save(entity);
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(entity, dto);
@@ -108,7 +107,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public AnalysePageDto copyAnalysePage(CopyAnalysePageDto request) {
-        checkBiUiAnalysePageByName(request.getCode(), request.getName(), request.getTenantId(), null);
+        checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
         if (null == fromPage) {
             throw new BizException("源报表不存在");
@@ -116,7 +115,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         //复制page
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
         BeanUtils.copyProperties(request, insertPage);
-        insertPage.setCreateDate(LocalDateTime.now());
         insertPage.setIsEdit(YnTypeEnum.YES.getCode());
         this.save(insertPage);
 
@@ -126,9 +124,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             BiUiAnalysePageConfig insertConfig = new BiUiAnalysePageConfig();
             insertConfig.setPageId(insertPage.getId());
             insertConfig.setContent(fromPageConfig.getContent());
-            insertConfig.setTenantId(request.getTenantId());
-            insertConfig.setCreateUser(request.getCreateUser());
-            insertConfig.setCreateDate(LocalDateTime.now());
+            insertConfig.setTenantId(ThreadLocalHolder.getTenantId());
             configService.save(insertConfig);
             insertPage.setEditId(insertConfig.getId());
             this.updateById(insertPage);
@@ -170,15 +166,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), entity.getTenantId(), entity.getId());
         entity.setName(request.getData().getName());
         entity.setDes(request.getData().getDes());
-        entity.setModifiedDate(LocalDateTime.now());
         this.updateById(entity);
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(entity, dto);
         return dto;
     }
 
+    @Transactional
     @Override
-    public AnalysePageConfigDto publishAnalysePage(RetRequest<AnalysePageIdDto> request) {
+    public AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request) {
         BiUiAnalysePage page = this.getById(request.getData().getPageId());
         if (page == null) {
             throw new BizException("报表不存在");
@@ -191,14 +187,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 throw new BizException("配置不存在");
             }
             config.setContent(request.getData().getContent());
-            config.setModifiedDate(LocalDateTime.now());
-            config.setModifiedUser(AnalyseUtil.getCurrentUser());
         } else {
             config = new BiUiAnalysePageConfig();
             BeanUtils.copyProperties(request.getData(), config);
-            config.setTenantId(request.getTenantId());
-            config.setCreateUser(request.getOperator());
-            config.setCreateDate(LocalDateTime.now());
+            config.setTenantId(ThreadLocalHolder.getTenantId());
         }
         configService.saveOrUpdate(config);
 
@@ -206,15 +198,19 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePageConfig publishConfig = new BiUiAnalysePageConfig();
         publishConfig.setPageId(config.getPageId());
         publishConfig.setContent(config.getContent());
-        publishConfig.setTenantId(config.getTenantId());
-        publishConfig.setCreateUser(request.getOperator());
-        publishConfig.setCreateDate(LocalDateTime.now());
+        publishConfig.setTenantId(ThreadLocalHolder.getTenantId());
         configService.save(publishConfig);
         //如果以前publish过,会变为历史版本,当前版本初始化就不会变更,存放在editId中
         page.setPublishId(publishConfig.getId());
         page.setEditId(config.getId());
         page.setIsEdit(YnTypeEnum.NO.getCode());
         this.updateById(page);
+
+        //可见编辑权限
+        userResourceService.saveResourcePermission(request.getData().getSaveResourcePermissionDto());
+
+        //数据权限
+        userDataService.saveDataPermission(request.getData().getPermissionItemDtoList(), page.getId());
         AnalysePageConfigDto dto = new AnalysePageConfigDto();
         BeanUtils.copyProperties(publishConfig, dto);
         return dto;
@@ -224,8 +220,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public PageResult<AnalysePageDto> getAnalysePageDrafts(PageRequest<AnalyseNameDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
         LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        if (!StringUtil.isEmpty(request.getTenantId())) {
-            pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
+        if (!StringUtil.isEmpty(ThreadLocalHolder.getTenantId())) {
+            pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, ThreadLocalHolder.getTenantId());
         }
         if (StringUtils.isNotBlank(request.getData().getName())) {
             pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
@@ -240,7 +236,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public void delAnalysePageDrafts(RetRequest<BatchDeleteAnalyseDto> request) {
         LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
         pageLambdaQueryWrapper.in(BiUiAnalysePage::getId, request.getData().getIds());
-        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, request.getTenantId());
+        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, ThreadLocalHolder.getTenantId());
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(pageList)) {
             pageList.forEach(page -> page.setIsEdit(YnTypeEnum.NO.getCode()));
@@ -258,10 +254,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             fieldQueryWrapper.in(BiUiModelField::getPageId, pageIds);
             fieldService.remove(fieldQueryWrapper);
             //删除config
-            LambdaQueryWrapper<BiUiAnalysePageConfig> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
-            configService.remove(queryWrapper);
+            LambdaQueryWrapper<BiUiAnalysePageConfig> configQueryWrapper = new LambdaQueryWrapper<>();
+            configQueryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
+            configService.remove(configQueryWrapper);
 
+            //删除可见编辑权限
+            LambdaQueryWrapper<BiUiAnalyseUserResource> resourceQueryWrapper = new LambdaQueryWrapper<>();
+            resourceQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, pageIds);
+            userResourceService.remove(resourceQueryWrapper);
             //删除page
             this.removeByIds(pageIds);
         }

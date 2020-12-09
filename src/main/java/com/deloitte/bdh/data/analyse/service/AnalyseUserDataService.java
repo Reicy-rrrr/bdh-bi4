@@ -2,6 +2,9 @@ package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
+import com.deloitte.bdh.data.analyse.model.request.PermissionItemDto;
+
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -9,5 +12,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
  * Description:
  */
 public interface AnalyseUserDataService extends Service<BiUiAnalyseUserData> {
+
+    void saveDataPermission(List<PermissionItemDto> itemDtoList, String pageId);
 
 }
