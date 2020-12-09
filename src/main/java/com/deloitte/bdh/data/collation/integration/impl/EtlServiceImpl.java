@@ -234,7 +234,7 @@ public class EtlServiceImpl implements EtlService {
             throw new RuntimeException("EtlServiceImpl.resourceUpdate.error : 模板状态非法");
         }
 
-        // 若只是删除了个别字段，或组件名字变更，不需要重构同步
+        // 若只是删除了个别字段，或组件名字变更，不需要重构同步（直连和本地除外）
         if (!isRefactor(dto, oldComponent)) {
             if (!oldComponent.getName().equals(dto.getComponentName())) {
                 Map<String, Object> reqNifi = Maps.newHashMap();
@@ -804,6 +804,11 @@ public class EtlServiceImpl implements EtlService {
 //            if (!config.getOffsetValue().equals(offsetValue)) {
 //                return true;
 //            }
+            //非同步的直接返回true
+            if (config.getType().equals(String.valueOf(SyncTypeEnum.LOCAL.getKey()))
+                    || SyncTypeEnum.DIRECT.getKey().equals(config.getType())) {
+                return true;
+            }
             //数据源变更
             if (!config.getRefSourceId().equals(sourceId)) {
                 return true;
