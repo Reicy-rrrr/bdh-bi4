@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
- * @since 2020-12-09
+ * @since 2020-10-26
  */
 @TableName("BI_COMPONENT_PARAMS")
 public class BiComponentParams implements Serializable {
@@ -57,19 +57,19 @@ public class BiComponentParams implements Serializable {
     @TableField("REF_COMPONENT_CODE")
     private String refComponentCode;
 
-    @TableField("CREATE_DATE")
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
 
-    @TableField("CREATE_USER")
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT_UPDATE)
     private String createUser;
 
-    @TableField("MODIFIED_DATE")
+    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime modifiedDate;
 
-    @TableField("MODIFIED_USER")
+    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT_UPDATE)
     private String modifiedUser;
 
-    @TableField("IP")
+    @TableField(value = "IP", fill = FieldFill.INSERT_UPDATE)
     private String ip;
 
     @TableField("TENANT_ID")
@@ -88,6 +88,7 @@ public class BiComponentParams implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
+
     public String getCode() {
         return code;
     }
@@ -95,6 +96,7 @@ public class BiComponentParams implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
+
     public String getName() {
         return name;
     }
@@ -102,6 +104,7 @@ public class BiComponentParams implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
     public String getParamKey() {
         return paramKey;
     }
@@ -109,6 +112,7 @@ public class BiComponentParams implements Serializable {
     public void setParamKey(String paramKey) {
         this.paramKey = paramKey;
     }
+
     public String getParamValue() {
         return paramValue;
     }
@@ -130,6 +134,7 @@ public class BiComponentParams implements Serializable {
     public void setRefComponentCode(String refComponentCode) {
         this.refComponentCode = refComponentCode;
     }
+
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -137,6 +142,7 @@ public class BiComponentParams implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
+
     public String getCreateUser() {
         return createUser;
     }
@@ -144,6 +150,7 @@ public class BiComponentParams implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
+
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -151,6 +158,7 @@ public class BiComponentParams implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
+
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -158,6 +166,7 @@ public class BiComponentParams implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
+
     public String getIp() {
         return ip;
     }
@@ -165,6 +174,7 @@ public class BiComponentParams implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public String getTenantId() {
         return tenantId;
     }
@@ -172,6 +182,7 @@ public class BiComponentParams implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+
     public String getParentCode() {
         return parentCode;
     }
