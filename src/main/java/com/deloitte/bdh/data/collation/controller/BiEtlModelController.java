@@ -13,6 +13,7 @@ import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelContent;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageHelper;
@@ -127,5 +128,12 @@ public class BiEtlModelController {
     @PostMapping("/parseCron")
     public RetResult<String> parseCron(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(CronUtil.createCronExpression(request.getData()));
+    }
+
+    @ApiOperation(value = "基于租户获取模型列表对应的数据集", notes = "基于租户获取模型列表对应的数据集")
+    @PostMapping("/getDataSet")
+    public RetResult<PageResult<List<DataSetResp>>> getDataSet(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
+        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
+        return RetResponse.makeOKRsp(biEtlModelService.getDataSet(request.getData()));
     }
 }

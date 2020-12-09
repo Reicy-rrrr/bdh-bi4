@@ -7,6 +7,7 @@ import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 
 import java.util.List;
@@ -94,6 +95,14 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @return
      */
     void trigger(String modelCode) throws Exception;
+
+    /**
+     * 基于租户获取模型列表对应的数据集
+     *
+     * @param dto
+     * @return
+     */
+    PageResult<List<DataSetResp>> getDataSet(GetModelPageDto dto);
 
 
 }

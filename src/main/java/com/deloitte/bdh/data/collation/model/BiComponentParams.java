@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 /**
  * <p>
- *
+ * 
  * </p>
  *
  * @author lw
- * @since 2020-10-26
+ * @since 2020-12-09
  */
 @TableName("BI_COMPONENT_PARAMS")
 public class BiComponentParams implements Serializable {
@@ -46,24 +46,30 @@ public class BiComponentParams implements Serializable {
     private String paramValue;
 
     /**
+     * 关联的模型编码
+     */
+    @TableField("REF_MODEL_CODE")
+    private String refModelCode;
+
+    /**
      * 关联的COMPONENT编码
      */
     @TableField("REF_COMPONENT_CODE")
     private String refComponentCode;
 
-    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
+    @TableField("CREATE_DATE")
     private LocalDateTime createDate;
 
-    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT_UPDATE)
+    @TableField("CREATE_USER")
     private String createUser;
 
-    @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT_UPDATE)
+    @TableField("MODIFIED_DATE")
     private LocalDateTime modifiedDate;
 
-    @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT_UPDATE)
+    @TableField("MODIFIED_USER")
     private String modifiedUser;
 
-    @TableField(value = "IP", fill = FieldFill.INSERT_UPDATE)
+    @TableField("IP")
     private String ip;
 
     @TableField("TENANT_ID")
@@ -82,7 +88,6 @@ public class BiComponentParams implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
-
     public String getCode() {
         return code;
     }
@@ -90,7 +95,6 @@ public class BiComponentParams implements Serializable {
     public void setCode(String code) {
         this.code = code;
     }
-
     public String getName() {
         return name;
     }
@@ -98,7 +102,6 @@ public class BiComponentParams implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-
     public String getParamKey() {
         return paramKey;
     }
@@ -106,7 +109,6 @@ public class BiComponentParams implements Serializable {
     public void setParamKey(String paramKey) {
         this.paramKey = paramKey;
     }
-
     public String getParamValue() {
         return paramValue;
     }
@@ -114,7 +116,13 @@ public class BiComponentParams implements Serializable {
     public void setParamValue(String paramValue) {
         this.paramValue = paramValue;
     }
+    public String getRefModelCode() {
+        return refModelCode;
+    }
 
+    public void setRefModelCode(String refModelCode) {
+        this.refModelCode = refModelCode;
+    }
     public String getRefComponentCode() {
         return refComponentCode;
     }
@@ -122,7 +130,6 @@ public class BiComponentParams implements Serializable {
     public void setRefComponentCode(String refComponentCode) {
         this.refComponentCode = refComponentCode;
     }
-
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -130,7 +137,6 @@ public class BiComponentParams implements Serializable {
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
     }
-
     public String getCreateUser() {
         return createUser;
     }
@@ -138,7 +144,6 @@ public class BiComponentParams implements Serializable {
     public void setCreateUser(String createUser) {
         this.createUser = createUser;
     }
-
     public LocalDateTime getModifiedDate() {
         return modifiedDate;
     }
@@ -146,7 +151,6 @@ public class BiComponentParams implements Serializable {
     public void setModifiedDate(LocalDateTime modifiedDate) {
         this.modifiedDate = modifiedDate;
     }
-
     public String getModifiedUser() {
         return modifiedUser;
     }
@@ -154,7 +158,6 @@ public class BiComponentParams implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
-
     public String getIp() {
         return ip;
     }
@@ -162,7 +165,6 @@ public class BiComponentParams implements Serializable {
     public void setIp(String ip) {
         this.ip = ip;
     }
-
     public String getTenantId() {
         return tenantId;
     }
@@ -170,7 +172,6 @@ public class BiComponentParams implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
-
     public String getParentCode() {
         return parentCode;
     }
@@ -182,19 +183,20 @@ public class BiComponentParams implements Serializable {
     @Override
     public String toString() {
         return "BiComponentParams{" +
-                "id=" + id +
-                ", code=" + code +
-                ", name=" + name +
-                ", paramKey=" + paramKey +
-                ", paramValue=" + paramValue +
-                ", refComponentCode=" + refComponentCode +
-                ", createDate=" + createDate +
-                ", createUser=" + createUser +
-                ", modifiedDate=" + modifiedDate +
-                ", modifiedUser=" + modifiedUser +
-                ", ip=" + ip +
-                ", tenantId=" + tenantId +
-                ", parentCode=" + parentCode +
-                "}";
+        "id=" + id +
+        ", code=" + code +
+        ", name=" + name +
+        ", paramKey=" + paramKey +
+        ", paramValue=" + paramValue +
+        ", refModelCode=" + refModelCode +
+        ", refComponentCode=" + refComponentCode +
+        ", createDate=" + createDate +
+        ", createUser=" + createUser +
+        ", modifiedDate=" + modifiedDate +
+        ", modifiedUser=" + modifiedUser +
+        ", ip=" + ip +
+        ", tenantId=" + tenantId +
+        ", parentCode=" + parentCode +
+        "}";
     }
 }

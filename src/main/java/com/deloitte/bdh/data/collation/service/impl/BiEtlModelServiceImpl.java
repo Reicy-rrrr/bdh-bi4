@@ -13,6 +13,7 @@ import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
@@ -25,13 +26,16 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
+import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
+import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
@@ -75,6 +79,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     @Autowired
     private BiComponentService componentService;
     @Autowired
+    private BiComponentParamsService componentParamsService;
+    @Autowired
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private BiEtlMappingConfigService mappingConfigService;
@@ -115,18 +121,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public PageResult<List<ModelResp>> getModelPage(GetModelPageDto dto) {
-        LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
-        fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
-        if (!StringUtil.isEmpty(ThreadLocalHolder.getTenantId())) {
-            fUOLamQW.eq(BiEtlModel::getTenantId, ThreadLocalHolder.getTenantId());
-        }
-        if (!StringUtil.isEmpty(dto.getFileCode())) {
-            fUOLamQW.eq(BiEtlModel::getParentCode, dto.getFileCode());
-        }
-        fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
-        fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
-        List<BiEtlModel> list = biEtlModelMapper.selectList(fUOLamQW);
-
+        List<BiEtlModel> list = getModelListByFileCode(dto.getFileCode());
         List<ModelResp> models = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(list)) {
             for (BiEtlModel model : list) {
@@ -143,7 +138,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         PageResult<List<ModelResp>> pageResult = new PageResult(pageInfo);
         return pageResult;
     }
-
 
     @Override
     public BiEtlModel createModel(CreateModelDto dto) throws Exception {
@@ -387,6 +381,41 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     }
 
+    @Override
+    public PageResult<List<DataSetResp>> getDataSet(GetModelPageDto dto) {
+        List<DataSetResp> result = Lists.newArrayList();
+
+        List<BiEtlModel> modelList = getModelListByFileCode(dto.getFileCode());
+        if (CollectionUtils.isNotEmpty(modelList)) {
+            List<String> codeList = modelList.stream().map(BiEtlModel::getCode).collect(Collectors.toList());
+
+            List<BiComponentParams> tableList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME)
+                    .in(BiComponentParams::getRefModelCode, codeList)
+            );
+
+            if (CollectionUtils.isNotEmpty(tableList)) {
+                for (BiComponentParams params : tableList) {
+                    for (BiEtlModel model : modelList) {
+                        if (params.getRefModelCode().equals(model.getCode())) {
+                            DataSetResp resp = new DataSetResp();
+                            resp.setModelCode(model.getCode());
+                            resp.setModelName(model.getName());
+                            resp.setTableName(params.getParamValue());
+                            resp.setDescription("null");
+                            resp.setNextExecuteDate(model.getCreateDate().toString());
+                            result.add(resp);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
+        PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
+        return pageResult;
+    }
+
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
@@ -467,5 +496,17 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         biEtlModelMapper.insert(inf);
         return inf;
     }
+
+    private List<BiEtlModel> getModelListByFileCode(String fileCode) {
+        LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
+        fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
+        if (!StringUtil.isEmpty(fileCode)) {
+            fUOLamQW.eq(BiEtlModel::getParentCode, fileCode);
+        }
+        fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
+        fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
+        return biEtlModelMapper.selectList(fUOLamQW);
+    }
+
 
 }

@@ -81,7 +81,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
         LambdaQueryWrapper<BiEtlDatabaseInf> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BiEtlDatabaseInf::getTenantId, ThreadLocalHolder.getTenantId());
         // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(dto.getName())) {
             lambdaQueryWrapper.like(BiEtlDatabaseInf::getName, dto.getName());
@@ -569,7 +568,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         }
         BiEtlDatabaseInf exitDb = biEtlDatabaseInfMapper.selectOne(new LambdaQueryWrapper<BiEtlDatabaseInf>()
                 .eq(BiEtlDatabaseInf::getName, dto.getName())
-                .eq(BiEtlDatabaseInf::getTenantId, ThreadLocalHolder.getTenantId())
         );
         if (null != exitDb) {
             throw new RuntimeException("数据源名字重复");

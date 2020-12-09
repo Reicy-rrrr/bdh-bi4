@@ -9,6 +9,7 @@
         <result column="NAME" property="name" />
         <result column="PARAM_KEY" property="paramKey" />
         <result column="PARAM_VALUE" property="paramValue" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
         <result column="REF_COMPONENT_CODE" property="refComponentCode" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

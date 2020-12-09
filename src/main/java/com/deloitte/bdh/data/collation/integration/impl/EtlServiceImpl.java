@@ -209,7 +209,7 @@ public class EtlServiceImpl implements EtlService {
         }
 
         //step3:保存组件
-        List<BiComponentParams> biComponentParams = transferToParams(componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
         return component;
@@ -387,7 +387,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
-        List<BiComponentParams> biComponentParams = transferToParams(componentCode, params);
+        List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -431,7 +431,7 @@ public class EtlServiceImpl implements EtlService {
         // 设置组件参数：创建最终表,表名默认为模板编码
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_NAME, tableName);
-        List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         // 更新组件信息
         if (StringUtils.isNotBlank(dto.getComponentName())) {
@@ -459,7 +459,7 @@ public class EtlServiceImpl implements EtlService {
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.JOIN_PARAM_KEY_TABLES, JSON.toJSONString(dto.getTables()));
-        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -477,7 +477,7 @@ public class EtlServiceImpl implements EtlService {
         // 保存最新组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.JOIN_PARAM_KEY_TABLES, JSON.toJSONString(dto.getTables()));
-        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         // 更新组件信息
         if (StringUtils.isNotBlank(dto.getComponentName())) {
@@ -505,7 +505,7 @@ public class EtlServiceImpl implements EtlService {
         // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getGroups()));
-        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -523,7 +523,7 @@ public class EtlServiceImpl implements EtlService {
         // 保存最新组件参数
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.GROUP_PARAM_KEY_GROUPS, JSON.toJSONString(dto.getGroups()));
-        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         // 更新组件信息
         if (StringUtils.isNotBlank(dto.getComponentName())) {
@@ -547,7 +547,7 @@ public class EtlServiceImpl implements EtlService {
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.ARRANGE_PARAM_KEY_TYPE, arrangeType.getType());
         params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
-        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -561,7 +561,7 @@ public class EtlServiceImpl implements EtlService {
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.ARRANGE_PARAM_KEY_TYPE, arrangeType.getType());
         params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
-        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), params);
+        List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
     }
@@ -680,7 +680,7 @@ public class EtlServiceImpl implements EtlService {
         }
     }
 
-    private List<BiComponentParams> transferToParams(String code, Map<String, Object> source) {
+    private List<BiComponentParams> transferToParams(String componentCode, String modelCode, Map<String, Object> source) {
         List<BiComponentParams> list = Lists.newArrayList();
         for (Map.Entry<String, Object> var : source.entrySet()) {
             String key = var.getKey();
@@ -690,7 +690,8 @@ public class EtlServiceImpl implements EtlService {
             params.setName(key);
             params.setParamKey(key);
             params.setParamValue(JsonUtil.obj2String(value));
-            params.setRefComponentCode(code);
+            params.setRefComponentCode(componentCode);
+            params.setRefModelCode(modelCode);
             params.setTenantId(ThreadLocalHolder.getTenantId());
             list.add(params);
         }

@@ -38,7 +38,9 @@ public class BiComponentConnectionServiceImpl extends AbstractService<BiComponen
         if (null == model) {
             throw new RuntimeException("EtlServiceImpl.link.error : 未找到目标 模板");
         }
-
+        if (dto.getFromComponentCode().equals(dto.getToComponentCode())) {
+            throw new RuntimeException("EtlServiceImpl.link.error : 连接目标不能指向自己");
+        }
         BiComponentConnection connection = new BiComponentConnection();
         connection.setCode(GenerateCodeUtil.genConnects());
         connection.setFromComponentCode(dto.getFromComponentCode());
