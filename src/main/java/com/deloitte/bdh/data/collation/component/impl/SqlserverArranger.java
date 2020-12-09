@@ -388,49 +388,248 @@ public class SqlserverArranger implements ArrangerSelector {
         if (targetType.getType().equals(type)) {
             return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
         }
-
-        // 重置字段类型（系统中的数据类型）
-        mapping.setFinalFieldType(targetType.getType());
-        field.setType(targetType.getType());
-        StringBuilder segmentBuilder = new StringBuilder("CONVERT(");
+        ArrangeResultModel result = null;
         switch (targetType) {
             case Integer:
-                segmentBuilder.append("BIGINT");
-                field.setColumnType("bigint(32)");
-                field.setDataType("bigint");
-                field.setDataScope("32");
+                result = toInteger(fromFieldMapping, fromType);
                 break;
             case Float:
-                segmentBuilder.append("DECIMAL(32, 8)");
-                field.setColumnType("decimal(32,8)");
-                field.setDataType("decimal");
-                field.setDataScope("32,8");
+                result = toFloat(fromFieldMapping, fromType);
                 break;
             case Date:
-                segmentBuilder.append("DATE");
-                field.setColumnType("date");
-                field.setDataType("date");
-                field.setDataScope("");
+                result = toDate(fromFieldMapping, fromType);
                 break;
             case DateTime:
-                segmentBuilder.append("DATETIME");
-                field.setColumnType("datetime");
-                field.setDataType("datetime");
-                field.setDataScope("");
+                result = toDateTime(fromFieldMapping, fromType);
                 break;
             case Text:
-                segmentBuilder.append("VARCHAR(255)");
-                field.setColumnType("varchar(255)");
-                field.setDataType("varchar(255)");
-                field.setDataScope("255");
+                result = toText(fromFieldMapping, fromType);
                 break;
             default:
                 throw new BizException("转换类型失败，暂不支持的类型！");
         }
-        segmentBuilder.append(", ");
-        segmentBuilder.append(fromField);
-        segmentBuilder.append(") AS ");
+        return result;
+    }
+
+    /**
+     * 转换字段为整数类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toInteger(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getDataType();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case Float:
+                segmentBuilder.append("CONVERT(NUMERIC, ").append(fromField).append(")");
+                break;
+            case Text:
+                // CASE WHEN ISNUMERIC('123.1') = 1 AND PATINDEX('%[^0-9+-.%]','123.1') = 0 THEN CONVERT(NUMERIC, '123.1') ELSE NULL END;
+                segmentBuilder.append("CASE WHEN ISNUMERIC(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") = 1 AND PATINDEX('%[^0-9+-.%]',");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") = 0 THEN CONVERT(NUMERIC, ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        FieldMappingModel mapping = fromMapping.clone();
+        mapping.setFinalFieldType(DataTypeEnum.Integer.getType());
+        mapping.getTableField().setType(DataTypeEnum.Integer.getType());
+        mapping.getTableField().setColumnType("bigint(32)");
+        mapping.getTableField().setDataType("bigint");
+        mapping.getTableField().setDataScope("32");
+        segmentBuilder.append(" AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为浮点数类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toFloat(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getDataType();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case Integer:
+                segmentBuilder.append("CAST(").append(fromField).append(" AS DECIMAL (32,8))");
+                break;
+            case Text:
+                // CASE WHEN ISNUMERIC('123.1') = 1 AND PATINDEX('%[^0-9+-.%]','123.1') = 0 THEN CONVERT(NUMERIC(32,8), '123.1') ELSE NULL END;
+                segmentBuilder.append("CASE WHEN ISNUMERIC(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") = 1 AND PATINDEX('%[^0-9+-.%]',");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") = 0 THEN CONVERT(NUMERIC(32,8), ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        FieldMappingModel mapping = fromMapping.clone();
+        mapping.setFinalFieldType(DataTypeEnum.Float.getType());
+        mapping.getTableField().setType(DataTypeEnum.Float.getType());
+        mapping.getTableField().setColumnType("DECIMAL(32,8)");
+        mapping.getTableField().setDataType("DECIMAL");
+        mapping.getTableField().setDataScope("32,8");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为日期类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toDate(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getDataType();
+        FieldMappingModel mapping = fromMapping.clone();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case DateTime:
+                segmentBuilder.append("CONVERT(DATE, ").append(fromField).append(");");
+                break;
+            case Text:
+                // CASE WHEN ISDATE('2020/01/22') = 1 THEN CONVERT(DATE, '2020/01/22 12:00:12') ELSE NULL END
+                segmentBuilder.append("CASE WHEN ISDATE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") = 1 THEN CONVERT(DATE, ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        mapping.setFinalFieldType(DataTypeEnum.Date.getType());
+        mapping.getTableField().setType(DataTypeEnum.Date.getType());
+        mapping.getTableField().setColumnType("date");
+        mapping.getTableField().setDataType("date");
+        mapping.getTableField().setDataScope("");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为日期时间类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toDateTime(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getDataType();
+        FieldMappingModel mapping = fromMapping.clone();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case DateTime:
+                segmentBuilder.append("CONVERT(DATETIME, ").append(fromField).append(");");
+                break;
+            case Text:
+                // CASE WHEN ISDATE('2020/01/22') = 1 THEN CONVERT(DATETIME, '2020/01/22 12:00:12') ELSE NULL END
+                segmentBuilder.append("CASE WHEN ISDATE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") = 1 THEN CONVERT(DATETIME, ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(") ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        mapping.setFinalFieldType(DataTypeEnum.DateTime.getType());
+        mapping.getTableField().setType(DataTypeEnum.DateTime.getType());
+        mapping.getTableField().setColumnType("datetime");
+        mapping.getTableField().setDataType("datetime");
+        mapping.getTableField().setDataScope("");
+        segmentBuilder.append("AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为文本类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toText(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getDataType();
+        FieldMappingModel mapping = fromMapping.clone();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case Date:
+                // SUBSTRING(CONVERT(VARCHAR, GETDATE(), 120), 1, 10)
+                segmentBuilder.append("SUBSTRING(CONVERT(VARCHAR, ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(", 120), 1, 10)");
+                break;
+            case DateTime:
+                // CONVERT(VARCHAR, GETDATE(), 120)
+                segmentBuilder.append("CONVERT(VARCHAR, ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(", 120)");
+                break;
+            default:
+                // CONVERT(VARCHAR, 1233.1);
+                segmentBuilder.append("CONVERT(VARCHAR, ");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(")");
+        }
+
+        mapping.setFinalFieldType(DataTypeEnum.Text.getType());
+        mapping.getTableField().setType(DataTypeEnum.Text.getType());
+        mapping.getTableField().setColumnType("varchar(255)");
+        mapping.getTableField().setDataType("varchar");
+        mapping.getTableField().setDataScope("255");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 默认不做任何处理
+     *
+     * @param fromMapping 从组件字段映射
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel defaultModify(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = fromMapping.getOriginalFieldName();
+        String tempSegment = fromField + " AS " + fromMapping.getTempFieldName();
+        if (!ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            fromField = fromMapping.getTempFieldName();
+            tempSegment = fromField;
+        }
+
+        FieldMappingModel mapping = fromMapping.clone();
+        return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
     }
 }

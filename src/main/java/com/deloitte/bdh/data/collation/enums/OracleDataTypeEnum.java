@@ -16,7 +16,7 @@ public enum OracleDataTypeEnum {
     TIMESTAMP("TIMESTAMP", DataTypeEnum.DateTime, "日期（日-月-年）"),
     LONG("LONG", DataTypeEnum.Text, "超长字符串"),
     RAW("RAW", DataTypeEnum.Text, "固定长度的二进制数据"),
-    LONGRAW("LONGRAW", DataTypeEnum.Text, "可变长度的二进制数据"),
+    LONG_RAW("LONG RAW", DataTypeEnum.Text, "可变长度的二进制数据"),
     BLOB("BLOB", DataTypeEnum.Text, "二进制数据"),
     CLOB("CLOB", DataTypeEnum.Text, "字符数据"),
     NCLOB("NCLOB", DataTypeEnum.Text, "根据字符集而定的字符数据"),

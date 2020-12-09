@@ -427,7 +427,7 @@ public class MysqlArranger implements ArrangerSelector {
             case Text:
                 segmentBuilder.append("CHAR");
                 field.setColumnType("varchar(255)");
-                field.setDataType("varchar(255)");
+                field.setDataType("varchar");
                 field.setDataScope("255");
                 break;
             default:
