@@ -43,7 +43,7 @@ public interface BiComponentService extends Service<BiComponent> {
 
     void remove(BiComponent component);
 
-    String addOutComponent(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception;
+    String addOutComponentForNifi(String querySql, String tableName, BiEtlModel biEtlModel) throws Exception;
 
     String getProcessorsGroupId(String componentCode);
 

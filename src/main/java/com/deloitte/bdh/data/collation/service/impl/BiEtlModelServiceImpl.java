@@ -13,7 +13,6 @@ import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
@@ -28,7 +27,6 @@ import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
-import com.deloitte.bdh.data.collation.model.BiTenantConfig;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
@@ -84,8 +82,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private DbHandler dbHandler;
     @Autowired
     private BiEtlModelHandleService modelHandleService;
-    @Autowired
-    private AnalyseModelFieldService fieldService;
     @Autowired
     private BiTenantConfigService biTenantConfigService;
 
@@ -327,10 +323,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             List<TableField> columns = componentModel.getFieldMappings().stream().map(FieldMappingModel::getTableField)
                     .collect(Collectors.toList());
 
-            // 校验最终表
-            checkAnalyseField(componentModel.getTableName(), columns);
-            //创建nifi 配置
-            componentService.addOutComponent(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
+            //创建输出组件的nifi配置
+            componentService.addOutComponentForNifi(componentModel.getQuerySql(), componentModel.getTableName(), biEtlModel);
             //创建表
             dbHandler.createTable(componentModel.getTableName(), columns);
             //启动模板 ，启动xxjob，有job去生成执行计划
@@ -472,27 +466,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         inf.setId(ThreadLocalHolder.getIp());
         biEtlModelMapper.insert(inf);
         return inf;
-    }
-
-    private void checkAnalyseField(String queryTableName, List<TableField> columns) {
-        Map<String, List<String>> analyseTable = fieldService.getTables(queryTableName);
-        if (null != analyseTable) {
-            List<String> analyseFields = analyseTable.get(queryTableName);
-            if (CollectionUtils.isNotEmpty(analyseFields)) {
-                analyseFields.forEach(field -> {
-                    boolean exit = false;
-                    for (TableField tableField : columns) {
-                        if (field.equals(tableField.getName())) {
-                            exit = true;
-                            break;
-                        }
-                    }
-                    if (!exit) {
-                        throw new RuntimeException("用于分析管理的表字段缺失:" + field);
-                    }
-                });
-            }
-        }
     }
 
 }

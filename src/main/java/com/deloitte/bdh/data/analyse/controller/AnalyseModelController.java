@@ -25,6 +25,7 @@ import java.util.List;
  * Date:12/11/2020
  * Description:
  */
+@Api(tags = "分析管理-数据模型")
 @RestController
 @RequestMapping("/ui/analyse/model")
 public class AnalyseModelController {

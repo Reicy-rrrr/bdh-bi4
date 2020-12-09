@@ -11,6 +11,7 @@ import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
@@ -82,6 +83,8 @@ public class EtlServiceImpl implements EtlService {
     private NifiProcessService nifiProcessService;
     @Autowired
     private BiTenantConfigService biTenantConfigService;
+    @Autowired
+    private AnalyseModelFieldService analyseModelFieldService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -403,6 +406,8 @@ public class EtlServiceImpl implements EtlService {
                 .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME));
         // 原始表名
         String oldTableName = tableNameParam.getParamValue();
+        //校验分析那面是否用到原表，若用到则校验新字段，只能增加字段
+        checkAnalyseField(oldTableName, dto.getFields());
         // 如果未传递新表名，就使用原始表名
         String tableName = StringUtils.isBlank(dto.getTableName()) ? oldTableName : dto.getTableName();
         // 如果使用新表名，校验表名是否重复
@@ -1006,4 +1011,26 @@ public class EtlServiceImpl implements EtlService {
                 .eq(BiComponentParams::getRefComponentCode, componentCode)));
         return component;
     }
+
+    private void checkAnalyseField(String queryTableName, List<String> columns) {
+        Map<String, List<String>> analyseTable = analyseModelFieldService.getTables(queryTableName);
+        if (null != analyseTable) {
+            List<String> analyseFields = analyseTable.get(queryTableName);
+            if (CollectionUtils.isNotEmpty(analyseFields)) {
+                analyseFields.forEach(field -> {
+                    boolean exist = false;
+                    for (String newFieldName : columns) {
+                        if (field.equals(newFieldName)) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if (!exist) {
+                        throw new RuntimeException("用于分析管理的表字段缺失:" + field);
+                    }
+                });
+            }
+        }
+    }
+
 }

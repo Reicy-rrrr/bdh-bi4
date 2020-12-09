@@ -7,6 +7,8 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
+import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
+import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +24,10 @@ public class NifiController {
 
     @Autowired
     private NifiProcessService nifiProcessService;
-
+    @Autowired
+    private BiProcessorsService processorsService;
+    @Autowired
+    private Transfer transfer;
 
     @ApiOperation(value = "getToken", notes = "getToken")
     @GetMapping("/getToken")
@@ -81,7 +86,7 @@ public class NifiController {
     @ApiOperation(value = "updateProcessor", notes = "updateProcessor")
     @PostMapping("/updateProcessor")
     public RetResult<Object> updateProcessor(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
-        return RetResponse.makeOKRsp(nifiProcessService.updateProcessor(null,request.getData()));
+        return RetResponse.makeOKRsp(nifiProcessService.updateProcessor(null, request.getData()));
     }
 
     @ApiOperation(value = "createConnections", notes = "createConnections")
@@ -102,11 +107,26 @@ public class NifiController {
         return RetResponse.makeOKRsp(nifiProcessService.delConnections(request.getData()));
     }
 
-    @ApiOperation(value = "runState", notes = "runState")
-    @PostMapping("/runState")
-    public RetResult<Object> runState(@RequestBody @Validated RetRequest<Map<String, Object>> request) throws Exception {
-        return RetResponse.makeOKRsp(nifiProcessService.runState((String) request.getData().get("id"),
-                (String) request.getData().get("state"), (Boolean) request.getData().get("group")));
+    @ApiOperation(value = "run", notes = "run")
+    @PostMapping("/run")
+    public RetResult<Void> run(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        transfer.run(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "stop", notes = "stop")
+    @PostMapping("/stop")
+    public RetResult<Void> stop(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        transfer.stop(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "del", notes = "del")
+    @PostMapping("/del")
+    public RetResult<Void> del(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        transfer.del(request.getData());
+        processorsService.removeById("999");
+        return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "previewConnction", notes = "previewConnction")

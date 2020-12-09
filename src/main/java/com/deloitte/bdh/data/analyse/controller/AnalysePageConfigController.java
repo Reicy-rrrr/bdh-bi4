@@ -26,7 +26,7 @@ import java.util.List;
  * Date:12/11/2020
  * Description:
  */
-@Api(value = "分析管理-报表配置")
+@Api(tags = "分析管理-报表配置")
 @RestController
 @RequestMapping("/ui/analyse/pageConfig")
 public class AnalysePageConfigController {

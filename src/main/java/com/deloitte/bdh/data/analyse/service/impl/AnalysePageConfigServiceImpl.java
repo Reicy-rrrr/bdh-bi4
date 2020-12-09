@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
@@ -89,9 +90,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         }
         BiUiAnalysePageConfig config = new BiUiAnalysePageConfig();
         BeanUtils.copyProperties(request.getData(), config);
-        config.setTenantId(request.getTenantId());
-        config.setCreateUser(request.getOperator());
-        config.setCreateDate(LocalDateTime.now());
+        config.setTenantId(ThreadLocalHolder.getTenantId());
         this.save(config);
         page.setEditId(config.getId());
         page.setIsEdit(YnTypeEnum.YES.getCode());
@@ -114,8 +113,6 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
             throw new BizException("配置不存在");
         }
         config.setContent(request.getData().getContent());
-        config.setModifiedDate(LocalDateTime.now());
-        config.setModifiedUser(AnalyseUtil.getCurrentUser());
         this.updateById(config);
         BiUiAnalysePage page = analysePageService.getById(config.getPageId());
         page.setIsEdit(YnTypeEnum.YES.getCode());

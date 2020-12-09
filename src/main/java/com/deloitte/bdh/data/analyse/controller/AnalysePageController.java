@@ -23,7 +23,7 @@ import javax.annotation.Resource;
  * Date:12/11/2020
  * Description:
  */
-@Api(value = "分析管理-报表")
+@Api(tags = "分析管理-报表")
 @RestController
 @RequestMapping("/ui/analyse/page")
 public class AnalysePageController {
@@ -77,7 +77,7 @@ public class AnalysePageController {
 
     @ApiOperation(value = "发布页面", notes = "发布页面")
     @PostMapping("/publishAnalysePage")
-    public RetResult<AnalysePageConfigDto> publishAnalysePageConfig(@RequestBody @Validated RetRequest<AnalysePageIdDto> request) {
+    public RetResult<AnalysePageConfigDto> publishAnalysePageConfig(@RequestBody @Validated RetRequest<PublishAnalysePageDto> request) {
         return RetResponse.makeOKRsp(analysePageService.publishAnalysePage(request));
     }
 

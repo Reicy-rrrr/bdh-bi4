@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
@@ -138,10 +139,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             wd.setParentId("0");
             wd.setName(DataModelTypeEnum.WD.getDesc());
             wd.setType(DataModelTypeEnum.WD.getCode());
-            wd.setTenantId(request.getTenantId());
-            wd.setIp(request.getIp());
-            wd.setCreateUser(request.getOperator());
-            wd.setCreateDate(LocalDateTime.now());
+            wd.setTenantId(ThreadLocalHolder.getTenantId());
             folderService.save(wd);
             wdId = wd.getId();
 
@@ -153,9 +151,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             dl.setName(DataModelTypeEnum.DL.getDesc());
             dl.setType(DataModelTypeEnum.DL.getCode());
             dl.setIp(request.getIp());
-            dl.setTenantId(request.getTenantId());
-            dl.setCreateUser(request.getOperator());
-            dl.setCreateDate(LocalDateTime.now());
+            dl.setTenantId(ThreadLocalHolder.getTenantId());
             folderService.save(dl);
             dlId = dl.getId();
 
@@ -187,10 +183,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                     field.setIsDimention(YnTypeEnum.YES.getCode());
                     field.setIsMensure(YnTypeEnum.NO.getCode());
                 }
-                field.setTenantId(request.getTenantId());
-                field.setIp(request.getIp());
-                field.setCreateUser("0");
-                field.setCreateDate(LocalDateTime.now());
+                field.setTenantId(ThreadLocalHolder.getTenantId());
                 fieldService.save(field);
                 fieldList.add(field);
             }

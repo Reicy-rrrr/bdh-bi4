@@ -38,7 +38,7 @@ import java.util.Map;
  * @author lw
  * @since 2020-11-23
  */
-@Api(value = "分析管理-公开报表")
+@Api(tags = "分析管理-公开报表")
 @RestController
 @RequestMapping("/biUiAnalysePublicShare")
 @Slf4j
