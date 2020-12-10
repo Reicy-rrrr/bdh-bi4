@@ -235,8 +235,10 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .eq(BiProcessors::getRelModelCode, biEtlModel.getCode())
                 .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
         );
-        transfer.del(oldOutProcessor.getProcessGroupId());
-        processorsService.removeById(oldOutProcessor.getId());
+        if (null != oldOutProcessor) {
+            transfer.del(oldOutProcessor.getProcessGroupId());
+            processorsService.removeById(oldOutProcessor.getId());
+        }
 
         String processGroupId = transfer.add(biEtlModel.getProcessGroupId(), BiProcessorsTypeEnum.ETL_SOURCE.includeProcessor(null).getKey(), () -> {
             OutSql sql = new OutSql();
