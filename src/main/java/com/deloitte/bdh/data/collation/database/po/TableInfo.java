@@ -17,9 +17,9 @@ import lombok.NoArgsConstructor;
 public class TableInfo {
     /** 表名称 */
     @ApiModelProperty(value = "表名称", example = "tb_order", required = true)
-    private String name;
+    private String toTableName;
 
     /** 表描述 */
     @ApiModelProperty(value = "表描述", example = "订单表", required = true)
-    private String desc;
+    private String toTableDesc;
 }
