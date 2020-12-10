@@ -150,7 +150,9 @@ public class JoinComponent implements ComponentHandler {
             }
         }
         // 删除SELECT中最后多余的“,”
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        if (sqlBuilder.lastIndexOf(sql_key_comma) == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        }
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(sql_key_from);
         buildTableSql(sqlBuilder, joinModel, fromCompMap);

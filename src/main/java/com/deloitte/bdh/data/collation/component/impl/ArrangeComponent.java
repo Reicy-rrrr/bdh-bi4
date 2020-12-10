@@ -219,7 +219,9 @@ public class ArrangeComponent implements ComponentHandler {
             selectBuilder.append(sql_key_comma);
         });
         // 删除SELECT中最后多余的“,”
-        selectBuilder.deleteCharAt(selectBuilder.lastIndexOf(sql_key_comma));
+        if (selectBuilder.lastIndexOf(sql_key_comma) == (selectBuilder.length() - 1)) {
+            selectBuilder.deleteCharAt(selectBuilder.lastIndexOf(sql_key_comma));
+        }
         selectBuilder.append(sql_key_blank);
         return selectBuilder;
     }

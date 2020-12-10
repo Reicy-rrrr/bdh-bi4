@@ -78,7 +78,9 @@ public class OutComponent implements ComponentHandler {
             sqlBuilder.append(sql_key_comma);
         });
         // 删除SELECT中最后多余的“,”
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        if (sqlBuilder.lastIndexOf(sql_key_comma) == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        }
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(sql_key_from);
         sqlBuilder.append(sql_key_bracket_left);
@@ -122,7 +124,10 @@ public class OutComponent implements ComponentHandler {
             sqlBuilder.append(fieldMapping.getFinalFieldName());
             sqlBuilder.append(sql_key_comma);
         });
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        // 删除SELECT中最后多余的“,”
+        if (sqlBuilder.lastIndexOf(sql_key_comma) == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        }
         sqlBuilder.append(sql_key_bracket_right);
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(component.getQuerySql());
