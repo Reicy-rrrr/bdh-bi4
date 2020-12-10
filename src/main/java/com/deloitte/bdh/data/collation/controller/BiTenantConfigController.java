@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import javax.annotation.Resource;
  * @author lw
  * @since 2020-12-08
  */
+@Api(tags = "数据整理-初始接口")
 @RestController
 @RequestMapping("/biTenantConfig")
 public class BiTenantConfigController {

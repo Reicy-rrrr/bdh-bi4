@@ -5,7 +5,7 @@ import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class TableNormalDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
         Map<String, Object> customParams = request.getDataConfig().getDataModel().getCustomParams();
         if (MapUtils.isNotEmpty(customParams)) {
             String tableAggregate = MapUtils.getString(customParams, CustomParamsConstants.TABLE_AGGREGATE);

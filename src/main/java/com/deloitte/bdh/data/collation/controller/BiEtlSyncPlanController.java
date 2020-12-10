@@ -10,6 +10,7 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.SyncService;
 import com.deloitte.bdh.data.collation.model.request.BiEtlSyncPlanListDto;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import java.util.Map;
  * @author lw
  * @since 2020-10-26
  */
+@Api(tags = "数据整理-调度")
 @RestController
 @RequestMapping("/biEtlSyncPlan")
 public class BiEtlSyncPlanController {

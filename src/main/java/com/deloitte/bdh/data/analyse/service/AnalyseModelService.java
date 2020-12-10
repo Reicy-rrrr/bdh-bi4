@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.RetRequest;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
@@ -41,6 +41,6 @@ public interface AnalyseModelService {
      * @param data
      * @return
      */
-    BaseComponentDataResponse getComponentData(BaseComponentDataRequest data) throws Exception;
+    BaseComponentDataResponse getComponentData(ComponentDataRequest data) throws Exception;
 
 }

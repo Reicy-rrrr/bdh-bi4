@@ -3,7 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.google.common.collect.Lists;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class NormalFilterDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModelField field = request.getDataConfig().getDataModel().getX().get(0);
         String sql = buildSql(request.getDataConfig().getDataModel());
         BaseComponentDataResponse response = execute(sql);

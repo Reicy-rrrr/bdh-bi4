@@ -6,7 +6,7 @@ import com.deloitte.bdh.data.analyse.enums.MapEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
@@ -25,7 +25,8 @@ import java.util.Map;
 public class MapDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
+        DataModel dataModel = request.getDataConfig().getDataModel();
         DataConfig dataConfig = request.getDataConfig();
         DataModel dataModel = dataConfig.getDataModel();
         //如果直接List<DataModelField> originalX = dataModel.getX();
@@ -63,7 +64,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         return response;
     }
 
-    private List<Map<String, Object>> buildCategory(BaseComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList) {
+    private List<Map<String, Object>> buildCategory(ComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList) {
 
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();

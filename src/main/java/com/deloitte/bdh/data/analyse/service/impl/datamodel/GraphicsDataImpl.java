@@ -4,7 +4,7 @@ import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.google.common.collect.Maps;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class GraphicsDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
         String sql = buildSql(request.getDataConfig().getDataModel());
         return execute(sql, list -> {
             List<DataModelField> fields = request.getDataConfig().getDataModel().getX();

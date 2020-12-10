@@ -9,15 +9,14 @@ import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
-import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelContent;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +37,7 @@ import java.util.List;
  * @author lw
  * @since 2020-09-24
  */
+@Api(tags = "数据整理-模型")
 @RestController
 @RequestMapping("/biEtlModel")
 public class BiEtlModelController {
@@ -50,7 +50,7 @@ public class BiEtlModelController {
         return RetResponse.makeOKRsp(biEtlModelService.getModelTree());
     }
 
-    @ApiOperation(value = "基于租户获取模型列表", notes = "基于租户获取模型列表")
+    @ApiOperation(value = "基于文件夹户获取模型列表", notes = "基于文件夹户获取模型列表")
     @PostMapping("/getModelPage")
     public RetResult<PageResult<List<ModelResp>>> getModelPage(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
@@ -131,17 +131,4 @@ public class BiEtlModelController {
         return RetResponse.makeOKRsp(CronUtil.createCronExpression(request.getData()));
     }
 
-    @ApiOperation(value = "基于租户获取模型列表对应的数据集", notes = "基于租户获取模型列表对应的数据集")
-    @PostMapping("/getDataSet")
-    public RetResult<PageResult<List<DataSetResp>>> getDataSet(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
-        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
-        return RetResponse.makeOKRsp(biEtlModelService.getDataSet(request.getData()));
-    }
-
-    @ApiOperation(value = "数据集的表重命名", notes = "数据集的表重命名")
-    @PostMapping("/dataSetReName")
-    public RetResult<Void> dataSetReName(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
-        biEtlModelService.dataSetReName(request.getData());
-        return RetResponse.makeOKRsp();
-    }
 }

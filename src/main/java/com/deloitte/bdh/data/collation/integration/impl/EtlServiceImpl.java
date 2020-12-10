@@ -387,7 +387,6 @@ public class EtlServiceImpl implements EtlService {
         }
 
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.TO_TABLE_NAME, tableName);
         params.put(ComponentCons.TO_TABLE_DESC, tableName);
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
@@ -405,7 +404,7 @@ public class EtlServiceImpl implements EtlService {
         // 查询原始最终表名
         BiComponentParams tableNameParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode())
-                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME));
+                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC));
         // 原始表名
         String oldTableName = tableNameParam.getParamValue();
         //校验分析那面是否用到原表，若用到则校验新字段，只能增加字段
@@ -432,7 +431,6 @@ public class EtlServiceImpl implements EtlService {
 
         // 设置组件参数：创建最终表,表名默认为模板编码
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.TO_TABLE_NAME, tableName);
         params.put(ComponentCons.TO_TABLE_DESC, tableName);
         List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);

@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import java.util.List;
  * @author lw
  * @since 2020-09-25
  */
+@Api(tags = "数据整理-整理组件相关")
 @RestController
 @RequestMapping("/bi/etl")
 public class EtlController {

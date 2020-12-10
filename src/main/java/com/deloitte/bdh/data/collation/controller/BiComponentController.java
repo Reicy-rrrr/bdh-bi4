@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author lw
  * @since 2020-09-24
  */
+@Api(tags = "数据整理-组件相关")
 @RestController
 @RequestMapping("/biComponent")
 public class BiComponentController {
