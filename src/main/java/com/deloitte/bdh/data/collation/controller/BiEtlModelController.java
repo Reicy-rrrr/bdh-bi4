@@ -9,6 +9,7 @@ import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
+import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelContent;
@@ -135,5 +136,12 @@ public class BiEtlModelController {
     public RetResult<PageResult<List<DataSetResp>>> getDataSet(@RequestBody @Validated RetRequest<GetModelPageDto> request) {
         PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
         return RetResponse.makeOKRsp(biEtlModelService.getDataSet(request.getData()));
+    }
+
+    @ApiOperation(value = "数据集的表重命名", notes = "数据集的表重命名")
+    @PostMapping("/dataSetReName")
+    public RetResult<Void> dataSetReName(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
+        biEtlModelService.dataSetReName(request.getData());
+        return RetResponse.makeOKRsp();
     }
 }

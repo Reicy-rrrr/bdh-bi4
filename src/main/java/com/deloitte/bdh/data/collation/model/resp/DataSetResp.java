@@ -20,8 +20,11 @@ public class DataSetResp implements Serializable {
     @ApiModelProperty(value = "模型名称")
     private String modelName;
 
-    @ApiModelProperty(value = "表名称")
-    private String tableName;
+    @ApiModelProperty(value = "表名")
+    private String toTableName;
+
+    @ApiModelProperty(value = "表备注名")
+    private String toTableDesc;
 
     @ApiModelProperty(value = "描述")
     private String comments;
