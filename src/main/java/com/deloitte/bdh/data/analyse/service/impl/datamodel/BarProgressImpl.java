@@ -54,7 +54,7 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
             newRow.put("title", yName);
             newRow.put("target", MapUtils.getIntValue(row, xName));
             newRow.put("measures", MapUtils.getIntValue(row, yName));
-            newRow.put("ranges", (Integer) MapUtils.getIntValue(row, yName) * 1.2);
+            newRow.put("ranges", (int) (MapUtils.getDouble(row, yName)*1.2));
         }
         rows.clear();
         rows.add(newRow);
