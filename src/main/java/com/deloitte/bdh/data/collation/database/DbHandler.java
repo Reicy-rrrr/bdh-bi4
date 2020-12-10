@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableInfo;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
@@ -50,9 +51,16 @@ public interface DbHandler {
     /**
      * 查询所有表名列表
      *
-     * @return
+     * @return List<String>
      */
-    List<String> getTables();
+    List<String> getTableNameList();
+
+    /**
+     * 查询所有表列表
+     *
+     * @return List<TableInfo>
+     */
+    List<TableInfo> getTableList();
 
     /**
      * 查询表所有字段列表
@@ -110,7 +118,7 @@ public interface DbHandler {
      * @param tableName 表名
      * @return
      */
-    void dropFields(String tableName,String ...field);
+    void dropFields(String tableName, String... field);
 
     /**
      * 检查表是否存在

@@ -14,6 +14,7 @@ import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableInfo;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponent;
@@ -24,6 +25,7 @@ import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +36,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -110,7 +113,7 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
-    public List<String> getTables() {
+    public List<String> getTableNameList() {
         // 查询所有输出组件
         LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
         componentQuery.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
@@ -136,6 +139,63 @@ public class DbHandlerImpl implements DbHandler {
         // todo: 待删除
         tableNames.add("ORDERS_USCA_BI");
         return tableNames;
+    }
+
+    @Override
+    public List<TableInfo> getTableList() {
+        // 设定默认的表信息
+        TableInfo defaultTable = new TableInfo("ORDERS_USCA_BI", "ORDERS_USCA_BI");
+        List<TableInfo> results = Lists.newArrayList(defaultTable);
+
+        // 查询所有输出组件
+        LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
+        componentQuery.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
+        componentQuery.eq(BiComponent::getEffect, EffectEnum.ENABLE.getKey());
+        List<BiComponent> outComponents = biComponentService.list(componentQuery);
+        if (CollectionUtils.isEmpty(outComponents)) {
+            // todo: 待修改为返回空集合
+            return results;
+        }
+        List<String> componentCodes = outComponents.stream().map(BiComponent::getCode).collect(Collectors.toList());
+
+        // 根据输出组件查询组件参数中的表名
+        LambdaQueryWrapper<BiComponentParams> paramQuery = new LambdaQueryWrapper();
+        paramQuery.in(BiComponentParams::getRefComponentCode, componentCodes);
+        List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
+        if (CollectionUtils.isEmpty(params)) {
+            // todo: 待修改为返回空集合
+            return results;
+        }
+
+        // TreeMap根据组件code默认排序
+        TreeMap<String, TableInfo> tableMap = Maps.newTreeMap();
+        params.forEach(param -> {
+            String componentCode = param.getRefComponentCode();
+            TableInfo table = (TableInfo) MapUtils.getObject(tableMap, componentCode);
+            if (table == null) {
+                table = new TableInfo();
+                tableMap.put(componentCode, table);
+            }
+            if (ComponentCons.TO_TABLE_NAME.equals(param.getParamKey())) {
+                table.setName(param.getParamValue());
+            }
+            if (ComponentCons.TO_TABLE_DESC.equals(param.getParamKey())) {
+                table.setDesc(param.getParamValue());
+            }
+        });
+
+        if (CollectionUtils.isEmpty(tableMap)) {
+            // todo: 待修改为返回空集合
+            return results;
+        }
+
+        results.addAll(tableMap.values());
+        results.forEach(table -> {
+            if (StringUtils.isBlank(table.getDesc())) {
+                table.setDesc(table.getName());
+            }
+        });
+        return results;
     }
 
     @Override
