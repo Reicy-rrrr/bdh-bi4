@@ -51,10 +51,17 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
 
         Map<String, Object> newRow = Maps.newHashMap();
         for (Map<String, Object> row : rows) {
+            int xValue = MapUtils.getIntValue(row, xName);
+            int yValue = MapUtils.getIntValue(row, yName);
             newRow.put("title", yName);
-            newRow.put("target", MapUtils.getIntValue(row, xName));
-            newRow.put("measures", MapUtils.getIntValue(row, yName));
-            newRow.put("ranges", (int) (MapUtils.getDouble(row, yName)*1.2));
+            newRow.put("target", xValue);
+            newRow.put("measures", yValue);
+            if (xValue > yValue){
+                newRow.put("ranges", (int) (xValue*1.2));
+            }
+            else{
+                newRow.put("ranges", (int) (yValue*1.2));
+            }
         }
         rows.clear();
         rows.add(newRow);
