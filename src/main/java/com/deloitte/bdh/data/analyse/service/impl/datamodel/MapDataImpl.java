@@ -26,8 +26,12 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
 
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
-        DataModel dataModel = request.getDataConfig().getDataModel();
         DataConfig dataConfig = request.getDataConfig();
+        DataModel dataModel = dataConfig.getDataModel();
+        //如果直接List<DataModelField> originalX = dataModel.getX();
+        //会发生深拷贝现象，导致下方赋值的时候也会跟着变化
+        List<DataModelField> originalX = Lists.newArrayList();
+        originalX.addAll(dataModel.getX());
         //符号地图增加经纬度
         if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
             //经度
@@ -47,7 +51,6 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
             lantitude.setAlias(MapEnum.LANTITUDE.getDesc());
             dataModel.getX().add(lantitude);
         }
-        List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }

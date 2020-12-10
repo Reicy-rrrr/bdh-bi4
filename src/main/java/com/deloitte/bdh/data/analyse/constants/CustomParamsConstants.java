@@ -17,6 +17,7 @@ public class CustomParamsConstants {
     //同比、环比时间类型（YEAR，YEAR_QUARTERLY，YEAR_MONTH，YEAR_MONTH_DAY）
     public static final String CORE_DATE_TYPE = "coreDateType";
 
-    //子弹图
-    public static final String PROGRESS_TOTAL = "progressTotal";
+    //散点图
+    public static final String SCATTER_NAME = "scatterName";
+    public static final String SCATTER_SIZE = "scatterSize";
 }

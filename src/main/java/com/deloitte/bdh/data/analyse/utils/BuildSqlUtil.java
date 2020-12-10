@@ -113,7 +113,7 @@ public class BuildSqlUtil {
     }
 
     private static String formatPrecision(String field, Integer precision) {
-        return " FORMAT( " + field + " ,"+ precision +")";
+        return " FORMAT( " + field + " ," + precision + ")";
     }
 
     private static String format(String field, String formatType) {

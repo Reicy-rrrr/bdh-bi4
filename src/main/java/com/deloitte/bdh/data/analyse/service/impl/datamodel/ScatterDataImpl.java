@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -35,8 +36,8 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
             dataModel.getCategory().forEach(y -> dataModel.getX().add(y));
         }
         Map<String, Object> customParams = dataModel.getCustomParams();
-        DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(customParams.get("scatterName")), DataModelField.class);
-        DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(customParams.get("scatterSize")), DataModelField.class);
+        DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_NAME)), DataModelField.class);
+        DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_SIZE)), DataModelField.class);
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && Objects.nonNull(scatterName)) {
             dataModel.getX().add(scatterName);
         }

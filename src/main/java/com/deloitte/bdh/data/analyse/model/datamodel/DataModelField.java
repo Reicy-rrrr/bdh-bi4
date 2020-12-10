@@ -45,4 +45,7 @@ public class DataModelField {
 
     @ApiModelProperty("精度")
     private Integer precision;
+
+    @ApiModelProperty("数据单位")
+    private String dataUnit;
 }

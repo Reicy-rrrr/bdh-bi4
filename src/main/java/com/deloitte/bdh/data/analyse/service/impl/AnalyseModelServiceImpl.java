@@ -7,21 +7,21 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
@@ -111,7 +111,31 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     @Override
     public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
-        return SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
+        BaseComponentDataResponse response = SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
+        joinDataUnit(request, response);
+        return response;
+    }
+
+    /*
+     * 如果有数据单位，则拼接数据单位
+     */
+    private void joinDataUnit(BaseComponentDataRequest request,BaseComponentDataResponse response) {
+
+        List<Map<String, Object>> rows = response.getRows();
+        List<Map<String, Object>> y2 = response.getY2();
+
+        DataModel dataModel = request.getDataConfig().getDataModel();
+
+        for (Map<String, Object> map : rows) {
+
+        }
+        joinDataUnitMain(rows);
+        joinDataUnitMain(y2);
+    }
+
+    private void joinDataUnitMain(List<Map<String, Object>> row) {
+
+
     }
 
     /**
