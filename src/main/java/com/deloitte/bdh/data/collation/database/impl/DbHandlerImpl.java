@@ -177,10 +177,10 @@ public class DbHandlerImpl implements DbHandler {
                 tableMap.put(componentCode, table);
             }
             if (ComponentCons.TO_TABLE_NAME.equals(param.getParamKey())) {
-                table.setName(param.getParamValue());
+                table.setToTableName(param.getParamValue());
             }
             if (ComponentCons.TO_TABLE_DESC.equals(param.getParamKey())) {
-                table.setDesc(param.getParamValue());
+                table.setToTableDesc(param.getParamValue());
             }
         });
 
@@ -191,8 +191,8 @@ public class DbHandlerImpl implements DbHandler {
 
         results.addAll(tableMap.values());
         results.forEach(table -> {
-            if (StringUtils.isBlank(table.getDesc())) {
-                table.setDesc(table.getName());
+            if (StringUtils.isBlank(table.getToTableDesc())) {
+                table.setToTableDesc(table.getToTableName());
             }
         });
         return results;
