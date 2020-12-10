@@ -13,7 +13,6 @@ import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
@@ -26,17 +25,13 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
-import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
-import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
-import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
@@ -55,12 +50,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -83,8 +74,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private XxJobService jobService;
     @Autowired
     private BiComponentService componentService;
-    @Autowired
-    private BiComponentParamsService componentParamsService;
     @Autowired
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
@@ -386,81 +375,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     }
 
-    @Override
-    public PageResult<List<DataSetResp>> getDataSet(GetModelPageDto dto) {
-        List<DataSetResp> result = Lists.newArrayList();
-
-        List<BiEtlModel> modelList = getModelListByFileCode(dto.getFileCode());
-        if (CollectionUtils.isNotEmpty(modelList)) {
-            List<String> codeList = modelList.stream().map(BiEtlModel::getCode).collect(Collectors.toList());
-
-            List<BiComponentParams> tableDescList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
-                    .in(BiComponentParams::getRefModelCode, codeList)
-            );
-            List<BiComponentParams> tableNameList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME)
-                    .in(BiComponentParams::getRefModelCode, codeList)
-            );
-            if (CollectionUtils.isNotEmpty(tableDescList)) {
-                Set<String> componentCodeList = tableDescList.stream().map(BiComponentParams::getRefComponentCode)
-                        .collect(Collectors.toSet());
-                List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
-                        .in(BiComponent::getCode, new ArrayList<>(componentCodeList))
-                );
-
-
-                for (BiComponentParams params : tableDescList) {
-                    for (BiEtlModel model : modelList) {
-                        if (params.getRefModelCode().equals(model.getCode())) {
-                            DataSetResp resp = new DataSetResp();
-                            resp.setModelCode(model.getCode());
-                            resp.setModelName(model.getName());
-                            resp.setToTableDesc(params.getParamValue());
-                            resp.setToTableName(getFinalTableName(tableNameList, params.getRefModelCode()));
-                            if (null != model.getLastExecuteDate()) {
-                                resp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-                            }
-                            resp.setComments(getComments(componentList, params.getRefComponentCode()));
-                            result.add(resp);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
-        PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
-        return pageResult;
-    }
-
-    @Override
-    public void dataSetReName(DataSetReNameDto dto) {
-        BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
-                .eq(BiComponentParams::getRefModelCode, dto.getCode())
-        );
-        if (null == param) {
-            throw new RuntimeException("未找到目标模型");
-        }
-        if (!param.getParamValue().equals(dto.getToTableDesc())) {
-            List<BiComponentParams> allTableDesc = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
-                    .ne(BiComponentParams::getRefModelCode, dto.getCode())
-            );
-            if (CollectionUtils.isNotEmpty(allTableDesc)) {
-                Optional<BiComponentParams> optional = allTableDesc.stream()
-                        .filter(p -> p.getParamValue().equals(dto.getToTableDesc())).findAny();
-
-                if (optional.isPresent()) {
-                    throw new RuntimeException("存在相同的表名称");
-                }
-            }
-            param.setParamValue(dto.getToTableDesc());
-            componentParamsService.updateById(param);
-        }
-    }
-
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
@@ -553,27 +467,4 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         return biEtlModelMapper.selectList(fUOLamQW);
     }
 
-    private String getComments(List<BiComponent> components, String code) {
-        if (CollectionUtils.isNotEmpty(components)) {
-            for (BiComponent component : components) {
-                if (component.getCode().equals(code)) {
-                    components.remove(component);
-                    return component.getComments();
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getFinalTableName(List<BiComponentParams> paramsList, String code) {
-        if (CollectionUtils.isNotEmpty(paramsList)) {
-            for (BiComponentParams params : paramsList) {
-                if (params.getRefModelCode().equals(code)) {
-                    paramsList.remove(params);
-                    return params.getParamValue();
-                }
-            }
-        }
-        return null;
-    }
 }
