@@ -8,6 +8,7 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.model.BiComponentConnection;
 import com.deloitte.bdh.data.collation.model.request.ComponentLinkDto;
 import com.deloitte.bdh.data.collation.service.BiComponentConnectionService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author lw
  * @since 2020-09-29
  */
+@Api(tags = "数据整理-组件关联")
 @RestController
 @RequestMapping("/biComponentConnection")
 public class BiComponentConnectionController {

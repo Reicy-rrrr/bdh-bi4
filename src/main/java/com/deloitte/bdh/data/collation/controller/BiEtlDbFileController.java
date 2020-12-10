@@ -8,6 +8,7 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
 import com.deloitte.bdh.data.collation.model.resp.BiEtlDbFileUploadResp;
 import com.deloitte.bdh.data.collation.service.BiEtlDbFileService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @author chenghzhang
  * @since 2020-10-12
  */
+@Api(tags = "数据整理-处理文件")
 @RestController
 @RequestMapping("/biEtlDbFile")
 public class BiEtlDbFileController {

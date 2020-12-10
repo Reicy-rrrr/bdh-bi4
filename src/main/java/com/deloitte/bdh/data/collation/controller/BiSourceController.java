@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +31,7 @@ import java.util.List;
  * @author lw
  * @since 2020-09-23
  */
+@Api(tags = "数据整理-数据源相关")
 @RestController
 @RequestMapping("/bi/etl")
 public class BiSourceController {

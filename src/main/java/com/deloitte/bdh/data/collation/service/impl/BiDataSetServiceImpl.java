@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 
+
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
@@ -14,6 +15,7 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
+import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
@@ -141,6 +143,26 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             param.setParamValue(dto.getToTableDesc());
             componentParamsService.updateById(param);
         }
+    }
+
+    @Override
+    public void create(CreateDataSetDto dto) {
+        BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getTableName, dto.getTableName())
+                .eq(BiDataSet::getRefSourceId, dto.getRefSourceId()));
+        if (null != biDataSet) {
+            throw new RuntimeException("数据集已存在相同数据源的同一张表");
+        }
+        BiDataSet dataSet = new BiDataSet();
+        // 数据集合类型（0, "数据直连"，1, "数据整理"）
+        dataSet.setType("0");
+        dataSet.setRefSourceId(dto.getRefSourceId());
+        dataSet.setTableName(dto.getTableName());
+        dataSet.setTableDesc(dto.getTableName());
+        dataSet.setParentId(dto.getFileId());
+        dataSet.setIsFile(YesOrNoEnum.NO.getKey());
+        dataSet.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(dataSet);
     }
 
 

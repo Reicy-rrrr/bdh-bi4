@@ -6,11 +6,13 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
+import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +32,7 @@ import java.util.List;
  * @author lw
  * @since 2020-12-10
  */
+@Api(tags = "数据整理-数据集")
 @RestController
 @RequestMapping("/biDataSet")
 public class BiDataSetController {
@@ -54,6 +57,13 @@ public class BiDataSetController {
     @PostMapping("/reName")
     public RetResult<Void> reName(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
         dataSetService.reName(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "创建数据集", notes = "创建数据集")
+    @PostMapping("/create")
+    public RetResult<Void> create(@RequestBody @Validated RetRequest<CreateDataSetDto> request) {
+        dataSetService.create(request.getData());
         return RetResponse.makeOKRsp();
     }
 }

@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.service;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
@@ -24,5 +25,7 @@ public interface BiDataSetService extends Service<BiDataSet> {
     PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto);
 
     void reName(DataSetReNameDto dto);
+
+    void create(CreateDataSetDto dto);
 
 }

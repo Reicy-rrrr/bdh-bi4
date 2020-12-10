@@ -16,6 +16,7 @@ import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.util.List;
  * @author lw
  * @since 2020-09-24
  */
+@Api(tags = "数据整理-模型")
 @RestController
 @RequestMapping("/biEtlModel")
 public class BiEtlModelController {
