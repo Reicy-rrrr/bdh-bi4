@@ -11,7 +11,6 @@ public class ComponentCons {
     public static final String REF_PROCESSORS_CDOE = "refProcessorsCode";
 
     //以下为输出组件参数
-    public static final String TO_TABLE_NAME = "toTableName";
     public static final String TO_TABLE_DESC = "toTableDesc";
 
     /** 关联组件参数 */

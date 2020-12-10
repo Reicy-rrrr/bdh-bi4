@@ -151,7 +151,7 @@ public class DbHandlerImpl implements DbHandler {
         // 根据输出组件查询组件参数中的表名(本地表的描述)
         LambdaQueryWrapper<BiComponentParams> paramQuery = new LambdaQueryWrapper();
         paramQuery.in(BiComponentParams::getRefComponentCode, componentCodes);
-        paramQuery.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
+        paramQuery.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC);
         List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
         Map<String, String> descMap = params.stream().collect(Collectors.toMap(BiComponentParams::getRefComponentCode, param -> param.getParamValue()));
         componentCodes.forEach(componentCode -> {

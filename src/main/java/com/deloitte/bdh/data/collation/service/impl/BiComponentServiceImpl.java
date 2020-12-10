@@ -194,14 +194,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         wrapper.eq(BiComponentConnection::getToComponentCode, component.getCode());
         connectionService.remove(wrapper);
 
-        String finalTableName = null;
-        BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefComponentCode, component.getCode())
-                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME)
-        );
-        if (param != null && StringUtils.isNotBlank(param.getParamValue())) {
-            finalTableName = param.getParamValue();
-        }
+        String finalTableName = component.getCode();
         //删除最终表
         if (StringUtils.isNotBlank(finalTableName)) {
             dbHandler.drop(finalTableName);
