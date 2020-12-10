@@ -121,7 +121,7 @@ public class DbHandlerImpl implements DbHandler {
         List<BiComponent> components = biComponentService.list(componentQuery);
         if (CollectionUtils.isEmpty(components)) {
             // todo: 待修改为返回空集合
-            return Lists.newArrayList("ORDERS_USCA_BI");
+            return Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER");
         }
         List<String> componentCodes = components.stream().map(BiComponent::getCode).collect(Collectors.toList());
 
@@ -132,12 +132,12 @@ public class DbHandlerImpl implements DbHandler {
         List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
         if (CollectionUtils.isEmpty(params)) {
             // todo: 待修改为返回空集合
-            return Lists.newArrayList("ORDERS_USCA_BI");
+            return Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER");
         }
 
         List<String> tableNames = params.stream().map(BiComponentParams::getParamValue).collect(Collectors.toList());
         // todo: 待删除
-        tableNames.add("ORDERS_USCA_BI");
+        tableNames.addAll(Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER"));
         return tableNames;
     }
 
@@ -145,7 +145,11 @@ public class DbHandlerImpl implements DbHandler {
     public List<TableInfo> getTableList() {
         // 设定默认的表信息
         TableInfo defaultTable = new TableInfo("ORDERS_USCA_BI", "ORDERS_USCA_BI");
-        List<TableInfo> results = Lists.newArrayList(defaultTable);
+        TableInfo chineseOrder = new TableInfo("TEST_CHINESE_ORDER", "中国订单");
+        TableInfo chineseRefund = new TableInfo("TEST_CHINESE_REFUND", "中国退货");
+        TableInfo chineseSalesman = new TableInfo("TEST_CHINESE_SALESMAN", "中国销售员");
+        TableInfo globalOrder = new TableInfo("TEST_GLOBAL_ORDER", "世界订单");
+        List<TableInfo> results = Lists.newArrayList(defaultTable, chineseOrder, chineseRefund, chineseSalesman, globalOrder);
 
         // 查询所有输出组件
         LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
