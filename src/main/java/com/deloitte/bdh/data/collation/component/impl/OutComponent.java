@@ -3,17 +3,14 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +27,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service("outComponent")
 public class OutComponent implements ComponentHandler {
-    /**
-     * 输出目标表名
-     */
-    private static final String param_key_target_table = ComponentCons.TO_TABLE_NAME;
 
     @Autowired
     private BiEtlMappingFieldService biEtlMappingFieldService;
@@ -52,14 +45,14 @@ public class OutComponent implements ComponentHandler {
             throw new BizException("输出组件只能有一个上层组件，处理失败！");
         }
 
-        component.setTableName(component.getCode());
+
+        String targetTableName = component.getCode();
+        component.setTableName(targetTableName);
         initFields(component);
-        String targetTableName = initTargetTableName(component);
+        // 设置目标表名称为组件code
         buildQuerySql(component);
         buildCreateSql(component, targetTableName);
         buildInsertSql(component, targetTableName);
-        // 输出组件处理完成后，设置目标表
-        component.setTableName(targetTableName);
     }
 
     /**
@@ -174,31 +167,5 @@ public class OutComponent implements ComponentHandler {
         List<String> finalFields = finalMappings.stream().map(FieldMappingModel::getTempFieldName)
                 .collect(Collectors.toList());
         component.setFields(finalFields);
-    }
-
-    /**
-     * 初始化输出组件输出的目标表名称
-     * 如果组件设置了表名，直接使用，未设置默认使用当前组件所在模板的模板code
-     *
-     * @param component 当前输出组件模型
-     * @return String: targetTableName
-     */
-    private String initTargetTableName(ComponentModel component) {
-        String targetTableName = null;
-        List<BiComponentParams> params = component.getParams();
-        if (CollectionUtils.isEmpty(params)) {
-            targetTableName = component.getRefModelCode();
-        } else {
-            for (BiComponentParams param : params) {
-                if (param_key_target_table.equals(param.getParamKey())) {
-                    targetTableName = param.getParamValue();
-                    break;
-                }
-            }
-            if (StringUtils.isBlank(targetTableName)) {
-                targetTableName = component.getRefModelCode();
-            }
-        }
-        return targetTableName;
     }
 }

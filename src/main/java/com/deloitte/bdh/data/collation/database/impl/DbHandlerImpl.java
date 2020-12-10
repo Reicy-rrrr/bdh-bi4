@@ -25,7 +25,6 @@ import com.deloitte.bdh.data.collation.service.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +35,6 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -114,6 +112,8 @@ public class DbHandlerImpl implements DbHandler {
 
     @Override
     public List<String> getTableNameList() {
+        List<String> results = Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER");
+
         // 查询所有输出组件
         LambdaQueryWrapper<BiComponent> componentQuery = new LambdaQueryWrapper();
         componentQuery.eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey());
@@ -121,24 +121,11 @@ public class DbHandlerImpl implements DbHandler {
         List<BiComponent> components = biComponentService.list(componentQuery);
         if (CollectionUtils.isEmpty(components)) {
             // todo: 待修改为返回空集合
-            return Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER");
+            return results;
         }
         List<String> componentCodes = components.stream().map(BiComponent::getCode).collect(Collectors.toList());
-
-        // 根据输出组件查询组件参数中的表名
-        LambdaQueryWrapper<BiComponentParams> paramQuery = new LambdaQueryWrapper();
-        paramQuery.in(BiComponentParams::getRefComponentCode, componentCodes);
-        paramQuery.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
-        List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
-        if (CollectionUtils.isEmpty(params)) {
-            // todo: 待修改为返回空集合
-            return Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER");
-        }
-
-        List<String> tableNames = params.stream().map(BiComponentParams::getParamValue).collect(Collectors.toList());
-        // todo: 待删除
-        tableNames.addAll(Lists.newArrayList("ORDERS_USCA_BI", "TEST_CHINESE_ORDER", "TEST_CHINESE_REFUND", "TEST_CHINESE_SALESMAN", "TEST_GLOBAL_ORDER"));
-        return tableNames;
+        results.addAll(componentCodes);
+        return results;
     }
 
     @Override
@@ -157,47 +144,22 @@ public class DbHandlerImpl implements DbHandler {
         componentQuery.eq(BiComponent::getEffect, EffectEnum.ENABLE.getKey());
         List<BiComponent> outComponents = biComponentService.list(componentQuery);
         if (CollectionUtils.isEmpty(outComponents)) {
-            // todo: 待修改为返回空集合
             return results;
         }
         List<String> componentCodes = outComponents.stream().map(BiComponent::getCode).collect(Collectors.toList());
 
-        // 根据输出组件查询组件参数中的表名
+        // 根据输出组件查询组件参数中的表名(本地表的描述)
         LambdaQueryWrapper<BiComponentParams> paramQuery = new LambdaQueryWrapper();
         paramQuery.in(BiComponentParams::getRefComponentCode, componentCodes);
+        paramQuery.eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME);
         List<BiComponentParams> params = biComponentParamsService.list(paramQuery);
-        if (CollectionUtils.isEmpty(params)) {
-            // todo: 待修改为返回空集合
-            return results;
-        }
-
-        // TreeMap根据组件code默认排序
-        TreeMap<String, TableInfo> tableMap = Maps.newTreeMap();
-        params.forEach(param -> {
-            String componentCode = param.getRefComponentCode();
-            TableInfo table = (TableInfo) MapUtils.getObject(tableMap, componentCode);
-            if (table == null) {
-                table = new TableInfo();
-                tableMap.put(componentCode, table);
+        Map<String, String> descMap = params.stream().collect(Collectors.toMap(BiComponentParams::getRefComponentCode, param -> param.getParamValue()));
+        componentCodes.forEach(componentCode -> {
+            String desc = MapUtils.getString(descMap, componentCode);
+            if (StringUtils.isBlank(desc)) {
+                desc = componentCode;
             }
-            if (ComponentCons.TO_TABLE_NAME.equals(param.getParamKey())) {
-                table.setToTableName(param.getParamValue());
-            }
-            if (ComponentCons.TO_TABLE_DESC.equals(param.getParamKey())) {
-                table.setToTableDesc(param.getParamValue());
-            }
-        });
-
-        if (CollectionUtils.isEmpty(tableMap)) {
-            // todo: 待修改为返回空集合
-            return results;
-        }
-
-        results.addAll(tableMap.values());
-        results.forEach(table -> {
-            if (StringUtils.isBlank(table.getToTableDesc())) {
-                table.setToTableDesc(table.getToTableName());
-            }
+            results.add(new TableInfo(componentCode, desc));
         });
         return results;
     }
