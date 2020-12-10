@@ -385,7 +385,10 @@ public class DbHandlerImpl implements DbHandler {
             }
             sqlBuilder.append(",");
         }
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
+        // 删除SELECT中最后多余的“,”
+        if (sqlBuilder.lastIndexOf(",") == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
+        }
         sqlBuilder.append(")");
         return sqlBuilder.toString();
     }

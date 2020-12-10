@@ -89,7 +89,8 @@ public class GroupComponent implements ComponentHandler {
 
         // 组装group by部分sql
         sqlBuilder.append(sql_key_group_by);
-        if (groupBuilder.toString().endsWith(sql_key_comma)) {
+        // 删除group by中最后多余的“,”
+        if (groupBuilder.lastIndexOf(sql_key_comma) == (groupBuilder.length() - 1)) {
             groupBuilder.deleteCharAt(groupBuilder.lastIndexOf(sql_key_comma));
         }
         sqlBuilder.append(groupBuilder);
@@ -210,7 +211,9 @@ public class GroupComponent implements ComponentHandler {
             }
         }
         // 删除SELECT中最后多余的“,”
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        if (sqlBuilder.lastIndexOf(sql_key_comma) == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(sql_key_comma));
+        }
         sqlBuilder.append(sql_key_blank);
 
         component.setFieldMappings(currFieldMappings);

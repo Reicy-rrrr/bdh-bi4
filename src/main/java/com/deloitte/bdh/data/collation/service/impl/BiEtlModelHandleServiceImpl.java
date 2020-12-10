@@ -144,7 +144,9 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             }
         });
         // 删除SELECT中最后多余的“,”
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
+        if (sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma) == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
+        }
         sqlBuilder.append(ComponentHandler.sql_key_blank);
         sqlBuilder.append(ComponentHandler.sql_key_from);
 
@@ -185,7 +187,9 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             }
         });
         // 删除SELECT中最后多余的“,”
-        sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
+        if (sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma) == (sqlBuilder.length() - 1)) {
+            sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma));
+        }
         sqlBuilder.append(ComponentHandler.sql_key_blank);
         sqlBuilder.append(ComponentHandler.sql_key_from);
 
