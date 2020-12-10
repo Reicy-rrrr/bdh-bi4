@@ -72,9 +72,6 @@ public class BiSourceController {
     @ApiOperation(value = "重置文件型数据源", notes = "重置文件型数据源")
     @PostMapping("/resetFileResource")
     public RetResult<BiEtlDatabaseInf> resetFileResource(@RequestBody @Validated RetRequest<ResetFileResourcesDto> request) throws Exception {
-        if (request.getData().getOperator() == null) {
-            request.getData().setOperator(request.getOperator());
-        }
         return RetResponse.makeOKRsp(biEtlDatabaseInfService.resetFileResource(request.getData()));
     }
 
