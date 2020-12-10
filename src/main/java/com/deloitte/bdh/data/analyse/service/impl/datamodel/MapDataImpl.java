@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.MapEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -34,17 +35,17 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
             longitude.setType(DataTypeEnum.Text.getType());
             longitude.setQuota(DataModelTypeEnum.WD.getCode());
             longitude.setDataType(DataTypeEnum.Text.getValue());
-            longitude.setId("");
-            longitude.setAlias("经度");
-            //dataModel.getX().add(longitude);
+            longitude.setId(MapEnum.LONGITUDE.getCode());
+            longitude.setAlias(MapEnum.LONGITUDE.getDesc());
+            dataModel.getX().add(longitude);
             //纬度
             DataModelField lantitude = new DataModelField();
             lantitude.setType(DataTypeEnum.Text.getType());
             lantitude.setQuota(DataModelTypeEnum.WD.getCode());
             lantitude.setDataType(DataTypeEnum.Text.getValue());
-            lantitude.setId("");
-            lantitude.setAlias("纬度");
-            //dataModel.getX().add(lantitude);
+            lantitude.setId(MapEnum.LANTITUDE.getCode());
+            lantitude.setAlias(MapEnum.LANTITUDE.getDesc());
+            dataModel.getX().add(lantitude);
         }
         List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
@@ -98,8 +99,8 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
 
                 if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())){
                     List<Object> valueList = Lists.newArrayList();
-                    valueList.add("");//经度
-                    valueList.add("");//纬度
+                    valueList.add(MapUtils.getObject(row, MapEnum.LONGITUDE.getDesc()));//经度
+                    valueList.add(MapUtils.getObject(row, MapEnum.LANTITUDE.getDesc()));//纬度
                     valueList.add(MapUtils.getObject(row, colName));
                     newRow.put("value", valueList);
                 }
