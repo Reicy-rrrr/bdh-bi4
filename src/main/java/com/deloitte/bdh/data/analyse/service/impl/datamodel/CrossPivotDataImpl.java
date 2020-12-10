@@ -2,12 +2,11 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
-import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.ListTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
@@ -18,7 +17,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import springfox.documentation.spring.web.readers.parameter.ModelAttributeField;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -36,7 +34,7 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
     private AnalyseModelFieldService fieldService;
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
         List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
@@ -51,7 +49,7 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         return response;
     }
 
-    private void buildColumns(BaseComponentDataRequest request, BaseComponentDataResponse response) {
+    private void buildColumns(ComponentDataRequest request, BaseComponentDataResponse response) {
         List<Map<String, Object>> rows = response.getRows();
         //构造要查询的行字段
         if (CollectionUtils.isNotEmpty(rows)) {

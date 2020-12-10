@@ -74,10 +74,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
         dto.setTenantId(ThreadLocalHolder.getTenantId());
         dto.setName(request.getData().getName());
-        dto.setCategoryId(request.getData().getCategoryId());
+        dto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
         dto.setIsEdit(YnTypeEnum.NO.getCode());
-        List<BiUiAnalysePage> pageList = analysePageMapper.selectPublishedPage(dto);
-        return getAnalysePageDtoPageResult(pageList);
+        List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(dto);
+        PageInfo pageInfo = PageInfo.of(pageList);
+        pageInfo.setList(pageList);
+        return new PageResult<>(pageInfo);
     }
 
     @Override

@@ -4,7 +4,7 @@ import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
         return execute(buildSql(request.getDataConfig().getDataModel()), list -> {
             List<Map<String, Object>> result = Lists.newArrayList();
             Map<String, Object> map = Maps.newHashMap();

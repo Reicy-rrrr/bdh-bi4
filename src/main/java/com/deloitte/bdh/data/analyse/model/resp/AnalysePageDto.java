@@ -37,12 +37,6 @@ public class AnalysePageDto implements Serializable {
     private String type;
 
     /**
-     * 是否用户自定义类型CUSTOMER,TYPE1,TYPE2...
-     */
-    @ApiModelProperty("INIT_TYPE")
-    private String initType;
-
-    /**
      * 上级id
      */
     @ApiModelProperty("PARENT_ID")
@@ -77,4 +71,7 @@ public class AnalysePageDto implements Serializable {
      */
     @ApiModelProperty("HOMEPAGE")
     private String homePage;
+
+    @ApiModelProperty(value = "permitted Action")
+    private String permittedAction;
 }

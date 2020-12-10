@@ -5,7 +5,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.google.common.collect.Lists;
@@ -24,7 +24,7 @@ import java.util.Map;
 public class BarProgressImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
 
         DataModel dataModel = request.getDataConfig().getDataModel();
         List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
@@ -38,7 +38,7 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
         return response;
     }
 
-    private void buildRows(BaseComponentDataRequest request, BaseComponentDataResponse response) {
+    private void buildRows(ComponentDataRequest request, BaseComponentDataResponse response) {
         DataModel dataModel = request.getDataConfig().getDataModel();
         List<Map<String, Object>> rows = response.getRows();
 

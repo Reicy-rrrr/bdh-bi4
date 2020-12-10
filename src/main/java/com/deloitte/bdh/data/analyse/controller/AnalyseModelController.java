@@ -3,11 +3,10 @@ package com.deloitte.bdh.data.analyse.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
-import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
 import io.swagger.annotations.Api;
@@ -54,7 +53,7 @@ public class AnalyseModelController {
 
     @ApiOperation(value = "获取组件数据", notes = "获取组件数据")
     @PostMapping("/getComponentData")
-    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<BaseComponentDataRequest> request) throws Exception {
+    public RetResult<BaseComponentDataResponse> getComponentData(@RequestBody @Validated RetRequest<ComponentDataRequest> request) throws Exception {
         return RetResponse.makeOKRsp(analyseModelService.getComponentData(request.getData()));
     }
 

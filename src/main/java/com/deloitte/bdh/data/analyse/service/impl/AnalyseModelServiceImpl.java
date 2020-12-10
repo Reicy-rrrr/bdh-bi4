@@ -7,13 +7,12 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
@@ -109,7 +108,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     }
 
     @Override
-    public BaseComponentDataResponse getComponentData(BaseComponentDataRequest request) throws Exception {
+    public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         return SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
     }

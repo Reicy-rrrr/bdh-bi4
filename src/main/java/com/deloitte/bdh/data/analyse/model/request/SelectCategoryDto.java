@@ -3,15 +3,14 @@ package com.deloitte.bdh.data.analyse.model.request;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Author:LIJUN
- * Date:09/12/2020
+ * Date:10/12/2020
  * Description:
  */
 @Data
-public class SelectPublishedPageDto implements Serializable {
+public class SelectCategoryDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,7 +24,5 @@ public class SelectPublishedPageDto implements Serializable {
 
     private String name;
 
-    private List<String> resourcesIds;
-
-    private String isEdit;
+    private String type;
 }

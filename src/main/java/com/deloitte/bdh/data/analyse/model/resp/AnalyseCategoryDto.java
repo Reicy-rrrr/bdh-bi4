@@ -23,9 +23,6 @@ public class AnalyseCategoryDto {
     @ApiModelProperty(value = "TYPE")
     private String type;
 
-    @ApiModelProperty(value = "INIT_TYPE")
-    private String initType;
-
     @ApiModelProperty(value = "PARENT_ID")
     private String parentId;
 
@@ -34,5 +31,8 @@ public class AnalyseCategoryDto {
 
     @ApiModelProperty(value = "ICON")
     private String icon;
+
+    @ApiModelProperty(value = "permitted Action")
+    private String permittedAction;
 
 }

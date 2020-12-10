@@ -1,16 +1,21 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
+import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +36,9 @@ import java.util.Objects;
 public abstract class AbstractDataService {
     @Resource
     protected BiUiDemoMapper biUiDemoMapper;
+
+    @Resource
+    private AnalyseUserDataService userDataService;
 
     protected abstract void validate(DataModel dataModel);
 
@@ -129,6 +137,23 @@ public abstract class AbstractDataService {
                     express = connectWhere(dataModel.getTableName(), condition.getId(), condition.getQuota(), symbol, value);
                 }
                 list.add(express);
+            }
+        }
+        //权限条件
+        if (StringUtils.isNotBlank(dataModel.getPageId())) {
+            LambdaQueryWrapper<BiUiAnalyseUserData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(BiUiAnalyseUserData::getUserId, ThreadLocalHolder.getOperator());
+            lambdaQueryWrapper.eq(BiUiAnalyseUserData::getPageId, dataModel.getPageId());
+            lambdaQueryWrapper.eq(BiUiAnalyseUserData::getTenantId, ThreadLocalHolder.getTenantId());
+            List<BiUiAnalyseUserData> userDataList = userDataService.list(lambdaQueryWrapper);
+            if (CollectionUtils.isNotEmpty(userDataList)) {
+                for (BiUiAnalyseUserData userData : userDataList) {
+                    String value = convertValue(WildcardEnum.EQ.getKey(), Lists.newArrayList(userData.getFieldValue()));
+                    String express = BuildSqlUtil.where(userData.getTableName(), userData.getTableField(), DataModelTypeEnum.WD.getCode(), WildcardEnum.EQ.getCode(), value);
+                    if (StringUtils.isNotBlank(express)) {
+                        list.add(express);
+                    }
+                }
             }
         }
 

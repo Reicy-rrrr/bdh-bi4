@@ -3,20 +3,58 @@
 <mapper namespace="com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper">
 
     <!-- 通用查询映射结果 -->
-    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory">
-        <id column="ID" property="id" />
-        <result column="CODE" property="code" />
-        <result column="NAME" property="name" />
-        <result column="DES" property="des" />
-        <result column="TYPE" property="type" />
-        <result column="PARENT_ID" property="parentId" />
-        <result column="ICON" property="icon" />
-        <result column="CREATE_DATE" property="createDate" />
-        <result column="CREATE_USER" property="createUser" />
-        <result column="MODIFIED_DATE" property="modifiedDate" />
-        <result column="MODIFIED_USER" property="modifiedUser" />
-        <result column="IP" property="ip" />
-        <result column="TENANT_ID" property="tenantId" />
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto">
+        <id column="ID" property="id"/>
+        <result column="CODE" property="code"/>
+        <result column="NAME" property="name"/>
+        <result column="DES" property="des"/>
+        <result column="TYPE" property="type"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="ICON" property="icon"/>
     </resultMap>
+
+    <select id="selectCategory" resultMap="BaseResultMap">
+        SELECT
+            t1.ID,
+            t1.`CODE`,
+            t1.`NAME`,
+            t1.TYPE,
+            t1.DES,
+            t1.PARENT_ID,
+            t1.ICON
+        FROM
+            BI_UI_ANALYSE_CATEGORY t1
+            LEFT JOIN (
+        SELECT
+            t2.RESOURCE_ID
+        FROM
+            BI_UI_ANALYSE_USER_RESOURCE t2
+            LEFT JOIN (
+        SELECT
+            t3.RESOURCE_ID
+        FROM
+            BI_UI_ANALYSE_USER_RESOURCE t3
+        WHERE
+            t3.USER_ID = #{queryDto.userId,jdbcType=VARCHAR}
+            AND t3.RESOURCE_TYPE = #{queryDto.resourceType,jdbcType=VARCHAR}
+            AND LOCATE( #{queryDto.permittedAction,jdbcType=VARCHAR}, t3.PERMITTED_ACTION ) > 0
+        GROUP BY
+            t3.RESOURCE_ID
+            ) t4 ON t2.RESOURCE_ID = t4.RESOURCE_ID
+        WHERE
+            t4.RESOURCE_ID IS NULL GROUP BY t2.RESOURCE_ID
+            ) t5 ON t1.ID = t5.RESOURCE_ID
+        WHERE
+            t5.RESOURCE_ID IS NULL
+        <if test="queryDto.name != null and queryDto.name != ''">
+            AND t1.`NAME` LIKE '%' || #{queryDto.name,jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="queryDto.type != null and queryDto.type != ''">
+            AND t1.TYPE = #{queryDto.type,jdbcType=VARCHAR}
+        </if>
+        <if test="queryDto.tenantId != null and queryDto.tenantId != ''">
+            AND t1.TENANT_ID = #{queryDto.tenantId,jdbcType=VARCHAR}
+        </if>
+    </select>
 
 </mapper>

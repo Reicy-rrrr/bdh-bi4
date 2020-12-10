@@ -35,12 +35,6 @@ public class AnalyseCategoryTree implements Serializable {
     /**
      * 系统初始化,自建
      */
-    @ApiModelProperty(value = "INIT_TYPE")
-    private String initType;
-
-    /**
-     * 系统初始化,自建
-     */
     @ApiModelProperty(value = "下级数据类型")
     private String childrenType;
 
@@ -61,6 +55,9 @@ public class AnalyseCategoryTree implements Serializable {
      */
     @ApiModelProperty(value = "ICON")
     private String icon;
+
+    @ApiModelProperty(value = "permitted Action")
+    private String permittedAction;
 
     /**
      * 下级数据

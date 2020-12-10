@@ -12,6 +12,9 @@ import java.util.Map;
 @Data
 public class DataModel {
 
+    @ApiModelProperty(value = "报表id", notes = "报表id")
+    String pageId;
+
     @NotBlank
     @ApiModelProperty(value = "查询的表", notes = "树上所选表")
     String tableName;

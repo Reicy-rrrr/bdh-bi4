@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.analyse.service;
 
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 
 /**
@@ -15,6 +15,6 @@ public interface AnalyseDataService {
      * @param request
      * @return
      */
-    BaseComponentDataResponse handle(BaseComponentDataRequest request) throws Exception;
+    BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception;
 
 }

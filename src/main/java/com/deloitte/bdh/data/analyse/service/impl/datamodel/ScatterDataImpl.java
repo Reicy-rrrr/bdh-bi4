@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
+import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.google.common.collect.Maps;
@@ -26,7 +26,7 @@ import java.util.Objects;
 public class ScatterDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(y -> dataModel.getX().add(y));
@@ -115,7 +115,7 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
     }
 
 
-    private List<Map<String, Object>> buildCategory(BaseComponentDataRequest request, List<Map<String, Object>> rows) {
+    private List<Map<String, Object>> buildCategory(ComponentDataRequest request, List<Map<String, Object>> rows) {
 
         DataModel dataModel = request.getDataConfig().getDataModel();
         Map<String, Object> customParams = dataModel.getCustomParams();
