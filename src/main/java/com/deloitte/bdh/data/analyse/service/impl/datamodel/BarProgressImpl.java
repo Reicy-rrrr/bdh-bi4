@@ -1,20 +1,19 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.beust.jcommander.internal.Maps;
 import com.deloitte.bdh.common.exception.BizException;
-import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.BaseComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -27,29 +26,38 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
     @Override
     public BaseComponentDataResponse handle(BaseComponentDataRequest request) {
 
+        DataModel dataModel = request.getDataConfig().getDataModel();
+        List<DataModelField> originalX = Lists.newArrayList(dataModel.getX());
+        if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
+            dataModel.getY().forEach(field -> dataModel.getX().add(field));
+        }
+
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
+        request.getDataConfig().getDataModel().setX(originalX);
         buildRows(request, response);
         return response;
     }
 
     private void buildRows(BaseComponentDataRequest request, BaseComponentDataResponse response) {
         DataModel dataModel = request.getDataConfig().getDataModel();
-        if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
-            Map<String, Object> data = response.getRows().get(0);
-            String colName = dataModel.getX().get(0).getId();
-            if (StringUtils.isNotBlank(dataModel.getX().get(0).getAlias())) {
-                colName = dataModel.getX().get(0).getAlias();
-            }
-            BigDecimal value = NumberUtils.createBigDecimal(String.valueOf(data.get(colName)));
-            data.put("value", value);
-            String progressTotal = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.PROGRESS_TOTAL);
-            if (StringUtils.isNotBlank(progressTotal) && NumberUtils.isDigits(progressTotal)) {
-                BigDecimal total = NumberUtils.createBigDecimal(progressTotal);
-                data.put("total", total);
-                data.put("percent", value.divide(total, 2, BigDecimal.ROUND_HALF_UP));
-            }
-        }
+        List<Map<String, Object>> rows = response.getRows();
 
+        //X
+        DataModelField x = dataModel.getX().get(0);
+        String xName = getColName(x);
+        //Y
+        DataModelField y = dataModel.getY().get(0);
+        String yName = getColName(y);
+
+        Map<String, Object> newRow = Maps.newHashMap();
+        for (Map<String, Object> row : rows) {
+            newRow.put("title", yName);
+            newRow.put("target", MapUtils.getIntValue(row, xName));
+            newRow.put("measures", MapUtils.getIntValue(row, yName));
+            newRow.put("ranges", (Integer) MapUtils.getIntValue(row, yName) * 1.2);
+        }
+        rows.clear();
+        rows.add(newRow);
     }
 
 
@@ -58,7 +66,7 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
         if (CollectionUtils.isEmpty(dataModel.getX())) {
             throw new BizException("度量不能为空");
         }
-        if (dataModel.getX().size() > 1) {
+        if (dataModel.getY().size() > 1) {
             throw new BizException("最多可放入一个度量");
         }
         if (!StringUtils.equals(DataModelTypeEnum.DL.getCode(), dataModel.getX().get(0).getQuota())) {
