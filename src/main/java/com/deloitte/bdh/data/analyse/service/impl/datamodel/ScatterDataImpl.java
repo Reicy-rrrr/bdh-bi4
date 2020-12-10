@@ -154,18 +154,6 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
         return rows;
     }
 
-    private String getColName(DataModelField dataModelField) {
-
-        if (Objects.isNull(dataModelField)) {
-            return "";
-        }
-        String colName = dataModelField.getId();
-        if (StringUtils.isNotBlank(dataModelField.getAlias())) {
-            colName = dataModelField.getAlias();
-        }
-        return colName;
-    }
-
     @Override
     protected void validate(DataModel dataModel) {
         if (dataModel.getY().size() > 1) {

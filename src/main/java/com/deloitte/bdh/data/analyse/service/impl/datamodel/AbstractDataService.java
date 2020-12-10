@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Author:LIJUN
@@ -247,4 +248,15 @@ public abstract class AbstractDataService {
         return WildcardEnum.get(symbol).expression(convertValueList);
     }
 
+    public String getColName(DataModelField dataModelField) {
+
+        if (Objects.isNull(dataModelField)) {
+            return "";
+        }
+        String colName = dataModelField.getId();
+        if (StringUtils.isNotBlank(dataModelField.getAlias())) {
+            colName = dataModelField.getAlias();
+        }
+        return colName;
+    }
 }

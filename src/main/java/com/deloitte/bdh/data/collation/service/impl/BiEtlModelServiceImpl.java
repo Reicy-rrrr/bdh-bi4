@@ -30,6 +30,7 @@ import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
+import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
@@ -58,6 +59,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -234,7 +236,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             throw new RuntimeException("当前正在执行同步任务，不允许修改");
         }
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
-            throw new RuntimeException("运行中的 model 不允许修改");
+            throw new RuntimeException("运行中的模型不允许修改");
         }
 
         if (!StringUtil.isEmpty(dto.getName())) {
@@ -340,11 +342,11 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 .eq(BiEtlModel::getCode, modelCode)
         );
         if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 失效状态下无法发布");
+            throw new RuntimeException("失效状态下无法发布");
         }
 
         if (StringUtil.isEmpty(biEtlModel.getCronExpression())) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置模板调度时间");
+            throw new RuntimeException("请先配置模板调度时间");
         }
         //2：校验是否配置cron
         CronUtil.validate(biEtlModel.getCronExpression());
@@ -364,16 +366,16 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         );
 
         if (null == biEtlModel) {
-            throw new RuntimeException("EtlServiceImpl.trigger.error : 未找到目标 模型");
+            throw new RuntimeException("未找到目标模型");
         }
         if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
-            throw new RuntimeException("EtlServiceImpl.trigger.error : 失效状态下无法执行");
+            throw new RuntimeException("失效状态下无法执行");
         }
         if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
-            throw new RuntimeException("EtlServiceImpl.trigger.error : 校验失败下无法执行");
+            throw new RuntimeException("校验失败下无法执行");
         }
         if (RunStatusEnum.STOP.getKey().equals(biEtlModel.getStatus())) {
-            throw new RuntimeException("EtlServiceImpl.trigger.error : 未运行状态下无法执行");
+            throw new RuntimeException("模型未运行状态下无法执行");
         }
         //未执行任务才执行
         if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getSyncStatus())) {
@@ -392,26 +394,30 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (CollectionUtils.isNotEmpty(modelList)) {
             List<String> codeList = modelList.stream().map(BiEtlModel::getCode).collect(Collectors.toList());
 
-            List<BiComponentParams> tableList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+            List<BiComponentParams> tableDescList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
                     .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
                     .in(BiComponentParams::getRefModelCode, codeList)
             );
-
-            if (CollectionUtils.isNotEmpty(tableList)) {
-                Set<String> componentCodeList = tableList.stream().map(BiComponentParams::getRefComponentCode)
+            List<BiComponentParams> tableNameList = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_NAME)
+                    .in(BiComponentParams::getRefModelCode, codeList)
+            );
+            if (CollectionUtils.isNotEmpty(tableDescList)) {
+                Set<String> componentCodeList = tableDescList.stream().map(BiComponentParams::getRefComponentCode)
                         .collect(Collectors.toSet());
                 List<BiComponent> componentList = componentService.list(new LambdaQueryWrapper<BiComponent>()
                         .in(BiComponent::getCode, new ArrayList<>(componentCodeList))
                 );
 
 
-                for (BiComponentParams params : tableList) {
+                for (BiComponentParams params : tableDescList) {
                     for (BiEtlModel model : modelList) {
                         if (params.getRefModelCode().equals(model.getCode())) {
                             DataSetResp resp = new DataSetResp();
                             resp.setModelCode(model.getCode());
                             resp.setModelName(model.getName());
-                            resp.setTableName(params.getParamValue());
+                            resp.setToTableDesc(params.getParamValue());
+                            resp.setToTableName(getFinalTableName(tableNameList, params.getRefModelCode()));
                             if (null != model.getLastExecuteDate()) {
                                 resp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                             }
@@ -426,6 +432,33 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
         PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
         return pageResult;
+    }
+
+    @Override
+    public void dataSetReName(DataSetReNameDto dto) {
+        BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
+                .eq(BiComponentParams::getRefModelCode, dto.getCode())
+        );
+        if (null == param) {
+            throw new RuntimeException("未找到目标模型");
+        }
+        if (!param.getParamValue().equals(dto.getToTableDesc())) {
+            List<BiComponentParams> allTableDesc = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
+                    .ne(BiComponentParams::getRefModelCode, dto.getCode())
+            );
+            if (CollectionUtils.isNotEmpty(allTableDesc)) {
+                Optional<BiComponentParams> optional = allTableDesc.stream()
+                        .filter(p -> p.getParamValue().equals(dto.getToTableDesc())).findAny();
+
+                if (optional.isPresent()) {
+                    throw new RuntimeException("存在相同的表名称");
+                }
+            }
+            param.setParamValue(dto.getToTableDesc());
+            componentParamsService.updateById(param);
+        }
     }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
@@ -524,6 +557,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         if (CollectionUtils.isNotEmpty(components)) {
             for (BiComponent component : components) {
                 if (component.getCode().equals(code)) {
+                    components.remove(component);
                     return component.getComments();
                 }
             }
@@ -531,4 +565,15 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         return null;
     }
 
+    private String getFinalTableName(List<BiComponentParams> paramsList, String code) {
+        if (CollectionUtils.isNotEmpty(paramsList)) {
+            for (BiComponentParams params : paramsList) {
+                if (params.getRefModelCode().equals(code)) {
+                    paramsList.remove(params);
+                    return params.getParamValue();
+                }
+            }
+        }
+        return null;
+    }
 }

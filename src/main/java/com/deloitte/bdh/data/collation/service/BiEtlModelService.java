@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
+import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
@@ -104,5 +105,12 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      */
     PageResult<List<DataSetResp>> getDataSet(GetModelPageDto dto);
 
+    /**
+     * 数据集的表重命名
+     *
+     * @param dto
+     * @return
+     */
+    void dataSetReName(DataSetReNameDto dto);
 
 }
