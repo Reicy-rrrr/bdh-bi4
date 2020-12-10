@@ -97,7 +97,11 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             List<BiEtlSyncPlanResult> plans = result.getList();
             for (BiEtlSyncPlanResult plan : plans) {
                 plan.setPlanTypeDesc(PlanTypeEnum.values(Integer.valueOf(plan.getPlanType())).getDesc());
-                plan.setPlanStageDesc(PlanStageEnum.getValue(plan.getPlanStage()));
+                if (StringUtils.isNotBlank(plan.getResultDesc())) {
+                    plan.setPlanStageDesc(PlanStageEnum.getValue(plan.getPlanStage()) + "：" + plan.getResultDesc());
+                } else {
+                    plan.setPlanStageDesc(PlanStageEnum.getValue(plan.getPlanStage()));
+                }
             }
         }
         return result;
