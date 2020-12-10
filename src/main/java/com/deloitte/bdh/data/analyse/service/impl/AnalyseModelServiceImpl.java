@@ -24,6 +24,7 @@ import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.database.po.TableInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -53,12 +54,9 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     @Resource
     AnalyseModelFieldService fieldService;
 
-    @Resource
-    BiUiDemoMapper biUiDemoMapper;
-
     @Override
-    public List<String> getAllTable() {
-        return dbHandler.getTableNameList();
+    public List<TableInfo> getAllTable() {
+        return dbHandler.getTableList();
     }
 
 
