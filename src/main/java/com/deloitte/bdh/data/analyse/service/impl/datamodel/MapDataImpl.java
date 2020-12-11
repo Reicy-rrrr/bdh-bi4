@@ -26,7 +26,6 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
 
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) {
-        DataModel dataModel = request.getDataConfig().getDataModel();
         DataConfig dataConfig = request.getDataConfig();
         DataModel dataModel = dataConfig.getDataModel();
         //如果直接List<DataModelField> originalX = dataModel.getX();
