@@ -34,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -94,21 +93,21 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 result.add(dataSetResp);
             }
             //获取模板编码
-            List<String> modelCodeList = result.stream().map(DataSetResp::getRefModelCode).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(modelCodeList)) {
-                //获取model与component
-                List<BiEtlModel> modelList = modelService.list(new LambdaQueryWrapper<BiEtlModel>().in(BiEtlModel::getCode, modelCodeList));
+            List<String> modelCodeList = result.stream().filter(s -> StringUtils.isNotBlank(s.getRefModelCode()))
+                    .map(DataSetResp::getRefModelCode).collect(Collectors.toList());
 
-                for (BiDataSet dataSet : dataSetList) {
-                    DataSetResp dataSetResp = new DataSetResp();
-                    BeanUtils.copyProperties(dataSet, dataSetResp);
-                    BiEtlModel model = getModel(modelList, dataSet.getRefModelCode());
-                    if (null != model) {
-                        if (null != model.getLastExecuteDate()) {
-                            dataSetResp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            if (CollectionUtils.isNotEmpty(modelCodeList)) {
+                //获取model
+                List<BiEtlModel> modelList = modelService.list(new LambdaQueryWrapper<BiEtlModel>().in(BiEtlModel::getCode, modelCodeList));
+                for (DataSetResp setResp : result) {
+                    if (StringUtils.isNotBlank(setResp.getRefModelCode())) {
+                        BiEtlModel model = getModel(modelList, setResp.getRefModelCode());
+                        if (null != model) {
+                            if (null != model.getLastExecuteDate()) {
+                                setResp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                            }
                         }
                     }
-                    result.add(dataSetResp);
                 }
             }
         }

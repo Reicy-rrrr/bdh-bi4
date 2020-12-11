@@ -7,7 +7,6 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
@@ -27,6 +26,7 @@ import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,16 +49,19 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Resource
     private DbHandler dbHandler;
-
     @Resource
     AnalyseModelFolderService folderService;
-
     @Resource
     AnalyseModelFieldService fieldService;
 
     @Override
     public List<TableInfo> getAllTable() {
         return dbHandler.getTableList();
+    }
+
+    @Override
+    public List<BiDataSet> getDataSetTableList() {
+        return dbHandler.getDataSetTableList();
     }
 
 
@@ -121,7 +124,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     /*
      * 如果有数据单位，则拼接数据单位
      */
-    private void joinDataUnit(ComponentDataRequest request,BaseComponentDataResponse response) {
+    private void joinDataUnit(ComponentDataRequest request, BaseComponentDataResponse response) {
 
         List<Map<String, Object>> rows = response.getRows();
         List<Map<String, Object>> y2 = response.getY2();
@@ -142,6 +145,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 获取历史数据
+     *
      * @param request
      * @return
      */
@@ -152,7 +156,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
-        String dlId= null;
+        String dlId = null;
         if (CollectionUtils.isEmpty(folderList)) {
             folderList = Lists.newArrayList();
             //初始化维度文件夹
@@ -219,6 +223,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 递归转换成树
+     *
      * @param fieldList
      * @param parentId
      * @return
@@ -239,6 +244,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 逆向递归树转List
+     *
      * @param fieldTreeList
      * @return
      */
