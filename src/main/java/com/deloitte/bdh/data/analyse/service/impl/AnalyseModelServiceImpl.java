@@ -75,8 +75,8 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             fieldList.addAll(stepFieldList);
         }
         //更新
-        folderService.saveOrUpdateBatch(folderList);
-        fieldService.saveOrUpdateBatch(fieldList);
+        folderService.updateBatchById(folderList);
+        fieldService.updateBatchById(fieldList);
     }
 
     @Transactional

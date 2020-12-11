@@ -107,10 +107,10 @@ public class BiUiModelField implements Serializable {
     @TableField("TENANT_ID")
     private String tenantId;
 
-    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
-    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "CREATE_USER", fill = FieldFill.INSERT)
     private String createUser;
 
     @TableField(value = "MODIFIED_DATE", fill = FieldFill.INSERT_UPDATE)
