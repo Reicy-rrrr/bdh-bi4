@@ -380,6 +380,7 @@ public class EtlServiceImpl implements EtlService {
 
         // 设置组件参数：创建最终表,表名默认为 模板名称_组件名称
         String tableDesc = StringUtils.isBlank(dto.getTableName()) ? (biEtlModel.getName() + "_" + component.getName()) : dto.getTableName();
+        tableDesc = tableDesc + DataSetTypeEnum.MODEL.getSuffix();
         // 校验表描述是否重复
         boolean tableDescExists = componentParamsService.isParamExists(ComponentCons.TO_TABLE_DESC, tableDesc);
         if (tableDescExists) {
@@ -409,7 +410,7 @@ public class EtlServiceImpl implements EtlService {
 
         // 查询组件原始参数
         List<BiComponentParams> originalParams = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                        .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode()));
+                .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode()));
 
         // 原始表名
         String originalTableDesc = null;
@@ -430,7 +431,7 @@ public class EtlServiceImpl implements EtlService {
         //校验分析那面是否用到原表，若用到则校验新字段，只能增加字段
         checkAnalyseField(originalTableDesc, dto.getFields());
         // 如果未传递新表名，就使用原始表名
-        String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName();
+        String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName() + DataSetTypeEnum.MODEL.getSuffix();
         // 如果使用新表名，校验表名是否重复
         if (!tableDesc.equals(originalTableDesc)) {
             // 校验表描述是否重复

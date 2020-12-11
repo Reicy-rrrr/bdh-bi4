@@ -22,6 +22,7 @@ public class OutComponentDto {
     private String modelId;
 
     @ApiModelProperty(value = "tableName", example = "0")
+    @NotNull(message = " tableName 不能为空")
     private String tableName;
 
     @ApiModelProperty(value = "字段列表", example = "0")
