@@ -10,8 +10,10 @@ public class ComponentCons {
     //1：为数据源组件,为”引用副本“时没有值，2：为输出组件时没有值
     public static final String REF_PROCESSORS_CDOE = "refProcessorsCode";
 
-    //以下为输出组件参数
+    /** 输出组件：最终表描述 */
     public static final String TO_TABLE_DESC = "toTableDesc";
+    /** 输出组件：所属数据集的文件夹id */
+    public static final String FOLDER_ID = "folderId";
 
     /** 关联组件参数 */
     public static final String JOIN_PARAM_KEY_TABLES = "tables";

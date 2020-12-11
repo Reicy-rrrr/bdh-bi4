@@ -59,6 +59,9 @@ public class EtlController {
     @ApiOperation(value = "引入输出组件", notes = "引入输出组件")
     @PostMapping("/out/join")
     public RetResult<BiComponent> outCreate(@RequestBody @Validated RetRequest<OutComponentDto> request) throws Exception {
+        if (true) {
+            return RetResponse.makeOKRsp(new BiComponent());
+        }
         return RetResponse.makeOKRsp(etlService.outCreate(request.getData()));
     }
 

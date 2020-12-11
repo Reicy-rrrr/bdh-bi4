@@ -41,4 +41,7 @@ public class UpdateOutComponentDto {
 
     @ApiModelProperty(value = "comments", example = "0")
     private String comments;
+
+    @ApiModelProperty(value = "数据集文件夹id", example = "12")
+    private String folderId;
 }
