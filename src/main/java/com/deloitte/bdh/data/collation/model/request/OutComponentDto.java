@@ -22,6 +22,7 @@ public class OutComponentDto {
     private String modelId;
 
     @ApiModelProperty(value = "tableName", example = "0")
+    @NotNull(message = " tableName 不能为空")
     private String tableName;
 
     @ApiModelProperty(value = "字段列表", example = "0")
@@ -32,4 +33,7 @@ public class OutComponentDto {
 
     @ApiModelProperty(value = "comments", example = "0")
     private String comments;
+
+    @ApiModelProperty(value = "数据集文件夹id", example = "12")
+    private String folderId;
 }

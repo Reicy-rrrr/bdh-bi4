@@ -24,15 +24,18 @@ import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -64,6 +67,11 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     @Override
     public List<TableInfo> getAllTable() {
         return dbHandler.getTableList();
+    }
+
+    @Override
+    public List<BiDataSet> getDataSetTableList() {
+        return dbHandler.getDataSetTableList();
     }
 
 
@@ -163,11 +171,45 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         }
         dataUnitMap.put("dataUnit", dataUnitList);
         return dataUnitMap;
+     * 返回前端传来的数据单位
+    private Map<String, Object> joinDataUnit(ComponentDataRequest request, BaseComponentDataResponse response) {
+        //存放所有入参中符合条件的字段
+        List<DataModelField> reqAll = Lists.newArrayList();
+        List<DataModelField> reqX = dataModel.getX();
+        List<DataModelField> reqY = dataModel.getY();
+        List<DataModelField> reqY2 = dataModel.getY2();
+        List<DataModelField> reqCategory = dataModel.getCategory();
+        //其他参数目前只有这两个
+        DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
+                CustomParamsConstants.SCATTER_NAME)), DataModelField.class);
+        DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
+                CustomParamsConstants.SCATTER_SIZE)), DataModelField.class);
+        reqAll.addAll(reqX);
+        reqAll.addAll(reqY);
+        reqAll.addAll(reqY2);
+        reqAll.addAll(reqCategory);
+        reqAll.add(scatterName);
+        reqAll.add(scatterSize);
+        Map<String, Object> dataUnitMap = Maps.newHashMap();
+        List<Object> dataUnitList = Lists.newArrayList();
+        for (DataModelField dataModelField : reqAll) {
+            //如果是度量，且数据单位不为空，则返回
+            if (Objects.nonNull(dataModelField) && dataModelField.getQuota().equals(DataModelTypeEnum.DL.getCode())) {
+                if (StringUtils.isNotEmpty(dataModelField.getDataUnit())) {
+                    Map<String, Object> map = Maps.newHashMap();
+                    map.put("id", dataModelField.getId());
+                    map.put("alias", dataModelField.getAlias());
+                    map.put("dataUnit", DataUnitEnum.getDesc(dataModelField.getDataUnit()));
+                    dataUnitList.add(map);
+                }
+            }
+        }
+        dataUnitMap.put("dataUnit", dataUnitList);
+        return dataUnitMap;
     }
 
     /**
      * 获取历史数据
-     *
      * @param request
      * @return
      */
@@ -178,7 +220,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
-        String dlId = null;
+        String dlId= null;
         if (CollectionUtils.isEmpty(folderList)) {
             folderList = Lists.newArrayList();
             //初始化维度文件夹
@@ -245,7 +287,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 递归转换成树
-     *
      * @param fieldList
      * @param parentId
      * @return
@@ -266,7 +307,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 逆向递归树转List
-     *
      * @param fieldTreeList
      * @return
      */
