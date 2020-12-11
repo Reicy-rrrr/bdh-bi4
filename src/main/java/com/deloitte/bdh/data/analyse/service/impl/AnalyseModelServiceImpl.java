@@ -171,41 +171,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         }
         dataUnitMap.put("dataUnit", dataUnitList);
         return dataUnitMap;
-     * 返回前端传来的数据单位
-    private Map<String, Object> joinDataUnit(ComponentDataRequest request, BaseComponentDataResponse response) {
-        //存放所有入参中符合条件的字段
-        List<DataModelField> reqAll = Lists.newArrayList();
-        List<DataModelField> reqX = dataModel.getX();
-        List<DataModelField> reqY = dataModel.getY();
-        List<DataModelField> reqY2 = dataModel.getY2();
-        List<DataModelField> reqCategory = dataModel.getCategory();
-        //其他参数目前只有这两个
-        DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
-                CustomParamsConstants.SCATTER_NAME)), DataModelField.class);
-        DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
-                CustomParamsConstants.SCATTER_SIZE)), DataModelField.class);
-        reqAll.addAll(reqX);
-        reqAll.addAll(reqY);
-        reqAll.addAll(reqY2);
-        reqAll.addAll(reqCategory);
-        reqAll.add(scatterName);
-        reqAll.add(scatterSize);
-        Map<String, Object> dataUnitMap = Maps.newHashMap();
-        List<Object> dataUnitList = Lists.newArrayList();
-        for (DataModelField dataModelField : reqAll) {
-            //如果是度量，且数据单位不为空，则返回
-            if (Objects.nonNull(dataModelField) && dataModelField.getQuota().equals(DataModelTypeEnum.DL.getCode())) {
-                if (StringUtils.isNotEmpty(dataModelField.getDataUnit())) {
-                    Map<String, Object> map = Maps.newHashMap();
-                    map.put("id", dataModelField.getId());
-                    map.put("alias", dataModelField.getAlias());
-                    map.put("dataUnit", DataUnitEnum.getDesc(dataModelField.getDataUnit()));
-                    dataUnitList.add(map);
-                }
-            }
-        }
-        dataUnitMap.put("dataUnit", dataUnitList);
-        return dataUnitMap;
     }
 
     /**
