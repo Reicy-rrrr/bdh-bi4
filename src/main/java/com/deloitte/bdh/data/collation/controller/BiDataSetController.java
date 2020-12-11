@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
+import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
@@ -57,6 +58,13 @@ public class BiDataSetController {
     @PostMapping("/reName")
     public RetResult<Void> reName(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
         dataSetService.reName(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "创建数据集文件夹", notes = "创建数据集文件夹")
+    @PostMapping("/file/create")
+    public RetResult<Void> fileCreate(@RequestBody @Validated RetRequest<CreateDataSetFileDto> request) {
+        dataSetService.fileCreate(request.getData());
         return RetResponse.makeOKRsp();
     }
 

@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 
-
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
@@ -16,6 +15,7 @@ import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
+import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
@@ -25,6 +25,7 @@ import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageInfo;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,6 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                     BeanUtils.copyProperties(dataSet, dataSetResp);
                     BiEtlModel model = getModel(modelList, dataSet.getRefModelCode());
                     if (null != model) {
-                        dataSetResp.setModelName(model.getName());
                         if (null != model.getLastExecuteDate()) {
                             dataSetResp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                         }
@@ -146,19 +146,42 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
-    public void create(CreateDataSetDto dto) {
+    public void fileCreate(CreateDataSetFileDto dto) {
         BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableName, dto.getTableName())
+                .eq(BiDataSet::getTableDesc, dto.getFileName())
+                .eq(BiDataSet::getTableName, dto.getFileName()));
+
+        if (null != biDataSet) {
+            throw new RuntimeException("文件夹已存在相同表名");
+        }
+
+        BiDataSet dataSet = new BiDataSet();
+        // 数据集合类型（0, "数据直连"，1, "数据整理"）
+        dataSet.setTableName(dto.getFileName());
+        dataSet.setTableDesc(dto.getFileName());
+        if (StringUtils.isNotBlank(dto.getFileId())) {
+            dataSet.setParentId(dto.getFileId());
+        }
+        dataSet.setIsFile(YesOrNoEnum.YES.getKey());
+        dataSet.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(dataSet);
+    }
+
+    @Override
+    public void create(CreateDataSetDto dto) {
+        String tableDesc = dto.getTableNameDesc() + ".D";
+        BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getTableDesc, tableDesc)
                 .eq(BiDataSet::getRefSourceId, dto.getRefSourceId()));
         if (null != biDataSet) {
-            throw new RuntimeException("数据集已存在相同数据源的同一张表");
+            throw new RuntimeException("数据集已存在相同表名");
         }
         BiDataSet dataSet = new BiDataSet();
         // 数据集合类型（0, "数据直连"，1, "数据整理"）
         dataSet.setType("0");
         dataSet.setRefSourceId(dto.getRefSourceId());
         dataSet.setTableName(dto.getTableName());
-        dataSet.setTableDesc(dto.getTableName());
+        dataSet.setTableDesc(tableDesc);
         dataSet.setParentId(dto.getFileId());
         dataSet.setIsFile(YesOrNoEnum.NO.getKey());
         dataSet.setTenantId(ThreadLocalHolder.getTenantId());
