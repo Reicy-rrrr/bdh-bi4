@@ -121,7 +121,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     /*
      * 如果有数据单位，则拼接数据单位
      */
-    private void joinDataUnit(BaseComponentDataRequest request,BaseComponentDataResponse response) {
+    private void joinDataUnit(ComponentDataRequest request,BaseComponentDataResponse response) {
 
         List<Map<String, Object>> rows = response.getRows();
         List<Map<String, Object>> y2 = response.getY2();
