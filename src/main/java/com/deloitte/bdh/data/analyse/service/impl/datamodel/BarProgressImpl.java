@@ -42,10 +42,10 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
         DataModel dataModel = request.getDataConfig().getDataModel();
         List<Map<String, Object>> rows = response.getRows();
 
-        //X
+        //X是目标值
         DataModelField x = dataModel.getX().get(0);
         String xName = getColName(x);
-        //Y
+        //Y当前值
         DataModelField y = dataModel.getY().get(0);
         String yName = getColName(y);
 
@@ -54,17 +54,26 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
             int xValue = MapUtils.getIntValue(row, xName);
             int yValue = MapUtils.getIntValue(row, yName);
             newRow.put("title", yName);
-            newRow.put("target", xValue);
-            newRow.put("measures", yValue);
-            if (xValue > yValue){
-                newRow.put("ranges", (int) (xValue*1.2));
-            }
-            else{
-                newRow.put("ranges", (int) (yValue*1.2));
+            newRow.put("target", getMap(x, xValue));
+            newRow.put("measures", getMap(y, yValue));
+            if (xValue > yValue) {
+                newRow.put("ranges", (int) (xValue * 1.2));
+            } else {
+                newRow.put("ranges", (int) (yValue * 1.2));
             }
         }
         rows.clear();
         rows.add(newRow);
+    }
+
+    //构造返回map
+    private Map<String, Object> getMap(DataModelField field, int value) {
+
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("field", field.getId());
+        map.put("alias", field.getAlias());
+        map.put("value", value);
+        return map;
     }
 
 
