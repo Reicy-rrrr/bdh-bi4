@@ -19,12 +19,14 @@ import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
@@ -33,6 +35,7 @@ import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
 import com.deloitte.bdh.data.collation.model.request.UpdateModelDto;
 import com.deloitte.bdh.data.collation.model.resp.ModelResp;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
+import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
@@ -84,6 +87,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private BiTenantConfigService biTenantConfigService;
+    @Resource
+    private BiDataSetService dataSetService;
 
     @Override
     public List<BiEtlModel> getModelTree() {
@@ -135,12 +140,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public BiEtlModel createModel(CreateModelDto dto) throws Exception {
-        BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
-                .eq(BiEtlModel::getName, dto.getName())
-        );
-        if (null != model) {
-            throw new RuntimeException("名称已存在");
-        }
         String modelCode = GenerateCodeUtil.genModel();
 
         //处理文件夹
@@ -319,6 +318,18 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             jobService.start(modelCode);
             biEtlModel.setStatus(RunStatusEnum.RUNNING.getKey());
             biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
+
+            //设置数据集
+            dataSetService.remove(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getRefModelCode, biEtlModel.getCode()));
+            BiDataSet dataSet = new BiDataSet();
+            dataSet.setType(DataSetTypeEnum.MODEL.getKey());
+            dataSet.setTableName(componentModel.getTableName());
+            dataSet.setTableDesc(componentModel.getTableDesc());
+            dataSet.setRefModelCode(biEtlModel.getCode());
+            dataSet.setParentId(componentModel.getFolderId());
+            dataSet.setIsFile(YesOrNoEnum.NO.getKey());
+            dataSet.setTenantId(ThreadLocalHolder.getTenantId());
+            dataSetService.save(dataSet);
         }
         biEtlModelMapper.updateById(biEtlModel);
         return biEtlModel;
@@ -376,6 +387,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     private BiEtlModel doFile(String modelCode, CreateModelDto dto) {
+        BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getName, dto.getName())
+                .eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey())
+        );
+        if (null != model) {
+            throw new RuntimeException("文件夹名称已存在");
+        }
+
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
         inf.setCode(modelCode);
@@ -404,6 +423,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     private BiEtlModel doModel(String modelCode, CreateModelDto dto) throws Exception {
+        BiEtlModel model = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+                .eq(BiEtlModel::getName, dto.getName())
+                .eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey())
+        );
+        if (null != model) {
+            throw new RuntimeException("模型名称已存在");
+        }
+
         BiEtlModel inf = new BiEtlModel();
         BeanUtils.copyProperties(dto, inf);
         inf.setCode(modelCode);

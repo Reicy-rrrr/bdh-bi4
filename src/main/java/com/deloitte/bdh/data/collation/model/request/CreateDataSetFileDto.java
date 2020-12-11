@@ -16,10 +16,10 @@ import javax.validation.constraints.NotNull;
 public class CreateDataSetFileDto {
 
     @ApiModelProperty(value = "上级文件夹ID", example = "0", required = true)
-    private String fileId;
+    private String folderId;
 
     @ApiModelProperty(value = "文件名称", example = "文件名称", required = true)
     @NotNull(message = "文件名称 不能为空")
-    private String fileName;
+    private String folderName;
 
 }

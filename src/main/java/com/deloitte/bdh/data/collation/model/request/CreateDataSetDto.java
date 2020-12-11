@@ -17,7 +17,7 @@ public class CreateDataSetDto {
 
     @ApiModelProperty(value = "文件夹ID", example = "0", required = true)
     @NotNull(message = "文件夹ID 不能为空")
-    private String fileId;
+    private String folderId;
 
     @ApiModelProperty(value = "数据源ID", example = "1", required = true)
     @NotNull(message = "数据源ID 不能为空")
