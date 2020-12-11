@@ -70,6 +70,10 @@ public class Oracle extends AbstractProcess implements DbSelector {
             field.setDesc(field.getName());
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
+            // Oracle中的TIMESTAMP类型查询出的数据类型为TIMESTAMP(6)，需要特殊处理
+            if (dataType.startsWith("TIMESTAMP") && dataType.contains("(")) {
+                dataType = dataType.substring(0, dataType.indexOf("("));
+            }
             field.setDataType(dataType);
             field.setType(OracleDataTypeEnum.values(dataType.toUpperCase()).getValue().getType());
 

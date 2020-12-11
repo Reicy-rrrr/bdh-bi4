@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
@@ -7,13 +9,15 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
@@ -27,9 +31,12 @@ import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -38,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author chenghzhang
@@ -59,6 +67,11 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     @Override
     public List<TableInfo> getAllTable() {
         return dbHandler.getTableList();
+    }
+
+    @Override
+    public List<BiDataSet> getDataSetTableList() {
+        return dbHandler.getDataSetTableList();
     }
 
 
@@ -114,30 +127,50 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         BaseComponentDataResponse response = SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
-        joinDataUnit(request, response);
+        response.setExtra(joinDataUnit(request, response));
         return response;
     }
 
     /*
-     * 如果有数据单位，则拼接数据单位
+     * 返回前端传来的数据单位
      */
-    private void joinDataUnit(ComponentDataRequest request,BaseComponentDataResponse response) {
-
-        List<Map<String, Object>> rows = response.getRows();
-        List<Map<String, Object>> y2 = response.getY2();
+    private Map<String, Object> joinDataUnit(ComponentDataRequest request, BaseComponentDataResponse response) {
 
         DataModel dataModel = request.getDataConfig().getDataModel();
+        //存放所有入参中符合条件的字段
+        List<DataModelField> reqAll = Lists.newArrayList();
+        List<DataModelField> reqX = dataModel.getX();
+        List<DataModelField> reqY = dataModel.getY();
+        List<DataModelField> reqY2 = dataModel.getY2();
+        List<DataModelField> reqCategory = dataModel.getCategory();
+        //其他参数目前只有这两个
+        DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
+                CustomParamsConstants.SCATTER_NAME)), DataModelField.class);
+        DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
+                CustomParamsConstants.SCATTER_SIZE)), DataModelField.class);
+        reqAll.addAll(reqX);
+        reqAll.addAll(reqY);
+        reqAll.addAll(reqY2);
+        reqAll.addAll(reqCategory);
+        reqAll.add(scatterName);
+        reqAll.add(scatterSize);
 
-        for (Map<String, Object> map : rows) {
-
+        Map<String, Object> dataUnitMap = Maps.newHashMap();
+        List<Object> dataUnitList = Lists.newArrayList();
+        for (DataModelField dataModelField : reqAll) {
+            //如果是度量，且数据单位不为空，则返回
+            if (Objects.nonNull(dataModelField) && dataModelField.getQuota().equals(DataModelTypeEnum.DL.getCode())) {
+                if (StringUtils.isNotEmpty(dataModelField.getDataUnit())) {
+                    Map<String, Object> map = Maps.newHashMap();
+                    map.put("id", dataModelField.getId());
+                    map.put("alias", dataModelField.getAlias());
+                    map.put("dataUnit", DataUnitEnum.getDesc(dataModelField.getDataUnit()));
+                    dataUnitList.add(map);
+                }
+            }
         }
-        joinDataUnitMain(rows);
-        joinDataUnitMain(y2);
-    }
-
-    private void joinDataUnitMain(List<Map<String, Object>> row) {
-
-
+        dataUnitMap.put("dataUnit", dataUnitList);
+        return dataUnitMap;
     }
 
     /**

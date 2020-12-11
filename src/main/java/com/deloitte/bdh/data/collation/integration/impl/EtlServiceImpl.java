@@ -378,16 +378,22 @@ public class EtlServiceImpl implements EtlService {
         List<BiEtlMappingField> fields = transferFieldsByName(componentCode, dto.getFields());
         fieldService.saveBatch(fields);
 
-        // 设置组件参数：创建最终表,表名默认为模板编码
-        String tableName = StringUtils.isBlank(dto.getTableName()) ? biEtlModel.getCode() : dto.getTableName();
-        // 校验表名是否重复
-        boolean tableExists = dbHandler.isTableExists(tableName);
-        if (tableExists) {
+        // 设置组件参数：创建最终表,表名默认为 模板名称_组件名称
+        String tableDesc = StringUtils.isBlank(dto.getTableName()) ? (biEtlModel.getName() + "_" + component.getName()) : dto.getTableName();
+        tableDesc = tableDesc + DataSetTypeEnum.MODEL.getSuffix();
+        // 校验表描述是否重复
+        boolean tableDescExists = componentParamsService.isParamExists(ComponentCons.TO_TABLE_DESC, tableDesc);
+        if (tableDescExists) {
             throw new BizException("EtlServiceImpl.out.error : 表名已存在");
         }
 
+        String folderId = dto.getFolderId();
+        if (StringUtils.isBlank(folderId)) {
+            folderId = "1";
+        }
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.TO_TABLE_DESC, tableName);
+        params.put(ComponentCons.TO_TABLE_DESC, tableDesc);
+        params.put(ComponentCons.FOLDER_ID, folderId);
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         return component;
@@ -401,24 +407,42 @@ public class EtlServiceImpl implements EtlService {
         if (null == component) {
             throw new RuntimeException("EtlServiceImpl.component.update.error : 未找到目标");
         }
-        // 查询原始最终表名
-        BiComponentParams tableNameParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode())
-                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC));
+
+        // 查询组件原始参数
+        List<BiComponentParams> originalParams = componentParamsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, dto.getComponentCode()));
+
         // 原始表名
-        String oldTableName = tableNameParam.getParamValue();
-        //校验分析那面是否用到原表，若用到则校验新字段，只能增加字段
-        checkAnalyseField(oldTableName, dto.getFields());
-        // 如果未传递新表名，就使用原始表名
-        String tableName = StringUtils.isBlank(dto.getTableName()) ? oldTableName : dto.getTableName();
-        // 如果使用新表名，校验表名是否重复
-        if (!tableName.equals(oldTableName)) {
-            // 校验表名是否重复
-            boolean tableExists = dbHandler.isTableExists(tableName);
-            if (tableExists) {
-                throw new BizException("EtlServiceImpl.out.error : 表名已存在");
+        String originalTableDesc = null;
+        // 原始数据集文件夹id
+        String originalFolderId = null;
+        for (BiComponentParams param : originalParams) {
+            if (null == param) {
+                continue;
+            }
+            if (ComponentCons.TO_TABLE_DESC.equals(param.getParamKey())) {
+                originalTableDesc = param.getParamValue();
+            }
+            if (ComponentCons.FOLDER_ID.equals(param.getParamKey())) {
+                originalFolderId = param.getParamValue();
             }
         }
+
+        //校验分析那面是否用到原表，若用到则校验新字段，只能增加字段
+        checkAnalyseField(originalTableDesc, dto.getFields());
+        // 如果未传递新表名，就使用原始表名
+        String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName() + DataSetTypeEnum.MODEL.getSuffix();
+        // 如果使用新表名，校验表名是否重复
+        if (!tableDesc.equals(originalTableDesc)) {
+            // 校验表描述是否重复
+            boolean tableDescExists = componentParamsService.isParamExists(ComponentCons.TO_TABLE_DESC, tableDesc);
+            if (tableDescExists) {
+                throw new BizException("EtlServiceImpl.out.update.error : 表名已存在");
+            }
+        }
+        // 如果未传递新文件夹id，使用原始文件夹id
+        String folderId = StringUtils.isBlank(dto.getFolderId()) ? originalFolderId : dto.getFolderId();
+
         // 删除已配置字段
         fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()
                 .eq(BiEtlMappingField::getRefCode, dto.getComponentCode()));
@@ -429,9 +453,10 @@ public class EtlServiceImpl implements EtlService {
         List<BiEtlMappingField> fields = transferFieldsByName(dto.getComponentCode(), dto.getFields());
         fieldService.saveBatch(fields);
 
-        // 设置组件参数：创建最终表,表名默认为模板编码
+        // 设置组件参数
         Map<String, Object> params = Maps.newHashMap();
-        params.put(ComponentCons.TO_TABLE_DESC, tableName);
+        params.put(ComponentCons.TO_TABLE_DESC, tableDesc);
+        params.put(ComponentCons.FOLDER_ID, folderId);
         List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         // 更新组件信息

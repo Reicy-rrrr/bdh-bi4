@@ -439,8 +439,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             context.setDriverName(SourceTypeEnum.getDriverNameByType(dbType));
             dbSelector.test(context);
         } catch (Exception e) {
-            log.error("数据库连接失败：" + e);
-            result = "连接失败";
+            log.error("数据库连接失败：", e);
+            throw new BizException("连接失败");
         }
         return result;
     }

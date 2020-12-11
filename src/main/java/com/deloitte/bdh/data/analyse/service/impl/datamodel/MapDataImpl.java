@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.MapEnum;
@@ -34,6 +35,9 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         originalX.addAll(dataModel.getX());
         //符号地图增加经纬度
         if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
+            if (!isExistLongLanField(request)) {
+                throw new BizException("当前表数据无经纬度字段,请换个有经纬度的表拖拽字段");
+            }
             //经度
             DataModelField longitude = new DataModelField();
             longitude.setType(DataTypeEnum.Text.getType());
@@ -85,7 +89,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                 if (StringUtils.isNotBlank(category.getAlias())) {
                     colName = category.getAlias();
                 }
-                String categoryName = StringUtils.join(colName,": ",MapUtils.getString(row, colName));
+                String categoryName = StringUtils.join(colName, ": ", MapUtils.getString(row, colName));
                 categoryPrefix.add(categoryName);
             }
             //重新赋值
@@ -100,14 +104,13 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                     newRow.put("category", categoryPrefix);
                 }
 
-                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())){
+                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
                     List<Object> valueList = Lists.newArrayList();
                     valueList.add(MapUtils.getObject(row, MapEnum.LONGITUDE.getDesc()));//经度
                     valueList.add(MapUtils.getObject(row, MapEnum.LANTITUDE.getDesc()));//纬度
                     valueList.add(MapUtils.getObject(row, colName));
                     newRow.put("value", valueList);
-                }
-                else{
+                } else {
                     newRow.put("value", MapUtils.getObject(row, colName));
                 }
                 newRows.add(newRow);
@@ -115,6 +118,15 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         }
         return newRows;
     }
+
+    private Boolean isExistLongLanField(ComponentDataRequest request) {
+        String sql = "SELECT 1 from information_schema.columns where table_name = '" +
+                request.getDataConfig().getDataModel().getTableName() + "' and column_name = 'longitude' and column_name = 'lantitude'";
+
+        BaseComponentDataResponse response = execute(sql);
+        return !CollectionUtils.isEmpty(response.getRows());
+    }
+
 
     @Override
     protected void validate(DataModel dataModel) {

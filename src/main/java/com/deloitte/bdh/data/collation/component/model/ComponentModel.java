@@ -42,8 +42,8 @@ public class ComponentModel {
     private String type;
 
     /** 所属模板code */
-    @JsonIgnore
     @ApiModelProperty(value = "所属模板code", example = "10")
+    @JsonIgnore
     private String refModelCode;
 
     /** 关联映射code（源组件） */
@@ -73,8 +73,17 @@ public class ComponentModel {
     @ApiModelProperty(value = "表名", required = true)
     private String tableName;
 
+    /** 表描述：输出组件描述为最终表描述，其他组件描述为组件备注 */
+    @ApiModelProperty(value = "表描述", required = true)
+    private String tableDesc;
+
+    /** 文件夹id：输出组件文件夹id为数据集的文件夹 */
+    @ApiModelProperty(value = "文件夹id")
+    private String folderId;
+
     /** 组件输出查询sql（所有组件） */
     @ApiModelProperty(value = "组件输出查询sql")
+    @JsonIgnore
     private String querySql;
 
     /** 组件预览查询sql（所有组件） */
@@ -88,8 +97,8 @@ public class ComponentModel {
     private String createSql;
 
     /** 组件输出插入查询sql（输出组件） */
-    @JsonIgnore
     @ApiModelProperty(value = "组件输出插入查询sql")
+    @JsonIgnore
     private String insertSql;
 
     /** 组件是否处理 */

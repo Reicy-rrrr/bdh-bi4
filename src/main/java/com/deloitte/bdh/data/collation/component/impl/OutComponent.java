@@ -3,8 +3,10 @@ package com.deloitte.bdh.data.collation.component.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import com.google.common.collect.Lists;
@@ -45,7 +47,9 @@ public class OutComponent implements ComponentHandler {
             throw new BizException("输出组件只能有一个上层组件，处理失败！");
         }
 
-
+        // 初始化输出组件最终表描述和数据集文件夹id
+        initComponentParams(component);
+        // 设置输出组件最终表名（组件code）
         String targetTableName = component.getCode();
         component.setTableName(targetTableName);
         initFields(component);
@@ -167,5 +171,33 @@ public class OutComponent implements ComponentHandler {
         List<String> finalFields = finalMappings.stream().map(FieldMappingModel::getTempFieldName)
                 .collect(Collectors.toList());
         component.setFields(finalFields);
+    }
+
+    /**
+     * 初始化输出组件输出的目标表描述和所属的数据集文件夹id
+     *
+     * @param component 当前输出组件模型
+     */
+    private void initComponentParams(ComponentModel component) {
+        // 最终表描述
+        String targetTableDesc = component.getTableDesc();
+        // 所属数据集文件夹id
+        String belongFolderId = null;
+        List<BiComponentParams> params = component.getParams();
+        if (CollectionUtils.isNotEmpty(params)) {
+            for (BiComponentParams param : params) {
+                if (ComponentCons.TO_TABLE_DESC.equals(param.getParamKey())) {
+                    targetTableDesc = param.getParamValue();
+                    continue;
+                }
+
+                if (ComponentCons.FOLDER_ID.equals(param.getParamKey())) {
+                    belongFolderId = param.getParamValue();
+                }
+            }
+        }
+
+        component.setTableDesc(targetTableDesc);
+        component.setFolderId(belongFolderId);
     }
 }
