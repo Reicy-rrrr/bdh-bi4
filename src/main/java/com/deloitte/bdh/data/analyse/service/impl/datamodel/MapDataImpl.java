@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
-import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.MapEnum;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Service("mapDataImpl")
@@ -33,26 +33,16 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         //会发生深拷贝现象，导致下方赋值的时候也会跟着变化
         List<DataModelField> originalX = Lists.newArrayList();
         originalX.addAll(dataModel.getX());
-
-        Boolean isExistLongLanField = isExistLongLanField(request);
         //符号地图增加经纬度
-        if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType()) && isExistLongLanField) {
-            //经度
-            DataModelField longitude = new DataModelField();
-            longitude.setType(DataTypeEnum.Text.getType());
-            longitude.setQuota(DataModelTypeEnum.WD.getCode());
-            longitude.setDataType(DataTypeEnum.Text.getValue());
-            longitude.setId(MapEnum.LONGITUDE.getCode());
-            longitude.setAlias(MapEnum.LONGITUDE.getDesc());
-            dataModel.getX().add(longitude);
-            //纬度
-            DataModelField lantitude = new DataModelField();
-            lantitude.setType(DataTypeEnum.Text.getType());
-            lantitude.setQuota(DataModelTypeEnum.WD.getCode());
-            lantitude.setDataType(DataTypeEnum.Text.getValue());
-            lantitude.setId(MapEnum.LANTITUDE.getCode());
-            lantitude.setAlias(MapEnum.LANTITUDE.getDesc());
-            dataModel.getX().add(lantitude);
+        if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
+            //查询出地方CODE,方便查出经纬度
+            DataModelField placeCode = new DataModelField();
+            placeCode.setType(DataTypeEnum.Text.getType());
+            placeCode.setQuota(DataModelTypeEnum.WD.getCode());
+            placeCode.setDataType(DataTypeEnum.Text.getValue());
+            placeCode.setId(MapEnum.PLACECODE.getCode());
+            placeCode.setAlias(MapEnum.PLACECODE.getDesc());
+            dataModel.getX().add(placeCode);
         }
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
@@ -62,14 +52,16 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         }
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        response.setRows(buildCategory(request, response.getRows(), dataModel.getY(),isExistLongLanField));
+        response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
         return response;
     }
 
-    private List<Map<String, Object>> buildCategory(ComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList,Boolean isExistLongLanField) {
+    private List<Map<String, Object>> buildCategory(ComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList) {
 
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
+        //查询出所有的经纬度数据
+        Map<String, Map<String, String>> queryLongitudeLantitude = queryLongitudeLantitude();
         for (Map<String, Object> row : rows) {
 
             //x轴名称
@@ -103,10 +95,24 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                     newRow.put("category", categoryPrefix);
                 }
 
-                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType()) && isExistLongLanField) {
+                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
                     List<Object> valueList = Lists.newArrayList();
-                    valueList.add(MapUtils.getObject(row, MapEnum.LONGITUDE.getDesc()));//经度
-                    valueList.add(MapUtils.getObject(row, MapEnum.LANTITUDE.getDesc()));//纬度
+                    //获取当前地方CODE
+                    String placeCode = MapUtils.getString(row, MapEnum.PLACECODE.getDesc());
+                    if (StringUtils.isNotEmpty(placeCode)) {
+                        //获取当前地方的经纬度数据
+                        Map<String, String> longLanMap = queryLongitudeLantitude.get(placeCode);
+                        if (Objects.nonNull(longLanMap)) {
+                            valueList.add(longLanMap.get(MapEnum.LONGITUDE.getCode()));//经度
+                            valueList.add(longLanMap.get(MapEnum.LANTITUDE.getCode()));//纬度
+                        } else {
+                            valueList.add("");//经度
+                            valueList.add("");//纬度
+                        }
+                    } else {
+                        valueList.add("");//经度
+                        valueList.add("");//纬度
+                    }
                     valueList.add(MapUtils.getObject(row, colName));
                     newRow.put("value", valueList);
                 } else {
@@ -118,12 +124,17 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         return newRows;
     }
 
-    private Boolean isExistLongLanField(ComponentDataRequest request) {
-        String sql = "SELECT 1 from information_schema.columns where table_name = '" +
-                request.getDataConfig().getDataModel().getTableName() + "' and column_name = 'longitude' and column_name = 'lantitude'";
-
-        BaseComponentDataResponse response = execute(sql);
-        return !CollectionUtils.isEmpty(response.getRows());
+    private Map<String, Map<String, String>> queryLongitudeLantitude() {
+        String sql = "select * from LONGITUDE_LANTITUDE";
+        List<Map<String, Object>> rows = execute(sql).getRows();
+        Map<String, Map<String, String>> returnMap = Maps.newHashMap();
+        for (Map<String, Object> row : rows) {
+            Map<String, String> longLantitude = Maps.newHashMap();
+            longLantitude.put(MapEnum.LONGITUDE.getCode(), MapUtils.getString(row, MapEnum.LONGITUDE.getCode()));
+            longLantitude.put(MapEnum.LANTITUDE.getCode(), MapUtils.getString(row, MapEnum.LANTITUDE.getCode()));
+            returnMap.put(MapUtils.getString(row, MapEnum.PLACECODE.getCode()), longLantitude);
+        }
+        return returnMap;
     }
 
 

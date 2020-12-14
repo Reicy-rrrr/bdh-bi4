@@ -6,6 +6,7 @@ public enum MapEnum {
 
     LONGITUDE("longitude", "经度"),
     LANTITUDE("lantitude", "纬度"),
+    PLACECODE("place_code", "地方code"),
     ;
 
     private String code;
