@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.dao.bi.BiDataSetMapper;
+import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
@@ -103,6 +104,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                     if (StringUtils.isNotBlank(setResp.getRefModelCode())) {
                         BiEtlModel model = getModel(modelList, setResp.getRefModelCode());
                         if (null != model) {
+                            setResp.setModelName(model.getName());
                             if (null != model.getLastExecuteDate()) {
                                 setResp.setLastExecuteDate(model.getLastExecuteDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                             }
@@ -198,6 +200,52 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         dataSet.setIsFile(YesOrNoEnum.NO.getKey());
         dataSet.setTenantId(ThreadLocalHolder.getTenantId());
         setMapper.insert(dataSet);
+    }
+
+    @Override
+    public List<BiDataSet> getTableList() {
+        // 设定默认的表信息
+        BiDataSet defaultTable = new BiDataSet();
+        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
+        defaultTable.setTableName("ORDERS_USCA_BI");
+        defaultTable.setTableDesc("ORDERS_USCA_BI");
+
+        BiDataSet chineseOrder = new BiDataSet();
+        chineseOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
+        chineseOrder.setTableName("TEST_CHINESE_ORDER");
+        chineseOrder.setTableDesc("中国订单");
+
+        BiDataSet chineseRefund = new BiDataSet();
+        chineseRefund.setType(DataSetTypeEnum.DEFAULT.getKey());
+        chineseRefund.setTableName("TEST_CHINESE_REFUND");
+        chineseRefund.setTableDesc("中国退货");
+
+        BiDataSet chineseSalesman = new BiDataSet();
+        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
+        defaultTable.setTableName("TEST_CHINESE_SALESMAN");
+        defaultTable.setTableDesc("中国销售员");
+
+        BiDataSet globalOrder = new BiDataSet();
+        globalOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
+        globalOrder.setTableName("TEST_GLOBAL_ORDER");
+        globalOrder.setTableDesc("世界订单");
+
+        List<BiDataSet> results = com.google.common.collect.Lists.newArrayList(defaultTable, chineseOrder, chineseRefund, chineseSalesman, globalOrder);
+
+        // 查询所有数据集
+        List<BiDataSet> dataSetList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getIsFile, YesOrNoEnum.NO)
+                .orderByDesc(BiDataSet::getCreateDate)
+        );
+        if (!org.springframework.util.CollectionUtils.isEmpty(dataSetList)) {
+            results.addAll(dataSetList);
+        }
+        return results;
+    }
+
+    @Override
+    public List<TableColumn> getColumns(String tableName) {
+        return null;
     }
 
 

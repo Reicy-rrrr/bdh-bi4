@@ -4,7 +4,6 @@ import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
@@ -62,13 +61,6 @@ public interface DbHandler {
      * @return List<TableInfo>
      */
     List<TableInfo> getTableList();
-
-    /**
-     * 查询所有表列表
-     *
-     * @return List<BiDataSet>
-     */
-    List<BiDataSet> getDataSetTableList();
 
     /**
      * 查询表所有字段列表

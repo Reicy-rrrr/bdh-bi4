@@ -27,15 +27,13 @@ import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
+import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -57,23 +55,17 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Resource
     private DbHandler dbHandler;
-
     @Resource
-    AnalyseModelFolderService folderService;
-
+    private AnalyseModelFolderService folderService;
     @Resource
-    AnalyseModelFieldService fieldService;
+    private AnalyseModelFieldService fieldService;
+    @Resource
+    private BiDataSetService dataSetService;
 
     @Override
     public List<TableInfo> getAllTable() {
         return dbHandler.getTableList();
     }
-
-    @Override
-    public List<BiDataSet> getDataSetTableList() {
-        return dbHandler.getDataSetTableList();
-    }
-
 
     @Override
     public void saveDataTree(RetRequest<List<AnalyseFolderTree>> request) {
@@ -175,6 +167,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 获取历史数据
+     *
      * @param request
      * @return
      */
@@ -185,7 +178,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
-        String dlId= null;
+        String dlId = null;
         if (CollectionUtils.isEmpty(folderList)) {
             folderList = Lists.newArrayList();
             //初始化维度文件夹
@@ -221,7 +214,9 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         fieldQueryWrapper.orderByAsc(BiUiModelField::getSortOrder);
         List<BiUiModelField> fieldList = fieldService.list(fieldQueryWrapper);
         if (CollectionUtils.isEmpty(fieldList)) {
+            // 引入数据集 todo
             List<TableColumn> columns = dbHandler.getColumns(request.getData().getModelId());
+//            List<TableColumn> columns = dataSetService.getColumns(request.getData().getModelId());
             //初始化字段数据
             for (TableColumn column : columns) {
                 BiUiModelField field = new BiUiModelField();
@@ -252,6 +247,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 递归转换成树
+     *
      * @param fieldList
      * @param parentId
      * @return
@@ -272,6 +268,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     /**
      * 逆向递归树转List
+     *
      * @param fieldTreeList
      * @return
      */

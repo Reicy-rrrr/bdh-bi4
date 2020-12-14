@@ -6,7 +6,6 @@ import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataR
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
 
 import java.util.List;
 
@@ -23,13 +22,6 @@ public interface AnalyseModelService {
      * @return
      */
     List<TableInfo> getAllTable();
-
-    /**
-     * 根据数据源获取表
-     *
-     * @return List<BiDataSet>
-     */
-    List<BiDataSet> getDataSetTableList();
 
     /**
      * 获取数据模型树

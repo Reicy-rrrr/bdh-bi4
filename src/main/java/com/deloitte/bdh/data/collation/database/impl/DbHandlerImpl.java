@@ -160,47 +160,6 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
-    public List<BiDataSet> getDataSetTableList() {
-        // 设定默认的表信息
-        BiDataSet defaultTable = new BiDataSet();
-        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
-        defaultTable.setTableName("ORDERS_USCA_BI");
-        defaultTable.setTableDesc("ORDERS_USCA_BI");
-
-        BiDataSet chineseOrder = new BiDataSet();
-        chineseOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
-        chineseOrder.setTableName("TEST_CHINESE_ORDER");
-        chineseOrder.setTableDesc("中国订单");
-
-        BiDataSet chineseRefund = new BiDataSet();
-        chineseRefund.setType(DataSetTypeEnum.DEFAULT.getKey());
-        chineseRefund.setTableName("TEST_CHINESE_REFUND");
-        chineseRefund.setTableDesc("中国退货");
-
-        BiDataSet chineseSalesman = new BiDataSet();
-        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
-        defaultTable.setTableName("TEST_CHINESE_SALESMAN");
-        defaultTable.setTableDesc("中国销售员");
-
-        BiDataSet globalOrder = new BiDataSet();
-        globalOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
-        globalOrder.setTableName("TEST_GLOBAL_ORDER");
-        globalOrder.setTableDesc("世界订单");
-
-        List<BiDataSet> results = Lists.newArrayList(defaultTable, chineseOrder, chineseRefund, chineseSalesman, globalOrder);
-
-        // 查询所有数据集
-        List<BiDataSet> dataSetList = dataSetService.list(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getIsFile, YesOrNoEnum.NO)
-                .orderByDesc(BiDataSet::getCreateDate)
-        );
-        if (!CollectionUtils.isEmpty(dataSetList)) {
-            results.addAll(dataSetList);
-        }
-        return results;
-    }
-
-    @Override
     public List<TableColumn> getColumns(String tableName) {
         String querySql = buildQueryColumnsSql(tableName);
         List<Map<String, Object>> results = biEtlDbMapper.selectColumns(querySql);

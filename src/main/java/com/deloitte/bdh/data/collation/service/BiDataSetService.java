@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.service;
 
 import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
@@ -31,5 +32,7 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     void create(CreateDataSetDto dto);
 
+    List<BiDataSet> getTableList();
 
+    List<TableColumn> getColumns(String tableName);
 }
