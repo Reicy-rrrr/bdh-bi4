@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.collation.component.impl;
 
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
-import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.po.TableField;
@@ -436,5 +435,59 @@ public class MysqlArranger implements ArrangerSelector {
         segmentBuilder.append(") AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    @Override
+    public ArrangeResultModel fill(FieldMappingModel fromFieldMapping, String fillValue, String fromTable, ComponentTypeEnum fromType) {
+        if (fromFieldMapping == null) {
+            return new ArrangeResultModel();
+        }
+
+        String fieldType = fromFieldMapping.getFinalFieldType();
+        DataTypeEnum dataType = DataTypeEnum.valueOf(fieldType);
+        // 设置默认值
+        if (StringUtils.isBlank(fillValue)) {
+            switch (dataType) {
+                case Integer:
+                    fillValue = "0";
+                    break;
+                case Float:
+                    fillValue = "0";
+                    break;
+                case DateTime:
+                    fillValue = "NOW()";
+                    break;
+                case Date:
+                    fillValue = "CURRENT_DATE()";
+                    break;
+                case Text:
+                    fillValue = "'NULL'";
+                    break;
+                default:
+            }
+        } else {
+            // 转换数据格式
+            if (DataTypeEnum.DateTime.equals(dataType)) {
+                fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d %H:%i:%s')";
+            } else if (DataTypeEnum.Date.equals(dataType)) {
+                fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d'";
+            } else if (DataTypeEnum.Text.equals(dataType)) {
+                fillValue = "'" + fillValue +  "'";
+            }
+        }
+
+        String fromField = getFromField(fromFieldMapping, fromType);
+        StringBuilder segmentBuilder = new StringBuilder();
+        segmentBuilder.append("CASE WHEN ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(" IS NULL OR ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append("='' THEN ");
+        segmentBuilder.append(fillValue);
+        segmentBuilder.append(" ELSE ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(" END AS ");
+        segmentBuilder.append(fromFieldMapping.getTempFieldName());
+        return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
     }
 }

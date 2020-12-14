@@ -314,6 +314,13 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 字段内容替换
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> replace(ComponentModel component, String context) {
         List<ArrangeReplaceModel> replaceCases = JSONArray.parseArray(context, ArrangeReplaceModel.class);
         if (CollectionUtils.isEmpty(replaceCases)) {
@@ -340,6 +347,13 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 字段合并
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> combine(ComponentModel component, String context) {
         List<ArrangeCombineModel> combineFields = JSONArray.parseArray(context, ArrangeCombineModel.class);
         if (CollectionUtils.isEmpty(combineFields)) {
@@ -362,6 +376,13 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 字段排空
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<String> nonNull(ComponentModel component, String context) {
         List<String> nonNullFields = JSONArray.parseArray(context, String.class);
         if (CollectionUtils.isEmpty(nonNullFields)) {
@@ -376,6 +397,13 @@ public class ArrangeComponent implements ComponentHandler {
         return result;
     }
 
+    /**
+     * 字段转换大小写
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> caseConvert(ComponentModel component, String context) {
         List<ArrangeCaseConvertModel> convertCases = JSONArray.parseArray(context, ArrangeCaseConvertModel.class);
         if (CollectionUtils.isEmpty(convertCases)) {
@@ -411,6 +439,13 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 字段trim
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> trim(ComponentModel component, String context) {
         List<String> trimFields = JSONArray.parseArray(context, String.class);
         if (CollectionUtils.isEmpty(trimFields)) {
@@ -425,6 +460,13 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 字段前后去空格
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> blank(ComponentModel component, String context) {
         List<ArrangeBlankModel> blankModels = JSONArray.parseArray(context, ArrangeBlankModel.class);
         if (CollectionUtils.isEmpty(blankModels)) {
@@ -447,6 +489,13 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 字段分组
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> group(ComponentModel component, String context) {
         ArrangeGroupModel groupModel = JSON.parseObject(context, ArrangeGroupModel.class);
         if (groupModel == null) {
@@ -478,10 +527,17 @@ public class ArrangeComponent implements ComponentHandler {
         return resultModels;
     }
 
+    /**
+     * 修改字段（字段备注、类型）
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
     private List<ArrangeResultModel> modify(ComponentModel component, String context) {
         List<ArrangeModifyModel> modifyModels = JSONArray.parseArray(context, ArrangeModifyModel.class);
         if (CollectionUtils.isEmpty(modifyModels)) {
-            throw new BizException("Arrange component group error: 修改的字段不能为空！");
+            throw new BizException("Arrange component modify error: 修改的字段不能为空！");
         }
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
@@ -524,6 +580,37 @@ public class ArrangeComponent implements ComponentHandler {
             ArrangeResultModel resultModel = arranger.modify(fromMapping, targetDesc, targetType, fromComponent.getTableName(), fromComponent.getTypeEnum());
             resultModels.add(resultModel);
         });
+        return resultModels;
+    }
+
+    /**
+     * 字段填充
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
+    private List<ArrangeResultModel> fill(ComponentModel component, String context) {
+        List<ArrangeFillModel> fillModels = JSONArray.parseArray(context, ArrangeFillModel.class);
+        if (CollectionUtils.isEmpty(fillModels)) {
+            throw new BizException("Arrange component fill error: 填充的字段不能为空！");
+        }
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+        for (ArrangeFillModel fillModel : fillModels) {
+            String fieldName = fillModel.getName();
+            FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
+            if (mapping == null) {
+                throw new BizException("Arrange component fill error: 有在组件[" + fromComponent.getName() + "]中不存在的字段！");
+            }
+
+
+        }
+
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+
         return resultModels;
     }
 

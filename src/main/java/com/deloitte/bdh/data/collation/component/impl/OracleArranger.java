@@ -410,6 +410,60 @@ public class OracleArranger implements ArrangerSelector {
         return result;
     }
 
+    @Override
+    public ArrangeResultModel fill(FieldMappingModel fromFieldMapping, String fillValue, String fromTable, ComponentTypeEnum fromType) {
+        if (fromFieldMapping == null) {
+            return new ArrangeResultModel();
+        }
+
+        String fieldType = fromFieldMapping.getFinalFieldType();
+        DataTypeEnum dataType = DataTypeEnum.valueOf(fieldType);
+        // 设置默认值
+        if (StringUtils.isBlank(fillValue)) {
+            switch (dataType) {
+                case Integer:
+                    fillValue = "0";
+                    break;
+                case Float:
+                    fillValue = "0";
+                    break;
+                case DateTime:
+                    fillValue = "SYSDATE";
+                    break;
+                case Date:
+                    fillValue = "SYSDATE";
+                    break;
+                case Text:
+                    fillValue = "'NULL'";
+                    break;
+                default:
+            }
+        } else {
+            // 转换数据格式
+            if (DataTypeEnum.DateTime.equals(dataType)) {
+                fillValue = "TO_DATE('" + fillValue +  "', 'yyyy-MM-dd HH24:mi:ss')";
+            } else if (DataTypeEnum.Date.equals(dataType)) {
+                fillValue = "TO_DATE('" + fillValue +  "', 'yyyy-MM-dd')";
+            } else if (DataTypeEnum.Text.equals(dataType)) {
+                fillValue = "'" + fillValue +  "'";
+            }
+        }
+
+        String fromField = getFromField(fromFieldMapping, fromType);
+        StringBuilder segmentBuilder = new StringBuilder();
+        segmentBuilder.append("CASE WHEN ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(" IS NULL OR ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append("='' THEN ");
+        segmentBuilder.append(fillValue);
+        segmentBuilder.append(" ELSE ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(" END AS ");
+        segmentBuilder.append(fromFieldMapping.getTempFieldName());
+        return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
+    }
+
     /**
      * 转换字段为整数类型
      *

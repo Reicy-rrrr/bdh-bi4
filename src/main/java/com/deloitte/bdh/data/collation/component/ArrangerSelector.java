@@ -149,6 +149,17 @@ public interface ArrangerSelector extends Component {
     ArrangeResultModel modify(FieldMappingModel fromFieldMapping, String targetDesc, DataTypeEnum targetType, String fromTable, ComponentTypeEnum fromType);
 
     /**
+     * 字段填充
+     *
+     * @param fromFieldMapping 字段映射
+     * @param fillValue        填充值
+     * @param fromTable        源表名（上一个组件）
+     * @param fromType         从组件类型
+     * @return ArrangeResultModel
+     */
+    ArrangeResultModel fill(FieldMappingModel fromFieldMapping, String fillValue, String fromTable, ComponentTypeEnum fromType);
+
+    /**
      * 获取合并字段后新字段的长度
      *
      * @param leftMapping  左侧字段映射

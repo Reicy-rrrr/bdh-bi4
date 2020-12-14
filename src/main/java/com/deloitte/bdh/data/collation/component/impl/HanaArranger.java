@@ -442,4 +442,18 @@ public class HanaArranger implements ArrangerSelector {
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
     }
+
+    @Override
+    public ArrangeResultModel fill(FieldMappingModel fromFieldMapping, String fillValue, String fromTable, ComponentTypeEnum fromType) {
+        if (fromFieldMapping == null) {
+            return new ArrangeResultModel();
+        }
+
+        String fromField = getFromField(fromFieldMapping, fromType);
+        StringBuilder segmentBuilder = new StringBuilder();
+        segmentBuilder.append("CASE WHEN ").append(fromField).append(" IS NULL OR ").append(fromField)
+                .append("='' THEN '").append(fillValue).append("' ELSE ").append(fromField).append(" END AS ")
+                .append(fromFieldMapping.getTempFieldName());
+        return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
+    }
 }
