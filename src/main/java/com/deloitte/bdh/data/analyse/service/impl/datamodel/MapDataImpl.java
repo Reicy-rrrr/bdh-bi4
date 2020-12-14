@@ -33,11 +33,10 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         //会发生深拷贝现象，导致下方赋值的时候也会跟着变化
         List<DataModelField> originalX = Lists.newArrayList();
         originalX.addAll(dataModel.getX());
+
+        Boolean isExistLongLanField = isExistLongLanField(request);
         //符号地图增加经纬度
-        if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
-            if (!isExistLongLanField(request)) {
-                throw new BizException("当前表数据无经纬度字段,请换个有经纬度的表拖拽字段");
-            }
+        if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType()) && isExistLongLanField) {
             //经度
             DataModelField longitude = new DataModelField();
             longitude.setType(DataTypeEnum.Text.getType());
@@ -63,11 +62,11 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         }
         BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
-        response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
+        response.setRows(buildCategory(request, response.getRows(), dataModel.getY(),isExistLongLanField));
         return response;
     }
 
-    private List<Map<String, Object>> buildCategory(ComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList) {
+    private List<Map<String, Object>> buildCategory(ComponentDataRequest request, List<Map<String, Object>> rows, List<DataModelField> yList,Boolean isExistLongLanField) {
 
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
@@ -104,7 +103,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                     newRow.put("category", categoryPrefix);
                 }
 
-                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
+                if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType()) && isExistLongLanField) {
                     List<Object> valueList = Lists.newArrayList();
                     valueList.add(MapUtils.getObject(row, MapEnum.LONGITUDE.getDesc()));//经度
                     valueList.add(MapUtils.getObject(row, MapEnum.LANTITUDE.getDesc()));//纬度
