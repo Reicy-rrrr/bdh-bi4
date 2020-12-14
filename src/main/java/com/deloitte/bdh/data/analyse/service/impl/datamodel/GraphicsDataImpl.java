@@ -24,7 +24,7 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
         String sql = buildSql(request.getDataConfig().getDataModel());
-        return execute(sql, list -> {
+        return execute(request.getDataConfig().getDataModel(), sql, list -> {
             List<DataModelField> fields = request.getDataConfig().getDataModel().getX();
             List<String> wds = Lists.newArrayList();
             List<String> dls = Lists.newArrayList();

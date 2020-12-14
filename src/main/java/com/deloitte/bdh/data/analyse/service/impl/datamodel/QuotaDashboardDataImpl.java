@@ -21,7 +21,7 @@ public class QuotaDashboardDataImpl extends AbstractDataService implements Analy
 
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
-        return execute(buildSql(request.getDataConfig().getDataModel()));
+        return execute(request.getDataConfig().getDataModel(), buildSql(request.getDataConfig().getDataModel()));
     }
 
     @Override

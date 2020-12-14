@@ -97,7 +97,7 @@ public abstract class AbstractProcess {
 
     protected List<Map<String, Object>> executeQuery(DbContext context) throws Exception {
         Connection con = this.connection(context);
-        PreparedStatement statement = con.prepareStatement(buildQueryLimit(context));
+        PreparedStatement statement = con.prepareStatement(context.getQuerySql());
         ResultSet result = statement.executeQuery();
         ResultSetMetaData metaData = result.getMetaData();
         int columnCount = metaData.getColumnCount();
@@ -121,11 +121,14 @@ public abstract class AbstractProcess {
     }
 
     protected PageInfo<Map<String, Object>> executePageQuery(DbContext context) throws Exception {
+        if (null == context.getPage()) {
+            return new PageInfo(this.executeQuery(context));
+        }
         SqlSession sqlSession = sqlSession(context);
         // 获取到Dao接口，执行分页查询
         DbSelectorMapper mapper = sqlSession.getMapper(DbSelectorMapper.class);
         // 设置分页查询参数
-        Integer page = context.getPage() == null ? 1 : context.getPage();
+        Integer page = context.getPage();
         Integer size = context.getSize() == null ? 10 : context.getSize();
         PageHelper.startPage(page, size);
         PageInfo<Map<String, Object>> results = new PageInfo(mapper.executeQuery(context.getQuerySql()));

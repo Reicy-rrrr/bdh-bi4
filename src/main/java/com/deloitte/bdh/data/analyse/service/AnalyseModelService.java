@@ -29,7 +29,7 @@ public interface AnalyseModelService {
      * @param request
      * @return
      */
-    List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request);
+    List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) throws Exception;
 
     /**
      * 保存数据模型树

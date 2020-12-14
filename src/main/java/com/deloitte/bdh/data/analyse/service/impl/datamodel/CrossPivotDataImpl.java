@@ -42,7 +42,7 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         }
 
         String sql = buildSql(request.getDataConfig().getDataModel());
-        BaseComponentDataResponse response = execute(sql);
+        BaseComponentDataResponse response = execute(dataModel, sql);
         //设置原始X轴数据构造树
         request.getDataConfig().getDataModel().setX(originalX);
         buildColumns(request, response);
@@ -70,8 +70,8 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
                         colNameDLList.add(colName);
                     }
                 }
-                String[] colNameWDArr =  colNameWDList.toArray(new String[0]);
-                String[] colNameDLArr =  colNameDLList.toArray(new String[0]);
+                String[] colNameWDArr = colNameWDList.toArray(new String[0]);
+                String[] colNameDLArr = colNameDLList.toArray(new String[0]);
 
                 //构造树形结构
                 List<ListTree> x = buildTree(rows, 0, colNameWDArr, colNameDLArr);

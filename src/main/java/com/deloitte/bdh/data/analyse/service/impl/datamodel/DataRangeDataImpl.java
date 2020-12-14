@@ -22,9 +22,8 @@ public class DataRangeDataImpl extends AbstractDataService implements AnalyseDat
         DataModel dataModel = request.getDataConfig().getDataModel();
         DataModelField field = dataModel.getX().get(0);
         String sql = "SELECT MIN(" + field.getId() + ") AS MIN, MAX(" + field.getId() + ") AS MAX FROM " + dataModel.getTableName();
-        return execute(sql);
+        return execute(dataModel, sql);
     }
-
 
 
     @Override

@@ -24,7 +24,7 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
 
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
-        return execute(buildSql(request.getDataConfig().getDataModel()), list -> {
+        return execute(request.getDataConfig().getDataModel(), buildSql(request.getDataConfig().getDataModel()), list -> {
             List<Map<String, Object>> result = Lists.newArrayList();
             Map<String, Object> map = Maps.newHashMap();
             //度量只会一个
@@ -63,20 +63,14 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
     }
 
     @Override
-    protected String buildSelect(DataModel dataModel) {
-        List<String> list = Lists.newArrayList();
+    public void before(DataModel dataModel) {
+        super.before(dataModel);
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
-                        s.getFormatType(), s.getAlias(), "0");
-                if (org.apache.commons.lang.StringUtils.isNotBlank(express)) {
-                    list.add(express);
-                }
+                s.setDefaultValue("0");
+                s.setDataType(null);
+                s.setPrecision(null);
             }
         }
-        if (CollectionUtils.isEmpty(list)) {
-            return "";
-        }
-        return "SELECT " + AnalyseUtil.join(",", list.toArray(new String[0]));
     }
 }

@@ -27,9 +27,9 @@ import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
-import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -54,8 +54,6 @@ import java.util.Objects;
 public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Resource
-    private DbHandler dbHandler;
-    @Resource
     private AnalyseModelFolderService folderService;
     @Resource
     private AnalyseModelFieldService fieldService;
@@ -64,7 +62,17 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Override
     public List<TableInfo> getAllTable() {
-        return dbHandler.getTableList();
+        List<TableInfo> tableInfos = Lists.newArrayList();
+        List<BiDataSet> dataSetList = dataSetService.getTableList();
+        if (CollectionUtils.isNotEmpty(dataSetList)) {
+            for (BiDataSet dataSet : dataSetList) {
+                TableInfo tableInfo = new TableInfo();
+                tableInfo.setToTableName(dataSet.getTableName());
+                tableInfo.setToTableDesc(dataSet.getTableDesc());
+                tableInfos.add(tableInfo);
+            }
+        }
+        return tableInfos;
     }
 
     @Override
@@ -86,7 +94,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Transactional
     @Override
-    public List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) {
+    public List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
         Map<String, Object> result = getHistoryData(request);
 
         List<BiUiModelFolder> folderList = (List<BiUiModelFolder>) result.get("folder");
@@ -171,7 +179,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
      * @param request
      * @return
      */
-    private Map<String, Object> getHistoryData(RetRequest<GetAnalyseDataTreeDto> request) {
+    private Map<String, Object> getHistoryData(RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
         LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
         folderQueryWrapper.eq(BiUiModelFolder::getPageId, request.getData().getPageId());
         folderQueryWrapper.eq(BiUiModelFolder::getModelId, request.getData().getModelId());
@@ -214,9 +222,8 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         fieldQueryWrapper.orderByAsc(BiUiModelField::getSortOrder);
         List<BiUiModelField> fieldList = fieldService.list(fieldQueryWrapper);
         if (CollectionUtils.isEmpty(fieldList)) {
-            // 引入数据集 todo
-            List<TableColumn> columns = dbHandler.getColumns(request.getData().getModelId());
-//            List<TableColumn> columns = dataSetService.getColumns(request.getData().getModelId());
+            // 引入数据集
+            List<TableColumn> columns = dataSetService.getColumns(request.getData().getModelId());
             //初始化字段数据
             for (TableColumn column : columns) {
                 BiUiModelField field = new BiUiModelField();

@@ -48,4 +48,7 @@ public class DataModelField {
 
     @ApiModelProperty("数据单位")
     private String dataUnit;
+
+    @ApiModelProperty("默认值")
+    private String defaultValue;
 }

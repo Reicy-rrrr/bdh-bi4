@@ -45,7 +45,7 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
             dataModel.getX().add(scatterSize);
         }
 
-        BaseComponentDataResponse response = execute(buildSql(dataModel));
+        BaseComponentDataResponse response = execute(dataModel, buildSql(dataModel));
         response.setRows(buildCategory(request, response.getRows()));
 //        Map<String, Object> extra = Maps.newHashMap();
 //        extra.put("maxmin", getMinMax(dataModel, response.getRows()));

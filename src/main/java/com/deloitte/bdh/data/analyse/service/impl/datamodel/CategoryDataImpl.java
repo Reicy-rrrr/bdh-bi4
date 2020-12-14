@@ -41,7 +41,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
 
-        BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
+        BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
         int modelSize = dataModel.getY().size();
         List<Map<String, Object>> y2 = Lists.newArrayList();

@@ -37,7 +37,7 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
             }
         }
         String sql = buildSql(request.getDataConfig().getDataModel());
-        return execute(sql);
+        return execute(request.getDataConfig().getDataModel(), sql);
     }
 
     @Override

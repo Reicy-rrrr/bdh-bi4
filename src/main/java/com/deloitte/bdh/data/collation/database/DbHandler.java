@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.database;
 
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
+import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
@@ -169,4 +170,11 @@ public interface DbHandler {
      * @return
      */
     long getCountLocal(String query);
+
+    /**
+     * 组装上下文
+     *
+     * @return
+     */
+    DbContext getDbContext(String dbId);
 }

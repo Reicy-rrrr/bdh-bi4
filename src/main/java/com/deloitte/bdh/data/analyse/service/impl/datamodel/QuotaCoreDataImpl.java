@@ -9,7 +9,6 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,24 +29,24 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
         DataModel dataModel = request.getDataConfig().getDataModel();
         String sql = buildSql(dataModel);
-        return execute(sql, list -> {
+        return execute(dataModel, sql, list -> {
             //未开启直接返回
             if (!isOpen(dataModel)) {
                 return decoration(setDefalut(dataModel, list));
             }
 
             String sourceSql = doSourceSql(sql, dataModel);
-            List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, super.biUiDemoMapper.selectDemoList(sourceSql));
+            List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, super.directExecute(dataModel, sourceSql));
 
             List<Map<String, Object>> chainSqlList = Lists.newArrayList();
             if (isOpenChain(dataModel)) {
                 String chainSql = chainSql(sql, dataModel);
-                chainSqlList = setDefalut(dataModel, super.biUiDemoMapper.selectDemoList(chainSql));
+                chainSqlList = setDefalut(dataModel, super.directExecute(dataModel, chainSql));
             }
             List<Map<String, Object>> yoySqlList = Lists.newArrayList();
             if (isOpenYoy(dataModel)) {
                 String yoySql = yoySql(sql, dataModel);
-                yoySqlList = setDefalut(dataModel, super.biUiDemoMapper.selectDemoList(yoySql));
+                yoySqlList = setDefalut(dataModel, super.directExecute(dataModel, yoySql));
             }
 
             for (String field : getFields(dataModel)) {
@@ -266,21 +265,15 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
     }
 
     @Override
-    protected String buildSelect(DataModel dataModel) {
-        List<String> list = Lists.newArrayList();
+    public void before(DataModel dataModel) {
+        super.before(dataModel);
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
-                String express = BuildSqlUtil.select(dataModel.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
-                        s.getFormatType(), s.getAlias(),"0");
-                if (org.apache.commons.lang.StringUtils.isNotBlank(express)) {
-                    list.add(express);
-                }
+                s.setDefaultValue("0");
+                s.setDataType(null);
+                s.setPrecision(null);
             }
         }
-        if (CollectionUtils.isEmpty(list)) {
-            return "";
-        }
-        return "SELECT " + AnalyseUtil.join(",", list.toArray(new String[0]));
     }
 
 }

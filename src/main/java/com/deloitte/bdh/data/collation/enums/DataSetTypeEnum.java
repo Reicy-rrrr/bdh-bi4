@@ -7,7 +7,7 @@ public enum DataSetTypeEnum {
 
     DIRECT("0", "直连", ".D"),
     MODEL("1", "整理", ".M"),
-    DEFAULT("9", "默认文件", null),
+    DEFAULT("9", "默认文件", ""),
 
     ;
 
@@ -22,14 +22,14 @@ public enum DataSetTypeEnum {
 
     }
 
-    public static DataSetTypeEnum getEnumByKey(Object key) {
+    public static DataSetTypeEnum getEnumByKey(String key) {
         DataSetTypeEnum[] enums = DataSetTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (StringUtils.equals(key.toString(), enums[i].getKey().toString())) {
+            if (StringUtils.equals(key, enums[i].getKey())) {
                 return enums[i];
             }
         }
-        throw new RuntimeException("未找到对应的类型");
+        throw new RuntimeException("未找到对应数据集的类型");
     }
 
     public String getKey() {

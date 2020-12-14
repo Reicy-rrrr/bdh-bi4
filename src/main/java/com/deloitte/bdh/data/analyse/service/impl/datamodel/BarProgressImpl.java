@@ -32,7 +32,7 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
 
-        BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
+        BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
         buildRows(request, response);
         return response;

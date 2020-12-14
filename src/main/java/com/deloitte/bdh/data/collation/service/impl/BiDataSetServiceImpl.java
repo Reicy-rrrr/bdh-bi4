@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 
+
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
@@ -10,7 +11,12 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.dao.bi.BiDataSetMapper;
+import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.database.DbSelector;
+import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.database.po.TableField;
+import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
@@ -55,8 +61,13 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     private BiEtlModelService modelService;
     @Autowired
     private BiComponentParamsService componentParamsService;
+    @Resource
+    private DbHandler dbHandler;
+    @Resource
+    private DbSelector dbSelector;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public List<BiDataSet> getFiles() {
         List<BiDataSet> setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
                 .eq(BiDataSet::getParentId, "0")
@@ -73,6 +84,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             set.setTenantId(ThreadLocalHolder.getTenantId());
             setMapper.insert(set);
             setList.add(set);
+
+            //设置初始数据
+            initDataSet(set.getId());
         }
         return setList;
     }
@@ -204,48 +218,53 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     public List<BiDataSet> getTableList() {
-        // 设定默认的表信息
-        BiDataSet defaultTable = new BiDataSet();
-        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
-        defaultTable.setTableName("ORDERS_USCA_BI");
-        defaultTable.setTableDesc("ORDERS_USCA_BI");
-
-        BiDataSet chineseOrder = new BiDataSet();
-        chineseOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
-        chineseOrder.setTableName("TEST_CHINESE_ORDER");
-        chineseOrder.setTableDesc("中国订单");
-
-        BiDataSet chineseRefund = new BiDataSet();
-        chineseRefund.setType(DataSetTypeEnum.DEFAULT.getKey());
-        chineseRefund.setTableName("TEST_CHINESE_REFUND");
-        chineseRefund.setTableDesc("中国退货");
-
-        BiDataSet chineseSalesman = new BiDataSet();
-        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
-        defaultTable.setTableName("TEST_CHINESE_SALESMAN");
-        defaultTable.setTableDesc("中国销售员");
-
-        BiDataSet globalOrder = new BiDataSet();
-        globalOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
-        globalOrder.setTableName("TEST_GLOBAL_ORDER");
-        globalOrder.setTableDesc("世界订单");
-
-        List<BiDataSet> results = com.google.common.collect.Lists.newArrayList(defaultTable, chineseOrder, chineseRefund, chineseSalesman, globalOrder);
-
+        List<BiDataSet> results = Lists.newArrayList();
         // 查询所有数据集
         List<BiDataSet> dataSetList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
                 .eq(BiDataSet::getIsFile, YesOrNoEnum.NO)
                 .orderByDesc(BiDataSet::getCreateDate)
         );
-        if (!org.springframework.util.CollectionUtils.isEmpty(dataSetList)) {
+        if (CollectionUtils.isNotEmpty(dataSetList)) {
             results.addAll(dataSetList);
         }
         return results;
     }
 
     @Override
-    public List<TableColumn> getColumns(String tableName) {
-        return null;
+    public List<TableColumn> getColumns(String tableDesc) throws Exception {
+        BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getTableDesc, tableDesc));
+        if (null == biDataSet) {
+            throw new RuntimeException("未找到目标对象");
+        }
+        //判断数据集类型
+        DataSetTypeEnum setTypeEnum = DataSetTypeEnum.getEnumByKey(biDataSet.getType());
+        List<TableColumn> columns = Lists.newArrayList();
+        switch (setTypeEnum) {
+            case MODEL:
+            case DEFAULT:
+                //本地查询
+                columns = dbHandler.getColumns(biDataSet.getTableName());
+                break;
+            default:
+                if (StringUtils.isBlank(biDataSet.getId())) {
+                    throw new RuntimeException("远程连接时未找到数据源目标对象");
+                }
+                //远程查询
+                DbContext context = dbHandler.getDbContext(biDataSet.getId());
+                context.setTableName(biDataSet.getTableName());
+                // 查询表结构
+                TableSchema tableSchema = dbSelector.getTableSchema(context);
+                List<TableField> tableFields = tableSchema.getColumns();
+                if (CollectionUtils.isNotEmpty(tableFields)) {
+                    for (TableField field : tableFields) {
+                        TableColumn column = new TableColumn();
+                        BeanUtils.copyProperties(field, column);
+                        columns.add(column);
+                    }
+                }
+        }
+        return columns;
     }
 
 
@@ -261,4 +280,50 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         return null;
     }
 
+    private void initDataSet(String parentId) {
+        BiDataSet defaultTable = new BiDataSet();
+        defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
+        defaultTable.setTableName("ORDERS_USCA_BI");
+        defaultTable.setTableDesc("ORDERS_USCA_BI");
+        defaultTable.setParentId(parentId);
+        defaultTable.setIsFile(YesOrNoEnum.NO.getKey());
+        defaultTable.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(defaultTable);
+
+        BiDataSet chineseOrder = new BiDataSet();
+        chineseOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
+        chineseOrder.setTableName("TEST_CHINESE_ORDER");
+        chineseOrder.setTableDesc("中国订单");
+        chineseOrder.setParentId(parentId);
+        chineseOrder.setIsFile(YesOrNoEnum.NO.getKey());
+        chineseOrder.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(chineseOrder);
+
+        BiDataSet chineseRefund = new BiDataSet();
+        chineseRefund.setType(DataSetTypeEnum.DEFAULT.getKey());
+        chineseRefund.setTableName("TEST_CHINESE_REFUND");
+        chineseRefund.setTableDesc("中国退货");
+        chineseRefund.setParentId(parentId);
+        chineseRefund.setIsFile(YesOrNoEnum.NO.getKey());
+        chineseRefund.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(chineseRefund);
+
+        BiDataSet chineseSalesman = new BiDataSet();
+        chineseSalesman.setType(DataSetTypeEnum.DEFAULT.getKey());
+        chineseSalesman.setTableName("TEST_CHINESE_SALESMAN");
+        chineseSalesman.setTableDesc("中国销售员");
+        chineseSalesman.setParentId(parentId);
+        chineseSalesman.setIsFile(YesOrNoEnum.NO.getKey());
+        chineseSalesman.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(chineseSalesman);
+
+        BiDataSet globalOrder = new BiDataSet();
+        globalOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
+        globalOrder.setTableName("TEST_GLOBAL_ORDER");
+        globalOrder.setTableDesc("世界订单");
+        globalOrder.setParentId(parentId);
+        globalOrder.setIsFile(YesOrNoEnum.NO.getKey());
+        globalOrder.setTenantId(ThreadLocalHolder.getTenantId());
+        setMapper.insert(globalOrder);
+    }
 }

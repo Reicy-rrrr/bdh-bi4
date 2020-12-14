@@ -40,7 +40,7 @@ public class AnalyseModelController {
 
     @ApiOperation(value = "获取数据树状结构", notes = "获取数据树状结构")
     @PostMapping("/getDataTree")
-    public RetResult<List<AnalyseFolderTree>> getDataTree(@RequestBody @Validated RetRequest<GetAnalyseDataTreeDto> request) {
+    public RetResult<List<AnalyseFolderTree>> getDataTree(@RequestBody @Validated RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
         return RetResponse.makeOKRsp(analyseModelService.getDataTree(request));
     }
 

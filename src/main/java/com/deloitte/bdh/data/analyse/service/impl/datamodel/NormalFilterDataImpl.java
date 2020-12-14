@@ -27,7 +27,7 @@ public class NormalFilterDataImpl extends AbstractDataService implements Analyse
     public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModelField field = request.getDataConfig().getDataModel().getX().get(0);
         String sql = buildSql(request.getDataConfig().getDataModel());
-        BaseComponentDataResponse response = execute(sql);
+        BaseComponentDataResponse response = execute(request.getDataConfig().getDataModel(), sql);
         List<Map<String, Object>> rows = response.getRows();
         List<Map<String, Object>> newRows = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(rows)) {

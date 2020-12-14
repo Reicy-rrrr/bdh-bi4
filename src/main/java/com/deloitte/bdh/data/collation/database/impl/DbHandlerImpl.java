@@ -20,7 +20,6 @@ import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.service.*;
@@ -64,8 +63,6 @@ public class DbHandlerImpl implements DbHandler {
     private BiComponentParamsService biComponentParamsService;
     @Autowired
     private BiEtlMappingConfigService biEtlMappingConfigService;
-    @Autowired
-    private BiDataSetService dataSetService;
 
     @Override
     public void createTable(CreateTableDto dto) throws Exception {
@@ -350,7 +347,8 @@ public class DbHandlerImpl implements DbHandler {
         return sqlBuilder.toString();
     }
 
-    private DbContext getDbContext(String dbId) {
+    @Override
+    public DbContext getDbContext(String dbId) {
         DbContext context = new DbContext();
         BiEtlDatabaseInf inf = biEtlDatabaseInfService.getById(dbId);
         context.setDbId(dbId);

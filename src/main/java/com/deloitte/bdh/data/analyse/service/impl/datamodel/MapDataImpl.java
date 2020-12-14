@@ -50,7 +50,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
-        BaseComponentDataResponse response = execute(buildSql(request.getDataConfig().getDataModel()));
+        BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
         response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
         return response;
@@ -61,7 +61,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
         //查询出所有的经纬度数据
-        Map<String, Map<String, String>> queryLongitudeLantitude = queryLongitudeLantitude();
+        Map<String, Map<String, String>> queryLongitudeLantitude = queryLongitudeLantitude(dataModel);
         for (Map<String, Object> row : rows) {
 
             //x轴名称
@@ -124,9 +124,9 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         return newRows;
     }
 
-    private Map<String, Map<String, String>> queryLongitudeLantitude() {
+    private Map<String, Map<String, String>> queryLongitudeLantitude(DataModel dataModel) {
         String sql = "select * from LONGITUDE_LANTITUDE";
-        List<Map<String, Object>> rows = execute(sql).getRows();
+        List<Map<String, Object>> rows = execute(dataModel, sql).getRows();
         Map<String, Map<String, String>> returnMap = Maps.newHashMap();
         for (Map<String, Object> row : rows) {
             Map<String, String> longLantitude = Maps.newHashMap();
