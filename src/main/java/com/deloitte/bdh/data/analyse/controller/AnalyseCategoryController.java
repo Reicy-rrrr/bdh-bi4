@@ -41,27 +41,13 @@ public class AnalyseCategoryController {
         return RetResponse.makeOKRsp(analyseCategoryService.getTree(request));
     }
 
-    @ApiOperation(value = "预定义报表", notes = "预定义报表")
-    @PostMapping("/getDefaultCategoryTree")
-    public RetResult<List<AnalyseCategoryTree>> getDefaultCategoryTree(@RequestBody @Validated RetRequest<GetAnalyseCategoryDto> request) {
-        request.getData().setType(CategoryTypeEnum.PRE_DEFINED.getCode());
-        List<AnalyseCategoryTree> tree = analyseCategoryService.getTree(request);
-        if (!tree.isEmpty()) {
-            return RetResponse.makeOKRsp(tree.get(0).getChildren());
-        }
-        return RetResponse.makeOKRsp();
-    }
-
-    @ApiOperation(value = "我的分析", notes = "我的分析")
-    @PostMapping("/getCustomerCategoryTree")
-    public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<GetAnalyseCategoryDto> request) {
-        request.getData().setType(CategoryTypeEnum.CUSTOMER.getCode());
-        List<AnalyseCategoryTree> tree = analyseCategoryService.getTree(request);
-        if (!tree.isEmpty()) {
-            return RetResponse.makeOKRsp(tree.get(0).getChildren());
-        }
-        return RetResponse.makeOKRsp();
-    }
+//    @ApiOperation(value = "我的分析", notes = "我的分析")
+//    @PostMapping("/getCustomerCategoryTree")
+//    public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<GetAnalyseCategoryDto> request) {
+//        request.getData().setType(CategoryTypeEnum.CUSTOMER.getCode());
+//        List<AnalyseCategoryTree> tree = analyseCategoryService.getTree(request);
+//        return RetResponse.makeOKRsp();
+//    }
 
     @ApiOperation(value = "新增文件夹", notes = "新增文件夹")
     @PostMapping("/createAnalyseCategory")

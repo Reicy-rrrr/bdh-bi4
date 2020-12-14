@@ -67,21 +67,20 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     @Override
     public AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
         checkBiUiAnalyseCategoryByName(request.getData().getName(), ThreadLocalHolder.getTenantId(), null);
-        BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
-        if (parent == null) {
-            throw new BizException("上级文件夹不存在");
-        }
-        //只可创建二级文件夹
-        if (!StringUtils.equals(parent.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
-            throw new BizException("当前层级不允许创建文件夹");
-        }
+//        BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
+//        if (parent == null) {
+//            throw new BizException("上级文件夹不存在");
+//        }
+//        //只可创建二级文件夹
+//        if (!StringUtils.equals(parent.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
+//            throw new BizException("当前层级不允许创建文件夹");
+//        }
 
         BiUiAnalyseCategory category = new BiUiAnalyseCategory();
         BeanUtils.copyProperties(request.getData(), category);
         category.setType(CategoryTypeEnum.CUSTOMER.getCode());
-        //创建的自定义文件夹都在我的分析下面
-        BiUiAnalyseCategory customerTop = getCustomerTop(ThreadLocalHolder.getTenantId());
-        category.setParentId(customerTop.getId());
+//        创建的自定义文件夹都在我的分析下面
+//        BiUiAnalyseCategory customerTop = getCustomerTop(ThreadLocalHolder.getTenantId());
         category.setTenantId(ThreadLocalHolder.getTenantId());
         this.save(category);
         AnalyseCategoryDto dto = new AnalyseCategoryDto();
@@ -104,14 +103,14 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     @Override
     public List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request) {
         //查询文件夹
-        SelectCategoryDto categoryDto = new SelectCategoryDto();
-        categoryDto.setUserId(ThreadLocalHolder.getOperator());
-        categoryDto.setResourceType(ResourcesTypeEnum.CATEGORY.getCode());
-        categoryDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        categoryDto.setTenantId(ThreadLocalHolder.getTenantId());
-        categoryDto.setName(request.getData().getName());
-        categoryDto.setType(request.getData().getType());
-        List<AnalyseCategoryDto> categoryList = categoryMapper.selectCategory(categoryDto);
+        SelectCategoryDto selectCategoryDto = new SelectCategoryDto();
+        selectCategoryDto.setUserId(ThreadLocalHolder.getOperator());
+        selectCategoryDto.setResourceType(ResourcesTypeEnum.CATEGORY.getCode());
+        selectCategoryDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+        selectCategoryDto.setTenantId(ThreadLocalHolder.getTenantId());
+        selectCategoryDto.setName(request.getData().getName());
+        selectCategoryDto.setType(request.getData().getType());
+        List<AnalyseCategoryDto> categoryList = categoryMapper.selectCategory(selectCategoryDto);
 
         List<String> categoryIds = new ArrayList<>();
         categoryList.forEach(category -> categoryIds.add(category.getId()));
@@ -157,28 +156,49 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             } else {
                 pageDtoList = Lists.newArrayList();
             }
-            AnalysePageDto dto = new AnalysePageDto();
-            BeanUtils.copyProperties(page, dto);
-            pageDtoList.add(dto);
+            AnalysePageDto pageDto = new AnalysePageDto();
+            BeanUtils.copyProperties(page, pageDto);
+            pageDtoList.add(pageDto);
             pageDtoMapTmp.put(page.getParentId(), pageDtoList);
         }
 
-        //获取所有的文件夹
-        List<BiUiAnalyseCategory> biCate = list();
-        List<AnalyseCategoryDto> biCateDtoList = Lists.newArrayList();
-        for (BiUiAnalyseCategory category : biCate) {
-            AnalyseCategoryDto dto = new AnalyseCategoryDto();
-            BeanUtils.copyProperties(category, dto);
-            biCateDtoList.add(dto);
+        //整理数据
+        List<AnalyseCategoryTree> treeDataModels = Lists.newArrayList();
+        for (AnalyseCategoryDto categoryDto : categoryList) {
+            AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
+            BeanUtils.copyProperties(categoryDto, categoryTree);
+            categoryTree.setChildrenType(CategoryTreeChildrenTypeEnum.CATEGORY.getCode());
+            //将页面和文件夹放到同一个children，通过children type区分
+            List<AnalysePageDto> pageDtoList = pageDtoMapTmp.get(categoryDto.getId());
+            List<AnalyseCategoryTree> childrenPageList = Lists.newArrayList();
+            if (CollectionUtils.isNotEmpty(pageDtoList)) {
+                for (AnalysePageDto dto : pageDtoList) {
+                    AnalyseCategoryTree tree = new AnalyseCategoryTree();
+                    BeanUtils.copyProperties(dto, tree);
+                    tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
+                    childrenPageList.add(tree);
+                }
+                categoryTree.setChildren(childrenPageList);
+            }
+            treeDataModels.add(categoryTree);
         }
-        Map<String, AnalyseCategoryDto> allCategoryMap = biCateDtoList.stream().collect(Collectors.toMap(AnalyseCategoryDto::getId, b -> b, (v1, v2) -> v1));
-        //递归的时候判断当前数据有无遍历过
-        List<String> record = new ArrayList<>();
-        Map<String, List<AnalysePageDto>> pageDtoMap = pageDtoMapFun(categoryList, pageDtoMapTmp, record, allCategoryMap);
 
-        //递归整理数据
-        List<AnalyseCategoryTree> trees = buildCategoryTree(categoryList, pageDtoMap, "0");
-        return trees;
+//        //获取所有的文件夹
+//        List<BiUiAnalyseCategory> biCate = list();
+//        List<AnalyseCategoryDto> biCateDtoList = Lists.newArrayList();
+//        for (BiUiAnalyseCategory category : biCate) {
+//            AnalyseCategoryDto dto = new AnalyseCategoryDto();
+//            BeanUtils.copyProperties(category, dto);
+//            biCateDtoList.add(dto);
+//        }
+//        Map<String, AnalyseCategoryDto> allCategoryMap = biCateDtoList.stream().collect(Collectors.toMap(AnalyseCategoryDto::getId, b -> b, (v1, v2) -> v1));
+//        //递归的时候判断当前数据有无遍历过
+//        List<String> record = new ArrayList<>();
+//        Map<String, List<AnalysePageDto>> pageDtoMap = pageDtoMapFun(categoryList, pageDtoMapTmp, record, allCategoryMap);
+//
+//        //递归整理数据
+//        List<AnalyseCategoryTree> trees = buildCategoryTree(categoryList, pageDtoMap, "0");
+        return treeDataModels;
     }
 
     private Map<String, List<AnalysePageDto>> pageDtoMapFun(
@@ -383,13 +403,13 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         return list(query);
     }
 
-    private BiUiAnalyseCategory getCustomerTop(String tenantId) {
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
-        query.eq(BiUiAnalyseCategory::getType, CategoryTypeEnum.CUSTOMER.getCode());
-        query.eq(BiUiAnalyseCategory::getParentId, AnalyseConstants.PARENT_ID_ZERO);
-        return getOne(query);
-    }
+//    private BiUiAnalyseCategory getCustomerTop(String tenantId) {
+//        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
+//        query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
+//        query.eq(BiUiAnalyseCategory::getType, CategoryTypeEnum.CUSTOMER.getCode());
+//        query.eq(BiUiAnalyseCategory::getParentId, AnalyseConstants.PARENT_ID_ZERO);
+//        return getOne(query);
+//    }
 
     private void checkBiUiAnalyseCategoryByName(String name, String tenantId, String currentId) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();

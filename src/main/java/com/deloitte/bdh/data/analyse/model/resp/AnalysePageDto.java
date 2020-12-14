@@ -1,9 +1,12 @@
 package com.deloitte.bdh.data.analyse.model.resp;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * Author:LIJUN
@@ -74,4 +77,16 @@ public class AnalysePageDto implements Serializable {
 
     @ApiModelProperty(value = "permitted Action")
     private String permittedAction;
+
+    @ApiModelProperty(value = "CREATE_DATE")
+    private LocalDateTime createDate;
+
+    @ApiModelProperty(value = "CREATE_USER")
+    private String createUser;
+
+    @ApiModelProperty(value = "MODIFIED_DATE")
+    private LocalDateTime modifiedDate;
+
+    @ApiModelProperty(value = "MODIFIED_USER")
+    private String modifiedUser;
 }
