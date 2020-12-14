@@ -422,14 +422,10 @@ public class OracleArranger implements ArrangerSelector {
         if (StringUtils.isBlank(fillValue)) {
             switch (dataType) {
                 case Integer:
-                    fillValue = "0";
-                    break;
                 case Float:
                     fillValue = "0";
                     break;
                 case DateTime:
-                    fillValue = "SYSDATE";
-                    break;
                 case Date:
                     fillValue = "SYSDATE";
                     break;

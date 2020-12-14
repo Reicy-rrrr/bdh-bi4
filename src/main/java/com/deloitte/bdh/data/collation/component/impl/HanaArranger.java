@@ -449,11 +449,49 @@ public class HanaArranger implements ArrangerSelector {
             return new ArrangeResultModel();
         }
 
+        String fieldType = fromFieldMapping.getFinalFieldType();
+        DataTypeEnum dataType = DataTypeEnum.valueOf(fieldType);
+        // 设置默认值
+        if (StringUtils.isBlank(fillValue)) {
+            switch (dataType) {
+                case Integer:
+                case Float:
+                    fillValue = "0";
+                    break;
+                case DateTime:
+                    fillValue = "CURRENT_TIMESTAMP";
+                    break;
+                case Date:
+                    fillValue = "CURRENT_DATE";
+                    break;
+                case Text:
+                    fillValue = "'NULL'";
+                    break;
+                default:
+            }
+        } else {
+            // 转换数据格式
+            if (DataTypeEnum.DateTime.equals(dataType)) {
+                fillValue = "TO_DATE('" + fillValue +  "')";
+            } else if (DataTypeEnum.Date.equals(dataType)) {
+                fillValue = "TO_TIMESTAMP('" + fillValue +  "')";
+            } else if (DataTypeEnum.Text.equals(dataType)) {
+                fillValue = "'" + fillValue +  "'";
+            }
+        }
+
         String fromField = getFromField(fromFieldMapping, fromType);
         StringBuilder segmentBuilder = new StringBuilder();
-        segmentBuilder.append("CASE WHEN ").append(fromField).append(" IS NULL OR ").append(fromField)
-                .append("='' THEN '").append(fillValue).append("' ELSE ").append(fromField).append(" END AS ")
-                .append(fromFieldMapping.getTempFieldName());
+        segmentBuilder.append("CASE WHEN ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(" IS NULL OR ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append("='' THEN ");
+        segmentBuilder.append(fillValue);
+        segmentBuilder.append(" ELSE ");
+        segmentBuilder.append(fromField);
+        segmentBuilder.append(" END AS ");
+        segmentBuilder.append(fromFieldMapping.getTempFieldName());
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
     }
 }

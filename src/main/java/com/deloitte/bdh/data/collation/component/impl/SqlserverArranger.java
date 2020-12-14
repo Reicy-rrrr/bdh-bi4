@@ -423,8 +423,6 @@ public class SqlserverArranger implements ArrangerSelector {
         if (StringUtils.isBlank(fillValue)) {
             switch (dataType) {
                 case Integer:
-                    fillValue = "0";
-                    break;
                 case Float:
                     fillValue = "0";
                     break;
@@ -444,7 +442,7 @@ public class SqlserverArranger implements ArrangerSelector {
             if (DataTypeEnum.DateTime.equals(dataType)) {
                 fillValue = "CONVERT(DATETIME, '" + fillValue +  "')";
             } else if (DataTypeEnum.Date.equals(dataType)) {
-                fillValue = "CONVERT(DATE, '" + fillValue +  "'";
+                fillValue = "CONVERT(DATE, '" + fillValue +  "')";
             } else if (DataTypeEnum.Text.equals(dataType)) {
                 fillValue = "'" + fillValue +  "'";
             }

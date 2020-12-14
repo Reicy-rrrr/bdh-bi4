@@ -449,8 +449,6 @@ public class MysqlArranger implements ArrangerSelector {
         if (StringUtils.isBlank(fillValue)) {
             switch (dataType) {
                 case Integer:
-                    fillValue = "0";
-                    break;
                 case Float:
                     fillValue = "0";
                     break;
@@ -470,7 +468,7 @@ public class MysqlArranger implements ArrangerSelector {
             if (DataTypeEnum.DateTime.equals(dataType)) {
                 fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d %H:%i:%s')";
             } else if (DataTypeEnum.Date.equals(dataType)) {
-                fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d'";
+                fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d')";
             } else if (DataTypeEnum.Text.equals(dataType)) {
                 fillValue = "'" + fillValue +  "'";
             }
