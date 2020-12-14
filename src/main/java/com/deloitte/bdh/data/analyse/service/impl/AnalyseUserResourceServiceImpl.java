@@ -79,7 +79,9 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         pageDtoList.forEach(page -> pageIdList.add(page.getId()));
 
         LambdaQueryWrapper<BiUiAnalyseUserResource> resourceLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        resourceLambdaQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, pageIdList);
+        if (CollectionUtils.isNotEmpty(pageIdList)){
+            resourceLambdaQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, pageIdList);
+        }
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.PAGE.getCode());
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getUserId, ThreadLocalHolder.getOperator());
         List<BiUiAnalyseUserResource> categoryResources = this.list(resourceLambdaQueryWrapper);
