@@ -72,7 +72,8 @@ public class Oracle extends AbstractProcess implements DbSelector {
             if (StringUtils.isBlank(comments)) {
                 comments = name;
             }
-            field.setDesc(comments);
+            // 暂设置为字段名称
+            field.setDesc(name);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
             // Oracle中的TIMESTAMP类型查询出的数据类型为TIMESTAMP(6)，需要特殊处理

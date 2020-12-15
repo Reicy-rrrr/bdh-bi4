@@ -70,7 +70,8 @@ public class Mysql extends AbstractProcess implements DbSelector {
             if (StringUtils.isBlank(comments)) {
                 comments = name;
             }
-            field.setDesc(comments);
+            // 暂设置为字段名称
+            field.setDesc(name);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
             field.setDataType(dataType);

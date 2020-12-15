@@ -69,7 +69,8 @@ public class Hana extends AbstractProcess implements DbSelector {
             if (StringUtils.isBlank(comments)) {
                 comments = name;
             }
-            field.setDesc(comments);
+            // 暂设置为字段名称
+            field.setDesc(name);
             // 字段数据类型
             String dataType = result.getString("DATA_TYPE_NAME");
             // 字段长度
