@@ -148,12 +148,6 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.MODIFY));
     }
 
-    @ApiOperation(value = "引入整理组件(字段填充)", notes = "引入整理组件(字段填充)")
-    @PostMapping("/arrange/fill/join")
-    public RetResult<BiComponent> arrangeFill(@RequestBody @Validated RetRequest<ArrangeFillDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.FILL));
-    }
-
     @ApiOperation(value = "修改引入整理组件(拆分)", notes = "修改引入整理组件(拆分)")
     @PostMapping("/arrange/split/update")
     public RetResult<BiComponent> arrangeSplitUpdate(@RequestBody @Validated RetRequest<UpdateArrangeSplitDto> request) throws Exception {
@@ -206,12 +200,6 @@ public class EtlController {
     @PostMapping("/arrange/modify/update")
     public RetResult<BiComponent> arrangeModifyUpdate(@RequestBody @Validated RetRequest<UpdateArrangeModifyDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.MODIFY));
-    }
-
-    @ApiOperation(value = "修改引入整理组件(字段填充)", notes = "修改引入整理组件(字段填充)")
-    @PostMapping("/arrange/fill/update")
-    public RetResult<BiComponent> arrangeFillUpdate(@RequestBody @Validated RetRequest<UpdateArrangeFillDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.FILL));
     }
 
     @ApiOperation(value = "移除组件", notes = "移除组件")
