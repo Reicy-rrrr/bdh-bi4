@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -64,10 +65,14 @@ public class Oracle extends AbstractProcess implements DbSelector {
         while (result.next()) {
             TableField field = new TableField();
             // 列名
-            field.setName(result.getString("COLUMN_NAME"));
-            // 备注
-            // field.setDesc(result.getString("COMMENTS"));
-            field.setDesc(field.getName());
+            String name = result.getString("COLUMN_NAME");
+            field.setName(name);
+            // 列注释
+            String comments = result.getString("COMMENTS");
+            if (StringUtils.isBlank(comments)) {
+                comments = name;
+            }
+            field.setDesc(comments);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
             // Oracle中的TIMESTAMP类型查询出的数据类型为TIMESTAMP(6)，需要特殊处理
@@ -76,16 +81,28 @@ public class Oracle extends AbstractProcess implements DbSelector {
             }
             field.setDataType(dataType);
             field.setType(OracleDataTypeEnum.values(dataType.toUpperCase()).getValue().getType());
-
-            String dataPrecision = result.getString("DATA_PRECISION");
-            String dataScale = result.getString("DATA_SCALE");
+            // 字段长度
             String dataLength = result.getString("DATA_LENGTH");
-            if (StringUtil.isNotEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
-                field.setColumnType(dataType + "(" + dataPrecision + "," + dataScale + ")");
-            } else if (StringUtil.isNotEmpty(dataScale)) {
+            // 字段精度
+            String dataPrecision = result.getString("DATA_PRECISION");
+            // 字段标度
+            String dataScale = result.getString("DATA_SCALE");
+            // 时间和日期类型特殊处理
+            if ("DATE".equals(dataType) || dataType.startsWith("TIMESTAMP")) {
                 field.setColumnType(dataType);
             } else {
-                field.setColumnType(dataType + "(" + dataLength + ")");
+                if (StringUtil.isNotEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
+                    if (StringUtils.equals("0", dataScale)) {
+                        field.setColumnType(dataType + "(" + dataPrecision + ")");
+                    } else {
+                        // 精度和标度都有值
+                        field.setColumnType(dataType + "(" + dataPrecision + "," + dataScale + ")");
+                    }
+                } else if (StringUtil.isEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
+                    field.setColumnType(dataType);
+                } else {
+                    field.setColumnType(dataType + "(" + dataLength + ")");
+                }
             }
             columns.add(field);
         }
@@ -137,7 +154,6 @@ public class Oracle extends AbstractProcess implements DbSelector {
         return " SELECT ACC.COMMENTS,T.COLUMN_NAME,T.DATA_TYPE,T.DATA_LENGTH,T.DATA_PRECISION,T.DATA_SCALE FROM USER_TAB_COLUMNS T " +
                 " LEFT JOIN ALL_COL_COMMENTS ACC ON T.TABLE_NAME=ACC.TABLE_NAME AND T.COLUMN_NAME=ACC.COLUMN_NAME " +
                 " WHERE t.TABLE_NAME='" + context.getTableName().toUpperCase() + "'";
-        //return "SELECT * FROM user_tab_columns WHERE TABLE_NAME=UPPER('" + context.getTableName().toUpperCase() + "')";
     }
 
     @Override

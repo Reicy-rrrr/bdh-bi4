@@ -9,6 +9,7 @@ import com.deloitte.bdh.data.collation.enums.SQLServerDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -63,8 +64,14 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
         while (result.next()) {
             TableField field = new TableField();
             // 列名
-            field.setName(result.getString("COLUMN_NAME"));
-            field.setDesc(field.getName());
+            String name = result.getString("COLUMN_NAME");
+            field.setName(name);
+            // 列名
+            String comments = result.getString("COMMENTS");
+            if (StringUtils.isBlank(comments)) {
+                comments = name;
+            }
+            field.setDesc(comments);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
             field.setDataType(dataType);
@@ -73,12 +80,14 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
 
             // 字符串最大长度
             String characterMaximumLength = result.getString("CHARACTER_MAXIMUM_LENGTH");
-            String numericScale = result.getString("NUMERIC_SCALE");
+            // 精度（长度）
             String numericPrecision = result.getString("NUMERIC_PRECISION");
+            // 标度（小数位数）
+            String numericScale = result.getString("NUMERIC_SCALE");
             if (StringUtil.isNotEmpty(characterMaximumLength)) {
                 field.setColumnType(dataType + "(" + characterMaximumLength + ")");
-            } else if (StringUtil.isNotEmpty(numericScale) && StringUtil.isNotEmpty(numericPrecision)) {
-                // 精度和标度都有值时
+            } else if (StringUtil.isNotEmpty(numericPrecision) && StringUtil.isNotEmpty(numericScale) && !StringUtils.equals("0", numericScale)) {
+                // 精度和标度都有值时，且标度不为0时
                 field.setColumnType(dataType + "(" + numericPrecision + "," + numericScale + ")");
             } else if (StringUtil.isNotEmpty(numericPrecision)) {
                 field.setColumnType(dataType + "(" + numericPrecision + ")");
