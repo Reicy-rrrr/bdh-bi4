@@ -206,7 +206,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         page.setIsEdit(YnTypeEnum.NO.getCode());
         this.updateById(page);
 
-        request.getData().getSaveResourcePermissionDto().setConfigId(request.getData().getConfigId());
+//        request.getData().getSaveResourcePermissionDto().setConfigId(request.getData().getConfigId());
         //可见编辑权限
         userResourceService.saveResourcePermission(request.getData().getSaveResourcePermissionDto());
 
