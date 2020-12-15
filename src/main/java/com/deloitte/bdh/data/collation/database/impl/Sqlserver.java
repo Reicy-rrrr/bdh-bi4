@@ -67,10 +67,7 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
             String name = result.getString("COLUMN_NAME");
             field.setName(name);
             // 列名
-            String comments = result.getString("COMMENTS");
-            if (StringUtils.isBlank(comments)) {
-                comments = name;
-            }
+            String comments = name;
             field.setDesc(comments);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
