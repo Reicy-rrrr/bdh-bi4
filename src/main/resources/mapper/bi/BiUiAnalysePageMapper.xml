@@ -49,8 +49,8 @@
             t3.RESOURCE_ID
             ) t4 ON t2.RESOURCE_ID = t4.RESOURCE_ID
         WHERE
-            t4.RESOURCE_ID IS NULL GROUP BY t2.RESOURCE_ID
-            ) t5 ON t1.ID = t5.RESOURCE_ID
+            t4.RESOURCE_ID IS NULL GROUP BY t2.RESOURCE_ID,t2.CONFIG_ID
+        ) t5 ON t1.ID = t5.RESOURCE_ID
         WHERE
             t5.RESOURCE_ID IS NULL
             AND t1.PUBLISH_ID IS NOT NULL
