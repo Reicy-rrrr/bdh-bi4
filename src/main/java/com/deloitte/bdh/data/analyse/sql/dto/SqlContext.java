@@ -9,4 +9,9 @@ public class SqlContext {
     private DataModel model;
     private AnalyseSql.Method method;
     private String querySql;
+
+    private String dbId;
+    private Integer pageNum;
+    private Integer pageSize;
+
 }

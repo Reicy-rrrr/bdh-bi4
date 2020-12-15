@@ -2,13 +2,13 @@ package com.deloitte.bdh.data.analyse.sql;
 
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 
-
+@Slf4j
 public abstract class AbstractAnalyseSql implements AnalyseSql {
-
 
     @Override
     final public Object assembly(SqlContext context) {
@@ -34,7 +34,7 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
                 result = orderBy(context.getModel());
                 break;
             case PAGE:
-                result = page(context.getModel());
+                result = page(context);
                 break;
             case COUNT:
                 result = count(context);
@@ -60,9 +60,9 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
 
     protected abstract String orderBy(DataModel model);
 
-    protected abstract String page(DataModel model);
+    protected abstract String page(SqlContext context);
 
-    protected abstract String count(SqlContext context);
+    protected abstract Long count(SqlContext context);
 
     protected abstract List<Map<String, Object>> execute(SqlContext context);
 
