@@ -14,6 +14,8 @@ public enum DataTypeEnum {
     Float("Float", "decimal", "浮点数"),
     Date("Date", "date", "日期"),
     DateTime("DateTime", "datetime", "日期时间"),
+    /** 其他类型不支持转换：blob、clob等 */
+    Other("Other", "varchar", "其他类型"),
     ;
 
     private String type;
