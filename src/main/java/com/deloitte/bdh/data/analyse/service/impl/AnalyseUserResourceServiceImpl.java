@@ -4,28 +4,22 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
-import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +52,9 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         categoryList.forEach(category -> categoryIds.add(category.getId()));
 
         LambdaQueryWrapper<BiUiAnalyseUserResource> resourceLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        resourceLambdaQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, categoryIds);
+        if (CollectionUtils.isNotEmpty(categoryIds)) {
+            resourceLambdaQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, categoryIds);
+        }
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.CATEGORY.getCode());
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getUserId, ThreadLocalHolder.getOperator());
         List<BiUiAnalyseUserResource> categoryResources = this.list(resourceLambdaQueryWrapper);
@@ -79,7 +75,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         pageDtoList.forEach(page -> pageIdList.add(page.getId()));
 
         LambdaQueryWrapper<BiUiAnalyseUserResource> resourceLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        if (CollectionUtils.isNotEmpty(pageIdList)){
+        if (CollectionUtils.isNotEmpty(pageIdList)) {
             resourceLambdaQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, pageIdList);
         }
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.PAGE.getCode());
@@ -117,6 +113,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         for (String userId : bothPermission) {
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
+            resource.setConfigId(dto.getConfigId());
             resource.setResourceType(resourceType);
             resource.setPermittedAction(PermittedActionEnum.VIEW.getCode() + "," + PermittedActionEnum.EDIT.getCode());
             resource.setTenantId(tenantId);
@@ -126,6 +123,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         for (String userId : viewPermission) {
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
+            resource.setConfigId(dto.getConfigId());
             resource.setResourceType(resourceType);
             resource.setPermittedAction(PermittedActionEnum.VIEW.getCode());
             resource.setTenantId(tenantId);
@@ -135,6 +133,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         for (String userId : editPermission) {
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
+            resource.setConfigId(dto.getConfigId());
             resource.setResourceType(resourceType);
             resource.setPermittedAction(PermittedActionEnum.EDIT.getCode());
             resource.setTenantId(tenantId);

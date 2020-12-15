@@ -26,14 +26,12 @@ import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,7 +139,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
         selectPublishedPageDto.setName(request.getData().getName());
         selectPublishedPageDto.setResourcesIds(categoryIds);
-        selectPublishedPageDto.setIsEdit(YnTypeEnum.NO.getCode());
         List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
 
         //设置报表权限

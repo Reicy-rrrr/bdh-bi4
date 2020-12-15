@@ -26,12 +26,14 @@
             t1.PARENT_ID,
             t1.EDIT_ID,
             t1.PUBLISH_ID,
-            t1.HOME_PAGE
+            t1.HOME_PAGE,
+            t5.CONFIG_ID
         FROM
             BI_UI_ANALYSE_PAGE t1
             LEFT JOIN (
         SELECT
-            t2.RESOURCE_ID
+            t2.RESOURCE_ID,
+            t2.CONFIG_ID
         FROM
             BI_UI_ANALYSE_USER_RESOURCE t2
             LEFT JOIN (

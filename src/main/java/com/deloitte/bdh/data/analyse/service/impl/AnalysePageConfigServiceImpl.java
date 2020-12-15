@@ -12,20 +12,18 @@ import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
-import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
+import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,6 +43,12 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
 
     @Override
     public AnalysePageConfigDto getAnalysePageConfig(RetRequest<GetAnalysePageConfigDto> request) {
+        if (StringUtils.isNotEmpty(request.getData().getConfigId())) {
+            BiUiAnalysePageConfig config = getById(request.getData().getConfigId());
+            AnalysePageConfigDto dto = new AnalysePageConfigDto();
+            BeanUtils.copyProperties(config, dto);
+            return dto;
+        }
         if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(request.getData().getType())) {
             return getPublishAnalysePageConfigByPageId(request.getData().getPageId());
         }
@@ -57,7 +61,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
             throw new BizException("报表不存在");
         }
         if (StringUtils.isNotBlank(page.getPublishId())) {
-            BiUiAnalysePageConfig config= getById(page.getPublishId());
+            BiUiAnalysePageConfig config = getById(page.getPublishId());
             AnalysePageConfigDto dto = new AnalysePageConfigDto();
             BeanUtils.copyProperties(config, dto);
             return dto;
@@ -71,7 +75,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
             throw new BizException("报表不存在");
         }
         if (StringUtils.isNotBlank(page.getEditId())) {
-            BiUiAnalysePageConfig config= getById(page.getEditId());
+            BiUiAnalysePageConfig config = getById(page.getEditId());
             AnalysePageConfigDto dto = new AnalysePageConfigDto();
             BeanUtils.copyProperties(config, dto);
             return dto;
