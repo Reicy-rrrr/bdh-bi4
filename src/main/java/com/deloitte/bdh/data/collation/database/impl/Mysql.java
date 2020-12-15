@@ -5,8 +5,10 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -60,12 +62,21 @@ public class Mysql extends AbstractProcess implements DbSelector {
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
             TableField field = new TableField();
-            field.setName(result.getString("COLUMN_NAME"));
-            field.setType("Text");
-            // field.setDesc(result.getString("COLUMN_COMMENT"));
-            field.setDesc(result.getString("COLUMN_NAME"));
-
-            field.setDataType(result.getString("DATA_TYPE"));
+            // 字段名称
+            String name = result.getString("COLUMN_NAME");
+            field.setName(name);
+            // 字段注释
+            String comments = result.getString("COLUMN_COMMENT");
+            if (StringUtils.isBlank(comments)) {
+                comments = name;
+            }
+            // 暂设置为字段名称
+            field.setDesc(name);
+            // 数据类型
+            String dataType = result.getString("DATA_TYPE");
+            field.setDataType(dataType);
+            field.setType(MysqlDataTypeEnum.values(dataType).getValue().getType());
+            // 字段类型
             field.setColumnType(result.getString("COLUMN_TYPE"));
             columns.add(field);
         }

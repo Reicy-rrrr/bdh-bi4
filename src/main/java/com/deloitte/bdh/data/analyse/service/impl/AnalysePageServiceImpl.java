@@ -11,7 +11,6 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
@@ -20,7 +19,6 @@ import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.*;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -31,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -75,9 +72,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         dto.setTenantId(ThreadLocalHolder.getTenantId());
         dto.setName(request.getData().getName());
         dto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
-        dto.setIsEdit(YnTypeEnum.NO.getCode());
         List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(dto);
-        PageInfo pageInfo = PageInfo.of(pageList);
+        PageInfo<AnalysePageDto> pageInfo = PageInfo.of(pageList);
         pageInfo.setList(pageList);
         return new PageResult<>(pageInfo);
     }
@@ -210,6 +206,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         page.setIsEdit(YnTypeEnum.NO.getCode());
         this.updateById(page);
 
+//        request.getData().getSaveResourcePermissionDto().setConfigId(request.getData().getConfigId());
         //可见编辑权限
         userResourceService.saveResourcePermission(request.getData().getSaveResourcePermissionDto());
 
@@ -283,7 +280,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("已存在相同报表名称");
         }
         //字母和数字
-        String regEx="[A-Z,a-z,0-9,-]*";
+        String regEx = "[A-Z,a-z,0-9,-]*";
         Pattern pattern = Pattern.compile(regEx);
         if (!pattern.matcher(code).matches()) {
             throw new BizException("编码只能由字母和数字组成");

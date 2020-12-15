@@ -15,4 +15,7 @@ public class GetAnalysePageConfigDto {
 
     @ApiModelProperty(value = "类型:EDIT,PUBLISH")
     private String type;
+
+    @ApiModelProperty(value = "configId")
+    private String configId;
 }

@@ -30,4 +30,7 @@ public class SaveResourcePermissionDto implements Serializable {
     @ApiModelProperty(value = "编辑权限用户")
     private List<String> editUserList = Lists.newArrayList();
 
+    @ApiModelProperty(value = "配置ID")
+    private String configId;
+
 }
