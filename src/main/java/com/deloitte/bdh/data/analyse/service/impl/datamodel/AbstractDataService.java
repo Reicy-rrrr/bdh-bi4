@@ -93,7 +93,7 @@ public abstract class AbstractDataService {
     }
 
     protected List<Map<String, Object>> directExecute(DataModel dataModel, String querySql) {
-        return sourceSelection.directExecute(dataModel,querySql);
+        return sourceSelection.execute(dataModel,querySql);
     }
 
 }

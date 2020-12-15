@@ -13,5 +13,5 @@ public interface DataSourceSelection {
 
     Long getCount(DataModel model);
 
-    List<Map<String, Object>> directExecute(DataModel model, String querySql);
+    List<Map<String, Object>> execute(DataModel model, String querySql);
 }

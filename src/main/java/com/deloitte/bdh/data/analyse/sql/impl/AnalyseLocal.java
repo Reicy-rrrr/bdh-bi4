@@ -15,7 +15,7 @@ import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.sql.AbstractAnalyseSql;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
-import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
+import com.deloitte.bdh.data.analyse.sql.utils.MysqlBuildUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
             for (DataModelField s : model.getX()) {
-                String express = BuildSqlUtil.select(model.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
+                String express = MysqlBuildUtil.select(model.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
                         s.getFormatType(), s.getDataType(), s.getPrecision(), s.getAlias(), s.getDefaultValue());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
@@ -51,7 +51,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
 
     @Override
     protected String from(DataModel model) {
-        return " FROM " + BuildSqlUtil.from(model.getTableName(), null);
+        return " FROM " + MysqlBuildUtil.from(model.getTableName(), null);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         List<String> list = Lists.newArrayList();
         list.add(" 1=1 ");
         for (DataModelField s : model.getX()) {
-            String express = BuildSqlUtil.where(model.getTableName(), s.getId(), s.getQuota(), s.getSymbol(), s.getValue());
+            String express = MysqlBuildUtil.where(model.getTableName(), s.getId(), s.getQuota(), s.getSymbol(), s.getValue());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -70,7 +70,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
                 String value = convertValue(condition.getSymbol(), condition.getValue());
                 String symbol = WildcardEnum.get(condition.getSymbol()).getCode();
                 if (condition.getId().size() == 1) {
-                    express = BuildSqlUtil.where(model.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), symbol, value);
+                    express = MysqlBuildUtil.where(model.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), symbol, value);
                 } else { //针对多个字段连接成一个value值的情况做特殊处理
                     express = connectWhere(model.getTableName(), condition.getId(), condition.getQuota(), symbol, value);
                 }
@@ -87,7 +87,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
             if (CollectionUtils.isNotEmpty(userDataList)) {
                 for (BiUiAnalyseUserData userData : userDataList) {
                     String value = convertValue(WildcardEnum.EQ.getKey(), Lists.newArrayList(userData.getFieldValue()));
-                    String express = BuildSqlUtil.where(userData.getTableName(), userData.getTableField(), DataModelTypeEnum.WD.getCode(), WildcardEnum.EQ.getCode(), value);
+                    String express = MysqlBuildUtil.where(userData.getTableName(), userData.getTableField(), DataModelTypeEnum.WD.getCode(), WildcardEnum.EQ.getCode(), value);
                     if (StringUtils.isNotBlank(express)) {
                         list.add(express);
                     }
@@ -103,7 +103,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
             for (DataModelField s : model.getX()) {
-                String express = BuildSqlUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType());
+                String express = MysqlBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
@@ -119,7 +119,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     protected String having(DataModel model) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : model.getX()) {
-            String express = BuildSqlUtil.having(model.getTableName(), s.getId(), s.getQuota()
+            String express = MysqlBuildUtil.having(model.getTableName(), s.getId(), s.getQuota()
                     , s.getAggregateType(), s.getSymbol(), s.getValue());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
@@ -131,7 +131,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
                 String symbol = WildcardEnum.get(condition.getSymbol()).getCode();
                 if (StringUtils.equals(condition.getQuota(), DataModelTypeEnum.DL.getCode()) &&
                         StringUtils.isNotBlank(condition.getAggregateType())) {
-                    String express = BuildSqlUtil.having(model.getTableName(), condition.getId().get(0), condition.getQuota(),
+                    String express = MysqlBuildUtil.having(model.getTableName(), condition.getId().get(0), condition.getQuota(),
                             condition.getAggregateType(), symbol, value);
                     list.add(express);
                 }
@@ -148,7 +148,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     protected String orderBy(DataModel model) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : model.getX()) {
-            String express = BuildSqlUtil.orderBy(model.getTableName(), s.getId(), s.getQuota()
+            String express = MysqlBuildUtil.orderBy(model.getTableName(), s.getId(), s.getQuota()
                     , s.getAggregateType(), s.getFormatType(), s.getOrderType());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);

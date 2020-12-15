@@ -1,13 +1,13 @@
-package com.deloitte.bdh.data.analyse.utils;
+package com.deloitte.bdh.data.analyse.sql.utils;
 
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
+import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import org.apache.commons.lang.StringUtils;
 
 
-public class BuildSqlUtil {
+public class MysqlBuildUtil {
 
     public static String select(String tableName, String field, String quota, String aggregateType,
                                 String formatType, String dataType, Integer precision, String alias, String defaultValue) {
@@ -104,7 +104,7 @@ public class BuildSqlUtil {
     }
 
     private static String format(String field, String formatType) {
-        return FormatTypeEnum.get(formatType).expression(field);
+        return MysqlFormatTypeEnum.get(formatType).expression(field);
     }
 
     private static String condition(String field, String symbol, String value) {

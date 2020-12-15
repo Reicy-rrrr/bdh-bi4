@@ -3,13 +3,13 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
+import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
+import com.deloitte.bdh.data.analyse.sql.utils.MysqlBuildUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -128,34 +128,34 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
 
     private String doSourceSql(String sql, DataModel dataModel) {
         String str = null;
-        if (FormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATE_FORMAT('#1','%Y')=DATE_FORMAT(#2,'%Y') ";
         }
-        if (FormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATE_FORMAT('#1','%Y-%m')=DATE_FORMAT(#2,'%Y-%m') ";
         }
-        if (FormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATE_FORMAT('#1','%Y-%m-%d')=DATE_FORMAT(#2,'%Y-%m-%d') ";
         }
-        if (FormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
             str = " QUARTER('#1')=QUARTER(#2) AND DATE_FORMAT('#1','%Y')=DATE_FORMAT(#2,'%Y')";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return BuildSqlUtil.append(sql, appendField, 2);
+        return MysqlBuildUtil.append(sql, appendField, 2);
     }
 
     private String chainSql(String sql, DataModel dataModel) {
         String str = null;
-        if (FormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
             str = " YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year))=DATE_FORMAT(#2,'%Y') ";
         }
-        if (FormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
             str = " LEFT(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 month),7)=DATE_FORMAT(#2,'%Y-%m') ";
         }
-        if (FormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 day)=DATE_FORMAT(#2,'%Y-%m-%d') ";
         }
-        if (FormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
             if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
                 str = " QUARTER(DATE_SUB('#1',interval 1 QUARTER))=QUARTER(#2) AND DATE_FORMAT('#1','%Y')=DATE_FORMAT(#2,'%Y') ";
             } else {
@@ -163,26 +163,26 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return BuildSqlUtil.append(sql, appendField, 2);
+        return MysqlBuildUtil.append(sql, appendField, 2);
     }
 
     private String yoySql(String sql, DataModel dataModel) {
         //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
         String str = null;
-        if (FormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
             str = " YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year))=DATE_FORMAT(#2,'%Y') ";
         }
-        if (FormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
             str = " LEFT(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-12 month),7)=DATE_FORMAT(#2,'%Y-%m') ";
         }
-        if (FormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATE_ADD('#1',interval -1 year)=DATE_FORMAT(#2,'%Y-%m-%d') ";
         }
-        if (FormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
             str = " QUARTER('#1')=QUARTER(#2) AND YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year)) = DATE_FORMAT(#2,'%Y') ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return BuildSqlUtil.append(sql, appendField, 2);
+        return MysqlBuildUtil.append(sql, appendField, 2);
     }
 
     private boolean isOpen(DataModel dataModel) {

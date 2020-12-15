@@ -7,8 +7,6 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
-import com.deloitte.bdh.data.analyse.utils.BuildSqlUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;

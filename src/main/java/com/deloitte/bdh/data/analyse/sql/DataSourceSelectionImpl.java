@@ -87,7 +87,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
     }
 
     @Override
-    public List<Map<String, Object>> directExecute(DataModel model, String querySql) {
+    public List<Map<String, Object>> execute(DataModel model, String querySql) {
         AnalyseSql sql = this.getBean(model);
         SqlContext context = new SqlContext();
         context.setModel(model);

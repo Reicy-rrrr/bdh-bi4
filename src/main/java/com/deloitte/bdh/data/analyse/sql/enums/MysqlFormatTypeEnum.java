@@ -1,7 +1,7 @@
-package com.deloitte.bdh.data.analyse.enums;
+package com.deloitte.bdh.data.analyse.sql.enums;
 
 
-public enum FormatTypeEnum {
+public enum MysqlFormatTypeEnum {
     YEAR("YEAR", "年"),
     YEAR_QUARTERLY("YEAR_QUARTERLY", "年-季度") {
         @Override
@@ -45,7 +45,7 @@ public enum FormatTypeEnum {
 
     private final String value;
 
-    FormatTypeEnum(String key, String value) {
+    MysqlFormatTypeEnum(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -58,8 +58,8 @@ public enum FormatTypeEnum {
         return value;
     }
 
-    public static FormatTypeEnum get(String key) {
-        FormatTypeEnum[] enums = FormatTypeEnum.values();
+    public static MysqlFormatTypeEnum get(String key) {
+        MysqlFormatTypeEnum[] enums = MysqlFormatTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getKey().equals(key)) {
                 return enums[i];
