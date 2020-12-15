@@ -13,7 +13,7 @@ public enum ArrangeTypeEnum {
     REMOVE("remove", "移除字段"),
     SPLIT("split", "拆分字段"),
     COMBINE("combine", "组合字段"),
-    NON_NULL("non_null", "排除空值"),
+    NULL_VALUE("null_value", "空值处理"),
     MODIFY("modify", "字段修改"),
     RENAME("rename", "字段重命名"),
     GROUP("group", "字段分组"),
