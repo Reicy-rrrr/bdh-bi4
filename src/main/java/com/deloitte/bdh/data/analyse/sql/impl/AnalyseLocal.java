@@ -173,9 +173,9 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         if (null == context.getModel().getPage()) {
             return null;
         }
-        String countSql = null;
-        if (StringUtils.isNotBlank(context.getQuerySql())) {
-            if (StringUtils.containsIgnoreCase(context.getQuerySql(), "LIMIT")) {
+        String countSql = context.getQuerySql();
+        if (StringUtils.isNotBlank(countSql)) {
+            if (StringUtils.containsIgnoreCase(countSql, "LIMIT")) {
                 countSql = StringUtils.substringBefore(countSql, "LIMIT");
             }
             countSql = "SELECT count(0) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";

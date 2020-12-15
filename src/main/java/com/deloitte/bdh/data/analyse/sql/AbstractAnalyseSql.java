@@ -45,7 +45,6 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
             default:
                 result = execute(context);
         }
-
         return result;
     }
 
