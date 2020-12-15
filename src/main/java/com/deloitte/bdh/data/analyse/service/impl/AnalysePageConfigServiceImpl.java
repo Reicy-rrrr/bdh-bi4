@@ -49,10 +49,10 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
             BeanUtils.copyProperties(config, dto);
             return dto;
         }
-        if (AnalyseConstants.PAGE_CONFIG_PUBLISH.equals(request.getData().getType())) {
-            return getPublishAnalysePageConfigByPageId(request.getData().getPageId());
+        if (AnalyseConstants.PAGE_CONFIG_EDIT.equals(request.getData().getType())) {
+            return getEditAnalysePageConfigByPageId(request.getData().getPageId());
         }
-        return getEditAnalysePageConfigByPageId(request.getData().getPageId());
+        return getPublishAnalysePageConfigByPageId(request.getData().getPageId());
     }
 
     private AnalysePageConfigDto getPublishAnalysePageConfigByPageId(String pageId) {
