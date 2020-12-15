@@ -1,14 +1,11 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
-import com.deloitte.bdh.data.analyse.sql.AnalyseSql.Method;
 
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
-import com.deloitte.bdh.data.analyse.sql.AnalyseSql;
-import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,7 +47,7 @@ public abstract class AbstractDataService {
             list = directExecute(dataModel, sql);
         }
         response.setRows(rowsInterface.set(list));
-        response.setTotal(buildCount(dataModel, sql));
+        response.setTotal(sourceSelection.getCount(dataModel));
         response.setSql(sql);
         return response;
     }
@@ -59,13 +56,7 @@ public abstract class AbstractDataService {
         validate(dataModel);
         //剔除重复的字段
         before(dataModel);
-        return buildSelect(dataModel)
-                + buildFrom(dataModel)
-                + buildWhere(dataModel)
-                + buildGroupBy(dataModel)
-                + buildHaving(dataModel)
-                + buildOrder(dataModel)
-                + page(dataModel);
+        return sourceSelection.buildSql(dataModel);
     }
 
     protected void before(DataModel dataModel) {
@@ -80,76 +71,6 @@ public abstract class AbstractDataService {
         dataModel.setX(newX);
     }
 
-    protected String buildSelect(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(AnalyseSql.Method.SELECT);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-    }
-
-    protected String buildFrom(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(AnalyseSql.Method.FROM);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-    }
-
-    protected String buildWhere(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(Method.WHERE);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-    }
-
-    protected String buildGroupBy(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(AnalyseSql.Method.GROUPBY);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-    }
-
-    @Deprecated
-    protected String buildHaving(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(AnalyseSql.Method.HAVING);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-    }
-
-    protected String buildOrder(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(AnalyseSql.Method.ORDERBY);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-    }
-
-    protected String page(DataModel dataModel) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(AnalyseSql.Method.PAGE);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        return String.valueOf(sql.assembly(context));
-
-    }
-
-    private Long buildCount(DataModel dataModel, String querySql) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setQuerySql(querySql);
-        context.setMethod(Method.COUNT);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        Object result = sql.assembly(context);
-        if (null == result) {
-            return null;
-        }
-        return Long.parseLong((String) result);
-    }
 
     public interface Sql {
         String build();
@@ -172,16 +93,7 @@ public abstract class AbstractDataService {
     }
 
     protected List<Map<String, Object>> directExecute(DataModel dataModel, String querySql) {
-        SqlContext context = new SqlContext();
-        context.setModel(dataModel);
-        context.setMethod(Method.EXECUT);
-        context.setQuerySql(querySql);
-        AnalyseSql sql = sourceSelection.getBean(context);
-        Object result = sql.assembly(context);
-        if (null == result) {
-            return null;
-        }
-        return (List<Map<String, Object>>) result;
+        return sourceSelection.directExecute(dataModel,querySql);
     }
 
 }
