@@ -109,20 +109,29 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         this.removeById(id);
     }
 
+    /*
+     * 保存-只能修改edit的config
+     */
     @Override
     public AnalysePageConfigDto updateAnalysePageConfig(RetRequest<UpdateAnalysePageConfigsDto> request) {
 
+        //获取该config用于获取该page
         BiUiAnalysePageConfig config = this.getById(request.getData().getId());
         if (null == config) {
             throw new BizException("配置不存在");
         }
-        config.setContent(request.getData().getContent());
-        this.updateById(config);
-        BiUiAnalysePage page = analysePageService.getById(config.getPageId());
-        page.setIsEdit(YnTypeEnum.YES.getCode());
-        analysePageService.updateById(page);
+        //获取该page的edit config
+        BiUiAnalysePage edit = analysePageService.getById(config.getPageId());
+        if (null == edit) {
+            throw new BizException("报表不存在");
+        }
+        edit.setIsEdit(YnTypeEnum.YES.getCode());
+        analysePageService.updateById(edit);
+        BiUiAnalysePageConfig update = this.getById(edit.getEditId());
+        update.setContent(request.getData().getContent());
+        this.updateById(update);
         AnalysePageConfigDto dto = new AnalysePageConfigDto();
-        BeanUtils.copyProperties(config, dto);
+        BeanUtils.copyProperties(update, dto);
         return dto;
     }
 
