@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.exception.BizException;
 public enum CategoryTypeEnum {
     PRE_DEFINED("PRE_DEFINED", "预定义"),
     CUSTOMER("CUSTOMER", "自定义"),
+    COMPONENT("COMPONENT", "图形指标"),
     ;
 
     private final String code;

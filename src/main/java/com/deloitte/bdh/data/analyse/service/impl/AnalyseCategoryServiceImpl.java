@@ -10,7 +10,10 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
-import com.deloitte.bdh.data.analyse.enums.*;
+import com.deloitte.bdh.data.analyse.enums.CategoryTreeChildrenTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
@@ -76,7 +79,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
         BiUiAnalyseCategory category = new BiUiAnalyseCategory();
         BeanUtils.copyProperties(request.getData(), category);
-        category.setType(CategoryTypeEnum.CUSTOMER.getCode());
 //        创建的自定义文件夹都在我的分析下面
 //        BiUiAnalyseCategory customerTop = getCustomerTop(ThreadLocalHolder.getTenantId());
         category.setTenantId(ThreadLocalHolder.getTenantId());

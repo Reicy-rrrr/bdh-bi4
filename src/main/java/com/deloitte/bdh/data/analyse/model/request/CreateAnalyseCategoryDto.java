@@ -4,8 +4,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.NotNull;
-
 @Data
 public class CreateAnalyseCategoryDto {
 
@@ -27,4 +25,8 @@ public class CreateAnalyseCategoryDto {
 
     @ApiModelProperty(value = "图标")
     private String icon;
+
+    @NotBlank
+    @ApiModelProperty(value = "文件夹类型，CUSTOMER、COMPONENT")
+    private String type;
 }

@@ -4,10 +4,12 @@ package com.deloitte.bdh.data.analyse.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
+import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -30,6 +33,9 @@ public class AnalysePageController {
 
     @Resource
     AnalysePageService analysePageService;
+
+    @Resource
+    BiUiAnalysePageComponentService biUiAnalysePageComponentService;
 
     @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
     @PostMapping("/getChildAnalysePageList")
@@ -116,5 +122,26 @@ public class AnalysePageController {
             return RetResponse.makeOKRsp(homePage.getId());
         }
         return RetResponse.makeOKRsp(null);
+    }
+
+    @ApiOperation(value = "保存图形指标", notes = "保存图形指标")
+    @PostMapping("/saveChartComponent")
+    public RetResult<Boolean> saveChartComponent(@RequestBody @Validated RetRequest<SavePageComponentDto> request) {
+
+        return RetResponse.makeOKRsp(biUiAnalysePageComponentService.saveChartComponent(request.getData()));
+    }
+
+    @ApiOperation(value = "删除图形指标", notes = "删除图形指标")
+    @PostMapping("/delChartComponent")
+    public RetResult<Boolean> delChartComponent(@RequestBody @Validated RetRequest<String> request) {
+
+        return RetResponse.makeOKRsp(biUiAnalysePageComponentService.delChartComponent(request.getData()));
+    }
+
+    @ApiOperation(value = "获取图形指标列表", notes = "获取图形指标列表")
+    @PostMapping("/getChartComponent")
+    public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<Void> request) {
+
+        return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent());
     }
 }
