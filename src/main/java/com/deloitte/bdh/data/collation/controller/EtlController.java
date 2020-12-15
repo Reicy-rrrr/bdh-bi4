@@ -117,10 +117,10 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.COMBINE));
     }
 
-    @ApiOperation(value = "引入整理组件(排空)", notes = "引入整理组件(排空)")
-    @PostMapping("/arrange/nonnull/join")
-    public RetResult<BiComponent> arrangeNonNull(@RequestBody @Validated RetRequest<ArrangeNonNullDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.NON_NULL));
+    @ApiOperation(value = "引入整理组件(空值)", notes = "引入整理组件(排空)")
+    @PostMapping("/arrange/nullValue/join")
+    public RetResult<BiComponent> arrangeNullValue(@RequestBody @Validated RetRequest<ArrangeNullDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.NULL_VALUE));
     }
 
 
@@ -178,10 +178,10 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.COMBINE));
     }
 
-    @ApiOperation(value = "修改引入整理组件(排空)", notes = "修改引入整理组件(排空)")
-    @PostMapping("/arrange/nonnull/update")
-    public RetResult<BiComponent> arrangeNonNullUpdate(@RequestBody @Validated RetRequest<UpdateArrangeNonNullDto> request) throws Exception {
-        return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.NON_NULL));
+    @ApiOperation(value = "修改引入整理组件(空值)", notes = "修改引入整理组件(排空)")
+    @PostMapping("/arrange/nullValue/update")
+    public RetResult<BiComponent> arrangeNullValueUpdate(@RequestBody @Validated RetRequest<UpdateArrangeNullDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.NULL_VALUE));
     }
 
     @ApiOperation(value = "修改引入整理组件(大小写转换)", notes = "修改引入整理组件(大小写转换)")

@@ -20,6 +20,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -119,8 +121,10 @@ public class ArrangeComponent implements ComponentHandler {
             case COMBINE:
                 arrangeCases.addAll(combine(component, context));
                 break;
-            case NON_NULL:
-                whereCases.addAll(nonNull(component, context));
+            case NULL_VALUE:
+                Pair<List<String>, List<ArrangeResultModel>> resultPair = nullValue(component, context);
+                whereCases.addAll(resultPair.getLeft());
+                arrangeCases.addAll(resultPair.getRight());
                 break;
             case MODIFY:
                 arrangeCases.addAll(modify(component, context));
@@ -178,7 +182,6 @@ public class ArrangeComponent implements ComponentHandler {
 
     private StringBuilder buildSelect(ComponentModel fromComponent, List<ArrangeResultModel> arrangeCases,
                                       List<FieldMappingModel> currMappings, Set<String> excludeFields) {
-        String fromTableName = fromComponent.getTableName();
         ComponentTypeEnum fromType = fromComponent.getTypeEnum();
         List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
 
@@ -383,18 +386,49 @@ public class ArrangeComponent implements ComponentHandler {
      * @param context   组件内容
      * @return List<ArrangeResultModel>
      */
-    private List<String> nonNull(ComponentModel component, String context) {
-        List<String> nonNullFields = JSONArray.parseArray(context, String.class);
-        if (CollectionUtils.isEmpty(nonNullFields)) {
-            throw new BizException("Arrange component non null error: 排空字段不能为空！");
+    private Pair<List<String>, List<ArrangeResultModel>> nullValue(ComponentModel component, String context) {
+        ArrangeNullModel nullModel = JSONArray.parseObject(context, ArrangeNullModel.class);
+        if (nullModel == null) {
+            throw new BizException("Arrange component null handle error: 空值字段不能为空！");
         }
 
+        List<String> whereCases = Lists.newArrayList();
+        List<ArrangeResultModel> arrangeCases = Lists.newArrayList();
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
-        List<FieldMappingModel> nonNullMappings = fromComponent.getFieldMappings().stream()
-                .filter(mappingModel -> nonNullFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
-        List<String> result = arranger.nonNull(nonNullMappings, fromComponent.getTableName(), fromComponent.getTypeEnum());
-        return result;
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        // 排空字段
+        List<String> nonNullFields = nullModel.getNonNullFields();
+        if (!CollectionUtils.isEmpty(nonNullFields)) {
+            List<FieldMappingModel> nonNullMappings = Lists.newArrayList();
+            for (String nullField : nonNullFields) {
+                FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, nullField);
+                if (mapping == null) {
+                    throw new BizException("Arrange component fill error: 有在组件[" + fromComponent.getName() + "]中不存在的字段！");
+                }
+                nonNullMappings.add(mapping);
+            }
+            whereCases.addAll(arranger.nonNull(nonNullMappings, fromComponent.getTableName(), fromComponent.getTypeEnum()));
+        }
+
+        // 空值填充字段
+        List<ArrangeFillModel> fillNullFields = nullModel.getFillNullFields();
+        if (!CollectionUtils.isEmpty(fillNullFields)) {
+            for (ArrangeFillModel fillModel : fillNullFields) {
+                String fieldName = fillModel.getName();
+                FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
+                if (mapping == null) {
+                    throw new BizException("Arrange component fill error: 有在组件[" + fromComponent.getName() + "]中不存在的字段！");
+                }
+
+                ArrangeResultModel resultModel = arranger.fill(mapping, fillModel.getValue(), fromComponent.getTableName(), fromComponent.getTypeEnum());
+                arrangeCases.add(resultModel);
+            }
+        }
+
+        return new ImmutablePair(whereCases, arrangeCases);
     }
 
     /**
@@ -580,37 +614,6 @@ public class ArrangeComponent implements ComponentHandler {
             ArrangeResultModel resultModel = arranger.modify(fromMapping, targetDesc, targetType, fromComponent.getTableName(), fromComponent.getTypeEnum());
             resultModels.add(resultModel);
         });
-        return resultModels;
-    }
-
-    /**
-     * 字段填充
-     *
-     * @param component 组件模型
-     * @param context   组件内容
-     * @return List<ArrangeResultModel>
-     */
-    private List<ArrangeResultModel> fill(ComponentModel component, String context) {
-        List<ArrangeFillModel> fillModels = JSONArray.parseArray(context, ArrangeFillModel.class);
-        if (CollectionUtils.isEmpty(fillModels)) {
-            throw new BizException("Arrange component fill error: 填充的字段不能为空！");
-        }
-        // 从组件信息
-        ComponentModel fromComponent = component.getFrom().get(0);
-        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
-                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
-        for (ArrangeFillModel fillModel : fillModels) {
-            String fieldName = fillModel.getName();
-            FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
-            if (mapping == null) {
-                throw new BizException("Arrange component fill error: 有在组件[" + fromComponent.getName() + "]中不存在的字段！");
-            }
-
-
-        }
-
-        List<ArrangeResultModel> resultModels = Lists.newArrayList();
-
         return resultModels;
     }
 
