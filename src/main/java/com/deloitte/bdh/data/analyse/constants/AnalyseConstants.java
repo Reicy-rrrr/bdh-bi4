@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.analyse.constants;
 
+import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
+import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -20,7 +22,25 @@ public class AnalyseConstants {
     public static final String PAGE_CONFIG_EDIT = "EDIT";
 
     public static final List<String> MENSURE_TYPE = Lists.newArrayList(
-            "TINYINT","SMALLINT","MEDIUMINT","INT","INTEGER","BIGINT","FLOAT","DOUBLE","DECIMAL");
+            OracleDataTypeEnum.FLOAT.getType().toUpperCase(),
+            OracleDataTypeEnum.DOUBLE.getType().toUpperCase(),
+            OracleDataTypeEnum.DOUBLE_PRECISION.getType().toUpperCase(),
+            OracleDataTypeEnum.NUMBER.getType().toUpperCase(),
+            OracleDataTypeEnum.DECIMAL.getType().toUpperCase(),
+            OracleDataTypeEnum.BINARY_FLOAT.getType().toUpperCase(),
+            OracleDataTypeEnum.BINARY_DOUBLE.getType().toUpperCase(),
+            OracleDataTypeEnum.DEC.getType().toUpperCase(),
+
+            MysqlDataTypeEnum.TINYINT.getType().toUpperCase(),
+            MysqlDataTypeEnum.SMALLINT.getType().toUpperCase(),
+            MysqlDataTypeEnum.MEDIUMINT.getType().toUpperCase(),
+            MysqlDataTypeEnum.INT.getType().toUpperCase(),
+            MysqlDataTypeEnum.INTEGER.getType().toUpperCase(),
+            MysqlDataTypeEnum.BIGINT.getType().toUpperCase(),
+            MysqlDataTypeEnum.FLOAT.getType().toUpperCase(),
+            MysqlDataTypeEnum.DOUBLE.getType().toUpperCase(),
+            MysqlDataTypeEnum.DECIMAL.getType().toUpperCase()
+    );
 
 
 }

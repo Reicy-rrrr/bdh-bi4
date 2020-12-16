@@ -16,6 +16,7 @@ public class OracleBuildUtil {
             OracleDataTypeEnum.FLOAT.getType().toUpperCase(),
             OracleDataTypeEnum.DOUBLE.getType().toUpperCase(),
             OracleDataTypeEnum.DOUBLE_PRECISION.getType().toUpperCase(),
+            OracleDataTypeEnum.NUMBER.getType().toUpperCase(),
             OracleDataTypeEnum.DECIMAL.getType().toUpperCase()
     );
 
