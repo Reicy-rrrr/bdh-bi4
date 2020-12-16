@@ -119,21 +119,21 @@ public class AnalysePageController {
 
     @ApiOperation(value = "保存图形指标", notes = "保存图形指标")
     @PostMapping("/saveChartComponent")
-    public RetResult<Boolean> saveChartComponent(@RequestBody @Validated RetRequest<SavePageComponentDto> request) {
+    public RetResult<Boolean> saveChartComponent(@RequestBody @Validated RetRequest<pageComponentDto> request) {
 
         return RetResponse.makeOKRsp(biUiAnalysePageComponentService.saveChartComponent(request.getData()));
     }
 
     @ApiOperation(value = "删除图形指标", notes = "删除图形指标")
     @PostMapping("/delChartComponent")
-    public RetResult<Boolean> delChartComponent(@RequestBody @Validated RetRequest<String> request) {
+    public RetResult<Boolean> delChartComponent(@RequestBody @Validated RetRequest<pageComponentDto> request) {
 
         return RetResponse.makeOKRsp(biUiAnalysePageComponentService.delChartComponent(request.getData()));
     }
 
     @ApiOperation(value = "获取图形指标列表", notes = "获取图形指标列表")
     @PostMapping("/getChartComponent")
-    public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<String> request) {
+    public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<pageComponentDto> request) {
 
         return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent(request.getData()));
     }

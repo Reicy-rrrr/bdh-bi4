@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageComponentMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
-import com.deloitte.bdh.data.analyse.model.request.SavePageComponentDto;
+import com.deloitte.bdh.data.analyse.model.request.pageComponentDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.datanucleus.util.StringUtils;
@@ -29,10 +29,11 @@ import java.util.List;
 public class BiUiAnalysePageComponentServiceImpl extends AbstractService<BiUiAnalysePageComponentMapper, BiUiAnalysePageComponent> implements BiUiAnalysePageComponentService {
 
     @Override
-    public Boolean saveChartComponent(SavePageComponentDto dto) {
+    public Boolean saveChartComponent(pageComponentDto dto) {
 
         List<BiUiAnalysePageComponent> exist = list(new LambdaQueryWrapper<BiUiAnalysePageComponent>()
-                .eq(BiUiAnalysePageComponent::getComponentId, dto.getComponentId()));
+                .eq(BiUiAnalysePageComponent::getComponentId, dto.getComponentId())
+                .eq(BiUiAnalysePageComponent::getParentId, dto.getParentId()));
         String id = "";
         if (CollectionUtils.isNotEmpty(exist)) {
             id = exist.get(0).getId();
@@ -47,15 +48,16 @@ public class BiUiAnalysePageComponentServiceImpl extends AbstractService<BiUiAna
     }
 
     @Override
-    public Boolean delChartComponent(String id) {
+    public Boolean delChartComponent(pageComponentDto dto) {
 
         return remove(new LambdaQueryWrapper<BiUiAnalysePageComponent>()
-                .eq(BiUiAnalysePageComponent::getComponentId, id));
+                .eq(BiUiAnalysePageComponent::getComponentId, dto.getComponentId())
+                .eq(BiUiAnalysePageComponent::getParentId, dto.getParentId()));
     }
 
     @Override
-    public List<BiUiAnalysePageComponent> getChartComponent(String parentId) {
+    public List<BiUiAnalysePageComponent> getChartComponent(pageComponentDto dto) {
         return list(new LambdaQueryWrapper<BiUiAnalysePageComponent>()
-                .eq(BiUiAnalysePageComponent::getParentId, parentId));
+                .eq(BiUiAnalysePageComponent::getParentId, dto.getParentId()));
     }
 }

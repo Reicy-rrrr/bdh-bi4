@@ -3,11 +3,12 @@ package com.deloitte.bdh.data.analyse.model.request;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 
 @Data
-public class SavePageComponentDto implements Serializable {
+public class pageComponentDto implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -17,6 +18,7 @@ public class SavePageComponentDto implements Serializable {
     @ApiModelProperty(value = "content")
     private String content;
 
+    @NotNull
     @ApiModelProperty(value = "父级文件夹")
     private String parentId;
 
