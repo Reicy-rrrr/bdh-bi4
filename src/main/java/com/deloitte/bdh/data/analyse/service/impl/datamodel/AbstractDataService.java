@@ -22,7 +22,7 @@ import java.util.Objects;
 @Slf4j
 public abstract class AbstractDataService {
     @Resource
-    private DataSourceSelection sourceSelection;
+    protected DataSourceSelection sourceSelection;
 
 
     protected abstract void validate(DataModel dataModel);
@@ -44,7 +44,7 @@ public abstract class AbstractDataService {
         List<Map<String, Object>> list = null;
         String sql = sqlInterface.build();
         if (StringUtils.isNotBlank(sql)) {
-            list = directExecute(dataModel, sql);
+            list = sourceSelection.execute(dataModel, sql);
         }
         response.setRows(rowsInterface.set(list));
         response.setTotal(sourceSelection.getCount(dataModel));
@@ -93,7 +93,7 @@ public abstract class AbstractDataService {
     }
 
     protected List<Map<String, Object>> directExecute(DataModel dataModel, String querySql) {
-        return sourceSelection.execute(dataModel,querySql);
+        return sourceSelection.customizeExecute(dataModel, querySql);
     }
 
 }

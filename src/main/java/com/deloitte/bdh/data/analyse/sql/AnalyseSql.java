@@ -17,8 +17,8 @@ public interface AnalyseSql {
         ORDERBY,
         PAGE,
         COUNT,
-        EXECUT,
-        CUSTOMIZE;
+        EXECUTE,
+        CUSTOMIZE_EXECUTE;
 
         String key;
 

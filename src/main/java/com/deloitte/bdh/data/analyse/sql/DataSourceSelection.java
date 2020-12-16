@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface DataSourceSelection {
 
+    AnalyseSql getBean(DataModel model);
+
     AnalyseSql getBean(BiDataSet dataSet);
 
     String buildSql(DataModel model);
@@ -15,4 +17,7 @@ public interface DataSourceSelection {
     Long getCount(DataModel model);
 
     List<Map<String, Object>> execute(DataModel model, String querySql);
+
+    List<Map<String, Object>> customizeExecute(DataModel model, String querySql);
+
 }

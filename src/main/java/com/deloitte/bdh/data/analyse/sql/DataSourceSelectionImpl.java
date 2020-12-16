@@ -26,6 +26,12 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
     private BiEtlDatabaseInfService databaseInfService;
 
     @Override
+    public AnalyseSql getBean(DataModel model) {
+        BiDataSet dataSet = checkDataSet(model);
+        return this.getBean(dataSet);
+    }
+
+    @Override
     public AnalyseSql getBean(BiDataSet dataSet) {
         AnalyseSql bean;
         DataSetTypeEnum typeEnum = DataSetTypeEnum.getEnumByKey(dataSet.getType());
@@ -78,7 +84,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
                         + buildGroupBy(model, bean)
                         + buildHaving(model, bean)
                         + buildOrder(model, bean)
-                        + page(model, bean, null);
+                        + page(model, bean);
                 break;
             default:
                 BiEtlDatabaseInf databaseInf = databaseInfService.getById(dataSet.getRefSourceId());
@@ -94,7 +100,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
                                 + buildGroupBy(model, bean)
                                 + buildHaving(model, bean)
                                 + buildOrder(model, bean)
-                                + page(model, bean, null);
+                                + page(model, bean);
                         break;
                     case Oracle:
                     case SQLServer:
@@ -104,7 +110,8 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
                                 + buildGroupBy(model, bean)
                                 + buildHaving(model, bean)
                                 + buildOrder(model, bean);
-                        sql = page(model, bean, var);
+//                        sql = page(model, bean, var);
+                        sql = var;
                         break;
                     default:
                         throw new RuntimeException("数据集不支持的类型");
@@ -136,7 +143,23 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         AnalyseSql sql = this.getBean(dataSet);
         SqlContext context = new SqlContext();
         context.setModel(model);
-        context.setMethod(AnalyseSql.Method.EXECUT);
+        context.setMethod(AnalyseSql.Method.EXECUTE);
+        context.setQuerySql(querySql);
+        context.setDbId(dataSet.getRefSourceId());
+        Object result = sql.assembly(context);
+        if (null == result) {
+            return null;
+        }
+        return (List<Map<String, Object>>) result;
+    }
+
+    @Override
+    public List<Map<String, Object>> customizeExecute(DataModel model, String querySql) {
+        BiDataSet dataSet = checkDataSet(model);
+        AnalyseSql sql = this.getBean(dataSet);
+        SqlContext context = new SqlContext();
+        context.setModel(model);
+        context.setMethod(AnalyseSql.Method.CUSTOMIZE_EXECUTE);
         context.setQuerySql(querySql);
         context.setDbId(dataSet.getRefSourceId());
         Object result = sql.assembly(context);
@@ -197,6 +220,10 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         context.setModel(dataModel);
         context.setMethod(AnalyseSql.Method.ORDERBY);
         return String.valueOf(bean.assembly(context));
+    }
+
+    private String page(DataModel dataModel, AnalyseSql bean) {
+        return page(dataModel, bean, null);
     }
 
     private String page(DataModel dataModel, AnalyseSql bean, String sql) {

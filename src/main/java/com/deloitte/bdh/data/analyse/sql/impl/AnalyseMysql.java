@@ -30,8 +30,8 @@ public class AnalyseMysql extends AnalyseLocal {
 
                 countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
                 context.setQuerySql(countSql);
-                List<Map<String, Object>> result = execute(context);
-                if (null != result && CollectionUtils.isNotEmpty(result)) {
+                List<Map<String, Object>> result = customizeExecute(context);
+                if (CollectionUtils.isNotEmpty(result)) {
                     return (Long) result.get(0).get("TOTAL");
                 }
             }

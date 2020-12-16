@@ -1,9 +1,9 @@
 package com.deloitte.bdh.data.analyse.sql.impl;
 
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
@@ -13,20 +13,26 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.sql.AbstractAnalyseSql;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
+import com.deloitte.bdh.data.analyse.sql.utils.OracleBuildUtil;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
-import com.deloitte.bdh.data.analyse.sql.utils.MysqlBuildUtil;
+import com.deloitte.bdh.data.collation.database.DbSelector;
+import com.deloitte.bdh.data.collation.database.dto.DbContext;
+import com.github.pagehelper.PageInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-@Service("analyseLocal")
-public class AnalyseLocal extends AbstractAnalyseSql {
+@Slf4j
+@Service("analyseoracle")
+public class AnalyseOracle extends AbstractAnalyseSql {
     @Resource
-    protected BiUiDemoMapper biUiDemoMapper;
+    private DbSelector dbSelector;
     @Resource
     private AnalyseUserDataService userDataService;
 
@@ -35,7 +41,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
             for (DataModelField s : model.getX()) {
-                String express = MysqlBuildUtil.select(model.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
+                String express = OracleBuildUtil.select(model.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
                         s.getFormatType(), s.getDataType(), s.getPrecision(), s.getAlias(), s.getDefaultValue());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
@@ -50,7 +56,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
 
     @Override
     protected String from(DataModel model) {
-        return " FROM " + MysqlBuildUtil.from(model.getTableName(), null);
+        return " FROM " + OracleBuildUtil.from(model.getTableName(), null);
     }
 
     @Override
@@ -58,7 +64,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         List<String> list = Lists.newArrayList();
         list.add(" 1=1 ");
         for (DataModelField s : model.getX()) {
-            String express = MysqlBuildUtil.where(model.getTableName(), s.getId(), s.getQuota(), s.getSymbol(), s.getValue());
+            String express = OracleBuildUtil.where(model.getTableName(), s.getId(), s.getQuota(), s.getSymbol(), s.getValue());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
             }
@@ -68,7 +74,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
                 String express = "";
                 String value = convertValue(condition.getSymbol(), condition.getValue());
                 String symbol = WildcardEnum.get(condition.getSymbol()).getCode();
-                express = MysqlBuildUtil.where(model.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), symbol, value);
+                express = OracleBuildUtil.where(model.getTableName(), condition.getId().get(0), condition.getQuota(), condition.getFormatType(), symbol, value);
                 list.add(express);
             }
         }
@@ -82,7 +88,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
             if (CollectionUtils.isNotEmpty(userDataList)) {
                 for (BiUiAnalyseUserData userData : userDataList) {
                     String value = convertValue(WildcardEnum.EQ.getKey(), Lists.newArrayList(userData.getFieldValue()));
-                    String express = MysqlBuildUtil.where(userData.getTableName(), userData.getTableField(), DataModelTypeEnum.WD.getCode(), WildcardEnum.EQ.getCode(), value);
+                    String express = OracleBuildUtil.where(userData.getTableName(), userData.getTableField(), DataModelTypeEnum.WD.getCode(), WildcardEnum.EQ.getCode(), value);
                     if (StringUtils.isNotBlank(express)) {
                         list.add(express);
                     }
@@ -98,7 +104,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
             for (DataModelField s : model.getX()) {
-                String express = MysqlBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType());
+                String express = OracleBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
@@ -114,7 +120,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     protected String having(DataModel model) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : model.getX()) {
-            String express = MysqlBuildUtil.having(model.getTableName(), s.getId(), s.getQuota()
+            String express = OracleBuildUtil.having(model.getTableName(), s.getId(), s.getQuota()
                     , s.getAggregateType(), s.getSymbol(), s.getValue());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
@@ -126,7 +132,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
                 String symbol = WildcardEnum.get(condition.getSymbol()).getCode();
                 if (StringUtils.equals(condition.getQuota(), DataModelTypeEnum.DL.getCode()) &&
                         StringUtils.isNotBlank(condition.getAggregateType())) {
-                    String express = MysqlBuildUtil.having(model.getTableName(), condition.getId().get(0), condition.getQuota(),
+                    String express = OracleBuildUtil.having(model.getTableName(), condition.getId().get(0), condition.getQuota(),
                             condition.getAggregateType(), symbol, value);
                     list.add(express);
                 }
@@ -143,7 +149,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     protected String orderBy(DataModel model) {
         List<String> list = Lists.newArrayList();
         for (DataModelField s : model.getX()) {
-            String express = MysqlBuildUtil.orderBy(model.getTableName(), s.getId(), s.getQuota()
+            String express = OracleBuildUtil.orderBy(model.getTableName(), s.getId(), s.getQuota()
                     , s.getAggregateType(), s.getFormatType(), s.getOrderType());
             if (StringUtils.isNotBlank(express)) {
                 list.add(express);
@@ -157,11 +163,7 @@ public class AnalyseLocal extends AbstractAnalyseSql {
 
     @Override
     protected String page(SqlContext context) {
-        DataModel model = context.getModel();
-        if (null == model.getPage()) {
-            return "";
-        }
-        return " LIMIT " + (model.getPage() - 1) * model.getPageSize() + "," + model.getPageSize();
+        return null;
     }
 
     @Override
@@ -169,11 +171,12 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         if (null != context.getModel().getPage()) {
             String countSql = context.getQuerySql();
             if (StringUtils.isNotBlank(countSql)) {
-                if (StringUtils.containsIgnoreCase(countSql, "LIMIT")) {
-                    countSql = StringUtils.substringBefore(countSql, "LIMIT");
-                }
                 countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
-                return biUiDemoMapper.selectCount(countSql);
+                context.setQuerySql(countSql);
+                List<Map<String, Object>> result = customizeExecute(context);
+                if (CollectionUtils.isNotEmpty(result)) {
+                    return ((BigDecimal) result.get(0).get("TOTAL")).longValue();
+                }
             }
         }
         return null;
@@ -181,15 +184,46 @@ public class AnalyseLocal extends AbstractAnalyseSql {
 
     @Override
     protected List<Map<String, Object>> execute(SqlContext context) {
-        return biUiDemoMapper.selectDemoList(context.getQuerySql());
+        DbContext dbContext = new DbContext();
+        dbContext.setDbId(context.getDbId());
+        dbContext.setQuerySql(context.getQuerySql());
+        try {
+            //判断是否分页
+            if (null != context.getModel().getPage()) {
+                dbContext.setPage(context.getModel().getPage());
+                dbContext.setSize(context.getModel().getPageSize());
+                PageInfo<Map<String, Object>> pageInfo = dbSelector.executePageQuery(dbContext);
+                if (null == pageInfo) {
+                    return null;
+                }
+                return pageInfo.getList();
+            }
+            return dbSelector.executeQuery(dbContext);
+        } catch (Exception e) {
+            log.error("执行异常:", e);
+            throw new RuntimeException("执行SQL异常");
+        }
+    }
+
+    @Override
+    protected List<Map<String, Object>> customizeExecute(SqlContext context) {
+        DbContext dbContext = new DbContext();
+        dbContext.setDbId(context.getDbId());
+        dbContext.setQuerySql(context.getQuerySql());
+        try {
+            return dbSelector.executeQuery(dbContext);
+        } catch (Exception e) {
+            log.error("执行异常:", e);
+            throw new RuntimeException("执行SQL异常");
+        }
     }
 
     private String convertValue(String symbol, List<String> valueList) {
         List<String> convertValueList = Lists.newArrayList();
         for (String value : valueList) {
-            for (String escape : MysqlBuildUtil.ESCAPE_CHARACTER) {
+            for (String escape : OracleBuildUtil.ESCAPE_CHARACTER) {
                 if (value.contains(escape)) {
-                    value = value.replace(escape, "\\" + escape);
+                    value = value.replace(escape, "'" + escape);
                 }
             }
             convertValueList.add(value);

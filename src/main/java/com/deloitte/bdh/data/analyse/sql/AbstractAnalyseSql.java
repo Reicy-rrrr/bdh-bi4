@@ -39,11 +39,11 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
             case COUNT:
                 result = count(context);
                 break;
-            case CUSTOMIZE:
-                result = customize(context.getModel());
+            case EXECUTE:
+                result = execute(context);
                 break;
             default:
-                result = execute(context);
+                result = customizeExecute(context);
         }
         return result;
     }
@@ -66,8 +66,8 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
 
     protected abstract List<Map<String, Object>> execute(SqlContext context);
 
-    protected String customize(DataModel model) {
-        return null;
+    protected List<Map<String, Object>> customizeExecute(SqlContext context) {
+        return execute(context);
     }
 
 }

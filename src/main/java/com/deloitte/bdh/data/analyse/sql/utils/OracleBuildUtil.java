@@ -2,31 +2,34 @@ package com.deloitte.bdh.data.analyse.sql.utils;
 
 import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
-import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
-import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
+import com.deloitte.bdh.data.analyse.sql.enums.OracleFormatTypeEnum;
+import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
 
-public class MysqlBuildUtil {
+public class OracleBuildUtil {
+
     public static final List<String> MENSURE_DECIMAL_TYPE = Lists.newArrayList(
-            MysqlDataTypeEnum.FLOAT.getType().toUpperCase(),
-            MysqlDataTypeEnum.DOUBLE.getType().toUpperCase(),
-            MysqlDataTypeEnum.DECIMAL.getType().toUpperCase()
+            OracleDataTypeEnum.FLOAT.getType().toUpperCase(),
+            OracleDataTypeEnum.DOUBLE.getType().toUpperCase(),
+            OracleDataTypeEnum.DOUBLE_PRECISION.getType().toUpperCase(),
+            OracleDataTypeEnum.DECIMAL.getType().toUpperCase()
     );
 
     public static final List<String> DATE_TYPE = Lists.newArrayList(
-            MysqlDataTypeEnum.DATE.getType().toUpperCase(),
-            MysqlDataTypeEnum.TIME.getType().toUpperCase(),
-            MysqlDataTypeEnum.DATETIME.getType().toUpperCase(),
-            MysqlDataTypeEnum.TIMESTAMP.getType().toUpperCase()
+            OracleDataTypeEnum.DATE.getType().toUpperCase(),
+            OracleDataTypeEnum.TIME.getType().toUpperCase(),
+            OracleDataTypeEnum.DATETIME.getType().toUpperCase(),
+            OracleDataTypeEnum.TIMESTAMP_WITH_TIME_ZONE.getType().toUpperCase(),
+            OracleDataTypeEnum.TIMESTAMP_WITH_LOCAL_TIME_ZONE.getType().toUpperCase(),
+            OracleDataTypeEnum.TIMESTAMP.getType().toUpperCase()
     );
 
     public static final List<String> ESCAPE_CHARACTER = Lists.newArrayList(
-            "'", "_", "\"", "%");
-
+            "'");
 
     public static String select(String tableName, String field, String quota, String aggregateType,
                                 String formatType, String dataType, Integer precision, String alias, String defaultValue) {
@@ -47,11 +50,11 @@ public class MysqlBuildUtil {
                 fieldExpress = format(fieldExpress, formatType);
             }
         }
-        return fieldExpress + " AS `" + (StringUtils.isBlank(alias) ? field : alias) + "`";
+        return fieldExpress + " AS " + (StringUtils.isBlank(alias) ? field : alias) + " ";
     }
 
     public static String from(String tableName, String alias) {
-        return tableName + " AS `" + (StringUtils.isBlank(alias) ? tableName : alias) + "`";
+        return tableName + " " + (StringUtils.isBlank(alias) ? tableName : alias) + " ";
 
     }
 
@@ -107,7 +110,7 @@ public class MysqlBuildUtil {
     }
 
     private static String selectField(String tableName, String field) {
-        return "`" + tableName + "`.`" + field + "`";
+        return " " + tableName + "." + field + " ";
     }
 
     private static String aggregate(String field, String aggregateType) {
@@ -115,15 +118,15 @@ public class MysqlBuildUtil {
     }
 
     private static String ifNull(String field) {
-        return " IFNULL( " + field + " ,0)";
+        return " NVL( " + field + " ,0)";
     }
 
     private static String formatPrecision(String field, Integer precision) {
-        return " FORMAT( " + field + " ," + precision + ")";
+        return " ROUND( " + field + " ," + precision + ")";
     }
 
     private static String format(String field, String formatType) {
-        return MysqlFormatTypeEnum.get(formatType).expression(field);
+        return OracleFormatTypeEnum.get(formatType).expression(field);
     }
 
     private static String condition(String field, String symbol, String value) {

@@ -10,6 +10,7 @@ import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.PageInterceptor;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory;
 import org.apache.ibatis.mapping.Environment;
@@ -134,6 +135,11 @@ public abstract class AbstractProcess {
         PageInfo<Map<String, Object>> results = new PageInfo(mapper.executeQuery(context.getQuerySql()));
         // 需手动关闭SqlSession
         sqlSession.close();
+        if (CollectionUtils.isNotEmpty(results.getList())) {
+            for (Map<String, Object> map : results.getList()) {
+                map.remove("PAGEHELPER_ROW_ID");
+            }
+        }
         return results;
     }
 
