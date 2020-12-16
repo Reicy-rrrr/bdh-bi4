@@ -71,4 +71,9 @@ public class CommonConstant {
      * 分页查询：默认每页记录数
      */
     public static final Integer DEFAULT_PAGE_SIZE = 10;
+
+    /**
+     * 最大列数（字段数，文件列数）
+     */
+    public static final Integer MAX_COLUMN_SIZE = 100;
 }

@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.database.convertor;
 
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
@@ -7,9 +8,7 @@ import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 数据源转化处理
@@ -40,6 +39,10 @@ public interface DbConvertor {
      * @return
      */
     default void mysqlSchemaAdapter(List<TableField> fields) {
+        // 限制最多100个字段
+        if (fields.size() > CommonConstant.MAX_COLUMN_SIZE) {
+            throw new BizException("所选字段超出100个，请重新选择！");
+        }
         int totalLength = 0;
         for (TableField field : fields) {
             String length = field.getLength();
@@ -56,7 +59,8 @@ public interface DbConvertor {
         }
 
         // 根据字段长度进行逆向排序
-        List<TableField> sortedList = fields.stream().sorted(Comparator.comparing(TableField::getLength).reversed()).collect(Collectors.toList());
+        List<TableField> sortedList = Lists.newArrayList(fields);
+        sortedList.sort((o1, o2) -> Integer.valueOf(o2.getLength()) - Integer.parseInt(o1.getLength()));
         int index = 0;
         while (index < sortedList.size()) {
             TableField field = sortedList.get(index);
@@ -76,7 +80,7 @@ public interface DbConvertor {
 
         // 适配结束后如果行长度任然大于mysql的最大行长度，提示错误
         if (totalLength > mysql_row_max_length) {
-            throw new BizException("Convert to MySQL error: 所以字段长度总和不能超过21500，请处理后再重试！");
+            throw new BizException("Convert to MySQL error: 所有字段长度总和不能超过21500，请处理后再重试！");
         }
     }
 }
