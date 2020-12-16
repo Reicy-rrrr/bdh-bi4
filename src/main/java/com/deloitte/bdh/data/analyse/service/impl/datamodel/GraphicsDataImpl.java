@@ -41,15 +41,14 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
             BigDecimal count = BigDecimal.ZERO;
             for (Map<String, Object> map : list) {
                 Map<String, Object> one = Maps.newHashMap();
+                List<Object> itemValue = Lists.newArrayList();
                 for (String str : wds) {
-                    if (one.containsKey("item")) {
-                        one.put("item", one.get("item") + "-" + map.get(str));
-                    } else {
-                        one.put("item", map.get(str));
-                    }
+                    itemValue.add(map.get(str));
                 }
+                one.put("item", itemValue);
+
+                //度量只会一个
                 for (String str : dls) {
-                    //度量只会一个
                     one.put("count", map.get(str));
                     count = count.add(new BigDecimal(String.valueOf(map.get(str))));
                 }
