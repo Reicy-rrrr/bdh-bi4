@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.database.convertor.impl;
 import com.deloitte.bdh.data.collation.database.convertor.DbConvertor;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableField;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.yarn.webapp.hamlet.Hamlet;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +14,16 @@ public class OracleToMysql implements DbConvertor {
 
     @Override
     public void convertFieldType(List<TableField> fields, DbContext context) {
-        if (fields == null || fields.size() == 0)
+        if (fields == null || fields.size() == 0) {
             return;
-
-        //循环数据类型
-        for (TableField tf : fields) {
-            getTableField(tf); //循环调整数据类型
         }
+
+        // 循环调整数据类型
+        for (TableField tf : fields) {
+            getTableField(tf);
+        }
+
+        mysqlSchemaAdapter(fields);
     }
 
     /**

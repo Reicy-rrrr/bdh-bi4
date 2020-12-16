@@ -12,43 +12,42 @@ public class SqlserverToMysql implements DbConvertor {
 
     @Override
     public void convertFieldType(List<TableField> fields, DbContext context) {
-        if(fields==null || fields.size()==0){
+        if (fields == null || fields.size() == 0) {
             return;
         }
-        //循环数据类型
-        for(TableField tf:fields){
-            getTableField(tf); //循环调整数据类型
+        // 循环调整数据类型
+        for (TableField tf : fields) {
+            getTableField(tf);
         }
+        mysqlSchemaAdapter(fields);
     }
 
 
     /**
      * 通过oracle的列 转换成 mysql的列
+     *
      * @param tf
      * @return
      */
-    private void getTableField(TableField tf){
-        if(tf.getColumnType().contains("NVARCHAR")){
-            tf.setColumnType(tf.getColumnType().replace("NVARCHAR","VARCHAR"));
-        }else if(tf.getColumnType().equals("MONEY")){ //写等于
-            tf.setColumnType(tf.getColumnType().replace("MONEY","DECIMAL(19,4)"));
-        }else if(tf.getColumnType().contains("XML")){
-            tf.setColumnType(tf.getColumnType().replace("XML","LONGTEXT"));
-        }else if(tf.getColumnType().contains("NTEXT")){
-            tf.setColumnType(tf.getColumnType().replace("NTEXT","LONGTEXT"));
-        }else if(tf.getColumnType().contains("SMALLMONEY")){
+    private void getTableField(TableField tf) {
+        if (tf.getColumnType().contains("NVARCHAR")) {
+            tf.setColumnType(tf.getColumnType().replace("NVARCHAR", "VARCHAR"));
+        } else if (tf.getColumnType().equals("MONEY")) {
+            tf.setColumnType(tf.getColumnType().replace("MONEY", "DECIMAL(19,4)"));
+        } else if (tf.getColumnType().contains("XML")) {
+            tf.setColumnType(tf.getColumnType().replace("XML", "LONGTEXT"));
+        } else if (tf.getColumnType().contains("NTEXT")) {
+            tf.setColumnType(tf.getColumnType().replace("NTEXT", "LONGTEXT"));
+        } else if (tf.getColumnType().contains("SMALLMONEY")) {
             tf.setColumnType("DECIMAL(10,4)");
-        }else if(tf.getColumnType().contains("DATE")){
+        } else if (tf.getColumnType().contains("DATE")) {
             tf.setColumnType("DATETIME");
-        }else if(tf.getColumnType().contains("DATETIME2")){
+        } else if (tf.getColumnType().contains("DATETIME2")) {
             tf.setColumnType("DATETIME");
-        }else if(tf.getColumnType().contains("NUMERIC")){
-            tf.setColumnType(tf.getColumnType().replace("NUMERIC","DECIMAL"));
-        }else if(tf.getColumnType().contains("UNIQUEIDENTIFIER")){
+        } else if (tf.getColumnType().contains("NUMERIC")) {
+            tf.setColumnType(tf.getColumnType().replace("NUMERIC", "DECIMAL"));
+        } else if (tf.getColumnType().contains("UNIQUEIDENTIFIER")) {
             tf.setColumnType("VARCHAR(40)");
         }
-
     }
-
-
 }

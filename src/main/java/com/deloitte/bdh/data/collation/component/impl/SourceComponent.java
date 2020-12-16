@@ -69,6 +69,10 @@ public class SourceComponent implements ComponentHandler {
         fieldWrapper.eq(BiEtlMappingField::getRefCode, component.getRefMappingCode());
         fieldWrapper.orderByAsc(BiEtlMappingField::getId);
         List<BiEtlMappingField> fields = biEtlMappingFieldService.list(fieldWrapper);
+        // 限制最多100个字段
+        if (fields.size() > 100) {
+            throw new BizException("所选字段超出100个，请重新选择！");
+        }
         // 如果映射字段为空，直接查询表结构中的所有字段
         Map<String, String> fieldNames = Maps.newLinkedHashMap();
         if (!CollectionUtils.isEmpty(fields)) {
@@ -77,6 +81,9 @@ public class SourceComponent implements ComponentHandler {
             });
         } else {
             List<TableColumn> columns = dbHandler.getColumns(tableName);
+            if (columns.size() > 100) {
+                throw new BizException("表字段超出100个，请选择需要使用到的字段！");
+            }
             columns.forEach(tableColumn -> {
                 fieldNames.put(tableColumn.getName(), tableColumn.getDesc());
             });
