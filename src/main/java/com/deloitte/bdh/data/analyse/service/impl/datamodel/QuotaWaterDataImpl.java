@@ -66,8 +66,6 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
         if (CollectionUtils.isNotEmpty(dataModel.getX())) {
             for (DataModelField s : dataModel.getX()) {
                 s.setDefaultValue("0");
-                s.setDataType(null);
-                s.setPrecision(null);
             }
         }
     }

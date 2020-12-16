@@ -46,4 +46,14 @@ public class QuotaDashboardDataImpl extends AbstractDataService implements Analy
         }
         dataModel.setPage(null);
     }
+
+    @Override
+    public void before(DataModel dataModel) {
+        super.before(dataModel);
+        if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+            for (DataModelField s : dataModel.getX()) {
+                s.setDefaultValue("0");
+            }
+        }
+    }
 }

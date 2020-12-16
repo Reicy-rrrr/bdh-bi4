@@ -271,7 +271,11 @@ public class ExecutorInterceptor implements Interceptor {
                 return false;
             }
 
-            Class<?> paramClazz = iterator.next().getClass();
+            Object var = iterator.next();
+            if (null == var) {
+                return false;
+            }
+            Class<?> paramClazz = var.getClass();
             EncryptDecryptClass encryptDecryptClass = AnnotationUtils.findAnnotation(paramClazz, EncryptDecryptClass.class);
             if ((Objects.isNull(encryptDecryptClass))) {
                 return false;

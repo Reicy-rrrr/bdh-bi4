@@ -119,7 +119,7 @@ public class MysqlBuildUtil {
     }
 
     private static String formatPrecision(String field, Integer precision) {
-        return " FORMAT( " + field + " ," + precision + ")";
+        return " ROUND( " + field + " ," + precision + ")";
     }
 
     private static String format(String field, String formatType) {
