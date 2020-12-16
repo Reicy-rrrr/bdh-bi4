@@ -161,7 +161,8 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     }
 
     @Override
-    protected String page(DataModel model) {
+    protected String page(SqlContext context) {
+        DataModel model = context.getModel();
         if (null == model.getPage()) {
             return "";
         }
@@ -169,17 +170,16 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     }
 
     @Override
-    protected String count(SqlContext context) {
-        if (null == context.getModel().getPage()) {
-            return null;
-        }
-        String countSql = context.getQuerySql();
-        if (StringUtils.isNotBlank(countSql)) {
-            if (StringUtils.containsIgnoreCase(countSql, "LIMIT")) {
-                countSql = StringUtils.substringBefore(countSql, "LIMIT");
+    protected Long count(SqlContext context) {
+        if (null != context.getModel().getPage()) {
+            String countSql = context.getQuerySql();
+            if (StringUtils.isNotBlank(countSql)) {
+                if (StringUtils.containsIgnoreCase(countSql, "LIMIT")) {
+                    countSql = StringUtils.substringBefore(countSql, "LIMIT");
+                }
+                countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
+                return biUiDemoMapper.selectCount(countSql);
             }
-            countSql = "SELECT count(0) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
-            return String.valueOf(biUiDemoMapper.selectCount(countSql));
         }
         return null;
     }

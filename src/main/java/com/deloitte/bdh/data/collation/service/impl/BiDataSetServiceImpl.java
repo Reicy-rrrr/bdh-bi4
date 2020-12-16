@@ -247,11 +247,11 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 columns = dbHandler.getColumns(biDataSet.getTableName());
                 break;
             default:
-                if (StringUtils.isBlank(biDataSet.getId())) {
+                if (StringUtils.isBlank(biDataSet.getRefSourceId())) {
                     throw new RuntimeException("远程连接时未找到数据源目标对象");
                 }
                 //远程查询
-                DbContext context = dbHandler.getDbContext(biDataSet.getId());
+                DbContext context = dbHandler.getDbContext(biDataSet.getRefSourceId());
                 context.setTableName(biDataSet.getTableName());
                 // 查询表结构
                 TableSchema tableSchema = dbSelector.getTableSchema(context);
