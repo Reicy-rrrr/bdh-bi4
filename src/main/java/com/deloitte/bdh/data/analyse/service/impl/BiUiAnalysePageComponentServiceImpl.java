@@ -54,7 +54,8 @@ public class BiUiAnalysePageComponentServiceImpl extends AbstractService<BiUiAna
     }
 
     @Override
-    public List<BiUiAnalysePageComponent> getChartComponent() {
-        return list();
+    public List<BiUiAnalysePageComponent> getChartComponent(String parentId) {
+        return list(new LambdaQueryWrapper<BiUiAnalysePageComponent>()
+                .eq(BiUiAnalysePageComponent::getParentId, parentId));
     }
 }

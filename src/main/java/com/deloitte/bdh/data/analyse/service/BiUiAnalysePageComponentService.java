@@ -20,5 +20,5 @@ public interface BiUiAnalysePageComponentService extends Service<BiUiAnalysePage
 
     Boolean delChartComponent(String id);
 
-    List<BiUiAnalysePageComponent> getChartComponent();
+    List<BiUiAnalysePageComponent> getChartComponent(String parentId);
 }

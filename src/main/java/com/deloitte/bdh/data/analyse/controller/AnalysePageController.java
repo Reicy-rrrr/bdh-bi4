@@ -61,13 +61,6 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(analysePageService.copyAnalysePage(request.getData()));
     }
 
-    @ApiOperation(value = "删除页面", notes = "删除页面")
-    @PostMapping("/delAnalysePage")
-    public RetResult<Void> delAnalysePage(@RequestBody @Validated RetRequest<String> request) {
-        analysePageService.delAnalysePage(request.getData());
-        return RetResponse.makeOKRsp();
-    }
-
     @ApiOperation(value = "批量删除页面", notes = "批量删除页面")
     @PostMapping("/batchDelAnalysePage")
     public RetResult<Void> batchDelAnalysePage(@RequestBody @Validated RetRequest<BatchDeleteAnalyseDto> request) {
@@ -140,8 +133,8 @@ public class AnalysePageController {
 
     @ApiOperation(value = "获取图形指标列表", notes = "获取图形指标列表")
     @PostMapping("/getChartComponent")
-    public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<Void> request) {
+    public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<String> request) {
 
-        return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent());
+        return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent(request.getData()));
     }
 }
