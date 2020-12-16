@@ -146,7 +146,7 @@ public class OracleArranger implements ArrangerSelector {
         } else {
             columnDesc = desc + "(combine)";
         }
-        TableField tableField = new TableField(DataTypeEnum.Text.getType(), fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
+        TableField tableField = new TableField(DataTypeEnum.Text.getType(), fieldName, columnDesc, columnType, "varchar", String.valueOf(length), "0");
         FieldMappingModel newMapping = leftMapping.clone();
         newMapping.setTempFieldName(tempName);
         newMapping.setFinalFieldName(fieldName);
@@ -496,7 +496,8 @@ public class OracleArranger implements ArrangerSelector {
         mapping.getTableField().setType(DataTypeEnum.Integer.getType());
         mapping.getTableField().setColumnType("bigint(32)");
         mapping.getTableField().setDataType("bigint");
-        mapping.getTableField().setDataScope("32");
+        mapping.getTableField().setLength("32");
+        mapping.getTableField().setScale("0");
         segmentBuilder.append(" AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
@@ -538,7 +539,8 @@ public class OracleArranger implements ArrangerSelector {
         mapping.getTableField().setType(DataTypeEnum.Float.getType());
         mapping.getTableField().setColumnType("DECIMAL(32,8)");
         mapping.getTableField().setDataType("DECIMAL");
-        mapping.getTableField().setDataScope("32,8");
+        mapping.getTableField().setLength("32");
+        mapping.getTableField().setScale("8");
         segmentBuilder.append(" AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
@@ -580,7 +582,8 @@ public class OracleArranger implements ArrangerSelector {
         mapping.getTableField().setType(DataTypeEnum.Date.getType());
         mapping.getTableField().setColumnType("date");
         mapping.getTableField().setDataType("date");
-        mapping.getTableField().setDataScope("");
+        mapping.getTableField().setLength("0");
+        mapping.getTableField().setScale("0");
         segmentBuilder.append(" AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
@@ -623,7 +626,8 @@ public class OracleArranger implements ArrangerSelector {
         mapping.getTableField().setType(DataTypeEnum.DateTime.getType());
         mapping.getTableField().setColumnType("datetime");
         mapping.getTableField().setDataType("datetime");
-        mapping.getTableField().setDataScope("");
+        mapping.getTableField().setLength("0");
+        mapping.getTableField().setScale("0");
         segmentBuilder.append("AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
@@ -663,7 +667,8 @@ public class OracleArranger implements ArrangerSelector {
         mapping.getTableField().setType(DataTypeEnum.Text.getType());
         mapping.getTableField().setColumnType("varchar(255)");
         mapping.getTableField().setDataType("varchar");
-        mapping.getTableField().setDataScope("255");
+        mapping.getTableField().setLength("255");
+        mapping.getTableField().setScale("0");
         segmentBuilder.append(" AS ");
         segmentBuilder.append(mapping.getTempFieldName());
         return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);

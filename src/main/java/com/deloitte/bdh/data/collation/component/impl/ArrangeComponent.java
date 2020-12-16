@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -614,6 +615,27 @@ public class ArrangeComponent implements ComponentHandler {
             ArrangeResultModel resultModel = arranger.modify(fromMapping, targetDesc, targetType, fromComponent.getTableName(), fromComponent.getTypeEnum());
             resultModels.add(resultModel);
         });
+        return resultModels;
+    }
+
+    /**
+     * 计算
+     *
+     * @param component 组件模型
+     * @param context   组件内容
+     * @return List<ArrangeResultModel>
+     */
+    private List<ArrangeResultModel> calculate(ComponentModel component, String context) {
+        if (StringUtils.isBlank(context)) {
+            throw new BizException("Arrange component calculate error: 计算表达式不能为空！");
+        }
+
+        // 从组件信息
+        ComponentModel fromComponent = component.getFrom().get(0);
+        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        List<ArrangeResultModel> resultModels = Lists.newArrayList();
         return resultModels;
     }
 

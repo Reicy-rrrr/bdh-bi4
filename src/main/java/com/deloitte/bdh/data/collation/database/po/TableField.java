@@ -35,9 +35,17 @@ public class TableField implements Cloneable {
     @ApiModelProperty(value = "字段数据类型", example = "decimal")
     private String dataType;
 
-    /** 字段数据范围 */
-    @ApiModelProperty(value = "字段数据范围", example = "10,4")
-    private String dataScope;
+    /** 字段长度 */
+    @ApiModelProperty(value = "字段长度", example = "255")
+    private String length;
+
+    /** 字段标度 */
+    @ApiModelProperty(value = "字段标度", example = "6")
+    private String scale;
+
+//    /** 字段数据范围 */
+//    @ApiModelProperty(value = "字段数据范围", example = "10,4")
+//    private String dataScope;
 
     @Override
     public TableField clone() {

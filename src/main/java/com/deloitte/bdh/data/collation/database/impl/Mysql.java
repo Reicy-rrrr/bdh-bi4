@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -61,23 +62,33 @@ public class Mysql extends AbstractProcess implements DbSelector {
         TableSchema schema = new TableSchema();
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
-            TableField field = new TableField();
             // 字段名称
             String name = result.getString("COLUMN_NAME");
-            field.setName(name);
             // 字段注释
             String comments = result.getString("COLUMN_COMMENT");
-            if (StringUtils.isBlank(comments)) {
+            if (true || StringUtils.isBlank(comments)) {
                 comments = name;
             }
-            // 暂设置为字段名称
-            field.setDesc(name);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
-            field.setDataType(dataType);
-            field.setType(MysqlDataTypeEnum.values(dataType).getValue().getType());
             // 字段类型
-            field.setColumnType(result.getString("COLUMN_TYPE"));
+            String columnType = result.getString("COLUMN_TYPE");
+            // 字符最大长度
+            String characterLength = result.getString("CHARACTER_MAXIMUM_LENGTH");
+            // 数字精度
+            String numericPrecision = result.getString("NUMERIC_PRECISION");
+            String length = "0";
+            if (StringUtils.isNotBlank(characterLength) || StringUtils.isNotBlank(numericPrecision)) {
+                length = StringUtils.isBlank(characterLength) ? numericPrecision : characterLength;
+            }
+            // 数字标度
+            String numericScale = result.getString("NUMERIC_SCALE");
+            String scale = "0";
+            if (StringUtils.isNotBlank(numericScale)) {
+                scale = numericScale;
+            }
+
+            TableField field = new TableField(MysqlDataTypeEnum.values(dataType).getValue().getType(), name, comments, columnType, dataType, length, scale);
             columns.add(field);
         }
         super.close(con);

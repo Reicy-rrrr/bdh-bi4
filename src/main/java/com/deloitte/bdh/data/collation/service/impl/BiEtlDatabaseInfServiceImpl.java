@@ -690,22 +690,22 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             TableField tableField = null;
             switch (dataType) {
                 case Integer:
-                    tableField = new TableField(type, columnName, name, "bigint(32)", "bigint", "32");
+                    tableField = new TableField(type, columnName, name, "bigint(32)", "bigint", "32", "0");
                     break;
                 case Float:
-                    tableField = new TableField(type, columnName, name, "decimal(32,8)", "decimal", "32,8");
+                    tableField = new TableField(type, columnName, name, "decimal(32,8)", "decimal", "32", "8");
                     break;
                 case Text:
-                    tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255");
+                    tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255", "0");
                     break;
                 case Date:
-                    tableField = new TableField(type, columnName, name, "date", "date", "");
+                    tableField = new TableField(type, columnName, name, "date", "date", "0", "0");
                     break;
                 case DateTime:
-                    tableField = new TableField(type, columnName, name, "datetime", "datetime", "");
+                    tableField = new TableField(type, columnName, name, "datetime", "datetime", "0", "0");
                     break;
                 default:
-                    tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255");
+                    tableField = new TableField(type, columnName, name, "varchar(255)", "varchar", "255", "0");
             }
             tableFields.add(tableField);
             columnNum++;

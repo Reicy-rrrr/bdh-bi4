@@ -5,6 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
+import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -60,28 +61,35 @@ public class Hana extends AbstractProcess implements DbSelector {
         TableSchema schema = new TableSchema();
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
-            TableField field = new TableField();
             // 字段名称
             String name = result.getString("COLUMN_NAME");
-            field.setName(name);
             // 字段注释
             String comments = result.getString("COMMENTS");
-            if (StringUtils.isBlank(comments)) {
+            if (true || StringUtils.isBlank(comments)) {
                 comments = name;
             }
-            // 暂设置为字段名称
-            field.setDesc(name);
             // 字段数据类型
             String dataType = result.getString("DATA_TYPE_NAME");
             // 字段长度
             String length = result.getString("LENGTH");
+            if (StringUtils.isBlank(length)) {
+                length = "0";
+            }
             // 字段精度
             String scale = result.getString("SCALE");
-            if (StringUtils.isNotEmpty(scale) && !StringUtils.equals("0", scale)) {
-                field.setColumnType(dataType + "(" + length + "," + scale + ")");
-            } else {
-                field.setColumnType(dataType + "(" + length + ")");
+            if (StringUtils.isBlank(scale)) {
+                scale = "0";
             }
+            // 字段类型
+            StringBuilder columnType = new StringBuilder(dataType);
+            if (!StringUtils.equals("0", length)) {
+                columnType.append("(").append(length);
+                if (!StringUtils.equals("0", scale)) {
+                    columnType.append(",").append(scale);
+                }
+                columnType.append(")");
+            }
+            TableField field = new TableField(DataTypeEnum.Text.getType(), name, comments, columnType.toString(), dataType, length, scale);
             columns.add(field);
         }
         super.close(con);

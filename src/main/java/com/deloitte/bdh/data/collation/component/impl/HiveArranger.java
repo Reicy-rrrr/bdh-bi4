@@ -157,7 +157,7 @@ public class HiveArranger implements ArrangerSelector {
         } else {
             columnDesc = desc + "(combine)";
         }
-        TableField tableField = new TableField(DataTypeEnum.Text.getType(), fieldName, columnDesc, columnType, "varchar", String.valueOf(length));
+        TableField tableField = new TableField(DataTypeEnum.Text.getType(), fieldName, columnDesc, columnType, "varchar", String.valueOf(length), "0");
         FieldMappingModel newMapping = leftMapping.clone();
         newMapping.setTempFieldName(tempName);
         newMapping.setFinalFieldName(fieldName);
@@ -410,31 +410,36 @@ public class HiveArranger implements ArrangerSelector {
                 segmentBuilder.append("SIGNED");
                 field.setColumnType("bigint(32)");
                 field.setDataType("bigint");
-                field.setDataScope("32");
+                field.setLength("32");
+                field.setScale("0");
                 break;
             case Float:
                 segmentBuilder.append("DECIMAL");
                 field.setColumnType("decimal(32,8)");
                 field.setDataType("decimal");
-                field.setDataScope("32,8");
+                field.setLength("32");
+                field.setScale("8");
                 break;
             case Date:
                 segmentBuilder.append("DATE");
                 field.setColumnType("date");
                 field.setDataType("date");
-                field.setDataScope("");
+                field.setLength("0");
+                field.setScale("0");
                 break;
             case DateTime:
                 segmentBuilder.append("DATETIME");
                 field.setColumnType("datetime");
                 field.setDataType("datetime");
-                field.setDataScope("");
+                field.setLength("0");
+                field.setScale("0");
                 break;
             case Text:
                 segmentBuilder.append("CHAR");
                 field.setColumnType("varchar(255)");
-                field.setDataType("varchar(255)");
-                field.setDataScope("255");
+                field.setDataType("varchar");
+                field.setLength("255");
+                field.setScale("0");
                 break;
             default:
                 throw new BizException("转换类型失败，暂不支持的类型！");

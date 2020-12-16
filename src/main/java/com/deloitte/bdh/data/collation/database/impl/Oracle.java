@@ -7,7 +7,6 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
 import com.github.pagehelper.PageInfo;
-import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -63,48 +62,48 @@ public class Oracle extends AbstractProcess implements DbSelector {
         TableSchema schema = new TableSchema();
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
-            TableField field = new TableField();
             // 列名
             String name = result.getString("COLUMN_NAME");
-            field.setName(name);
             // 列注释
             String comments = result.getString("COMMENTS");
-            if (StringUtils.isBlank(comments)) {
+            if (true || StringUtils.isBlank(comments)) {
                 comments = name;
             }
-            // 暂设置为字段名称
-            field.setDesc(name);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
             // Oracle中的TIMESTAMP类型查询出的数据类型为TIMESTAMP(6)，需要特殊处理
             if (dataType.startsWith("TIMESTAMP") && dataType.contains("(")) {
                 dataType = dataType.substring(0, dataType.indexOf("("));
             }
-            field.setDataType(dataType);
-            field.setType(OracleDataTypeEnum.values(dataType.toUpperCase()).getValue().getType());
             // 字段长度
             String dataLength = result.getString("DATA_LENGTH");
             // 字段精度
             String dataPrecision = result.getString("DATA_PRECISION");
             // 字段标度
             String dataScale = result.getString("DATA_SCALE");
+            String length = "0";
+            String scale = "0";
             // 时间和日期类型特殊处理
-            if ("DATE".equals(dataType) || dataType.startsWith("TIMESTAMP")) {
-                field.setColumnType(dataType);
-            } else {
-                if (StringUtil.isNotEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
-                    if (StringUtils.equals("0", dataScale)) {
-                        field.setColumnType(dataType + "(" + dataPrecision + ")");
-                    } else {
-                        // 精度和标度都有值
-                        field.setColumnType(dataType + "(" + dataPrecision + "," + dataScale + ")");
-                    }
-                } else if (StringUtil.isEmpty(dataPrecision) && StringUtil.isNotEmpty(dataScale)) {
-                    field.setColumnType(dataType);
+            if (!"DATE".equals(dataType) && !dataType.startsWith("TIMESTAMP")) {
+                if (StringUtils.isNotBlank(dataScale)) {
+                    scale = dataScale;
+                }
+                if (StringUtils.isNotBlank(dataPrecision)) {
+                    length = dataPrecision;
                 } else {
-                    field.setColumnType(dataType + "(" + dataLength + ")");
+                    length = dataLength;
                 }
             }
+            // 字段类型
+            StringBuilder columnType = new StringBuilder(dataType);
+            if (!StringUtils.equals("0", length)) {
+                columnType.append("(").append(length);
+                if (!StringUtils.equals("0", scale)) {
+                    columnType.append(",").append(scale);
+                }
+                columnType.append(")");
+            }
+            TableField field = new TableField(OracleDataTypeEnum.values(dataType.toUpperCase()).getValue().getType(), name, comments, columnType.toString(), dataType, length, scale);
             columns.add(field);
         }
         super.close(con);

@@ -7,7 +7,6 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.SQLServerDataTypeEnum;
 import com.github.pagehelper.PageInfo;
-import com.github.pagehelper.util.StringUtil;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -62,35 +61,36 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
         TableSchema schema = new TableSchema();
         List<TableField> columns = Lists.newArrayList();
         while (result.next()) {
-            TableField field = new TableField();
             // 列名
             String name = result.getString("COLUMN_NAME");
-            field.setName(name);
             // 暂设置为字段名称
             String comments = name;
-            field.setDesc(comments);
             // 数据类型
             String dataType = result.getString("DATA_TYPE");
-            field.setDataType(dataType);
-            SQLServerDataTypeEnum type = SQLServerDataTypeEnum.values(dataType.toLowerCase());
-            field.setType(type.getValue().getType());
-
             // 字符串最大长度
-            String characterMaximumLength = result.getString("CHARACTER_MAXIMUM_LENGTH");
-            // 精度（长度）
+            String characterLength = result.getString("CHARACTER_MAXIMUM_LENGTH");
+            // 数字精度
             String numericPrecision = result.getString("NUMERIC_PRECISION");
-            // 标度（小数位数）
-            String numericScale = result.getString("NUMERIC_SCALE");
-            if (StringUtil.isNotEmpty(characterMaximumLength)) {
-                field.setColumnType(dataType + "(" + characterMaximumLength + ")");
-            } else if (StringUtil.isNotEmpty(numericPrecision) && StringUtil.isNotEmpty(numericScale) && !StringUtils.equals("0", numericScale)) {
-                // 精度和标度都有值时，且标度不为0时
-                field.setColumnType(dataType + "(" + numericPrecision + "," + numericScale + ")");
-            } else if (StringUtil.isNotEmpty(numericPrecision)) {
-                field.setColumnType(dataType + "(" + numericPrecision + ")");
-            } else {
-                field.setColumnType(dataType);
+            String length = "0";
+            if (StringUtils.isNotBlank(characterLength) || StringUtils.isNotBlank(numericPrecision)) {
+                length = StringUtils.isBlank(characterLength) ? numericPrecision : characterLength;
             }
+            // 数字标度
+            String numericScale = result.getString("NUMERIC_SCALE");
+            String scale = "0";
+            if (StringUtils.isNotBlank(numericScale)) {
+                scale = numericScale;
+            }
+            // 字段类型
+            StringBuilder columnType = new StringBuilder(dataType);
+            if (!StringUtils.equals("0", length)) {
+                columnType.append("(").append(length);
+                if (!StringUtils.equals("0", scale)) {
+                    columnType.append(",").append(scale);
+                }
+                columnType.append(")");
+            }
+            TableField field = new TableField(SQLServerDataTypeEnum.values(dataType.toLowerCase()).getValue().getType(), name, comments, columnType.toString(), dataType, length, scale);
             columns.add(field);
         }
         super.close(con);

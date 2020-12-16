@@ -204,8 +204,9 @@ public class GroupComponent implements ComponentHandler {
                     currMapping.setFinalFieldType(DataTypeEnum.Integer.getType());
                     tableField.setType(DataTypeEnum.Integer.getType());
                     tableField.setDataType(DataTypeEnum.Integer.getValue());
-                    tableField.setColumnType(DataTypeEnum.Integer.getValue());
-                    tableField.setDataScope("");
+                    tableField.setColumnType(DataTypeEnum.Integer.getValue() + "(32)");
+                    tableField.setLength("32");
+                    tableField.setScale("0");
                 }
                 currFieldMappings.add(currMapping);
             }
