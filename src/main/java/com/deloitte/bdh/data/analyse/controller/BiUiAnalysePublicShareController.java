@@ -53,9 +53,11 @@ public class BiUiAnalysePublicShareController {
     @ApiOperation(value = "获取当前page的公开分享状态", notes = "获取当前page的公开分享状态")
     @PostMapping("/get")
     public RetResult<BiUiAnalysePublicShare> get(@RequestBody @Validated RetRequest<String> request) {
-        BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefPageId, request.getData())
-        );
+        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData());
+        //排除订阅数据
+        lambdaQueryWrapper.ne(BiUiAnalysePublicShare::getType, "4");
+        BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
 
         if (null == share) {
             share = new BiUiAnalysePublicShare();

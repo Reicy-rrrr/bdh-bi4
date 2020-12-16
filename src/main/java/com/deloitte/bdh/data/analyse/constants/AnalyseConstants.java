@@ -21,6 +21,13 @@ public class AnalyseConstants {
      */
     public static final String PAGE_CONFIG_EDIT = "EDIT";
 
+    public static final String EMAIL_URL = "/fndPortalSendLog/sendEmailAndSms";
+
+    public static final String PORTAL_COMMON_EMAIL = "EMAIL";
+
+    public static final String EMAIL_TEMPLATE_SUBSCRIBE = "screenshot";
+
+
     public static final List<String> MENSURE_TYPE = Lists.newArrayList(
             OracleDataTypeEnum.FLOAT.getType().toUpperCase(),
             OracleDataTypeEnum.DOUBLE.getType().toUpperCase(),

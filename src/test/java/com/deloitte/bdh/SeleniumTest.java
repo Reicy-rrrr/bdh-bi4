@@ -26,7 +26,7 @@ public class SeleniumTest {
         System.setProperty("webdriver.chrome.driver", "C:\\Users\\junlicq\\Documents\\driver\\chromedriver.exe");
         ChromeOptions chromeOptions = new ChromeOptions();
         //设置为 headless 模式
-        chromeOptions.addArguments("--headless");
+//        chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--start-maximized");
         chromeOptions.addArguments("--disable-infobars");
         chromeOptions.addArguments("--disable-extensions");
@@ -36,8 +36,8 @@ public class SeleniumTest {
         //全屏启动，无地址栏
         chromeOptions.addArguments("kiosk");
         WebDriver driver = new ChromeDriver(chromeOptions);
-        driver.get("http://news.baidu.com/");
-        driver.findElement(By.id("body"));
+        driver.get("https://news.qq.com/");
+//        driver.findElement(By.className("ant-layout"));
         try {
             Thread.sleep(200);
 

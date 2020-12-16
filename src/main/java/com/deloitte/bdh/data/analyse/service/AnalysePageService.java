@@ -82,6 +82,6 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      * 删除草稿
      * @param request
      */
-    void delAnalysePageDrafts(@RequestBody @Validated RetRequest<BatchDeleteAnalyseDto> request);
+    void delAnalysePageDrafts(RetRequest<BatchDeleteAnalyseDto> request);
 
 }

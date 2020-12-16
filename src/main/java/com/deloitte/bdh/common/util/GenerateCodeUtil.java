@@ -18,12 +18,22 @@ public class GenerateCodeUtil {
     private static final String PREFIX_CONNECT_ = "CON_";
     private static final String PREFIX_REF_ = "REF_";
     private static final String PREFIX_CONNECTS_ = "CONS_";
+    private static final String PREFIX_PAGE_ = "PAGE_";
+    private static final String PREFIX_SHOT_ = "SHOT_";
 
     private GenerateCodeUtil() {
     }
 
     public static String genModel() {
         return generate(PREFIX_MODEL_);
+    }
+
+    public static String genPage() {
+        return generate(PREFIX_PAGE_);
+    }
+
+    public static String genShot() {
+        return generate(PREFIX_SHOT_);
     }
 
     public static String getComponent() {

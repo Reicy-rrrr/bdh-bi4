@@ -137,4 +137,5 @@ public class AnalysePageController {
 
         return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent(request.getData()));
     }
+
 }
