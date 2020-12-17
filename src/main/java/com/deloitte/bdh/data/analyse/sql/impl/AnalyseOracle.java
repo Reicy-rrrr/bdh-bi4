@@ -95,6 +95,7 @@ public class AnalyseOracle extends AbstractAnalyseSql {
             LambdaQueryWrapper<BiUiAnalyseUserData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(BiUiAnalyseUserData::getUserId, ThreadLocalHolder.getOperator());
             lambdaQueryWrapper.eq(BiUiAnalyseUserData::getPageId, model.getPageId());
+            lambdaQueryWrapper.eq(BiUiAnalyseUserData::getComponentId, model.getComponentId());
             lambdaQueryWrapper.eq(BiUiAnalyseUserData::getTenantId, ThreadLocalHolder.getTenantId());
             List<BiUiAnalyseUserData> userDataList = userDataService.list(lambdaQueryWrapper);
             if (CollectionUtils.isNotEmpty(userDataList)) {

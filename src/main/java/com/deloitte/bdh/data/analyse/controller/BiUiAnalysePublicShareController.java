@@ -14,11 +14,14 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareDto;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareValidateDto;
+import com.deloitte.bdh.data.analyse.model.request.DecryptDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,11 +82,11 @@ public class BiUiAnalysePublicShareController {
     @ApiOperation(value = "解密", notes = "解密")
     @PostMapping("/decrypt")
     @NoInterceptor
-    public RetResult<Map<String, Object>> decrypt(@RequestBody @Validated RetRequest<String> request) {
-        if (StringUtil.isEmpty(request.getData())) {
+    public RetResult<Map<String, Object>> decrypt(@RequestBody @Validated RetRequest<DecryptDto> request) {
+        if (null == request.getData()) {
             throw new RuntimeException("参数不能为空");
         }
-        String str = AesUtil.decryptNoSymbol(request.getData(), encryptPass);
+        String str = AesUtil.decryptNoSymbol(request.getData().getCiphertext(), encryptPass);
         log.info("请求参数:{},解密后:{},密文{}", JsonUtil.readObjToJson(request), str, encryptPass);
 
         //设置租户编码
@@ -90,8 +94,15 @@ public class BiUiAnalysePublicShareController {
         ThreadLocalHolder.set("tenantCode", MapUtils.getString(result, "tenantCode"));
 
         //检查状态
-        BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefPageId, MapUtils.getString(result, "refPageId")));
+        LambdaQueryWrapper<BiUiAnalysePublicShare> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, MapUtils.getString(result, "refPageId"));
+        if (StringUtils.equals(request.getData().getDecryptType(), "0")) {
+            queryWrapper.ne(BiUiAnalysePublicShare::getType, "4");
+        } else {
+            queryWrapper.eq(BiUiAnalysePublicShare::getType, "4");
+        }
+        BiUiAnalysePublicShare share = shareService.getOne(queryWrapper);
+
         if (null == share || "0".equals(share.getType())) {
             result.put("refPageId", null);
         } else {

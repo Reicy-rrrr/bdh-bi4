@@ -50,8 +50,8 @@ import java.util.Map;
 @DS(DSConstant.BI_DB)
 public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyseSubscribeMapper, BiUiAnalyseSubscribe> implements AnalysePageSubscribeService {
 
-    @Value("${bi.analyse.public.address}")
-    private String publicAddress;
+    @Value("${bi.analyse.subscribe.address}")
+    private String subscribeAddress;
 
     @Value("${bi.analyse.encryptPass}")
     private String encryptPass;
@@ -215,7 +215,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
             params.put("tenantCode", ThreadLocalHolder.getTenantCode());
             params.put("refPageId", request.getPageId());
             share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
-            share.setAddress(publicAddress);
+            share.setAddress(subscribeAddress);
             shareService.save(share);
         }
         return share.getAddress() + "/" + share.getCode();

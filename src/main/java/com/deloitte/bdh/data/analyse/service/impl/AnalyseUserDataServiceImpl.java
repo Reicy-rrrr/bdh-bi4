@@ -9,6 +9,7 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserDataMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.request.PermissionItemDto;
+import com.deloitte.bdh.data.analyse.model.request.PermissionUserDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,20 +30,24 @@ public class AnalyseUserDataServiceImpl extends AbstractService<BiUiAnalyseUserD
     @Override
     public void saveDataPermission(List<PermissionItemDto> itemDtoList, String pageId) {
         if (CollectionUtils.isNotEmpty(itemDtoList)) {
-            //删除之前的配置
-            LambdaQueryWrapper<BiUiAnalyseUserData> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(BiUiAnalyseUserData::getPageId, pageId);
-            this.remove(queryWrapper);
 
             List<BiUiAnalyseUserData> userDataList = Lists.newArrayList();
             for (PermissionItemDto itemDto : itemDtoList) {
-                for (String userId : itemDto.getUserList()) {
-                    BiUiAnalyseUserData userData = new BiUiAnalyseUserData();
-                    BeanUtils.copyProperties(itemDto, userData);
-                    userData.setPageId(pageId);
-                    userData.setTenantId(ThreadLocalHolder.getTenantId());
-                    userData.setUserId(userId);
-                    userDataList.add(userData);
+                //删除之前的配置
+                LambdaQueryWrapper<BiUiAnalyseUserData> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(BiUiAnalyseUserData::getPageId, pageId);
+                queryWrapper.eq(BiUiAnalyseUserData::getComponentId, itemDto.getComponentId());
+                this.remove(queryWrapper);
+                for (PermissionUserDto userDto : itemDto.getPermissionUserList()) {
+                    for (String fieldValue : userDto.getFieldValueList()) {
+                        BiUiAnalyseUserData userData = new BiUiAnalyseUserData();
+                        BeanUtils.copyProperties(itemDto, userData);
+                        userData.setPageId(pageId);
+                        userData.setTenantId(ThreadLocalHolder.getTenantId());
+                        userData.setUserId(userDto.getUserId());
+                        userData.setFieldValue(fieldValue);
+                        userDataList.add(userData);
+                    }
                 }
             }
             if (CollectionUtils.isNotEmpty(userDataList)) {
