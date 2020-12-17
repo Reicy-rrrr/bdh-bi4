@@ -685,7 +685,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             String name = entry.getKey();
             String type = entry.getValue();
 
-            DataTypeEnum dataType = DataTypeEnum.values(type);
+            DataTypeEnum dataType = DataTypeEnum.get(type);
             String columnName = "column" + columnNum;
             TableField tableField = null;
             switch (dataType) {

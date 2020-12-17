@@ -300,7 +300,7 @@ public class FileReadServiceImpl implements FileReadService {
             }
 
             TableField tableField = MapUtils.getObject(columns, field);
-            Triple<String, String, DataTypeEnum> mapping = new ImmutableTriple(field, tableField.getName(), DataTypeEnum.values(tableField.getType()));
+            Triple<String, String, DataTypeEnum> mapping = new ImmutableTriple(field, tableField.getName(), DataTypeEnum.get(tableField.getType()));
             mappings.add(mapping);
         }
 
@@ -348,7 +348,7 @@ public class FileReadServiceImpl implements FileReadService {
             Map<Integer, String> fields = Maps.newHashMap();
             for (int i = 0; i < headerItems.length; i++) {
                 TableField tableField = MapUtils.getObject(columns, headerItems[i]);
-                Triple<String, String, DataTypeEnum> mapping = new ImmutableTriple(headerItems[i], tableField.getName(), DataTypeEnum.values(tableField.getType()));
+                Triple<String, String, DataTypeEnum> mapping = new ImmutableTriple(headerItems[i], tableField.getName(), DataTypeEnum.get(tableField.getType()));
                 mappings.add(mapping);
             }
 

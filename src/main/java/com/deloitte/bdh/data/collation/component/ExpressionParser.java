@@ -316,7 +316,7 @@ public class ExpressionParser {
             divisor.append("(CASE WHEN ").append(rightParam).append("=0 THEN NULL ELSE ").append(rightParam).append(" END)");
             rightParam = divisor.toString();
         }
-        return new StringBuilder(leftParam).append(operator).append(rightParam).toString();
+        return new StringBuilder("(").append(leftParam).append(operator).append(rightParam).append(")").toString();
     }
 
     /**

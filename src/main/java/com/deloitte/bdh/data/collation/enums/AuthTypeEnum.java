@@ -44,7 +44,7 @@ public enum AuthTypeEnum {
      * @param type
      * @return
      */
-    public static AuthTypeEnum values(String type) {
+    public static AuthTypeEnum get(String type) {
         AuthTypeEnum[] enums = AuthTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getType().equals(type)) {

@@ -16,7 +16,6 @@ import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
-import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.google.common.collect.Lists;
@@ -31,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -587,11 +585,11 @@ public class ArrangeComponent implements ComponentHandler {
         List<ArrangeResultModel> resultModels = Lists.newArrayList();
         modifyModels.forEach(modifyModel -> {
             String fieldName = modifyModel.getName();
-            DataTypeEnum targetType = DataTypeEnum.values(modifyModel.getType());
+            DataTypeEnum targetType = DataTypeEnum.get(modifyModel.getType());
             String targetDesc = modifyModel.getDesc();
             FieldMappingModel fromMapping = MapUtils.getObject(fromMappingMap, fieldName);
 
-            DataTypeEnum sourceType = DataTypeEnum.values(fromMapping.getFinalFieldType());
+            DataTypeEnum sourceType = DataTypeEnum.get(fromMapping.getFinalFieldType());
             switch (targetType) {
                 case Integer:
                     if (DataTypeEnum.Date.equals(sourceType) || DataTypeEnum.DateTime.equals(sourceType)) {
@@ -663,6 +661,11 @@ public class ArrangeComponent implements ComponentHandler {
             FieldMappingModel fromMapping = MapUtils.getObject(fromMappings, param);
             if (fromMapping == null) {
                 throw new BizException("Arrange component calculate error: 计算公式中发现上个组件中不存在的字段！");
+            }
+            // 参与四则运算的字段必须为数字类型
+            DataTypeEnum dataType = DataTypeEnum.get(fromMapping.getFinalFieldType());
+            if (!DataTypeEnum.Integer.equals(dataType) && !DataTypeEnum.Float.equals(dataType)) {
+                throw new BizException("Arrange component calculate error: 计算公式中发现非数字类型的字段！");
             }
             String fieldName = arranger.getFromField(fromMapping, fromComponent.getTypeEnum());
             paramMapping.put(param, fieldName);

@@ -52,7 +52,7 @@ public enum DataTypeEnum {
      * @param type
      * @return
      */
-    public static DataTypeEnum values(String type) {
+    public static DataTypeEnum get(String type) {
         DataTypeEnum[] enums = DataTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getType().equals(type)) {
