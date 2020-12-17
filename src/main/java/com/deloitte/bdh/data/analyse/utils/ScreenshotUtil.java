@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -42,8 +43,14 @@ public class ScreenshotUtil {
 
     private static String driverPath = "C:\\Users\\junlicq\\Documents\\driver\\chromedriver.exe";
 
+    /**
+     * 全屏截图
+     * @param url
+     * @return
+     * @throws Exception
+     */
     public String fullScreen(String url) throws Exception {
-        url = "https://news.qq.com/";
+//        url = "https://news.qq.com/";
         WebDriver driver = getDriver();
         driver.get(url);
 //        driver.findElement(By.className("ant-layout"));
@@ -61,7 +68,7 @@ public class ScreenshotUtil {
             ImageIO.write(bi, "png", os);
 
             InputStream input = new ByteArrayInputStream(os.toByteArray());
-            String filePath = "bdhdocuments/" + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
+            String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
             String fileName = screenshotName + screenshotFormat;
             aliyunOssUtil.uploadFile2OSS(input, filePath, fileName);
             String imageUrl = aliyunOssUtil.getImgUrl(filePath, fileName);
@@ -79,33 +86,37 @@ public class ScreenshotUtil {
         }
     }
 
-    public void viewScreen(String url, String screenshotName) {
+    /**
+     * 可视区域截图
+     * @param url
+     * @return
+     * @throws Exception
+     */
+    public String viewScreen(String url, String screenshotName) throws Exception {
         WebDriver driver = getDriver();
         driver.get(url);
         driver.findElement(By.id("body"));
         try {
             Thread.sleep(2000);
 
-            String title = driver.getTitle();
-            System.out.println(title);
-
-            // 截图目录
-            File screenshotFile = new File(screenshotPath);
-            // 若文件夹不存在就创建该文件夹
-            if (!screenshotFile.exists() && !screenshotFile.isDirectory()) {
-                screenshotFile.mkdirs();
-            }
             // 截图格式
             String screenshotFormat = ".png";
-            // 截图名称
-            File storeFile = new File(screenshotPath + File.separator + screenshotName + screenshotFormat);
-
             // 截图操作（可见内容）
             File sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            FileUtils.copyFile(sourceFile, storeFile);
-
+            InputStream input = new FileInputStream(sourceFile);
+            String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
+            String fileName = screenshotName + screenshotFormat;
+            aliyunOssUtil.uploadFile2OSS(input, filePath, fileName);
+            String imageUrl = aliyunOssUtil.getImgUrl(filePath, fileName);
+            // 对于在内网上传的文件需要把内网地址换为外网地址
+            if (imageUrl.contains(ossProperties.getTargetEndpoint())) {
+                imageUrl = imageUrl.replace(ossProperties.getTargetEndpoint(),
+                        ossProperties.getReplacementEndpoint());
+            }
+            return imageUrl;
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.error("截图失败：" + e.getMessage());
+            throw e;
         } finally {
             driver.close();
         }

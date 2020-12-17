@@ -24,6 +24,20 @@ import java.util.Map;
 public class NormalFilterDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
+    protected void before(DataModel dataModel) {
+        List<String> ids = com.beust.jcommander.internal.Lists.newArrayList();
+        List<DataModelField> newX = com.beust.jcommander.internal.Lists.newArrayList();
+        for (DataModelField field : dataModel.getX()) {
+            if (!ids.contains(field.getId())) {
+                ids.add(field.getId());
+                field.setNeedGroup(true);
+                newX.add(field);
+            }
+        }
+        dataModel.setX(newX);
+    }
+
+    @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModelField field = request.getDataConfig().getDataModel().getX().get(0);
         String sql = buildSql(request.getDataConfig().getDataModel());

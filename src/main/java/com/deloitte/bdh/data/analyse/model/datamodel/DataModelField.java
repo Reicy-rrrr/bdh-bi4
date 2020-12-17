@@ -51,4 +51,7 @@ public class DataModelField {
 
     @ApiModelProperty("默认值")
     private String defaultValue;
+
+    @ApiModelProperty("是否需要group")
+    private boolean needGroup = false;
 }

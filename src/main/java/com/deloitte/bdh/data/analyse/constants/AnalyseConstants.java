@@ -27,6 +27,8 @@ public class AnalyseConstants {
 
     public static final String EMAIL_TEMPLATE_SUBSCRIBE = "screenshot";
 
+    public static final String DOCUMENT_DIR = "bdhdocuments/";
+
 
     public static final List<String> MENSURE_TYPE = Lists.newArrayList(
             OracleDataTypeEnum.FLOAT.getType().toUpperCase(),
