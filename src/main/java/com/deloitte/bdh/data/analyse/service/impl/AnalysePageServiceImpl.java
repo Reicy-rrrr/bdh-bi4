@@ -15,6 +15,7 @@ import com.deloitte.bdh.common.util.AesUtil;
 import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
@@ -144,25 +145,36 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     @Transactional
-    public void delAnalysePage(String id) {
-        BiUiAnalysePage page = this.getById(id);
-        if (page == null) {
-            throw new BizException("报表错误");
-        }
-        delPage(Lists.newArrayList(page.getId()));
-    }
-
-    @Override
-    @Transactional
     public void batchDelAnalysePage(BatchDeleteAnalyseDto request) {
-        if (CollectionUtils.isEmpty(request.getIds())) {
+        List<String> pageIds = request.getIds();
+        if (CollectionUtils.isEmpty(pageIds)) {
             throw new BizException("请选择要删除的报表");
         }
-        List<BiUiAnalysePage> pageList = this.listByIds(request.getIds());
-        if (CollectionUtils.isNotEmpty(pageList)) {
-            List<String> pageIds = request.getIds();
-            delPage(pageIds);
+        //如果删除草稿箱的报表，不会直接删除page，而是删除config
+        if (request.getType().equals(AnalyseConstants.PAGE_CONFIG_EDIT)) {
+            List<BiUiAnalysePage> pages = this.listByIds(pageIds);
+            pages.forEach(p -> p.setIsEdit(YnTypeEnum.NO.getCode()));
+            updateBatchById(pages);
+            return;
         }
+        //删除度量维度配置
+        LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
+        folderQueryWrapper.in(BiUiModelFolder::getPageId, pageIds);
+        folderService.remove(folderQueryWrapper);
+        LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
+        fieldQueryWrapper.in(BiUiModelField::getPageId, pageIds);
+        fieldService.remove(fieldQueryWrapper);
+        //删除config
+        LambdaQueryWrapper<BiUiAnalysePageConfig> configQueryWrapper = new LambdaQueryWrapper<>();
+        configQueryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
+        configService.remove(configQueryWrapper);
+
+        //删除可见编辑权限
+        LambdaQueryWrapper<BiUiAnalyseUserResource> resourceQueryWrapper = new LambdaQueryWrapper<>();
+        resourceQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, pageIds);
+        userResourceService.remove(resourceQueryWrapper);
+        //删除page
+        this.removeByIds(pageIds);
     }
 
     @Override
@@ -183,46 +195,73 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Transactional
     @Override
     public AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request) {
-        BiUiAnalysePage page = this.getById(request.getData().getPageId());
-        if (page == null) {
-            throw new BizException("报表不存在");
+
+        PublishAnalysePageDto publishDto =  request.getData();
+        String pageId = publishDto.getPageId();
+        String configId = publishDto.getConfigId();
+        String categoryId = publishDto.getCategoryId();
+        SaveResourcePermissionDto dto = publishDto.getSaveResourcePermissionDto();
+        dto.setCategoryId(publishDto.getCategoryId());
+
+        BiUiAnalysePageConfig originConfig = configService.getById(configId);
+        BiUiAnalysePage originPage = getById(pageId);
+
+        if (originPage == null) {
+            throw new BizException("");
         }
 
-        BiUiAnalysePageConfig config;
-        if (StringUtils.isNotBlank(request.getData().getConfigId())) {
-            config = configService.getById(request.getData().getConfigId());
-            if (null == config) {
-                throw new BizException("配置不存在");
-            }
-            config.setContent(request.getData().getContent());
+        if (originPage.getCategoryId().equals(categoryId)) {
+            updatePage(publishDto,originPage, originConfig);
         } else {
-            config = new BiUiAnalysePageConfig();
-            BeanUtils.copyProperties(request.getData(), config);
-            config.setTenantId(ThreadLocalHolder.getTenantId());
+            List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                    .eq(BiUiAnalysePage::getCategoryId, categoryId)
+                    .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
+            if (CollectionUtils.isEmpty(allPageList)) {
+                //新建config
+                BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                BeanUtils.copyProperties(originConfig, newConfig);
+                newConfig.setId(null);
+                newConfig.setPageId(null);
+                newConfig.setContent(publishDto.getContent());
+                configService.save(newConfig);
+                //新建page
+                BiUiAnalysePage newPage = new BiUiAnalysePage();
+                BeanUtils.copyProperties(originPage, newPage);
+                newPage.setId(null);
+                newPage.setPublishId(newConfig.getId());
+                newPage.setCategoryId(categoryId);
+                newPage.setIsEdit(YnTypeEnum.NO.getCode());
+                newPage.setOriginPageId(originPage.getId());
+                save(newPage);
+                //保存pageId到config
+                newConfig.setPageId(newPage.getId());
+                configService.updateById(newConfig);
+
+                dto.setId(newPage.getId());
+            } else {
+                updatePage(publishDto,originPage, originConfig);
+            }
         }
-        configService.saveOrUpdate(config);
 
-        //复制一个publish对象
-        BiUiAnalysePageConfig publishConfig = new BiUiAnalysePageConfig();
-        publishConfig.setPageId(config.getPageId());
-        publishConfig.setContent(config.getContent());
-        publishConfig.setTenantId(ThreadLocalHolder.getTenantId());
-        configService.save(publishConfig);
-        //如果以前publish过,会变为历史版本,当前版本初始化就不会变更,存放在editId中
-        page.setPublishId(publishConfig.getId());
-        page.setEditId(config.getId());
-        page.setIsEdit(YnTypeEnum.NO.getCode());
-        this.updateById(page);
-
-//        request.getData().getSaveResourcePermissionDto().setConfigId(request.getData().getConfigId());
         //可见编辑权限
-        userResourceService.saveResourcePermission(request.getData().getSaveResourcePermissionDto());
-
+        userResourceService.saveResourcePermission(dto);
         //数据权限
-        userDataService.saveDataPermission(request.getData().getPermissionItemDtoList(), page.getId());
-        AnalysePageConfigDto dto = new AnalysePageConfigDto();
-        BeanUtils.copyProperties(publishConfig, dto);
-        return dto;
+        userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), pageId);
+        return null;
+    }
+
+    private void updatePage(PublishAnalysePageDto dto,BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig) {
+
+        //新建config
+        BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+        BeanUtils.copyProperties(originConfig, newConfig);
+        newConfig.setId(null);
+        newConfig.setContent(dto.getContent());
+        configService.save(newConfig);
+        //更新page
+        originPage.setPublishId(newConfig.getId());
+        originPage.setIsEdit(YnTypeEnum.NO.getCode());
+        updateById(originPage);
     }
 
     @Override
@@ -250,29 +289,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (CollectionUtils.isNotEmpty(pageList)) {
             pageList.forEach(page -> page.setIsEdit(YnTypeEnum.NO.getCode()));
             this.updateBatchById(pageList);
-        }
-    }
-
-    private void delPage(List<String> pageIds) {
-        if (CollectionUtils.isNotEmpty(pageIds)) {
-            //删除度量维度配置
-            LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
-            folderQueryWrapper.in(BiUiModelFolder::getPageId, pageIds);
-            folderService.remove(folderQueryWrapper);
-            LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
-            fieldQueryWrapper.in(BiUiModelField::getPageId, pageIds);
-            fieldService.remove(fieldQueryWrapper);
-            //删除config
-            LambdaQueryWrapper<BiUiAnalysePageConfig> configQueryWrapper = new LambdaQueryWrapper<>();
-            configQueryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);
-            configService.remove(configQueryWrapper);
-
-            //删除可见编辑权限
-            LambdaQueryWrapper<BiUiAnalyseUserResource> resourceQueryWrapper = new LambdaQueryWrapper<>();
-            resourceQueryWrapper.in(BiUiAnalyseUserResource::getResourceId, pageIds);
-            userResourceService.remove(resourceQueryWrapper);
-            //删除page
-            this.removeByIds(pageIds);
         }
     }
 

@@ -42,14 +42,6 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
     AnalysePageDto copyAnalysePage(CopyAnalysePageDto request);
 
     /**
-     * del页面
-     *
-     * @param id
-     * @return
-     */
-    void delAnalysePage(String id);
-
-    /**
      * 批量删除页面
      *
      * @param request

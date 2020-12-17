@@ -11,6 +11,7 @@ import com.deloitte.bdh.common.util.AesUtil;
 import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareDto;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareValidateDto;
@@ -67,7 +68,7 @@ public class BiUiAnalysePublicShareController {
         if (null == share) {
             share = new BiUiAnalysePublicShare();
             share.setRefPageId(request.getData());
-            share.setType("0");
+            share.setType(ShareTypeEnum.ZERO.getKey());
             share.setTenantId(ThreadLocalHolder.getTenantId());
             shareService.save(share);
         }
@@ -103,13 +104,13 @@ public class BiUiAnalysePublicShareController {
             queryWrapper.eq(BiUiAnalysePublicShare::getType, "4");
         }
         BiUiAnalysePublicShare share = shareService.getOne(queryWrapper);
-        if (null == share || "0".equals(share.getType())) {
+        if (null == share || ShareTypeEnum.ZERO.getKey().equals(share.getType())) {
             result.put("refPageId", null);
         } else {
             ThreadLocalHolder.set("tenantId", share.getTenantId());
-            result.put("isEncrypt", "0");
-            if ("2".equals(share.getType())) {
-                result.put("isEncrypt", "1");
+            result.put("isEncrypt", ShareTypeEnum.ZERO.getKey());
+            if (ShareTypeEnum.TWO.getKey().equals(share.getType())) {
+                result.put("isEncrypt", ShareTypeEnum.ONE.getKey());
             }
         }
         return RetResponse.makeOKRsp(result);
@@ -121,7 +122,7 @@ public class BiUiAnalysePublicShareController {
         BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
                 .eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId())
         );
-        if ("2".equals(share.getType())) {
+        if (ShareTypeEnum.TWO.getKey().equals(share.getType())) {
             String md5 = Md5Util.getMD5(request.getData().getPassword(), encryptPass + ThreadLocalHolder.getTenantCode());
             if (!md5.equals(share.getPassword())) {
                 return RetResponse.makeOKRsp(false);

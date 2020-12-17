@@ -46,6 +46,12 @@ public class AnalysePageDto implements Serializable {
     private String parentId;
 
     /**
+     * 发布来源报表ID
+     */
+    @TableField("ORIGIN_PAGE_ID")
+    private String originPageId;
+
+    /**
      * 当前编辑的id
      */
     @ApiModelProperty("EDIT_ID")
