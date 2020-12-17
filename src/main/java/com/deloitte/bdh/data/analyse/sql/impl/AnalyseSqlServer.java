@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +91,7 @@ public class AnalyseSqlServer extends AbstractAnalyseSql {
             LambdaQueryWrapper<BiUiAnalyseUserData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(BiUiAnalyseUserData::getUserId, ThreadLocalHolder.getOperator());
             lambdaQueryWrapper.eq(BiUiAnalyseUserData::getPageId, model.getPageId());
+            lambdaQueryWrapper.eq(BiUiAnalyseUserData::getComponentId, model.getComponentId());
             lambdaQueryWrapper.eq(BiUiAnalyseUserData::getTenantId, ThreadLocalHolder.getTenantId());
             List<BiUiAnalyseUserData> userDataList = userDataService.list(lambdaQueryWrapper);
             if (CollectionUtils.isNotEmpty(userDataList)) {
@@ -193,7 +193,7 @@ public class AnalyseSqlServer extends AbstractAnalyseSql {
                 context.setQuerySql(countSql);
                 List<Map<String, Object>> result = customizeExecute(context);
                 if (CollectionUtils.isNotEmpty(result)) {
-                    return ((BigDecimal) result.get(0).get("TOTAL")).longValue();
+                    return ((Integer) result.get(0).get("TOTAL")).longValue();
                 }
             }
         }

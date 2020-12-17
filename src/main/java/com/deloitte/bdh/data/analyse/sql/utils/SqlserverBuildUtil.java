@@ -17,6 +17,7 @@ public class SqlserverBuildUtil {
             SQLServerDataTypeEnum.MONEY.getType().toUpperCase(),
             SQLServerDataTypeEnum.SMALL_MONEY.getType().toUpperCase(),
             SQLServerDataTypeEnum.NUMERIC.getType().toUpperCase(),
+            SQLServerDataTypeEnum.DECIMAL.getType().toUpperCase(),
             SQLServerDataTypeEnum.REAL.getType().toUpperCase()
     );
 
@@ -125,9 +126,9 @@ public class SqlserverBuildUtil {
     }
 
     private static String formatPrecision(String field, Integer precision) {
-        return " CAST('field' as decimal(38, precision)) "
+        return " CAST(field as decimal(38, precision)) "
                 .replace("field", field)
-                .replace("percision", precision.toString());
+                .replace("precision", precision.toString());
     }
 
     private static String format(String field, String formatType) {

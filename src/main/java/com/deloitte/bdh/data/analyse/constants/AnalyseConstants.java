@@ -55,6 +55,7 @@ public class AnalyseConstants {
             SQLServerDataTypeEnum.MONEY.getType().toUpperCase(),
             SQLServerDataTypeEnum.SMALL_MONEY.getType().toUpperCase(),
             SQLServerDataTypeEnum.NUMERIC.getType().toUpperCase(),
+            SQLServerDataTypeEnum.DECIMAL.getType().toUpperCase(),
             SQLServerDataTypeEnum.REAL.getType().toUpperCase()
     );
 
