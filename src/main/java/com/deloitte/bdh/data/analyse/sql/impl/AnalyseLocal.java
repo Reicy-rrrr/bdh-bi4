@@ -31,6 +31,19 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     private AnalyseUserDataService userDataService;
 
     @Override
+    protected String assemblyQuerySql(SqlContext context) {
+        DataModel model = context.getModel();
+        String select = this.select(model);
+        String from = this.from(model);
+        String where = this.where(model);
+        String groupBy = this.groupBy(model);
+        String having = this.having(model);
+        String orderBy = this.orderBy(model);
+        String limit = this.page(context);
+        return StringUtils.join(select, from, where, groupBy, having, orderBy, limit);
+    }
+
+    @Override
     protected String select(DataModel model) {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
@@ -99,7 +112,8 @@ public class AnalyseLocal extends AbstractAnalyseSql {
         if (CollectionUtils.isNotEmpty(model.getX())) {
             boolean needGroup = needGroup(model);
             for (DataModelField s : model.getX()) {
-                String express = MysqlBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType(), needGroup);
+                String express = MysqlBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType()
+                        , s.getDataType(), needGroup || s.isNeedGroup());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
@@ -167,12 +181,16 @@ public class AnalyseLocal extends AbstractAnalyseSql {
 
     @Override
     protected Long count(SqlContext context) {
-        if (null != context.getModel().getPage()) {
-            String countSql = context.getQuerySql();
+        DataModel model = context.getModel();
+        if (null != model.getPage()) {
+            String select = this.select(model);
+            String from = this.from(model);
+            String where = this.where(model);
+            String groupBy = this.groupBy(model);
+            String having = this.having(model);
+            String countSql = StringUtils.join(select, from, where, groupBy, having);
+
             if (StringUtils.isNotBlank(countSql)) {
-                if (StringUtils.containsIgnoreCase(countSql, "LIMIT")) {
-                    countSql = StringUtils.substringBefore(countSql, "LIMIT");
-                }
                 countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
                 return biUiDemoMapper.selectCount(countSql);
             }

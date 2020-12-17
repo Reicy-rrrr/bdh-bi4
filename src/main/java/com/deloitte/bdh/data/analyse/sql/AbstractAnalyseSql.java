@@ -16,26 +16,8 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
         Object result;
         AnalyseSql.Method method = context.getMethod();
         switch (method) {
-            case SELECT:
-                result = select(context.getModel());
-                break;
-            case FROM:
-                result = from(context.getModel());
-                break;
-            case WHERE:
-                result = where(context.getModel());
-                break;
-            case GROUPBY:
-                result = groupBy(context.getModel());
-                break;
-            case HAVING:
-                result = having(context.getModel());
-                break;
-            case ORDERBY:
-                result = orderBy(context.getModel());
-                break;
-            case PAGE:
-                result = page(context);
+            case ASSEMBLYQUERYSQL:
+                result = assemblyQuerySql(context);
                 break;
             case COUNT:
                 result = count(context);
@@ -48,6 +30,8 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
         }
         return result;
     }
+
+    protected abstract String assemblyQuerySql(SqlContext context);
 
     protected abstract String select(DataModel model);
 

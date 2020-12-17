@@ -84,7 +84,6 @@ public class OracleBuildUtil {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             return null;
         }
-        //若查询sql中有 聚合函数，维度才groupBy
         if (!needGroup) {
             return null;
         }

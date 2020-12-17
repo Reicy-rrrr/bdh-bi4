@@ -9,13 +9,7 @@ public interface AnalyseSql {
 
 
     enum Method {
-        SELECT,
-        FROM,
-        WHERE,
-        GROUPBY,
-        HAVING,
-        ORDERBY,
-        PAGE,
+        ASSEMBLYQUERYSQL,
         COUNT,
         EXECUTE,
         CUSTOMIZE_EXECUTE;

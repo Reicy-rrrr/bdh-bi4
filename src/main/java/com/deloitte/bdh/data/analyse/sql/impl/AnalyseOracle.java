@@ -37,6 +37,18 @@ public class AnalyseOracle extends AbstractAnalyseSql {
     private AnalyseUserDataService userDataService;
 
     @Override
+    protected String assemblyQuerySql(SqlContext context) {
+        DataModel model = context.getModel();
+        String select = this.select(model);
+        String from = this.from(model);
+        String where = this.where(model);
+        String groupBy = this.groupBy(model);
+        String having = this.having(model);
+        String orderBy = this.orderBy(model);
+        return StringUtils.join(select, from, where, groupBy, having, orderBy);
+    }
+
+    @Override
     protected String select(DataModel model) {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
@@ -105,7 +117,8 @@ public class AnalyseOracle extends AbstractAnalyseSql {
         if (CollectionUtils.isNotEmpty(model.getX())) {
             boolean needGroup = needGroup(model);
             for (DataModelField s : model.getX()) {
-                String express = OracleBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType(), needGroup);
+                String express = OracleBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota()
+                        , s.getFormatType(), s.getDataType(), needGroup || s.isNeedGroup());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }
@@ -169,8 +182,15 @@ public class AnalyseOracle extends AbstractAnalyseSql {
 
     @Override
     protected Long count(SqlContext context) {
-        if (null != context.getModel().getPage()) {
-            String countSql = context.getQuerySql();
+        DataModel model = context.getModel();
+        if (null != model.getPage()) {
+            String select = this.select(model);
+            String from = this.from(model);
+            String where = this.where(model);
+            String groupBy = this.groupBy(model);
+            String having = this.having(model);
+            String countSql = StringUtils.join(select, from, where, groupBy, having);
+
             if (StringUtils.isNotBlank(countSql)) {
                 countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
                 context.setQuerySql(countSql);
