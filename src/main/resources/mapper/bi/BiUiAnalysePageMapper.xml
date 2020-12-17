@@ -23,7 +23,7 @@
             t1.DES,
             t1.TYPE,
             t1.ICON,
-            t1.PARENT_ID,
+            t1.CATEGORY_ID,
             t1.EDIT_ID,
             t1.PUBLISH_ID,
             t1.HOME_PAGE,
@@ -58,7 +58,7 @@
             AND t1.`NAME` LIKE '%' || #{queryDto.name,jdbcType=VARCHAR} || '%'
         </if>
         <if test="queryDto.resourcesIds != null and queryDto.resourcesIds.size() > 0">
-            AND t1.PARENT_ID IN
+            AND t1.CATEGORY_ID IN
             <foreach collection="queryDto.resourcesIds" index="index" item="item" open="(" close=")" separator=",">
                 #{item, jdbcType=VARCHAR}
             </foreach>
