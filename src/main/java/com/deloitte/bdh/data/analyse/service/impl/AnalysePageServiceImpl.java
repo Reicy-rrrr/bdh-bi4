@@ -259,6 +259,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         configService.save(newConfig);
         //更新page
         originPage.setPublishId(newConfig.getId());
+        if (StringUtils.isEmpty(originPage.getOriginPageId())){
+            originPage.setOriginPageId(originPage.getId());
+        }
         originPage.setIsEdit(YnTypeEnum.NO.getCode());
         updateById(originPage);
     }
