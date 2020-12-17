@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public class AnalyseMysql extends AnalyseLocal {
                 context.setQuerySql(countSql);
                 List<Map<String, Object>> result = customizeExecute(context);
                 if (CollectionUtils.isNotEmpty(result)) {
-                    return ((BigDecimal) result.get(0).get("TOTAL")).longValue();
+                    return (Long) result.get(0).get("TOTAL");
                 }
             }
         }
