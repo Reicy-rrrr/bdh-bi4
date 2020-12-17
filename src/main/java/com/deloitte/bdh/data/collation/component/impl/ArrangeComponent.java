@@ -7,16 +7,20 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.ExpressionParser;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
+import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -27,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,7 +157,7 @@ public class ArrangeComponent implements ComponentHandler {
                 System.out.println("FILL");
                 break;
             case CALCULATE:
-                System.out.println("CALCULATE");
+                arrangeCases.addAll(calculate(component, context));
                 break;
             case SYNC_STRUCTURE:
                 System.out.println("SYNC_STRUCTURE");
@@ -626,17 +631,71 @@ public class ArrangeComponent implements ComponentHandler {
      * @return List<ArrangeResultModel>
      */
     private List<ArrangeResultModel> calculate(ComponentModel component, String context) {
-        if (StringUtils.isBlank(context)) {
+        ArrangeCalculateModel calculateModel = JSONArray.parseObject(context, ArrangeCalculateModel.class);
+        if (calculateModel == null) {
+            throw new BizException("Arrange component calculate error: 计算组件参数错误！");
+        }
+        String formula = calculateModel.getFormula();
+        if (StringUtils.isBlank(formula)) {
             throw new BizException("Arrange component calculate error: 计算表达式不能为空！");
         }
-
+        String formulaType = calculateModel.getFormulaType();
+        if (StringUtils.isBlank(formulaType)) {
+            throw new BizException("Arrange component calculate error: 计算类型不能为空！");
+        }
+        CalculateTypeEnum calculateType = CalculateTypeEnum.get(formulaType);
+        if (calculateType == null || CalculateTypeEnum.FUNCTION.equals(calculateType)) {
+            throw new BizException("Arrange component calculate error: 暂不支持的计算类型！");
+        }
+        if (!ExpressionParser.isParamFormula(formula)) {
+            throw new BizException("Arrange component calculate error: 非法的计算公式！");
+        }
+        // 格式化公式（对公式中的字段进行特殊处理）
+        String finalFormula = ExpressionParser.formatFormula(formula);
+        // 公式中参与计算的字段
+        List<String> params = ExpressionParser.getUniqueParams(formula);
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
-        Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
+        Map<String, FieldMappingModel> fromMappings = fromComponent.getFieldMappings().stream()
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
-
-        List<ArrangeResultModel> resultModels = Lists.newArrayList();
+        Map<String, String> paramMapping = Maps.newHashMap();
+        for (String param : params) {
+            FieldMappingModel fromMapping = MapUtils.getObject(fromMappings, param);
+            if (fromMapping == null) {
+                throw new BizException("Arrange component calculate error: 计算公式中发现上个组件中不存在的字段！");
+            }
+            String fieldName = arranger.getFromField(fromMapping, fromComponent.getTypeEnum());
+            paramMapping.put(param, fieldName);
+        }
+        // 新字段的表达式
+        String newFieldExpression = ExpressionParser.formatParam(finalFormula, paramMapping);
+        // 获取计算字段的名称
+        String finalFieldName = getCalculateFieldName(fromMappings.keySet());
+        // 新字段描述
+        String fieldDesc = StringUtils.isBlank(calculateModel.getName()) ? finalFieldName : calculateModel.getName();
+        TableField tableField = new TableField(DataTypeEnum.Float.getType(), finalFieldName, fieldDesc, "decimal(32,8)", "decimal", "32", "8");
+        // 获取临时别名
+        String tempName = getColumnAlias(component.getTableName() + "." + finalFieldName);
+        FieldMappingModel newMapping = new FieldMappingModel(tempName, finalFieldName, tableField.getType(), fieldDesc, finalFieldName, component.getTableName(), tableField.getColumnType(), false, tableField);
+        // 字段表达式转换为别名形式
+        newFieldExpression = newFieldExpression + " AS " + tempName;
+        ArrangeResultModel resultModel = new ArrangeResultModel(tempName, newFieldExpression, true, newMapping);
+        List<ArrangeResultModel> resultModels = Lists.newArrayList(resultModel);
         return resultModels;
+    }
+
+    private String getCalculateFieldName(Set<String> fieldNames) {
+        String newFieldName = "calculate_column";
+        if (!fieldNames.contains(newFieldName)) {
+            return newFieldName;
+        }
+
+        int countFlag = 1;
+        while (fieldNames.contains(newFieldName)) {
+            countFlag++;
+            newFieldName = newFieldName + countFlag;
+        }
+        return newFieldName;
     }
 
     @Autowired
