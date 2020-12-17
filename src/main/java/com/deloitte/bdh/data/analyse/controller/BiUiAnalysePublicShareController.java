@@ -119,9 +119,11 @@ public class BiUiAnalysePublicShareController {
     @ApiOperation(value = "校验密码", notes = "校验密码")
     @PostMapping("/password/validate")
     public RetResult<Boolean> validate(@RequestBody @Validated RetRequest<AnalysePublicShareValidateDto> request) {
-        BiUiAnalysePublicShare share = shareService.getOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId())
-        );
+        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData());
+        //排除订阅数据
+        lambdaQueryWrapper.ne(BiUiAnalysePublicShare::getType, "4");
+        BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
         if (ShareTypeEnum.TWO.getKey().equals(share.getType())) {
             String md5 = Md5Util.getMD5(request.getData().getPassword(), encryptPass + ThreadLocalHolder.getTenantCode());
             if (!md5.equals(share.getPassword())) {

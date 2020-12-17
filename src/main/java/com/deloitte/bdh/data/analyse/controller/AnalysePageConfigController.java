@@ -34,7 +34,6 @@ public class AnalysePageConfigController {
     @Resource
     AnalysePageConfigService biUiReportPageConfigService;
 
-    @NoInterceptor
     @ApiOperation(value = "查看单个页面配置详情", notes = "查看单个页面配置详情")
     @PostMapping("/getAnalysePageConfig")
     public RetResult<AnalysePageConfigDto> getAnalysePageConfig(@RequestBody @Validated RetRequest<GetAnalysePageConfigDto> request) {

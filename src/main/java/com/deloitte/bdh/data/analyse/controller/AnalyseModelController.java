@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.controller;
 
+import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
