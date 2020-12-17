@@ -201,7 +201,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         String configId = publishDto.getConfigId();
         String categoryId = publishDto.getCategoryId();
         SaveResourcePermissionDto dto = publishDto.getSaveResourcePermissionDto();
-        dto.setCategoryId(publishDto.getCategoryId());
 
         BiUiAnalysePageConfig originConfig = configService.getById(configId);
         BiUiAnalysePage originPage = getById(pageId);

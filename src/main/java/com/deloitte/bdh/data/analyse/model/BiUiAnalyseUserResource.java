@@ -47,9 +47,6 @@ public class BiUiAnalyseUserResource implements Serializable {
     @TableField("TENANT_ID")
     private String tenantId;
 
-    @TableField("CONFIG_ID")
-    private String configId;
-
     @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT)
     private LocalDateTime createDate;
 
