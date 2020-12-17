@@ -9,7 +9,7 @@
         <result column="NAME" property="name"/>
         <result column="DES" property="des"/>
         <result column="TYPE" property="type"/>
-        <result column="CATEGORY_ID" property="categoryId"/>
+        <result column="CATEGORY_ID" property="parentId"/>
         <result column="ICON" property="icon"/>
         <result column="ORIGIN_PAGE_ID" property="originPageId"/>
         <result column="HOME_PAGE" property="homePage"/>
