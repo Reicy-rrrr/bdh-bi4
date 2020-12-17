@@ -8,11 +8,15 @@ import org.hibernate.validator.constraints.NotEmpty;
 import java.util.List;
 
 @Data
-@ApiModel(description = "批量删除目录")
+@ApiModel(description = "批量删除")
 public class BatchDeleteAnalyseDto {
 
     @NotEmpty
     @ApiModelProperty(value = "id")
     List<String> ids;
+
+    @NotEmpty
+    @ApiModelProperty(value = "type")
+    String type;
 
 }

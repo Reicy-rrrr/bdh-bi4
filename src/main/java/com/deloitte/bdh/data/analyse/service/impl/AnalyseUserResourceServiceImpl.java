@@ -113,7 +113,6 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         for (String userId : bothPermission) {
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
-//            resource.setConfigId(dto.getConfigId());
             resource.setResourceType(resourceType);
             resource.setPermittedAction(PermittedActionEnum.VIEW.getCode() + "," + PermittedActionEnum.EDIT.getCode());
             resource.setTenantId(tenantId);
@@ -123,7 +122,6 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         for (String userId : viewPermission) {
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
-//            resource.setConfigId(dto.getConfigId());
             resource.setResourceType(resourceType);
             resource.setPermittedAction(PermittedActionEnum.VIEW.getCode());
             resource.setTenantId(tenantId);
@@ -133,7 +131,6 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         for (String userId : editPermission) {
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
-//            resource.setConfigId(dto.getConfigId());
             resource.setResourceType(resourceType);
             resource.setPermittedAction(PermittedActionEnum.EDIT.getCode());
             resource.setTenantId(tenantId);

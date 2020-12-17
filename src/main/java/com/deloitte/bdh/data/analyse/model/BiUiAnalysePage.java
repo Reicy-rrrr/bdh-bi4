@@ -42,10 +42,16 @@ public class BiUiAnalysePage implements Serializable {
     private String type;
 
     /**
-     * 上级id
+     * 文件夹id
      */
-    @TableField("PARENT_ID")
-    private String parentId;
+    @TableField("CATEGORY_ID")
+    private String categoryId;
+
+    /**
+     * 发布来源报表ID
+     */
+    @TableField("ORIGIN_PAGE_ID")
+    private String originPageId;
 
     /**
      * 当前编辑的id

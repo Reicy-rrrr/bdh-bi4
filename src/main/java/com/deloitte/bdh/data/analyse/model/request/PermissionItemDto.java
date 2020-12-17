@@ -16,6 +16,10 @@ import java.util.List;
 @Data
 public class PermissionItemDto implements Serializable {
 
+    @NotBlank
+    @ApiModelProperty(value = "前端对应的key")
+    private String componentId;
+
     @ApiModelProperty(value = "表")
     @NotBlank
     private String tableName;
@@ -24,12 +28,8 @@ public class PermissionItemDto implements Serializable {
     @NotBlank
     private String tableField;
 
-    @ApiModelProperty(value = "值")
-    @NotBlank
-    private String fieldValue;
-
+    @ApiModelProperty(value = "值列表")
     @NotEmpty
-    @ApiModelProperty(value = "查看权限用户")
-    private List<String> userList;
+    private List<PermissionUserDto> permissionUserList;
 
 }

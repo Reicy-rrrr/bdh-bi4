@@ -391,7 +391,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     private List<BiUiAnalysePage> getChildPage(List<String> parentIdList, String tenantId) {
         LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePage::getTenantId, tenantId);
-        query.in(BiUiAnalysePage::getParentId, parentIdList);
+        query.in(BiUiAnalysePage::getCategoryId, parentIdList);
         return pageService.list(query);
     }
 

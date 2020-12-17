@@ -38,7 +38,7 @@ public class AnalyseSubscribeDto implements Serializable {
      * cron表达式
      */
     @ApiModelProperty(value = "CRON")
-    private String cron;
+    private String cronData;
 
     /**
      * 收件人

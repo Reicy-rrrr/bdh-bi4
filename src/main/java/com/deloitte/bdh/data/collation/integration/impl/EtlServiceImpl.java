@@ -12,6 +12,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.collation.component.ExpressionParser;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
@@ -24,6 +25,7 @@ import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
@@ -706,6 +708,58 @@ public class EtlServiceImpl implements EtlService {
             default:
                 componentService.remove(component);
         }
+    }
+
+    @Override
+    public ComponentFormulaCheckResp checkFormula(ComponentFormulaCheckDto dto) throws Exception {
+        String modelId = dto.getModelId();
+        BiEtlModel model = biEtlModelService.getById(modelId);
+        if (model == null) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "未找到模板信息！");
+        }
+
+        String componentId = dto.getComponentId();
+        BiComponent component = componentService.getById(componentId);
+        if (component == null) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "未找到组件信息！");
+        }
+
+        String type = dto.getFormulaType();
+        if (StringUtils.isBlank(type)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "公式类型不能为空！");
+        }
+        CalculateTypeEnum calculateType = CalculateTypeEnum.get(type);
+        String formula = dto.getFormula();
+        if (StringUtils.isBlank(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
+        }
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
+            boolean checkResult = ExpressionParser.isParamFormula(formula);
+            if (!checkResult) {
+                return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+            }
+        } else {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
+        }
+
+        List<String> params = ExpressionParser.getUniqueParams(formula);
+        if (CollectionUtils.isEmpty(params)) {
+            return new ComponentFormulaCheckResp(Boolean.TRUE, "验证通过！");
+        }
+        // 处理组件后验证字段是否有效
+        ComponentModel componentModel = biEtlModelHandleService.handleComponent(model.getCode(), component.getCode());
+        List<String> fields = componentModel.getFields();
+
+        List<String> unknownFields = Lists.newArrayList();
+        for (String param : params) {
+            if (!fields.contains(param)) {
+                unknownFields.add(param);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(unknownFields)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "存在未知的字段，请检查！");
+        }
+        return new ComponentFormulaCheckResp(Boolean.TRUE, "验证通过！");
     }
 
     private List<BiComponentParams> transferToParams(String componentCode, String modelCode, Map<String, Object> source) {

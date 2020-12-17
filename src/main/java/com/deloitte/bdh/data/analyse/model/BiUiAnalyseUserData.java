@@ -33,6 +33,12 @@ public class BiUiAnalyseUserData implements Serializable {
     private String pageId;
 
     /**
+     * 组件id
+     */
+    @TableField("COMPONENT_ID")
+    private String componentId;
+
+    /**
      * 表
      */
     @TableField("TABLE_NAME")

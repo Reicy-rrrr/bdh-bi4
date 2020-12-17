@@ -7,6 +7,7 @@
         <id column="USER_DATA_ID" property="userDataId" />
         <result column="USER_ID" property="userId" />
         <result column="PAGE_ID" property="pageId" />
+        <result column="COMPONENT_ID" property="componentId" />
         <result column="TABLE_NAME" property="tableName" />
         <result column="TABLE_FIELD" property="tableField" />
         <result column="FIELD_VALUE" property="fieldValue" />

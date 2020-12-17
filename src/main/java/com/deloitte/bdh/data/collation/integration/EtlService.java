@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.integration;
 import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
@@ -165,4 +166,13 @@ public interface EtlService {
      * @throws Exception
      */
     void remove(String code) throws Exception;
+
+    /**
+     * 验证组件计算公式有效性
+     *
+     * @param dto 验证公式dto
+     * @return ComponentFormulaCheckResp
+     * @throws Exception
+     */
+    ComponentFormulaCheckResp checkFormula(ComponentFormulaCheckDto dto) throws Exception;
 }

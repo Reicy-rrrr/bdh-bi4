@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
@@ -148,6 +149,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.MODIFY));
     }
 
+    @ApiOperation(value = "引入整理组件(计算字段)", notes = "引入整理组件(计算字段)")
+    @PostMapping("/arrange/calculate/join")
+    public RetResult<BiComponent> arrangeCalculate(@RequestBody @Validated RetRequest<ArrangeCalculateDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeCreate(request.getData(), ArrangeTypeEnum.CALCULATE));
+    }
+
     @ApiOperation(value = "修改引入整理组件(拆分)", notes = "修改引入整理组件(拆分)")
     @PostMapping("/arrange/split/update")
     public RetResult<BiComponent> arrangeSplitUpdate(@RequestBody @Validated RetRequest<UpdateArrangeSplitDto> request) throws Exception {
@@ -165,6 +172,7 @@ public class EtlController {
     public RetResult<BiComponent> arrangeReplaceUpdate(@RequestBody @Validated RetRequest<UpdateArrangeReplaceDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.REPLACE));
     }
+
 
     @ApiOperation(value = "修改引入整理组件(合并)", notes = "修改引入整理组件(合并)")
     @PostMapping("/arrange/combine/update")
@@ -202,6 +210,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.MODIFY));
     }
 
+    @ApiOperation(value = "修改引入整理组件(字段计算)", notes = "修改引入整理组件(字段计算)")
+    @PostMapping("/arrange/calculate/update")
+    public RetResult<BiComponent> arrangeCalculateUpdate(@RequestBody @Validated RetRequest<UpdateArrangeCalculateDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.arrangeUpdate(request.getData(), ArrangeTypeEnum.CALCULATE));
+    }
+
     @ApiOperation(value = "移除组件", notes = "移除组件")
     @PostMapping("/component/remove")
     public RetResult<Void> remove(@RequestBody @Validated RetRequest<String> request) throws Exception {
@@ -237,5 +251,11 @@ public class EtlController {
     @PostMapping("/component/sql/preview")
     public RetResult<String> previewSql(@RequestBody @Validated RetRequest<ComponentPreviewDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.previewSql(request.getData()));
+    }
+
+    @ApiOperation(value = "验证组件公式", notes = "验证组件公式")
+    @PostMapping("/component/formula/check")
+    public RetResult<ComponentFormulaCheckResp> checkFormula(@RequestBody @Validated RetRequest<ComponentFormulaCheckDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.checkFormula(request.getData()));
     }
 }
