@@ -15,6 +15,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.yandex.qatools.ashot.AShot;
 import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
@@ -39,9 +40,10 @@ public class ScreenshotUtil {
     @Autowired
     private OssProperties ossProperties;
 
-    private static String screenshotPath = System.getProperty("user.dir") + File.separator + "target" + File.separator + "screenshot-output";
+    @Value("${bi.analyse.driverPath}")
+    private String driverPath;
 
-    private static String driverPath = "C:\\Users\\junlicq\\Documents\\driver\\chromedriver.exe";
+//    private static String screenshotPath = System.getProperty("user.dir") + File.separator + "target" + File.separator + "screenshot-output";
 
     /**
      * 全屏截图
@@ -122,7 +124,7 @@ public class ScreenshotUtil {
         }
     }
 
-    private static WebDriver getDriver() {
+    private WebDriver getDriver() {
         System.setProperty("webdriver.chrome.driver", driverPath);
         ChromeOptions chromeOptions = new ChromeOptions();
         //设置为 headless 模式
