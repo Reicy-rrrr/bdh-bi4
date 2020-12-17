@@ -97,8 +97,9 @@ public class AnalyseLocal extends AbstractAnalyseSql {
     protected String groupBy(DataModel model) {
         List<String> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(model.getX())) {
+            boolean needGroup = needGroup(model);
             for (DataModelField s : model.getX()) {
-                String express = MysqlBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType());
+                String express = MysqlBuildUtil.groupBy(model.getTableName(), s.getId(), s.getQuota(), s.getFormatType(), s.getDataType(), needGroup);
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }

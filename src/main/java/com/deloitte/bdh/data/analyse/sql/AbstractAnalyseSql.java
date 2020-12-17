@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.sql;
 
+import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,17 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
 
     protected List<Map<String, Object>> customizeExecute(SqlContext context) {
         return execute(context);
+    }
+
+    protected boolean needGroup(DataModel model) {
+        String selectSql = select(model);
+        AggregateTypeEnum[] enums = AggregateTypeEnum.values();
+        for (AggregateTypeEnum typeEnum : enums) {
+            if (selectSql.contains(typeEnum.getKey())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

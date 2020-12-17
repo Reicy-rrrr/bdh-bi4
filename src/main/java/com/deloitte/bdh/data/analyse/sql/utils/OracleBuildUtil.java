@@ -39,14 +39,17 @@ public class OracleBuildUtil {
         //判断度量和维度
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
-            if (StringUtils.isNotBlank(dataType) && null != precision &&
-                    MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
+            //设置度量的精度
+            if (StringUtils.isNotBlank(dataType) && null != precision && MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
                 fieldExpress = formatPrecision(fieldExpress, precision);
             }
+
+            //设置默认值
             if (StringUtils.isNotBlank(defaultValue)) {
                 fieldExpress = ifNull(fieldExpress);
             }
         } else {
+            //维度若是时间类型则format
             if (StringUtils.isNotBlank(formatType) && DATE_TYPE.contains(dataType.toUpperCase())) {
                 fieldExpress = format(fieldExpress, formatType);
             }
@@ -77,8 +80,12 @@ public class OracleBuildUtil {
         return condition(fieldExpress, symbol, value);
     }
 
-    public static String groupBy(String tableName, String field, String quota, String formatType, String dataType) {
+    public static String groupBy(String tableName, String field, String quota, String formatType, String dataType, boolean needGroup) {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            return null;
+        }
+        //若查询sql中有 聚合函数，维度才groupBy
+        if (!needGroup) {
             return null;
         }
         if (StringUtils.isNotBlank(formatType) && DATE_TYPE.contains(dataType.toUpperCase())) {

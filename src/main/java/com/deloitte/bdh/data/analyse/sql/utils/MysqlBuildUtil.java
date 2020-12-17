@@ -35,10 +35,10 @@ public class MysqlBuildUtil {
         //判断度量和维度
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
-            if (StringUtils.isNotBlank(dataType) && null != precision &&
-                    MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
+            if (StringUtils.isNotBlank(dataType) && null != precision && MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
                 fieldExpress = formatPrecision(fieldExpress, precision);
             }
+
             if (StringUtils.isNotBlank(defaultValue)) {
                 fieldExpress = ifNull(fieldExpress);
             }
@@ -73,8 +73,11 @@ public class MysqlBuildUtil {
         return condition(fieldExpress, symbol, value);
     }
 
-    public static String groupBy(String tableName, String field, String quota, String formatType, String dataType) {
+    public static String groupBy(String tableName, String field, String quota, String formatType, String dataType, boolean needGroup) {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
+            return null;
+        }
+        if (!needGroup) {
             return null;
         }
         if (StringUtils.isNotBlank(formatType) && DATE_TYPE.contains(dataType.toUpperCase())) {
