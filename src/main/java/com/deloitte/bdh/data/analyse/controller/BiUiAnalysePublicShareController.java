@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
+import sun.security.provider.SHA;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -102,10 +103,10 @@ public class BiUiAnalysePublicShareController {
             queryWrapper.eq(BiUiAnalysePublicShare::getType, "4");
         }
         BiUiAnalysePublicShare share = shareService.getOne(queryWrapper);
-
         if (null == share || "0".equals(share.getType())) {
             result.put("refPageId", null);
         } else {
+            ThreadLocalHolder.set("tenantId", share.getTenantId());
             result.put("isEncrypt", "0");
             if ("2".equals(share.getType())) {
                 result.put("isEncrypt", "1");

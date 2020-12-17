@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
+import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
@@ -33,6 +34,7 @@ public class AnalysePageConfigController {
     @Resource
     AnalysePageConfigService biUiReportPageConfigService;
 
+    @NoInterceptor
     @ApiOperation(value = "查看单个页面配置详情", notes = "查看单个页面配置详情")
     @PostMapping("/getAnalysePageConfig")
     public RetResult<AnalysePageConfigDto> getAnalysePageConfig(@RequestBody @Validated RetRequest<GetAnalysePageConfigDto> request) {

@@ -119,10 +119,13 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         LambdaQueryWrapper<BiUiAnalyseSubscribe> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, pageId);
         BiUiAnalyseSubscribe subscribe = this.getOne(queryWrapper);
-        AnalyseSubscribeDto dto = new AnalyseSubscribeDto();
-        BeanUtils.copyProperties(subscribe, dto);
-        dto.setReceiver(JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class));
-        return dto;
+        if (null != subscribe) {
+            AnalyseSubscribeDto dto = new AnalyseSubscribeDto();
+            BeanUtils.copyProperties(subscribe, dto);
+            dto.setReceiver(JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class));
+            return dto;
+        }
+        return null;
     }
 
     @Override
