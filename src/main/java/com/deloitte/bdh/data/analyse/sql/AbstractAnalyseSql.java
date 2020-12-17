@@ -2,14 +2,18 @@ package com.deloitte.bdh.data.analyse.sql;
 
 import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public abstract class AbstractAnalyseSql implements AnalyseSql {
+    @Resource
+    protected AnalyseUserDataService userDataService;
 
     @Override
     final public Object assembly(SqlContext context) {

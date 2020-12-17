@@ -82,7 +82,7 @@ public enum OracleFormatTypeEnum {
     HOUR("HOUR", "小时"){
         @Override
         public String expression(String str) {
-            return " to_char( str ,'HH')".replaceAll("str", str);
+            return " to_char( str ,'HH24')".replaceAll("str", str);
         }
     },
 

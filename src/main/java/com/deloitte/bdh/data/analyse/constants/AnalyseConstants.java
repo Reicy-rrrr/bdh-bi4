@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.constants;
 
 import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
 import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
+import com.deloitte.bdh.data.collation.enums.SQLServerDataTypeEnum;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -48,7 +49,13 @@ public class AnalyseConstants {
             MysqlDataTypeEnum.BIGINT.getType().toUpperCase(),
             MysqlDataTypeEnum.FLOAT.getType().toUpperCase(),
             MysqlDataTypeEnum.DOUBLE.getType().toUpperCase(),
-            MysqlDataTypeEnum.DECIMAL.getType().toUpperCase()
+            MysqlDataTypeEnum.DECIMAL.getType().toUpperCase(),
+
+            SQLServerDataTypeEnum.FLOAT.getType().toUpperCase(),
+            SQLServerDataTypeEnum.MONEY.getType().toUpperCase(),
+            SQLServerDataTypeEnum.SMALL_MONEY.getType().toUpperCase(),
+            SQLServerDataTypeEnum.NUMERIC.getType().toUpperCase(),
+            SQLServerDataTypeEnum.REAL.getType().toUpperCase()
     );
 
 

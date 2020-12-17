@@ -10,7 +10,6 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.sql.AbstractAnalyseSql;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import com.deloitte.bdh.data.analyse.sql.utils.OracleBuildUtil;
@@ -33,8 +32,6 @@ import java.util.Map;
 public class AnalyseOracle extends AbstractAnalyseSql {
     @Resource
     private DbSelector dbSelector;
-    @Resource
-    private AnalyseUserDataService userDataService;
 
     @Override
     protected String assemblyQuerySql(SqlContext context) {
