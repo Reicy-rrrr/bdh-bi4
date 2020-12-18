@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
 import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -35,18 +36,90 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 return decoration(setDefalut(dataModel, list));
             }
 
-            String sourceSql = doSourceSql(sql, dataModel);
-            List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, super.directExecute(dataModel, sourceSql));
+            List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
+                @Override
+                public String local(DataModel model, String tableName) {
+                    return doSourceSql(sql, dataModel);
+                }
+
+                @Override
+                public String mysql(DataModel model, String tableName) {
+                    return doSourceSql(sql, dataModel);
+                }
+
+                @Override
+                public String oracle(DataModel model, String tableName) {
+                    return null;
+                }
+
+                @Override
+                public String sqlServer(DataModel model, String tableName) {
+                    return null;
+                }
+
+                @Override
+                public String hana(DataModel model, String tableName) {
+                    return null;
+                }
+            }));
 
             List<Map<String, Object>> chainSqlList = Lists.newArrayList();
             if (isOpenChain(dataModel)) {
-                String chainSql = chainSql(sql, dataModel);
-                chainSqlList = setDefalut(dataModel, super.directExecute(dataModel, chainSql));
+                chainSqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
+                    @Override
+                    public String local(DataModel model, String tableName) {
+                        return chainSql(sql, dataModel);
+                    }
+
+                    @Override
+                    public String mysql(DataModel model, String tableName) {
+                        return chainSql(sql, dataModel);
+                    }
+
+                    @Override
+                    public String oracle(DataModel model, String tableName) {
+                        return null;
+                    }
+
+                    @Override
+                    public String sqlServer(DataModel model, String tableName) {
+                        return null;
+                    }
+
+                    @Override
+                    public String hana(DataModel model, String tableName) {
+                        return null;
+                    }
+                }));
             }
             List<Map<String, Object>> yoySqlList = Lists.newArrayList();
             if (isOpenYoy(dataModel)) {
-                String yoySql = yoySql(sql, dataModel);
-                yoySqlList = setDefalut(dataModel, super.directExecute(dataModel, yoySql));
+                yoySqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
+                    @Override
+                    public String local(DataModel model, String tableName) {
+                        return yoySql(sql, dataModel);
+                    }
+
+                    @Override
+                    public String mysql(DataModel model, String tableName) {
+                        return yoySql(sql, dataModel);
+                    }
+
+                    @Override
+                    public String oracle(DataModel model, String tableName) {
+                        return null;
+                    }
+
+                    @Override
+                    public String sqlServer(DataModel model, String tableName) {
+                        return null;
+                    }
+
+                    @Override
+                    public String hana(DataModel model, String tableName) {
+                        return null;
+                    }
+                }));
             }
 
             for (String field : getFields(dataModel)) {

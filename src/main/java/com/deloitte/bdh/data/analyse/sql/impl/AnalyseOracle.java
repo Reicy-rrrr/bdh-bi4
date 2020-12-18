@@ -192,7 +192,7 @@ public class AnalyseOracle extends AbstractRela {
             if (StringUtils.isNotBlank(countSql)) {
                 countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
                 context.setQuerySql(countSql);
-                List<Map<String, Object>> result = customizeExecute(context);
+                List<Map<String, Object>> result = expand(context);
                 if (CollectionUtils.isNotEmpty(result)) {
                     return ((BigDecimal) result.get(0).get("TOTAL")).longValue();
                 }
@@ -225,7 +225,7 @@ public class AnalyseOracle extends AbstractRela {
     }
 
     @Override
-    protected List<Map<String, Object>> customizeExecute(SqlContext context) {
+    protected List<Map<String, Object>> expand(SqlContext context) {
         DbContext dbContext = new DbContext();
         dbContext.setDbId(context.getDbId());
         dbContext.setQuerySql(context.getQuerySql());
