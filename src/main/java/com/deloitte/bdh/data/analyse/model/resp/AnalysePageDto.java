@@ -42,7 +42,7 @@ public class AnalysePageDto implements Serializable {
     /**
      * 上级id
      */
-    @ApiModelProperty("PARENT_ID")
+    @ApiModelProperty("CATEGORY_ID")
     private String parentId;
 
     /**

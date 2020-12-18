@@ -29,6 +29,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
     public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataConfig dataConfig = request.getDataConfig();
         DataModel dataModel = dataConfig.getDataModel();
+        String tableName = dataModel.getTableName();
         //如果直接List<DataModelField> originalX = dataModel.getX();
         //会发生深拷贝现象，导致下方赋值的时候也会跟着变化
         List<DataModelField> originalX = Lists.newArrayList();
@@ -52,6 +53,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         }
         BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
+        request.getDataConfig().getDataModel().setTableName(tableName);
         response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
         return response;
     }

@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -8,11 +7,7 @@ import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.exception.BizException;
-import com.deloitte.bdh.common.json.JsonUtil;
-import com.deloitte.bdh.common.util.AesUtil;
-import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -28,17 +23,14 @@ import com.deloitte.bdh.data.analyse.service.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -209,11 +201,11 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("");
         }
 
-        if (originPage.getCategoryId().equals(categoryId)) {
+        if (originPage.getParentId().equals(categoryId)) {
             updatePage(publishDto,originPage, originConfig);
         } else {
             List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
-                    .eq(BiUiAnalysePage::getCategoryId, categoryId)
+                    .eq(BiUiAnalysePage::getParentId, categoryId)
                     .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
             if (CollectionUtils.isEmpty(allPageList)) {
                 //新建config
@@ -228,7 +220,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 BeanUtils.copyProperties(originPage, newPage);
                 newPage.setId(null);
                 newPage.setPublishId(newConfig.getId());
-                newPage.setCategoryId(categoryId);
+                newPage.setParentId(categoryId);
                 newPage.setIsEdit(YnTypeEnum.NO.getCode());
                 newPage.setOriginPageId(originPage.getId());
                 save(newPage);

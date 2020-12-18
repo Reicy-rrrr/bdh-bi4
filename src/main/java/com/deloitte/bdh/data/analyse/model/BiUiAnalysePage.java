@@ -45,7 +45,7 @@ public class BiUiAnalysePage implements Serializable {
      * 文件夹id
      */
     @TableField("CATEGORY_ID")
-    private String categoryId;
+    private String parentId;
 
     /**
      * 发布来源报表ID
