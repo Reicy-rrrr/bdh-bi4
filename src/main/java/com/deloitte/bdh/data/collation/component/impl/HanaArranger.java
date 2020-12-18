@@ -492,15 +492,15 @@ public class HanaArranger implements ArrangerSelector {
                 segmentBuilder.append("CAST(").append(fromField).append(" AS DECIMAL (32))");
                 break;
             case Text:
-                // CASE WHEN REGEXP_LIKE('123','(^[+-]?\d{0,}\.?\d{0,}$)') THEN CAST('123' AS DECIMAL (10)) ELSE NULL END
-                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
-                segmentBuilder.append(fromField);
-                segmentBuilder.append(",");
-                // 使用正则匹配数字类型字符串
+                // CASE WHEN REPLACE_REGEXPR('^(\-|\+)?\d+(\.\d+)?$' IN '-123.1' WITH '0' OCCURRENCE ALL) = '0' THEN CAST('23.1239' AS DECIMAL(32)) ELSE NULL END
+                segmentBuilder.append("REPLACE_REGEXPR(");
+                // 使用正则替换数字类型字符串为0
                 segmentBuilder.append("'^(\\-|\\+)?\\d+(\\.\\d+)?$'");
-                segmentBuilder.append(") THEN CAST(");
+                segmentBuilder.append(" IN ");
                 segmentBuilder.append(fromField);
-                segmentBuilder.append(" AS DECIMAL (32)) ELSE NULL END");
+                segmentBuilder.append(" WITH '0' OCCURRENCE ALL) = '0' THEN CAST(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" AS DECIMAL(32)) ELSE NULL END");
                 break;
             default:
                 return defaultModify(fromMapping, fromType);
@@ -535,15 +535,15 @@ public class HanaArranger implements ArrangerSelector {
                 segmentBuilder.append("CAST(").append(fromField).append(" AS DECIMAL (32,8))");
                 break;
             case Text:
-                // CASE WHEN REGEXP_LIKE('123','(^[+-]?\d{0,}\.?\d{0,}$)') THEN CAST('123' AS DECIMAL (32,8)) ELSE NULL END
-                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
-                segmentBuilder.append(fromField);
-                segmentBuilder.append(",");
-                // 使用正则匹配数字类型字符串
+                // CASE WHEN REPLACE_REGEXPR('^(\-|\+)?\d+(\.\d+)?$' IN '23.1239' WITH '0' OCCURRENCE ALL) = '0' THEN CAST('23.1239' AS DECIMAL(32,2)) ELSE NULL END
+                segmentBuilder.append("REPLACE_REGEXPR(");
+                // 使用正则替换数字类型字符串为0
                 segmentBuilder.append("'^(\\-|\\+)?\\d+(\\.\\d+)?$'");
-                segmentBuilder.append(") THEN CAST(");
+                segmentBuilder.append(" IN ");
                 segmentBuilder.append(fromField);
-                segmentBuilder.append(" AS DECIMAL (32,8)) ELSE NULL END");
+                segmentBuilder.append(" WITH '0' OCCURRENCE ALL) = '0' THEN CAST(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" AS DECIMAL(32,8)) ELSE NULL END");
                 break;
             default:
                 return defaultModify(fromMapping, fromType);
@@ -579,15 +579,15 @@ public class HanaArranger implements ArrangerSelector {
                 segmentBuilder.append(fromField);
                 break;
             case Text:
-                // CASE WHEN REGEXP_LIKE('2020-02-21', '^[1-2]\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$') THEN TO_DATE('2020-02-21', 'yyyy-mm-dd') ELSE NULL END
-                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
-                segmentBuilder.append(fromField);
-                segmentBuilder.append(",");
-                // 使用正则匹配yyyy-MM-dd格式日期字符串（暂不支持校验时间有效性）
+                // CASE WHEN REPLACE_REGEXPR('^[1-2]\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$' IN '2010-11-21' WITH '0' OCCURRENCE ALL) = '0' THEN CAST(2020-02-21' AS DATE) ELSE NULL END
+                segmentBuilder.append("REPLACE_REGEXPR(");
+                // 使用正则替换yyyy-MM-dd类型字符串为0
                 segmentBuilder.append("'^[1-2]\\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$'");
-                segmentBuilder.append(") THEN TO_DATE(");
+                segmentBuilder.append(" IN ");
                 segmentBuilder.append(fromField);
-                segmentBuilder.append(",'yyyy-mm-dd') ELSE NULL END");
+                segmentBuilder.append(" WITH '0' OCCURRENCE ALL) = '0' THEN CAST(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" AS DATE) ELSE NULL END");
                 break;
             default:
                 return defaultModify(fromMapping, fromType);
@@ -623,15 +623,16 @@ public class HanaArranger implements ArrangerSelector {
                 segmentBuilder.append(" ");
                 break;
             case Text:
-                // CASE WHEN REGEXP_LIKE('2020-02-21', '^[1-2]\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$') THEN TO_DATE('2020-02-21', 'yyyy-mm-dd') ELSE NULL END
-                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
-                segmentBuilder.append(fromField);
-                segmentBuilder.append(",");
-                // 使用正则匹配yyyy-MM-dd HH:mm:ss格式时间字符串（暂不支持校验时间有效性）
+                // CASE WHEN REPLACE_REGEXPR('^[1-2]\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$' IN '2010-11-21 12:22:13' WITH '0' OCCURRENCE ALL) = '0' THEN CAST('2010-11-21 12:22:13' AS TIMESTAMP) ELSE NULL END
+                segmentBuilder.append("REPLACE_REGEXPR(");
+                // 使用正则替换yyyy-MM-dd HH:mm:ss类型字符串为0
                 segmentBuilder.append("'^[1-2]\\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))\\s(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d$'");
-                segmentBuilder.append(") THEN TO_DATE(");
+                segmentBuilder.append(" IN ");
                 segmentBuilder.append(fromField);
-                segmentBuilder.append(",'yyyy-mm-dd hh24:mi:ss') ELSE NULL END ");
+                segmentBuilder.append(" WITH '0' OCCURRENCE ALL) = '0' THEN CAST(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" AS TIMESTAMP) ELSE NULL END");
+
                 break;
             default:
                 return defaultModify(fromMapping, fromType);
@@ -665,12 +666,12 @@ public class HanaArranger implements ArrangerSelector {
             case Date:
                 segmentBuilder.append("TO_CHAR(");
                 segmentBuilder.append(fromField);
-                segmentBuilder.append(",'yyyy-mm-dd')");
+                segmentBuilder.append(",'YYYY-MM-DD')");
                 break;
             case DateTime:
                 segmentBuilder.append("TO_CHAR(");
                 segmentBuilder.append(fromField);
-                segmentBuilder.append(",'yyyy-mm-dd hh24:mi:ss')");
+                segmentBuilder.append(",'YYYY-MM-DD HH24:MI:SS)");
                 break;
             default:
                 segmentBuilder.append("TO_CHAR(");
