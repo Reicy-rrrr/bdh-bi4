@@ -34,7 +34,7 @@ public class AnalyseMysql extends AnalyseLocal {
             if (StringUtils.isNotBlank(countSql)) {
                 countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
                 context.setQuerySql(countSql);
-                List<Map<String, Object>> result = customizeExecute(context);
+                List<Map<String, Object>> result = expand(context);
                 if (CollectionUtils.isNotEmpty(result)) {
                     return (Long) result.get(0).get("TOTAL");
                 }
@@ -54,5 +54,10 @@ public class AnalyseMysql extends AnalyseLocal {
             log.error("执行异常:", e);
             throw new RuntimeException("执行SQL异常");
         }
+    }
+
+    @Override
+    protected List<Map<String, Object>> expand(SqlContext context) {
+        return this.execute(context);
     }
 }

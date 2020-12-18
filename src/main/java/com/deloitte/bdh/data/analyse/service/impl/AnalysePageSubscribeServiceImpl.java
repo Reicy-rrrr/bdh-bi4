@@ -104,10 +104,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         params.put("tenantId", ThreadLocalHolder.getTenantId());
         params.put("operator", ThreadLocalHolder.getOperator());
         try {
-            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
+            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/subscribe/execute",
                     CronUtil.createCronExpression(request.getCronData()), params);
-//            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/subscribe/execute",
-//                    "0 0/1 * * * ? ", params);
             if (StringUtils.equals(subscribe.getStatus(), "1")) {
                 jobService.start(subscribe.getTaskId());
             } else {

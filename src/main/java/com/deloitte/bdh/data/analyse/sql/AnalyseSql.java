@@ -5,14 +5,14 @@ import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 
 public interface AnalyseSql {
 
-    Object assembly(SqlContext context);
+    Object process(SqlContext context);
 
 
     enum Method {
-        ASSEMBLYQUERYSQL,
+        ASSEMBLY_QUERYSQL,
         COUNT,
         EXECUTE,
-        CUSTOMIZE_EXECUTE;
+        EXPAND_EXECUTE;
 
         String key;
 

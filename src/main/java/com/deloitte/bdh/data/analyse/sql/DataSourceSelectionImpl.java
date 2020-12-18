@@ -26,6 +26,11 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
     private BiEtlDatabaseInfService databaseInfService;
 
     @Override
+    public String getTableName(DataModel model) {
+        return checkDataSet(model).getTableDesc();
+    }
+
+    @Override
     public AnalyseSql getBean(DataModel model) {
         BiDataSet dataSet = checkDataSet(model);
         return this.getBean(dataSet);
@@ -75,8 +80,8 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
 
         SqlContext context = new SqlContext();
         context.setModel(model);
-        context.setMethod(AnalyseSql.Method.ASSEMBLYQUERYSQL);
-        String sql = (String) bean.assembly(context);
+        context.setMethod(AnalyseSql.Method.ASSEMBLY_QUERYSQL);
+        String sql = (String) bean.process(context);
         model.setTableName(dataSet.getTableDesc());
         return sql;
     }
@@ -91,7 +96,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         context.setModel(model);
         context.setMethod(AnalyseSql.Method.COUNT);
         context.setDbId(dataSet.getRefSourceId());
-        Object result = bean.assembly(context);
+        Object result = bean.process(context);
         if (null == result) {
             return null;
         }
@@ -101,15 +106,16 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
 
     @Override
     public List<Map<String, Object>> execute(DataModel model, String querySql) {
-        return execute(model, querySql, AnalyseSql.Method.EXECUTE);
+        return transfer(model, querySql, AnalyseSql.Method.EXECUTE);
     }
 
     @Override
-    public List<Map<String, Object>> customizeExecute(DataModel model, String querySql) {
-        return execute(model, querySql, AnalyseSql.Method.CUSTOMIZE_EXECUTE);
+    public List<Map<String, Object>> expandExecute(DataModel model, Type type) {
+        String sql = chooseSql(model, checkDataSet(model), type);
+        return transfer(model, sql, AnalyseSql.Method.EXPAND_EXECUTE);
     }
 
-    private List<Map<String, Object>> execute(DataModel model, String querySql, AnalyseSql.Method method) {
+    private List<Map<String, Object>> transfer(DataModel model, String querySql, AnalyseSql.Method method) {
         BiDataSet dataSet = checkDataSet(model);
         AnalyseSql sql = this.getBean(dataSet);
         SqlContext context = new SqlContext();
@@ -117,7 +123,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         context.setMethod(method);
         context.setQuerySql(querySql);
         context.setDbId(dataSet.getRefSourceId());
-        Object result = sql.assembly(context);
+        Object result = sql.process(context);
         if (null == result) {
             return null;
         }
@@ -132,6 +138,44 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
             throw new RuntimeException("未在数据集找到目标对象");
         }
         return dataSet;
+    }
+
+    private String chooseSql(DataModel model, BiDataSet dataSet, Type type) {
+        String sql;
+        DataSetTypeEnum typeEnum = DataSetTypeEnum.getEnumByKey(dataSet.getType());
+        switch (typeEnum) {
+            case DEFAULT:
+            case MODEL:
+                sql = type.local(model, dataSet.getTableDesc());
+                break;
+            default:
+                BiEtlDatabaseInf databaseInf = databaseInfService.getById(dataSet.getRefSourceId());
+                if (null == databaseInf) {
+                    throw new RuntimeException("未找到数据源目标对象");
+                }
+                SourceTypeEnum sourceTypeEnum = SourceTypeEnum.values(databaseInf.getType());
+                switch (sourceTypeEnum) {
+                    case Mysql:
+                        sql = type.mysql(model, dataSet.getTableDesc());
+                        break;
+                    case Oracle:
+                        sql = type.oracle(model, dataSet.getTableDesc());
+                        break;
+                    case SQLServer:
+                        sql = type.sqlServer(model, dataSet.getTableDesc());
+                        break;
+                    case Hana:
+                        sql = type.hana(model, dataSet.getTableDesc());
+                        break;
+                    case File_Excel:
+                    case File_Csv:
+                        sql = type.local(model, dataSet.getTableDesc());
+                        break;
+                    default:
+                        throw new RuntimeException("数据集不支持的类型");
+                }
+        }
+        return sql;
     }
 
 }

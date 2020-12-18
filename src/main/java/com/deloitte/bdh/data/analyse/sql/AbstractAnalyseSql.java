@@ -14,11 +14,11 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
     protected AnalyseUserDataService userDataService;
 
     @Override
-    final public Object assembly(SqlContext context) {
+    final public Object process(SqlContext context) {
         Object result;
         AnalyseSql.Method method = context.getMethod();
         switch (method) {
-            case ASSEMBLYQUERYSQL:
+            case ASSEMBLY_QUERYSQL:
                 result = assemblyQuerySql(context);
                 break;
             case COUNT:
@@ -28,7 +28,7 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
                 result = execute(context);
                 break;
             default:
-                result = customizeExecute(context);
+                result = expand(context);
         }
         return result;
     }
@@ -39,7 +39,7 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
 
     protected abstract List<Map<String, Object>> execute(SqlContext context);
 
-    protected List<Map<String, Object>> customizeExecute(SqlContext context) {
+    protected List<Map<String, Object>> expand(SqlContext context) {
         return execute(context);
     }
 

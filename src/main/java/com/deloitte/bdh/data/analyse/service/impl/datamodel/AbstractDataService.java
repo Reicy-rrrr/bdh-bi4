@@ -92,8 +92,4 @@ public abstract class AbstractDataService {
         return colName;
     }
 
-    protected List<Map<String, Object>> directExecute(DataModel dataModel, String querySql) {
-        return sourceSelection.customizeExecute(dataModel, querySql);
-    }
-
 }
