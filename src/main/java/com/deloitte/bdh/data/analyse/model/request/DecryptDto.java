@@ -20,6 +20,6 @@ public class DecryptDto {
     /**
      * 解密类型
      */
-    @ApiModelProperty(value = "解密类型:0-公开分享，1-订阅")
+    @ApiModelProperty(value = "解密类型:0-公开分享，1-订阅，2-查看")
     private String decryptType;
 }

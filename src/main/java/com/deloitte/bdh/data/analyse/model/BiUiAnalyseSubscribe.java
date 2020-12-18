@@ -51,6 +51,12 @@ public class BiUiAnalyseSubscribe implements Serializable {
     private String receiver;
 
     /**
+     * 图片地址
+     */
+    @TableField("IMG_URL")
+    private String imgUrl;
+
+    /**
      * 数据访问地址
      */
     @TableField("ACCESS_URL")

@@ -8,6 +8,8 @@ public enum ShareTypeEnum {
     ZERO("0", "不公开"),
     ONE("1", "公开"),
     TWO("2", "加密公开"),
+    FOUR("4", "订阅公开"),
+    FIVE("5", "分享"),
 
     ;
 

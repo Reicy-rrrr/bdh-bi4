@@ -17,6 +17,7 @@ import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareDto;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareValidateDto;
 import com.deloitte.bdh.data.analyse.model.request.DecryptDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
+import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +63,8 @@ public class BiUiAnalysePublicShareController {
         LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData());
         //排除订阅数据
-        lambdaQueryWrapper.ne(BiUiAnalysePublicShare::getType, "4");
+        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
 
         if (null == share) {
@@ -99,17 +101,21 @@ public class BiUiAnalysePublicShareController {
         LambdaQueryWrapper<BiUiAnalysePublicShare> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, MapUtils.getString(result, "refPageId"));
         if (StringUtils.equals(request.getData().getDecryptType(), "0")) {
-            queryWrapper.ne(BiUiAnalysePublicShare::getType, "4");
-        } else {
-            queryWrapper.eq(BiUiAnalysePublicShare::getType, "4");
+            List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+            queryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
+        } else if (StringUtils.equals(request.getData().getDecryptType(), "1")){
+            queryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FOUR.getKey());
+        } else if (StringUtils.equals(request.getData().getDecryptType(), "2")) {
+            queryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
         }
-        BiUiAnalysePublicShare share = shareService.getOne(queryWrapper);
-        if (null == share || ShareTypeEnum.ZERO.getKey().equals(share.getType())) {
+        //正常只有一条数据，为防止脏数据影响，用list取
+        List<BiUiAnalysePublicShare> share = shareService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(share) || ShareTypeEnum.ZERO.getKey().equals(share.get(0).getType())) {
             result.put("refPageId", null);
         } else {
-            ThreadLocalHolder.set("tenantId", share.getTenantId());
+            ThreadLocalHolder.set("tenantId", share.get(0).getTenantId());
             result.put("isEncrypt", ShareTypeEnum.ZERO.getKey());
-            if (ShareTypeEnum.TWO.getKey().equals(share.getType())) {
+            if (ShareTypeEnum.TWO.getKey().equals(share.get(0).getType())) {
                 result.put("isEncrypt", ShareTypeEnum.ONE.getKey());
             }
         }
@@ -120,13 +126,14 @@ public class BiUiAnalysePublicShareController {
     @PostMapping("/password/validate")
     public RetResult<Boolean> validate(@RequestBody @Validated RetRequest<AnalysePublicShareValidateDto> request) {
         LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData());
+        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId());
         //排除订阅数据
-        lambdaQueryWrapper.ne(BiUiAnalysePublicShare::getType, "4");
-        BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
-        if (ShareTypeEnum.TWO.getKey().equals(share.getType())) {
+        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
+        List<BiUiAnalysePublicShare> share = shareService.list(lambdaQueryWrapper);
+        if (ShareTypeEnum.TWO.getKey().equals(share.get(0).getType())) {
             String md5 = Md5Util.getMD5(request.getData().getPassword(), encryptPass + ThreadLocalHolder.getTenantCode());
-            if (!md5.equals(share.getPassword())) {
+            if (!md5.equals(share.get(0).getPassword())) {
                 return RetResponse.makeOKRsp(false);
             }
         }

@@ -9,6 +9,7 @@
         <result column="MAIL_SUBJECT" property="mailSubject"/>
         <result column="CRON_DATA" property="cronData"/>
         <result column="RECEIVER" property="receiver"/>
+        <result column="IMG_URL" property="imgUrl"/>
         <result column="ACCESS_URL" property="accessUrl"/>
         <result column="STATUS" property="status"/>
         <result column="TENANT_ID" property="tenantId"/>

@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class AnalysePublicShareValidateDto {
+
     @ApiModelProperty(value = "关联报表ID", example = "10", required = true)
     @NotNull(message = "关联报表ID 不能为空")
     private String pageId;

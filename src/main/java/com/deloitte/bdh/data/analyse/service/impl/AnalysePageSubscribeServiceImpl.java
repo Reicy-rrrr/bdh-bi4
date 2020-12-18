@@ -14,6 +14,7 @@ import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseSubscribeMapper;
+import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseSubscribe;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseSubscribeLog;
@@ -53,6 +54,9 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     @Value("${bi.analyse.subscribe.address}")
     private String subscribeAddress;
 
+    @Value("${bi.analyse.view.address}")
+    private String viewAddress;
+
     @Value("${bi.analyse.encryptPass}")
     private String encryptPass;
 
@@ -88,6 +92,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         }
         BeanUtils.copyProperties(request, subscribe);
         subscribe.setReceiver(JSON.toJSONString(request.getReceiver()));
+        subscribe.setImgUrl(getImgUrl(request));
         subscribe.setAccessUrl(getAccessUrl(request));
         subscribe.setTenantId(ThreadLocalHolder.getTenantId());
         subscribeService.saveOrUpdate(subscribe);
@@ -99,10 +104,10 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         params.put("tenantId", ThreadLocalHolder.getTenantId());
         params.put("operator", ThreadLocalHolder.getOperator());
         try {
-//            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
-//                    CronUtil.createCronExpression(request.getCronData()), params);
-            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/subscribe/execute",
-                    "0 0/1 * * * ? ", params);
+            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/biEtlSyncPlan/model",
+                    CronUtil.createCronExpression(request.getCronData()), params);
+//            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/subscribe/execute",
+//                    "0 0/1 * * * ? ", params);
             if (StringUtils.equals(subscribe.getStatus(), "1")) {
                 jobService.start(subscribe.getTaskId());
             } else {
@@ -154,7 +159,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
             if (CollectionUtils.isNotEmpty(receiveList)) {
                 String imgUrl = null;
                 try {
-                    imgUrl = screenshotUtil.fullScreen(subscribe.getAccessUrl());
+                    imgUrl = screenshotUtil.fullScreen(subscribe.getImgUrl());
                 } catch (Exception e) {
                     for (UserIdMailDto userIdMailDto : receiveList) {
                         //执行记录
@@ -204,6 +209,27 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     }
 
     private String getAccessUrl(SubscribeDto request) {
+        //获取访问地址
+        LambdaQueryWrapper<BiUiAnalysePublicShare> shareLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getPageId());
+        shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
+        BiUiAnalysePublicShare share = shareService.getOne(shareLambdaQueryWrapper);
+        if (null == share) {
+            share = new BiUiAnalysePublicShare();
+            share.setRefPageId(request.getPageId());
+            share.setType(ShareTypeEnum.FIVE.getKey());
+            share.setTenantId(ThreadLocalHolder.getTenantId());
+            Map<String, Object> params = Maps.newHashMap();
+            params.put("tenantCode", ThreadLocalHolder.getTenantCode());
+            params.put("refPageId", request.getPageId());
+            share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
+            share.setAddress(viewAddress);
+            shareService.save(share);
+        }
+        return share.getAddress() + "/" + share.getCode();
+    }
+
+    private String getImgUrl(SubscribeDto request) {
         //获取访问地址
         LambdaQueryWrapper<BiUiAnalysePublicShare> shareLambdaQueryWrapper = new LambdaQueryWrapper<>();
         shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getPageId());
