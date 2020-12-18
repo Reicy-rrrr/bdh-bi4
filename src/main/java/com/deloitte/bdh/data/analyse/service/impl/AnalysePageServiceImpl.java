@@ -219,35 +219,28 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (null == share) {
             share = new BiUiAnalysePublicShare();
             share.setRefPageId(pageId);
-            if (isPublic.equals(ShareTypeEnum.NOT.getKey())) {
-                share.setType(ShareTypeEnum.FIVE.getKey());
-            } else {
-                if (StringUtils.isNotEmpty(password)) {
-                    share.setType(ShareTypeEnum.TWO.getKey());
-                } else {
-                    share.setType(ShareTypeEnum.ONE.getKey());
-                }
-            }
-            if (StringUtils.isNotEmpty(password)) {
-                share.setPassword(Md5Util.getMD5(password, encryptPass + ThreadLocalHolder.getTenantCode()));
-            } else {
-                share.setPassword(null);
-            }
             share.setTenantId(ThreadLocalHolder.getTenantId());
             Map<String, Object> params = Maps.newHashMap();
             params.put("tenantCode", ThreadLocalHolder.getTenantCode());
             params.put("refPageId", pageId);
             share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
             share.setAddress(viewAddress);
-            shareService.save(share);
+        }
+        if (isPublic.equals(ShareTypeEnum.NOT.getKey())) {
+            share.setType(ShareTypeEnum.FIVE.getKey());
         } else {
             if (StringUtils.isNotEmpty(password)) {
-                share.setPassword(Md5Util.getMD5(password, encryptPass + ThreadLocalHolder.getTenantCode()));
+                share.setType(ShareTypeEnum.TWO.getKey());
             } else {
-                share.setPassword(null);
+                share.setType(ShareTypeEnum.ONE.getKey());
             }
-            shareService.updateById(share);
         }
+        if (StringUtils.isNotEmpty(password)) {
+            share.setPassword(Md5Util.getMD5(password, encryptPass + ThreadLocalHolder.getTenantCode()));
+        } else {
+            share.setPassword(null);
+        }
+        shareService.saveOrUpdate(share);
     }
 
     @Transactional
