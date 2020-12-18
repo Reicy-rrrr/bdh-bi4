@@ -53,8 +53,11 @@ public class HanaArranger implements ArrangerSelector {
         if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
             fromField = fromFieldMapping.getOriginalFieldName();
         }
-        String leftSql = "LEFT (" + fromField + ", LOCATE('" + fromField + "', " + separator + ") - 1) AS " + leftFieldTemp;
-        String rightSql = "RIGHT (" + fromField + ", LENGTH(" + fromField + ") - LOCATE('" + fromField + "', " + separator + ")) AS " + rightFieldTemp;
+        if (separator != null) {
+            separator = "'" + separator + "'";
+        }
+        String leftSql = "LEFT (" + fromField + ", LOCATE(" + fromField + ", " + separator + ") - 1) AS " + leftFieldTemp;
+        String rightSql = "RIGHT (" + fromField + ", LENGTH(" + fromField + ") - LOCATE(" + fromField + ", " + separator + ")) AS " + rightFieldTemp;
 
         List<ArrangeResultModel> result = Lists.newArrayList();
         result.add(new ArrangeResultModel(leftMapping.getTempFieldName(), leftSql, true, leftMapping));
@@ -172,11 +175,11 @@ public class HanaArranger implements ArrangerSelector {
         List<String> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
             String fromField = getFromField(fromMapping, fromType);
-            // 日期类型不能用 ='' 判断
-            if (DataTypeEnum.Date.getType().equals(fromMapping.getFinalFieldType()) || DataTypeEnum.DateTime.getType().equals(fromMapping.getFinalFieldType())) {
-                results.add(fromField + " IS NOT NULL");
-            } else {
+            // 日期类型、数字不能用 ='' 判断
+            if (DataTypeEnum.Text.getType().equals(fromMapping.getFinalFieldType())) {
                 results.add(fromField + " IS NOT NULL AND " + fromField + " != ''");
+            } else {
+                results.add(fromField + " IS NOT NULL");
             }
         });
         return results;
@@ -226,10 +229,10 @@ public class HanaArranger implements ArrangerSelector {
         String fromField = getFromField(fromMapping, fromType);
         if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_LEFT.equals(type) && length != null && length != 0) {
             // 从左侧开始，去除在长度为length的范围内的空字符
-            segment = "CONCAT(REPLACE(SUBSTRING(" + fromField + ", 1, " + length + "), ' ', ''), SUBSTRING(" + fromField + ", 11)) AS " + fromMapping.getTempFieldName();
+            segment = "CONCAT(REPLACE(SUBSTRING(" + fromField + ", 1, " + length + "), ' ', ''), SUBSTRING(" + fromField + ", " + length + " + 1)) AS " + fromMapping.getTempFieldName();
         } else if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_RIGHT.equals(type) && length != null && length != 0) {
             // 从右侧开始，去除在长度为length的范围内的空字符
-            segment = "CONCAT(SUBSTRING(" + fromField + ", 1, LENGTH(" + fromField + ") - " + length + "), REPLACE(SUBSTRING(" + fromField + ", -" + length + "), ' ', ''))" + fromMapping.getTempFieldName();
+            segment = "CONCAT(SUBSTRING(" + fromField + ", 1, LENGTH(" + fromField + ") - " + length + "), REPLACE(SUBSTRING(" + fromField + ", LENGTH(" + fromField + "') - " + length + " + 1), ' ', '')) AS " + fromMapping.getTempFieldName();
         } else {
             // 去除字段内的全部空格
             segment = "REPLACE(" + fromField + ", ' ', '') AS " + fromMapping.getTempFieldName();
@@ -397,55 +400,27 @@ public class HanaArranger implements ArrangerSelector {
         if (targetType.getType().equals(type)) {
             return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
         }
-
-        // 重置字段类型（系统中的数据类型）
-        mapping.setFinalFieldType(targetType.getType());
-        field.setType(targetType.getType());
-        StringBuilder segmentBuilder = new StringBuilder("CONVERT(");
-        segmentBuilder.append(fromField);
-        segmentBuilder.append(", ");
+        ArrangeResultModel result = null;
         switch (targetType) {
             case Integer:
-                segmentBuilder.append("SIGNED");
-                field.setColumnType("bigint(32)");
-                field.setDataType("bigint");
-                field.setLength("32");
-                field.setScale("0");
+                result = toInteger(fromFieldMapping, fromType);
                 break;
             case Float:
-                segmentBuilder.append("DECIMAL");
-                field.setColumnType("decimal(32,8)");
-                field.setDataType("decimal");
-                field.setLength("32");
-                field.setScale("8");
+                result = toFloat(fromFieldMapping, fromType);
                 break;
             case Date:
-                segmentBuilder.append("DATE");
-                field.setColumnType("date");
-                field.setDataType("date");
-                field.setLength("0");
-                field.setScale("0");
+                result = toDate(fromFieldMapping, fromType);
                 break;
             case DateTime:
-                segmentBuilder.append("DATETIME");
-                field.setColumnType("datetime");
-                field.setDataType("datetime");
-                field.setLength("0");
-                field.setScale("0");
+                result = toDateTime(fromFieldMapping, fromType);
                 break;
             case Text:
-                segmentBuilder.append("CHAR");
-                field.setColumnType("varchar(255)");
-                field.setDataType("varchar");
-                field.setLength("255");
-                field.setScale("0");
+                result = toText(fromFieldMapping, fromType);
                 break;
             default:
                 throw new BizException("转换类型失败，暂不支持的类型！");
         }
-        segmentBuilder.append(") AS ");
-        segmentBuilder.append(mapping.getTempFieldName());
-        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+        return result;
     }
 
     @Override
@@ -477,11 +452,11 @@ public class HanaArranger implements ArrangerSelector {
         } else {
             // 转换数据格式
             if (DataTypeEnum.DateTime.equals(dataType)) {
-                fillValue = "TO_DATE('" + fillValue +  "')";
+                fillValue = "TO_DATE('" + fillValue + "')";
             } else if (DataTypeEnum.Date.equals(dataType)) {
-                fillValue = "TO_TIMESTAMP('" + fillValue +  "')";
+                fillValue = "TO_TIMESTAMP('" + fillValue + "')";
             } else if (DataTypeEnum.Text.equals(dataType)) {
-                fillValue = "'" + fillValue +  "'";
+                fillValue = "'" + fillValue + "'";
             }
         }
 
@@ -498,5 +473,238 @@ public class HanaArranger implements ArrangerSelector {
         segmentBuilder.append(" END AS ");
         segmentBuilder.append(fromFieldMapping.getTempFieldName());
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
+    }
+
+    /**
+     * 转换字段为整数类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toInteger(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getType();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case Float:
+                segmentBuilder.append("CAST(").append(fromField).append(" AS DECIMAL (32))");
+                break;
+            case Text:
+                // CASE WHEN REGEXP_LIKE('123','(^[+-]?\d{0,}\.?\d{0,}$)') THEN CAST('123' AS DECIMAL (10)) ELSE NULL END
+                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",");
+                // 使用正则匹配数字类型字符串
+                segmentBuilder.append("'^(\\-|\\+)?\\d+(\\.\\d+)?$'");
+                segmentBuilder.append(") THEN CAST(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" AS DECIMAL (32)) ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        FieldMappingModel mapping = fromMapping.clone();
+        mapping.setFinalFieldType(DataTypeEnum.Integer.getType());
+        mapping.getTableField().setType(DataTypeEnum.Integer.getType());
+        mapping.getTableField().setColumnType("bigint(32)");
+        mapping.getTableField().setDataType("bigint");
+        mapping.getTableField().setLength("32");
+        mapping.getTableField().setScale("0");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为浮点数类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toFloat(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getType();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case Integer:
+                segmentBuilder.append("CAST(").append(fromField).append(" AS DECIMAL (32,8))");
+                break;
+            case Text:
+                // CASE WHEN REGEXP_LIKE('123','(^[+-]?\d{0,}\.?\d{0,}$)') THEN CAST('123' AS DECIMAL (32,8)) ELSE NULL END
+                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",");
+                // 使用正则匹配数字类型字符串
+                segmentBuilder.append("'^(\\-|\\+)?\\d+(\\.\\d+)?$'");
+                segmentBuilder.append(") THEN CAST(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" AS DECIMAL (32,8)) ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        FieldMappingModel mapping = fromMapping.clone();
+        mapping.setFinalFieldType(DataTypeEnum.Float.getType());
+        mapping.getTableField().setType(DataTypeEnum.Float.getType());
+        mapping.getTableField().setColumnType("DECIMAL(32,8)");
+        mapping.getTableField().setDataType("DECIMAL");
+        mapping.getTableField().setLength("32");
+        mapping.getTableField().setScale("8");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为日期类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toDate(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getType();
+        FieldMappingModel mapping = fromMapping.clone();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case DateTime:
+                segmentBuilder.append(fromField);
+                break;
+            case Text:
+                // CASE WHEN REGEXP_LIKE('2020-02-21', '^[1-2]\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$') THEN TO_DATE('2020-02-21', 'yyyy-mm-dd') ELSE NULL END
+                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",");
+                // 使用正则匹配yyyy-MM-dd格式日期字符串（暂不支持校验时间有效性）
+                segmentBuilder.append("'^[1-2]\\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$'");
+                segmentBuilder.append(") THEN TO_DATE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",'yyyy-mm-dd') ELSE NULL END");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        mapping.setFinalFieldType(DataTypeEnum.Date.getType());
+        mapping.getTableField().setType(DataTypeEnum.Date.getType());
+        mapping.getTableField().setColumnType("date");
+        mapping.getTableField().setDataType("date");
+        mapping.getTableField().setLength("0");
+        mapping.getTableField().setScale("0");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为日期时间类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toDateTime(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getType();
+        FieldMappingModel mapping = fromMapping.clone();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case DateTime:
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(" ");
+                break;
+            case Text:
+                // CASE WHEN REGEXP_LIKE('2020-02-21', '^[1-2]\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))$') THEN TO_DATE('2020-02-21', 'yyyy-mm-dd') ELSE NULL END
+                segmentBuilder.append("CASE WHEN REGEXP_LIKE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",");
+                // 使用正则匹配yyyy-MM-dd HH:mm:ss格式时间字符串（暂不支持校验时间有效性）
+                segmentBuilder.append("'^[1-2]\\d{3}-((0[1-9])|(1[0-2]))-(((0[1-9])|([1-2][0-9])|(3[0-1])))\\s(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d$'");
+                segmentBuilder.append(") THEN TO_DATE(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",'yyyy-mm-dd hh24:mi:ss') ELSE NULL END ");
+                break;
+            default:
+                return defaultModify(fromMapping, fromType);
+        }
+
+        mapping.setFinalFieldType(DataTypeEnum.DateTime.getType());
+        mapping.getTableField().setType(DataTypeEnum.DateTime.getType());
+        mapping.getTableField().setColumnType("datetime");
+        mapping.getTableField().setDataType("datetime");
+        mapping.getTableField().setLength("0");
+        mapping.getTableField().setScale("0");
+        segmentBuilder.append("AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 转换字段为文本类型
+     *
+     * @param fromMapping 从字段映射对象
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel toText(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = getFromField(fromMapping, fromType);
+        String type = fromMapping.getTableField().getType();
+        FieldMappingModel mapping = fromMapping.clone();
+        DataTypeEnum sourceType = DataTypeEnum.valueOf(type);
+        StringBuilder segmentBuilder = new StringBuilder();
+        switch (sourceType) {
+            case Date:
+                segmentBuilder.append("TO_CHAR(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",'yyyy-mm-dd')");
+                break;
+            case DateTime:
+                segmentBuilder.append("TO_CHAR(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(",'yyyy-mm-dd hh24:mi:ss')");
+                break;
+            default:
+                segmentBuilder.append("TO_CHAR(");
+                segmentBuilder.append(fromField);
+                segmentBuilder.append(")");
+        }
+
+        mapping.setFinalFieldType(DataTypeEnum.Text.getType());
+        mapping.getTableField().setType(DataTypeEnum.Text.getType());
+        mapping.getTableField().setColumnType("varchar(255)");
+        mapping.getTableField().setDataType("varchar");
+        mapping.getTableField().setLength("255");
+        mapping.getTableField().setScale("0");
+        segmentBuilder.append(" AS ");
+        segmentBuilder.append(mapping.getTempFieldName());
+        return new ArrangeResultModel(mapping.getTempFieldName(), segmentBuilder.toString(), false, mapping);
+    }
+
+    /**
+     * 默认不做任何处理
+     *
+     * @param fromMapping 从组件字段映射
+     * @param fromType    从组件类型
+     * @return ArrangeResultModel
+     */
+    private ArrangeResultModel defaultModify(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
+        String fromField = fromMapping.getOriginalFieldName();
+        String tempSegment = fromField + " AS " + fromMapping.getTempFieldName();
+        if (!ComponentTypeEnum.DATASOURCE.equals(fromType)) {
+            fromField = fromMapping.getTempFieldName();
+            tempSegment = fromField;
+        }
+
+        FieldMappingModel mapping = fromMapping.clone();
+        return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
     }
 }

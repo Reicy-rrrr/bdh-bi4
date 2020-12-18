@@ -5,7 +5,7 @@ import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
-import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
+import com.deloitte.bdh.data.collation.enums.HanaDataTypeEnum;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -89,7 +89,7 @@ public class Hana extends AbstractProcess implements DbSelector {
                 }
                 columnType.append(")");
             }
-            TableField field = new TableField(DataTypeEnum.Text.getType(), name, comments, columnType.toString(), dataType, length, scale);
+            TableField field = new TableField(HanaDataTypeEnum.get(dataType).getValue().getType(), name, comments, columnType.toString(), dataType, length, scale);
             columns.add(field);
         }
         super.close(con);
