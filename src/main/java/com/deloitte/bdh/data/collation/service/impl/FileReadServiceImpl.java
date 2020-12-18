@@ -160,8 +160,14 @@ public class FileReadServiceImpl implements FileReadService {
                     }
 
                     Object value = ExcelUtils.getCellValue(cell);
-                    document.put(fields.get(cellIndex), value);
                     DataTypeEnum dataType = getDataType(value);
+                    if (DataTypeEnum.Date.equals(dataType)) {
+                        document.put(fields.get(cellIndex), DateUtils.formatStandardDate((Date) value));
+                    } else if (DataTypeEnum.DateTime.equals(dataType)) {
+                        document.put(fields.get(cellIndex), DateUtils.formatStandardDateTime((Date) value));
+                    } else {
+                        document.put(fields.get(cellIndex), value);
+                    }
                     if (dataTypes.containsKey(cellIndex)) {
                         dataTypes.get(cellIndex).add(dataType);
                     } else {
