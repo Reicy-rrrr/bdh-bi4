@@ -3,21 +3,24 @@ package com.deloitte.bdh.data.analyse.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.AesUtil;
 import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePublicShareMapper;
+import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareDto;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
-import com.deloitte.bdh.common.base.AbstractService;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,6 +67,26 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
         share.setType(dto.getType());
         shareMapper.updateById(share);
         return share.getAddress() + "/" + share.getCode();
+    }
+
+    @Override
+    public BiUiAnalysePublicShare get(String id) {
+
+        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, id);
+        //排除订阅数据
+        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
+        BiUiAnalysePublicShare share = getOne(lambdaQueryWrapper);
+
+        if (null == share) {
+            share = new BiUiAnalysePublicShare();
+            share.setRefPageId(id);
+            share.setType(ShareTypeEnum.ZERO.getKey());
+            share.setTenantId(ThreadLocalHolder.getTenantId());
+            save(share);
+        }
+        return share;
     }
 
 }

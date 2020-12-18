@@ -3,13 +3,16 @@ package com.deloitte.bdh.data.analyse.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
+import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
+import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -33,6 +36,9 @@ public class AnalysePageController {
 
     @Resource
     AnalysePageService analysePageService;
+
+    @Resource
+    private BiUiAnalysePublicShareService shareService;
 
     @Resource
     BiUiAnalysePageComponentService biUiAnalysePageComponentService;
@@ -86,13 +92,6 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(analysePageService.getAnalysePageDrafts(request));
     }
 
-    @ApiOperation(value = "删除草稿", notes = "删除草稿")
-    @PostMapping("/delAnalysePageDrafts")
-    public RetResult<Void> delAnalysePageDrafts(@RequestBody @Validated RetRequest<BatchDeleteAnalyseDto> request) {
-        analysePageService.delAnalysePageDrafts(request);
-        return RetResponse.makeOKRsp();
-    }
-
     @ApiOperation(value = "设置主页", notes = "设置主页")
     @PostMapping("/setHomePage")
     public RetResult<Void> setHomePage(@RequestBody @Validated RetRequest<String> request) {
@@ -136,6 +135,17 @@ public class AnalysePageController {
     public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<pageComponentDto> request) {
 
         return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent(request.getData()));
+    }
+
+
+    @ApiOperation(value = "获取非公开报表的链接", notes = "获取非公开报表的链接")
+    @PostMapping("/getUrl")
+    public RetResult<BiUiAnalysePublicShare> getUrl(@RequestBody @Validated RetRequest<String> request) {
+        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData());
+        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
+        BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
+        return RetResponse.makeOKRsp(share);
     }
 
 }

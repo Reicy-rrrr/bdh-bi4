@@ -9,7 +9,6 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.AesUtil;
 import com.deloitte.bdh.common.util.Md5Util;
-import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
@@ -29,9 +28,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RestController;
-import sun.security.provider.SHA;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -60,21 +57,7 @@ public class BiUiAnalysePublicShareController {
     @ApiOperation(value = "获取当前page的公开分享状态", notes = "获取当前page的公开分享状态")
     @PostMapping("/get")
     public RetResult<BiUiAnalysePublicShare> get(@RequestBody @Validated RetRequest<String> request) {
-        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData());
-        //排除订阅数据
-        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
-        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
-        BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
-
-        if (null == share) {
-            share = new BiUiAnalysePublicShare();
-            share.setRefPageId(request.getData());
-            share.setType(ShareTypeEnum.ZERO.getKey());
-            share.setTenantId(ThreadLocalHolder.getTenantId());
-            shareService.save(share);
-        }
-        return RetResponse.makeOKRsp(share);
+        return RetResponse.makeOKRsp(shareService.get(request.getData()));
     }
 
     @ApiOperation(value = "改变公开状态", notes = "改变公开状态")
@@ -103,7 +86,7 @@ public class BiUiAnalysePublicShareController {
         if (StringUtils.equals(request.getData().getDecryptType(), "0")) {
             List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
             queryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
-        } else if (StringUtils.equals(request.getData().getDecryptType(), "1")){
+        } else if (StringUtils.equals(request.getData().getDecryptType(), "1")) {
             queryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FOUR.getKey());
         } else if (StringUtils.equals(request.getData().getDecryptType(), "2")) {
             queryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());

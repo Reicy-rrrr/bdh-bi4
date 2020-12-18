@@ -1,7 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareDto;
 
 
@@ -17,5 +17,7 @@ public interface BiUiAnalysePublicShareService extends Service<BiUiAnalysePublic
 
 
     String update(AnalysePublicShareDto dto);
+
+    BiUiAnalysePublicShare get(String Id);
 
 }

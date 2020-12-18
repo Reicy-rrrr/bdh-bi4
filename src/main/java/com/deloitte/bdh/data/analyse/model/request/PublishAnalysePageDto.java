@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.analyse.model.request;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import java.io.Serializable;
 import java.util.List;
@@ -20,7 +19,6 @@ public class PublishAnalysePageDto implements Serializable {
     @ApiModelProperty(value = "pageId")
     String pageId;
 
-    @NotBlank
     @ApiModelProperty(value = "categoryId")
     String categoryId;
 
@@ -30,6 +28,12 @@ public class PublishAnalysePageDto implements Serializable {
     @NotBlank
     @ApiModelProperty(value = "配置内容")
     String content;
+
+    @ApiModelProperty(value = "是否是公开报表,1：是；0：不是")
+    String isPublic;
+
+    @ApiModelProperty(value = "报表密码")
+    String password;
 
     @ApiModelProperty(value = "可见编辑权限配置")
     SaveResourcePermissionDto saveResourcePermissionDto;

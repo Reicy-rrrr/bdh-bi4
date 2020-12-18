@@ -8,12 +8,16 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.util.AesUtil;
+import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.*;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -23,14 +27,17 @@ import com.deloitte.bdh.data.analyse.service.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -44,6 +51,16 @@ import java.util.regex.Pattern;
 @Service
 @DS(DSConstant.BI_DB)
 public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMapper, BiUiAnalysePage> implements AnalysePageService {
+
+
+    @Value("${bi.analyse.view.address}")
+    private String viewAddress;
+
+    @Value("${bi.analyse.encryptPass}")
+    private String encryptPass;
+
+    @Resource
+    private BiUiAnalysePublicShareService shareService;
 
     @Resource
     private AnalysePageConfigService configService;
@@ -184,11 +201,60 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return dto;
     }
 
+    private void setAccessUrl(String pageId, String password, String isPublic) {
+
+        //获取访问地址
+        LambdaQueryWrapper<BiUiAnalysePublicShare> shareLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, pageId);
+        //公开状态
+        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+
+        if (isPublic.equals(ShareTypeEnum.NOT.getKey())) {
+            shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
+        } else {
+            shareLambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
+        }
+
+        BiUiAnalysePublicShare share = shareService.getOne(shareLambdaQueryWrapper);
+        if (null == share) {
+            share = new BiUiAnalysePublicShare();
+            share.setRefPageId(pageId);
+            if (isPublic.equals(ShareTypeEnum.NOT.getKey())) {
+                share.setType(ShareTypeEnum.FIVE.getKey());
+            } else {
+                if (StringUtils.isNotEmpty(password)) {
+                    share.setType(ShareTypeEnum.TWO.getKey());
+                } else {
+                    share.setType(ShareTypeEnum.ONE.getKey());
+                }
+            }
+            if (StringUtils.isNotEmpty(password)) {
+                share.setPassword(Md5Util.getMD5(password, encryptPass + ThreadLocalHolder.getTenantCode()));
+            } else {
+                share.setPassword(null);
+            }
+            share.setTenantId(ThreadLocalHolder.getTenantId());
+            Map<String, Object> params = Maps.newHashMap();
+            params.put("tenantCode", ThreadLocalHolder.getTenantCode());
+            params.put("refPageId", pageId);
+            share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
+            share.setAddress(viewAddress);
+            shareService.save(share);
+        } else {
+            if (StringUtils.isNotEmpty(password)) {
+                share.setPassword(Md5Util.getMD5(password, encryptPass + ThreadLocalHolder.getTenantCode()));
+            } else {
+                share.setPassword(null);
+            }
+            shareService.updateById(share);
+        }
+    }
+
     @Transactional
     @Override
     public AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request) {
 
-        PublishAnalysePageDto publishDto =  request.getData();
+        PublishAnalysePageDto publishDto = request.getData();
         String pageId = publishDto.getPageId();
         String configId = publishDto.getConfigId();
         String categoryId = publishDto.getCategoryId();
@@ -196,13 +262,16 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
         BiUiAnalysePageConfig originConfig = configService.getById(configId);
         BiUiAnalysePage originPage = getById(pageId);
+        String password = publishDto.getPassword();
 
         if (originPage == null) {
-            throw new BizException("");
+            throw new BizException("报表已经不存在了。");
         }
 
+        //获取公开状态
+        String isPublic = publishDto.getIsPublic();
         if (originPage.getParentId().equals(categoryId)) {
-            updatePage(publishDto,originPage, originConfig);
+            updatePage(publishDto, originPage, originConfig);
         } else {
             List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
                     .eq(BiUiAnalysePage::getParentId, categoryId)
@@ -224,24 +293,27 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 newPage.setIsEdit(YnTypeEnum.NO.getCode());
                 newPage.setOriginPageId(originPage.getId());
                 save(newPage);
+                String newPageId = newPage.getId();
                 //保存pageId到config
-                newConfig.setPageId(newPage.getId());
+                newConfig.setPageId(newPageId);
                 configService.updateById(newConfig);
-
-                dto.setId(newPage.getId());
+                //把新的pageId传给权限操作
+                dto.setId(newPageId);
             } else {
-                updatePage(publishDto,originPage, originConfig);
+                updatePage(publishDto, originPage, originConfig);
             }
         }
 
         //可见编辑权限
         userResourceService.saveResourcePermission(dto);
+        //生成链接
+        setAccessUrl(dto.getId(), password, isPublic);
         //数据权限
         userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), pageId);
         return null;
     }
 
-    private void updatePage(PublishAnalysePageDto dto,BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig) {
+    private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig) {
 
         //新建config
         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
@@ -251,7 +323,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         configService.save(newConfig);
         //更新page
         originPage.setPublishId(newConfig.getId());
-        if (StringUtils.isEmpty(originPage.getOriginPageId())){
+        if (StringUtils.isEmpty(originPage.getOriginPageId())) {
             originPage.setOriginPageId(originPage.getId());
         }
         originPage.setIsEdit(YnTypeEnum.NO.getCode());
@@ -272,18 +344,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList);
-    }
-
-    @Override
-    public void delAnalysePageDrafts(RetRequest<BatchDeleteAnalyseDto> request) {
-        LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        pageLambdaQueryWrapper.in(BiUiAnalysePage::getId, request.getData().getIds());
-        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getTenantId, ThreadLocalHolder.getTenantId());
-        List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
-        if (CollectionUtils.isNotEmpty(pageList)) {
-            pageList.forEach(page -> page.setIsEdit(YnTypeEnum.NO.getCode()));
-            this.updateBatchById(pageList);
-        }
     }
 
     private void checkBiUiAnalysePageByName(String code, String name, String tenantId, String currentId) {
