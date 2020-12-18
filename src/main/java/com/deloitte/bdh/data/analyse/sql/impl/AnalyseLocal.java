@@ -10,7 +10,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.sql.AbstractAnalyseSql;
+import com.deloitte.bdh.data.analyse.sql.AbstractRela;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.analyse.sql.utils.MysqlBuildUtil;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service("analyseLocal")
-public class AnalyseLocal extends AbstractAnalyseSql {
+public class AnalyseLocal extends AbstractRela {
     @Resource
     protected BiUiDemoMapper biUiDemoMapper;
 

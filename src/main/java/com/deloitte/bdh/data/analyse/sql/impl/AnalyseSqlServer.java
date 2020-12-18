@@ -10,7 +10,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
-import com.deloitte.bdh.data.analyse.sql.AbstractAnalyseSql;
+import com.deloitte.bdh.data.analyse.sql.AbstractRela;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import com.deloitte.bdh.data.analyse.sql.utils.SqlserverBuildUtil;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Slf4j
 @Service("analysesqlserver")
-public class AnalyseSqlServer extends AbstractAnalyseSql {
+public class AnalyseSqlServer extends AbstractRela {
     @Resource
     private DbSelector dbSelector;
 
