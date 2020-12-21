@@ -8,10 +8,7 @@ import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.By;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +40,6 @@ public class ScreenshotUtil {
     @Value("${bi.analyse.driverPath}")
     private String driverPath;
 
-//    private static String screenshotPath = System.getProperty("user.dir") + File.separator + "target" + File.separator + "screenshot-output";
-
     /**
      * 全屏截图
      * @param url
@@ -52,10 +47,11 @@ public class ScreenshotUtil {
      * @throws Exception
      */
     public String fullScreen(String url) throws Exception {
-//        url = "https://news.qq.com/";
+        url = "https://news.qq.com/";
         WebDriver driver = getDriver();
         driver.get(url);
 //        driver.findElement(By.className("ant-layout"));
+        InputStream input;
         try {
             Thread.sleep(2000);
             // 截图格式
@@ -69,7 +65,7 @@ public class ScreenshotUtil {
             // 截图存储
             ImageIO.write(bi, "png", os);
 
-            InputStream input = new ByteArrayInputStream(os.toByteArray());
+            input = new ByteArrayInputStream(os.toByteArray());
             String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
             String fileName = screenshotName + screenshotFormat;
             aliyunOssUtil.uploadFile2OSS(input, filePath, fileName);
@@ -125,7 +121,8 @@ public class ScreenshotUtil {
     }
 
     private WebDriver getDriver() {
-        System.setProperty("webdriver.chrome.driver", driverPath);
+//        System.setProperty("webdriver.chrome.driver", driverPath);
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\junlicq\\Documents\\driver\\chromedriver.exe");
         ChromeOptions chromeOptions = new ChromeOptions();
         //设置为 headless 模式
         chromeOptions.addArguments("--headless");

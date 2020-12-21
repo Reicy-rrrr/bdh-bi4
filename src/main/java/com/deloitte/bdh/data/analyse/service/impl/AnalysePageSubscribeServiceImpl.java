@@ -11,6 +11,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.properties.OssProperties;
 import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseSubscribeMapper;
@@ -33,9 +34,11 @@ import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -53,6 +56,9 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
 
     @Value("${bi.analyse.subscribe.address}")
     private String subscribeAddress;
+
+    @Value("${bi.analyse.subscribe.call}")
+    private String callBackAddress;
 
     @Value("${bi.analyse.view.address}")
     private String viewAddress;
@@ -78,6 +84,12 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     @Resource
     private EmailService emailService;
 
+    @Resource
+    private AliyunOssUtil aliyunOssUtil;
+
+    @Autowired
+    private OssProperties ossProperties;
+
     @Transactional
     @Override
     public void subscribe(SubscribeDto request) {
@@ -92,7 +104,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         }
         BeanUtils.copyProperties(request, subscribe);
         subscribe.setReceiver(JSON.toJSONString(request.getReceiver()));
-        subscribe.setImgUrl(getImgUrl(request));
+        String imgUrl = getImgUrl(request);
+        subscribe.setImgUrl(imgUrl);
         subscribe.setAccessUrl(getAccessUrl(request));
         subscribe.setTenantId(ThreadLocalHolder.getTenantId());
         subscribeService.saveOrUpdate(subscribe);
@@ -103,9 +116,9 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         params.put("modelCode", subscribe.getTaskId());
         params.put("tenantId", ThreadLocalHolder.getTenantId());
         params.put("operator", ThreadLocalHolder.getOperator());
+        params.put("imgUrl", imgUrl);
         try {
-            jobService.addOrUpdate(subscribe.getTaskId(), GetIpAndPortUtil.getIpAndPort() + "/bi/subscribe/execute",
-                    CronUtil.createCronExpression(request.getCronData()), params);
+            jobService.addOrUpdate(subscribe.getTaskId(), callBackAddress, CronUtil.createCronExpression(request.getCronData()), params);
             if (StringUtils.equals(subscribe.getStatus(), "1")) {
                 jobService.start(subscribe.getTaskId());
             } else {
@@ -143,7 +156,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     }
 
     @Override
-    public void execute(String pageId) {
+    public void execute(String pageId, MultipartFile file) {
         //查询要执行的数据
         LambdaQueryWrapper<BiUiAnalyseSubscribe> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, pageId);
@@ -155,9 +168,16 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         if (CollectionUtils.isNotEmpty(userIdMailDtoList)) {
             List<UserIdMailDto> receiveList = JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class);
             if (CollectionUtils.isNotEmpty(receiveList)) {
-                String imgUrl = null;
+                String imgUrl;
                 try {
-                    imgUrl = screenshotUtil.fullScreen(subscribe.getImgUrl());
+                    String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
+                    String name = aliyunOssUtil.uploadFile2Oss(filePath, file);
+                    imgUrl = aliyunOssUtil.getImgUrl(filePath, name);
+                    // 对于在内网上传的文件需要把内网地址换为外网地址
+                    if (imgUrl.contains(ossProperties.getTargetEndpoint())) {
+                        imgUrl = imgUrl.replace(ossProperties.getTargetEndpoint(), ossProperties.getReplacementEndpoint());
+                    }
+//                    imgUrl = screenshotUtil.fullScreen(subscribe.getImgUrl());
                 } catch (Exception e) {
                     for (UserIdMailDto userIdMailDto : receiveList) {
                         //执行记录

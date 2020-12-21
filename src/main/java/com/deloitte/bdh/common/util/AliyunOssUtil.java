@@ -124,8 +124,8 @@ public class AliyunOssUtil {
 	 * @return 出错返回"" ,唯一MD5数字签名
 	 */
 	public String uploadFile2OSS(InputStream inputStream, String filePath, String fileName) {
-		String endpoint = ossProperties.getOssEndpoint();
-//		String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
+//		String endpoint = ossProperties.getOssEndpoint();
+		String endpoint = "https://oss-cn-hangzhou.aliyuncs.com";
 		String accessKeyId = ossProperties.getOssAccesskeyId();
 		String accessKeySecret = ossProperties.getOssAccesskeySecret();
 		String bucketName = ossProperties.getOssBucketName();

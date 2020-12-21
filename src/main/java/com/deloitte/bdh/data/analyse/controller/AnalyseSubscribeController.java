@@ -6,22 +6,18 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.model.request.SubscribeDto;
+import com.deloitte.bdh.data.analyse.model.request.UploadDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseSubscribeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseSubscribeLogDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.Map;
 
 /**
  * Author:LIJUN
@@ -56,12 +52,12 @@ public class AnalyseSubscribeController {
         return RetResponse.makeOKRsp(subscribeService.getExecuteLog(request.getData()));
     }
 
-    @ApiOperation(value = "计划任务回调", notes = "计划任务回调")
-    @PostMapping("/execute")
-    public RetResult<Void> execute(@RequestBody Map<String, Object> map) {
-        ThreadLocalHolder.set("tenantId", MapUtils.getString(map, "tenantId"));
-        ThreadLocalHolder.set("operator", MapUtils.getString(map, "operator"));
-        subscribeService.execute(MapUtils.getString(map, "pageId"));
+    @ApiOperation(value = "上传截图并发送邮件", notes = "上传截图并发送邮件")
+    @PostMapping("/upload")
+    public RetResult<Void> execute(UploadDto dto, @RequestParam("file") MultipartFile file) {
+        ThreadLocalHolder.set("tenantId", dto.getTenantId());
+        ThreadLocalHolder.set("operator", dto.getOperator());
+        subscribeService.execute(dto.getPageId(), file);
         return RetResponse.makeOKRsp();
     }
 

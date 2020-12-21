@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalyseSubscribeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseSubscribeLogDto;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**
@@ -39,5 +40,5 @@ public interface AnalysePageSubscribeService extends Service<BiUiAnalyseSubscrib
      * 执行计划任务回调
      * @param pageId
      */
-    void execute(String pageId);
+    void execute(String pageId, MultipartFile file);
 }
