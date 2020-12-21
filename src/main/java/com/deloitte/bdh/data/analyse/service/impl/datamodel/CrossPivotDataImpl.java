@@ -74,7 +74,7 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
                 String[] colNameDLArr = colNameDLList.toArray(new String[0]);
 
                 //构造树形结构
-                List<ListTree> x = buildTree(rows, 0, colNameWDArr, colNameDLArr);
+                List<ListTree> x = buildTree(rows, "", 0, colNameWDArr, colNameDLArr);
                 columns.put("x", x);
             }
 
@@ -91,7 +91,7 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         }
     }
 
-    private List<ListTree> buildTree(List<Map<String, Object>> rows, int currentNode, String[] colNameWDArr, String[] colNameDLArr) {
+    private List<ListTree> buildTree(List<Map<String, Object>> rows, String parentName, int currentNode, String[] colNameWDArr, String[] colNameDLArr) {
         List<ListTree> treeDataModels = Lists.newArrayList();
 
         Map<String, List<Map<String, Object>>> keyMap = Maps.newHashMap();
@@ -113,11 +113,19 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         for (String key : keyMap.keySet()) {
             ListTree tree = new ListTree();
             tree.setTitle(key);
-            tree.setDataIndex(key);
+            if (StringUtils.isNotBlank(parentName)) {
+                tree.setDataIndex(parentName + "_" + key);
+            } else {
+                tree.setDataIndex(key);
+            }
             if (currentNode != colNameWDArr.length) {
-                tree.setKey(key);
+                if (StringUtils.isNotBlank(parentName)) {
+                    tree.setKey(parentName + "_" + key);
+                } else {
+                    tree.setKey(key);
+                }
 //                tree.setKey(colNameArr[currentNode]);
-                tree.setChildren(buildTree(keyMap.get(key), currentNode + 1, colNameWDArr, colNameDLArr));
+                tree.setChildren(buildTree(keyMap.get(key), tree.getKey(), currentNode + 1, colNameWDArr, colNameDLArr));
                 treeDataModels.add(tree);
                 //长度大于1才添加度量为最后一级
                 if (null != colNameDLArr && colNameDLArr.length > 1) {
