@@ -27,6 +27,7 @@ public abstract class AbstractDataService {
 
     protected abstract void validate(DataModel dataModel);
 
+    @Deprecated
     protected BaseComponentDataResponse execute(DataModel dataModel, Sql sql) {
         return execute(dataModel, sql.build());
     }
@@ -39,7 +40,7 @@ public abstract class AbstractDataService {
         return execute(dataModel, () -> sql, rows);
     }
 
-    protected BaseComponentDataResponse execute(DataModel dataModel, Sql sqlInterface, Rows rowsInterface) {
+    final protected BaseComponentDataResponse execute(DataModel dataModel, Sql sqlInterface, Rows rowsInterface) {
         BaseComponentDataResponse response = new BaseComponentDataResponse();
         List<Map<String, Object>> list = null;
         String sql = sqlInterface.build();

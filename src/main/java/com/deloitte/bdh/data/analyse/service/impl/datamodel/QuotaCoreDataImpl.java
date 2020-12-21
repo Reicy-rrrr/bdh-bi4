@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataReques
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.sql.utils.MysqlBuildUtil;
+import com.deloitte.bdh.data.analyse.sql.utils.OracleBuildUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -39,22 +40,22 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
                 @Override
                 public String local(DataModel model, String tableName) {
-                    return doSourceSql(sql, dataModel);
+                    return sourceMysql(sql, dataModel);
                 }
 
                 @Override
                 public String mysql(DataModel model, String tableName) {
-                    return doSourceSql(sql, dataModel);
+                    return sourceMysql(sql, dataModel);
                 }
 
                 @Override
                 public String oracle(DataModel model, String tableName) {
-                    return null;
+                    return sourceOracle(sql, dataModel);
                 }
 
                 @Override
                 public String sqlServer(DataModel model, String tableName) {
-                    return null;
+                    return sourceSqlserver(sql, dataModel);
                 }
 
                 @Override
@@ -68,22 +69,22 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 chainSqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
                     @Override
                     public String local(DataModel model, String tableName) {
-                        return chainSql(sql, dataModel);
+                        return chainMysql(sql, dataModel);
                     }
 
                     @Override
                     public String mysql(DataModel model, String tableName) {
-                        return chainSql(sql, dataModel);
+                        return chainMysql(sql, dataModel);
                     }
 
                     @Override
                     public String oracle(DataModel model, String tableName) {
-                        return null;
+                        return chainOracle(sql, dataModel);
                     }
 
                     @Override
                     public String sqlServer(DataModel model, String tableName) {
-                        return null;
+                        return chainSqlserver(sql, dataModel);
                     }
 
                     @Override
@@ -97,22 +98,22 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 yoySqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
                     @Override
                     public String local(DataModel model, String tableName) {
-                        return yoySql(sql, dataModel);
+                        return yoyMysql(sql, dataModel);
                     }
 
                     @Override
                     public String mysql(DataModel model, String tableName) {
-                        return yoySql(sql, dataModel);
+                        return yoyMysql(sql, dataModel);
                     }
 
                     @Override
                     public String oracle(DataModel model, String tableName) {
-                        return null;
+                        return yoyOracle(sql, dataModel);
                     }
 
                     @Override
                     public String sqlServer(DataModel model, String tableName) {
-                        return null;
+                        return yoySqlserver(sql, dataModel);
                     }
 
                     @Override
@@ -199,7 +200,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         dataModel.setPage(null);
     }
 
-    private String doSourceSql(String sql, DataModel dataModel) {
+    private String sourceMysql(String sql, DataModel dataModel) {
         String str = null;
         if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATE_FORMAT('#1','%Y')=DATE_FORMAT(#2,'%Y') ";
@@ -217,7 +218,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return MysqlBuildUtil.append(sql, appendField, 2);
     }
 
-    private String chainSql(String sql, DataModel dataModel) {
+    private String chainMysql(String sql, DataModel dataModel) {
         String str = null;
         if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
             str = " YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year))=DATE_FORMAT(#2,'%Y') ";
@@ -239,7 +240,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return MysqlBuildUtil.append(sql, appendField, 2);
     }
 
-    private String yoySql(String sql, DataModel dataModel) {
+    private String yoyMysql(String sql, DataModel dataModel) {
         //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
         String str = null;
         if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
@@ -256,6 +257,124 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
         return MysqlBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String sourceOracle(String sql, DataModel dataModel) {
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss'),'yyyy')=to_char(#2,'yyyy') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss'),'yyyy-mm')=to_char(#2,'yyyy-mm') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd')=to_char(#2,'yyyy-mm-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            str = "CONCAT(to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss') ,'yyyy') ,to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss') ,'Q'))=CONCAT(to_char(#2,'yyyy') ,to_char(#2 ,'Q')) ";
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String chainOracle(String sql, DataModel dataModel) {
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-1,'month'),'yyyyMM')=to_char(#2,'yyyyMM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') -1,'yyyy-mm-dd')=to_char(#2,'yyyy-mm-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
+                str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-4,'month'),'Q')=to_char(#2 ,'Q') AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss'),'yyyy')=to_char(#2,'yyyy') ";
+            } else {
+                str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-4,'month'),'Q')=to_char(#2 ,'Q') AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss')+ numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
+            }
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String yoyOracle(String sql, DataModel dataModel) {
+        //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-1,'year'),'yyyyMM')=to_char(#2,'yyyyMM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-1,'year'),'yyyy-mm-dd')=to_char(#2,'yyyy-mm-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            str = "  to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss'),'Q')=to_char(#2 ,'Q')  AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss')+ numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String sourceSqlserver(String sql, DataModel dataModel) {
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " YEAR('#1')=YEAR(#2) ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(convert(datetime,'#1', 20),'yyyy-MM') =format(#2,'yyyy-MM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(convert(datetime,'#1', 20),'yyyy-MM-dd') =format(#2,'yyyy-MM-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " concat(format(convert(datetime,'#1', 20),'yyyy'),DATEPART(Q , convert(datetime,'#1', 20)))=concat(format(#2,'yyyy'),DATEPART(Q , #2)) ";
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String chainSqlserver(String sql, DataModel dataModel) {
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(DATEADD(MM,-1,'#1'),'yyyy-MM') =format(#2,'yyyy-MM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(DATEADD(dd,-1,'#1'),'yyyy-MM-dd') =format(#2,'yyyy-MM-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
+                str = " DATEPART(Q,DATEADD(Q,-1,convert(datetime,'#1', 20)))=DATEPART(Q , #2) AND YEAR('#1')=YEAR(#2)  ";
+            } else {
+                str = " DATEPART(Q,DATEADD(Q,-1,convert(datetime,'#1', 20)))=DATEPART(Q , #2) AND format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
+            }
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String yoySqlserver(String sql, DataModel dataModel) {
+        //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " YEAR('#1')-1=YEAR(#2) ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(DATEADD(yy,-1,'#1'),'yyyy-MM') =format(#2,'yyyy-MM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " format(DATEADD(yy,-1,'#1'),'yyyy-MM-dd') =format(#2,'yyyy-MM-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " DATEPART(Q , '#1')=DATEPART(Q , #2) AND format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
     }
 
     private boolean isOpen(DataModel dataModel) {
