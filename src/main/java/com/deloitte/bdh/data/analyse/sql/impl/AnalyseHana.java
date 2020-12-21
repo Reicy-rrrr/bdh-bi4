@@ -16,6 +16,7 @@ import com.deloitte.bdh.data.analyse.sql.utils.HanaBuildUtil;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
+import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,8 +42,8 @@ public class AnalyseHana extends AbstractRela {
         String groupBy = this.groupBy(model);
         String having = this.having(model);
         String orderBy = this.orderBy(model);
-        String limit = this.page(context);
-        return StringUtils.join(select, from, where, groupBy, having, orderBy, limit);
+//        String limit = this.page(context);
+        return StringUtils.join(select, from, where, groupBy, having, orderBy);
     }
 
     @Override
@@ -211,6 +212,16 @@ public class AnalyseHana extends AbstractRela {
         dbContext.setDbId(context.getDbId());
         dbContext.setQuerySql(context.getQuerySql());
         try {
+            //判断是否分页
+            if (null != context.getModel().getPage()) {
+                dbContext.setPage(context.getModel().getPage());
+                dbContext.setSize(context.getModel().getPageSize());
+                PageInfo<Map<String, Object>> pageInfo = dbSelector.executePageQuery(dbContext);
+                if (null == pageInfo) {
+                    return null;
+                }
+                return pageInfo.getList();
+            }
             return dbSelector.executeQuery(dbContext);
         } catch (Exception e) {
             log.error("执行异常:", e);
