@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.constants;
 
+import com.deloitte.bdh.data.collation.enums.HanaDataTypeEnum;
 import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
 import com.deloitte.bdh.data.collation.enums.OracleDataTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SQLServerDataTypeEnum;
@@ -56,7 +57,15 @@ public class AnalyseConstants {
             SQLServerDataTypeEnum.SMALL_MONEY.getType().toUpperCase(),
             SQLServerDataTypeEnum.NUMERIC.getType().toUpperCase(),
             SQLServerDataTypeEnum.DECIMAL.getType().toUpperCase(),
-            SQLServerDataTypeEnum.REAL.getType().toUpperCase()
+            SQLServerDataTypeEnum.REAL.getType().toUpperCase(),
+
+            HanaDataTypeEnum.BIGINT.getType().toUpperCase(),
+            HanaDataTypeEnum.INTEGER.getType().toUpperCase(),
+            HanaDataTypeEnum.SMALLINT.getType().toUpperCase(),
+            HanaDataTypeEnum.TINYINT.getType().toUpperCase(),
+            HanaDataTypeEnum.DECIMAL.getType().toUpperCase(),
+            HanaDataTypeEnum.DOUBLE.getType().toUpperCase(),
+            HanaDataTypeEnum.SMALLDECIMAL.getType().toUpperCase()
     );
 
 
