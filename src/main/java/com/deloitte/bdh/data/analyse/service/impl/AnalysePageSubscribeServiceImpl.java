@@ -115,7 +115,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         //添加执行计划
         Map<String, String> params = Maps.newHashMap();
         params.put("pageId", subscribe.getPageId());
-        params.put("modelCode", subscribe.getTaskId());
+//        params.put("modelCode", subscribe.getTaskId());
         params.put("tenantId", ThreadLocalHolder.getTenantId());
         params.put("operator", ThreadLocalHolder.getOperator());
         params.put("url", imgUrl);
