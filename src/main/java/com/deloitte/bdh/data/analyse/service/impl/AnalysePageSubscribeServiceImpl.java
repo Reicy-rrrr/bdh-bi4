@@ -90,6 +90,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     @Autowired
     private OssProperties ossProperties;
 
+    private static SnowFlakeUtil idWorker = new SnowFlakeUtil(0, 0);
+
     @Transactional
     @Override
     public void subscribe(SubscribeDto request) {
@@ -116,7 +118,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         params.put("modelCode", subscribe.getTaskId());
         params.put("tenantId", ThreadLocalHolder.getTenantId());
         params.put("operator", ThreadLocalHolder.getOperator());
-        params.put("imgUrl", imgUrl);
+        params.put("url", imgUrl);
+        params.put("url_id", idWorker.nextId() + "");
         try {
             jobService.addOrUpdate(subscribe.getTaskId(), callBackAddress, CronUtil.createCronExpression(request.getCronData()), params);
             if (StringUtils.equals(subscribe.getStatus(), "1")) {
