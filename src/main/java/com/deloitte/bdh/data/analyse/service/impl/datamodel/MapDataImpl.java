@@ -176,13 +176,15 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
     private Map<String, Object> getMinMax(Map<String, Object> customParams, List<Map<String, Object>> rows) {
 
         Map<String, Object> result = Maps.newHashMap();
-
         DataModelField symbolSizeField = null;
         if (MapUtils.isNotEmpty(customParams)) {
             Object symbolS = MapUtils.getObject(customParams, CustomParamsConstants.SYMBOL_SIZE);
             if (Objects.nonNull(symbolS)) {
                 symbolSizeField = JSONObject.parseObject(JSON.toJSONString(symbolS), DataModelField.class);
             }
+        }
+        if (Objects.isNull(symbolSizeField)){
+            return result;
         }
         String symbolSizeName = getColName(symbolSizeField);
         List<Double> symbolSizeList = Lists.newArrayList();
@@ -193,7 +195,6 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         Map<String, Object> minMaxMap = Maps.newHashMap();
         minMaxMap.put("min", Collections.min(symbolSizeList));
         minMaxMap.put("max", Collections.max(symbolSizeList));
-
         result.put("minMax",minMaxMap);
         return result;
     }
