@@ -1,5 +1,8 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.MapEnum;
@@ -51,6 +54,16 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             dataModel.getCategory().forEach(field -> dataModel.getX().add(field));
         }
+        Map<String, Object> customParams = dataModel.getCustomParams();
+        if (MapUtils.isNotEmpty(customParams)) {
+            Object symbolS = MapUtils.getObject(customParams, CustomParamsConstants.SYMBOL_SIZE);
+            if (Objects.nonNull(symbolS)) {
+                DataModelField symbolSize = JSONObject.parseObject(JSON.toJSONString(symbolS), DataModelField.class);
+                if (CollectionUtils.isNotEmpty(dataModel.getX()) && Objects.nonNull(symbolSize)) {
+                    dataModel.getX().add(symbolSize);
+                }
+            }
+        }
         BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
         request.getDataConfig().getDataModel().setTableName(tableName);
@@ -64,6 +77,16 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         DataModel dataModel = request.getDataConfig().getDataModel();
         //查询出所有的经纬度数据
         Map<String, Map<String, String>> queryLongitudeLantitude = queryLongitudeLantitude(dataModel);
+
+        Map<String, Object> customParams = dataModel.getCustomParams();
+        DataModelField symbolSizeField = null;
+        if (MapUtils.isNotEmpty(customParams)) {
+            Object symbolS = MapUtils.getObject(customParams, CustomParamsConstants.SYMBOL_SIZE);
+            if (Objects.nonNull(symbolS)) {
+                symbolSizeField = JSONObject.parseObject(JSON.toJSONString(symbolS), DataModelField.class);
+            }
+        }
+
         for (Map<String, Object> row : rows) {
 
             //x轴名称
@@ -76,6 +99,9 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                 xList.add(MapUtils.getString(row, colName));
             }
             //其他参数
+            String symbolSizeName = getColName(symbolSizeField);
+
+            //图例参数
             List<String> categoryPrefix = Lists.newArrayList();
             for (DataModelField category : dataModel.getCategory()) {
                 String colName = category.getId();
@@ -119,6 +145,12 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                     newRow.put("value", valueList);
                 } else {
                     newRow.put("value", MapUtils.getObject(row, colName));
+                }
+                if (StringUtils.isNotEmpty(symbolSizeName)) {
+                    double symbolSize = MapUtils.getDouble(row, symbolSizeName);
+                    if (!Double.isNaN(symbolSize)) {
+                        newRow.put("symbolSize", StringUtils.join(symbolSizeName, ": ", symbolSize));
+                    }
                 }
                 newRows.add(newRow);
             }

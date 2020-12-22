@@ -36,13 +36,21 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
             dataModel.getCategory().forEach(y -> dataModel.getX().add(y));
         }
         Map<String, Object> customParams = dataModel.getCustomParams();
-        DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_NAME)), DataModelField.class);
-        DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_SIZE)), DataModelField.class);
-        if (CollectionUtils.isNotEmpty(dataModel.getX()) && Objects.nonNull(scatterName)) {
-            dataModel.getX().add(scatterName);
-        }
-        if (CollectionUtils.isNotEmpty(dataModel.getX()) && Objects.nonNull(scatterSize)) {
-            dataModel.getX().add(scatterSize);
+        if(!customParams.isEmpty()){
+            Object scatterN = MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_NAME);
+            Object scatterS = MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_SIZE);
+            if (Objects.nonNull(scatterN)){
+                DataModelField scatterName = JSONObject.parseObject(JSON.toJSONString(scatterN), DataModelField.class);
+                if (CollectionUtils.isNotEmpty(dataModel.getX()) && Objects.nonNull(scatterName)) {
+                    dataModel.getX().add(scatterName);
+                }
+            }
+            if (Objects.nonNull(scatterS)){
+                DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(scatterS), DataModelField.class);
+                if (CollectionUtils.isNotEmpty(dataModel.getX()) && Objects.nonNull(scatterSize)) {
+                    dataModel.getX().add(scatterSize);
+                }
+            }
         }
 
         BaseComponentDataResponse response = execute(dataModel, buildSql(dataModel));
@@ -120,8 +128,13 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
 
         DataModel dataModel = request.getDataConfig().getDataModel();
         Map<String, Object> customParams = dataModel.getCustomParams();
-        DataModelField scatterNameField = JSONObject.parseObject(JSON.toJSONString(customParams.get("scatterName")), DataModelField.class);
-
+        DataModelField scatterNameField = new DataModelField();
+        if(!customParams.isEmpty()){
+            Object scatterN = MapUtils.getObject(customParams, CustomParamsConstants.SCATTER_NAME);
+            if (Objects.nonNull(scatterN)){
+                scatterNameField = JSONObject.parseObject(JSON.toJSONString(scatterN), DataModelField.class);
+            }
+        }
         for (Map<String, Object> row : rows) {
 
             //散点名称

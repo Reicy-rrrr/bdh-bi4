@@ -20,4 +20,7 @@ public class CustomParamsConstants {
     //散点图
     public static final String SCATTER_NAME = "scatterName";
     public static final String SCATTER_SIZE = "scatterSize";
+
+    //符号地图
+    public static final String SYMBOL_SIZE = "symbolSize";
 }
