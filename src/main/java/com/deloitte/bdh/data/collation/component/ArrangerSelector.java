@@ -160,6 +160,14 @@ public interface ArrangerSelector extends Component {
     ArrangeResultModel fill(FieldMappingModel fromFieldMapping, String fillValue, String fromTable, ComponentTypeEnum fromType);
 
     /**
+     * 对字段向上取整
+     *
+     * @param field 向上取整字段
+     * @return String 向上取整表达式
+     */
+    String calculateCeil(String field);
+
+    /**
      * 获取合并字段后新字段的长度
      *
      * @param leftMapping  左侧字段映射

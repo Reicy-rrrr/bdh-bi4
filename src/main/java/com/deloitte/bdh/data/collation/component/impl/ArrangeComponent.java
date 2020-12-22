@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.data.collation.component.ArrangerSelector;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
-import com.deloitte.bdh.data.collation.component.ExpressionParser;
+import com.deloitte.bdh.data.collation.component.ExpressionHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
 import com.deloitte.bdh.data.collation.database.DbHandler;
@@ -56,6 +56,8 @@ public class ArrangeComponent implements ComponentHandler {
     private ComponentHandler componentHandler;
 
     private ArrangerSelector arranger;
+
+    private ExpressionHandler expressionHandler;
 
     @Override
     public void handle(ComponentModel component) {
@@ -645,13 +647,13 @@ public class ArrangeComponent implements ComponentHandler {
         if (calculateType == null || CalculateTypeEnum.FUNCTION.equals(calculateType)) {
             throw new BizException("Arrange component calculate error: 暂不支持的计算类型！");
         }
-        if (!ExpressionParser.isParamFormula(formula)) {
+        if (!expressionHandler.isParamFormula(formula)) {
             throw new BizException("Arrange component calculate error: 非法的计算公式！");
         }
         // 格式化公式（对公式中的字段进行特殊处理）
-        String finalFormula = ExpressionParser.formatFormula(formula);
+        String finalFormula = expressionHandler.formatFormula(formula);
         // 公式中参与计算的字段
-        List<String> params = ExpressionParser.getUniqueParams(formula);
+        List<String> params = expressionHandler.getUniqueParams(formula);
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
         Map<String, FieldMappingModel> fromMappings = fromComponent.getFieldMappings().stream()
@@ -671,7 +673,7 @@ public class ArrangeComponent implements ComponentHandler {
             paramMapping.put(param, fieldName);
         }
         // 新字段的表达式
-        String newFieldExpression = ExpressionParser.formatParam(finalFormula, paramMapping);
+        String newFieldExpression = expressionHandler.formatParam(finalFormula, paramMapping);
         // 获取计算字段的名称
         String finalFieldName = getCalculateFieldName(fromMappings.keySet());
         // 新字段描述
@@ -719,5 +721,10 @@ public class ArrangeComponent implements ComponentHandler {
     @Autowired
     public void setComponentHandler(ComponentHandler componentHandler) {
         this.componentHandler = componentHandler;
+    }
+
+    @Autowired
+    public void setExpressionHandler(ExpressionHandler expressionHandler) {
+        this.expressionHandler = expressionHandler;
     }
 }

@@ -462,4 +462,9 @@ public class HiveArranger implements ArrangerSelector {
                 .append(fromFieldMapping.getTempFieldName());
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
     }
+
+    @Override
+    public String calculateCeil(String field) {
+        return "CEIL(" + field + ")";
+    }
 }

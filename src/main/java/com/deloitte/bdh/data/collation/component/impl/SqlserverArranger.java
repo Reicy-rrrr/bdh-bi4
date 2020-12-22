@@ -440,11 +440,11 @@ public class SqlserverArranger implements ArrangerSelector {
         } else {
             // 转换数据格式
             if (DataTypeEnum.DateTime.equals(dataType)) {
-                fillValue = "CONVERT(DATETIME, '" + fillValue +  "')";
+                fillValue = "CONVERT(DATETIME, '" + fillValue + "')";
             } else if (DataTypeEnum.Date.equals(dataType)) {
-                fillValue = "CONVERT(DATE, '" + fillValue +  "')";
+                fillValue = "CONVERT(DATE, '" + fillValue + "')";
             } else if (DataTypeEnum.Text.equals(dataType)) {
-                fillValue = "'" + fillValue +  "'";
+                fillValue = "'" + fillValue + "'";
             }
         }
 
@@ -461,6 +461,11 @@ public class SqlserverArranger implements ArrangerSelector {
         segmentBuilder.append(" END AS ");
         segmentBuilder.append(fromFieldMapping.getTempFieldName());
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
+    }
+
+    @Override
+    public String calculateCeil(String field) {
+        return "CEILING(" + field + ")";
     }
 
     /**

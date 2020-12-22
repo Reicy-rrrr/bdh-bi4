@@ -12,7 +12,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
-import com.deloitte.bdh.data.collation.component.ExpressionParser;
+import com.deloitte.bdh.data.collation.component.ExpressionHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
@@ -87,6 +87,8 @@ public class EtlServiceImpl implements EtlService {
     private BiTenantConfigService biTenantConfigService;
     @Autowired
     private AnalyseModelFieldService analyseModelFieldService;
+    @Autowired
+    private ExpressionHandler expressionHandler;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -734,7 +736,7 @@ public class EtlServiceImpl implements EtlService {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
         }
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
-            boolean checkResult = ExpressionParser.isParamFormula(formula);
+            boolean checkResult = expressionHandler.isParamFormula(formula);
             if (!checkResult) {
                 return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
             }
@@ -742,7 +744,7 @@ public class EtlServiceImpl implements EtlService {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
         }
 
-        List<String> params = ExpressionParser.getUniqueParams(formula);
+        List<String> params = expressionHandler.getUniqueParams(formula);
         if (CollectionUtils.isEmpty(params)) {
             return new ComponentFormulaCheckResp(Boolean.TRUE, "验证通过！");
         }

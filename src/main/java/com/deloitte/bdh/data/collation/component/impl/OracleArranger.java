@@ -460,6 +460,11 @@ public class OracleArranger implements ArrangerSelector {
         return new ArrangeResultModel(fromFieldMapping.getTempFieldName(), segmentBuilder.toString(), false, fromFieldMapping.clone());
     }
 
+    @Override
+    public String calculateCeil(String field) {
+        return "CEIL(" + field + ")";
+    }
+
     /**
      * 转换字段为整数类型
      *

@@ -2,6 +2,8 @@ package com.deloitte.bdh.data.collation.component;
 
 import com.deloitte.bdh.common.exception.BizException;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -11,12 +13,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 组件公式解析器
+ * 组件公式处理器
  *
  * @author chenghzhang
  * @date 2020/12/15
  */
-public class ExpressionParser {
+@Component
+public class ExpressionHandler {
     /**
      * 参数格式正则
      **/
@@ -25,6 +28,10 @@ public class ExpressionParser {
      * 数字格式正则
      **/
     private static final String number_regex = "^(\\-|\\+)?\\d+(\\.\\d+)?$";
+    /**
+     * 运算符正则：+ - * / ( , )
+     **/
+    private static final String operator_regex = "^[\\+\\-\\*\\/\\(\\,\\)]$";
     /**
      * 脚本引擎
      **/
@@ -63,13 +70,26 @@ public class ExpressionParser {
      */
     private static final Set<String> functionList = Sets.newHashSet();
 
+    private ArrangerSelector arrangerSelector;
+
+    static {
+        // 求绝对值
+        functionList.add("abs");
+        // 向上取整
+        functionList.add("ceiling");
+        // 最大值
+        functionList.add("max");
+        // 最小值
+        functionList.add("min");
+    }
+
     /**
      * 验证表达式是否为有效的公式
      *
      * @param expression 计算表达式
      * @return boolean
      */
-    public static boolean isFormula(String expression) {
+    public boolean isFormula(String expression) {
         String result;
         try {
             result = scriptEngine.eval(expression.replace(" ", "")).toString();
@@ -86,7 +106,7 @@ public class ExpressionParser {
      * @param expression 计算表达式
      * @return boolean
      */
-    public static boolean isParamFormula(String expression) {
+    public boolean isParamFormula(String expression) {
         List<String> params = getUniqueParams(expression);
         Map<String, String> data = new HashMap(params.size());
         // 将所有参数用数字替换掉进行计算
@@ -105,12 +125,58 @@ public class ExpressionParser {
     }
 
     /**
+     * 验证表达式是否为有效的公式（带参数的）
+     *
+     * @param expression 计算表达式
+     * @return boolean
+     */
+    public boolean isParamFunctionFormula(String expression) {
+        Queue queue = null;
+        try {
+            queue = reverseToPost(expression);
+        } catch (EmptyStackException e) {
+            // 出现异常（括号不匹配），错误的表达式
+            return false;
+        } catch (Exception e) {
+            // 出现异常，错误的表达式
+            return false;
+        }
+        // 后续队列为空，错误的表达式
+        if (queue.isEmpty()) {
+            return false;
+        }
+        Pattern numberPa = Pattern.compile(number_regex);
+        Pattern operatorPa = Pattern.compile(operator_regex);
+        Pattern paramPa = Pattern.compile(param_regex);
+        boolean flag = true;
+        while (!queue.isEmpty()) {
+            // 获取当前操作的内容
+            String content = (String) queue.poll();
+            if (paramPa.matcher(content).matches()) {
+                continue;
+            }
+            if (operatorPa.matcher(content).matches()) {
+                continue;
+            }
+            if (numberPa.matcher(content).matches()) {
+                continue;
+            }
+            if (functionList.contains(content)) {
+                continue;
+            }
+            flag = false;
+            break;
+        }
+        return flag;
+    }
+
+    /**
      * 获取公式中的变量
      *
      * @param expression 计算公式
      * @return
      */
-    public static List<String> getParams(String expression) {
+    public List<String> getParams(String expression) {
         Matcher matcher = Pattern.compile(param_regex).matcher(expression);
         List<String> list = new ArrayList();
         while (matcher.find()) {
@@ -125,7 +191,7 @@ public class ExpressionParser {
      * @param expression 计算公式
      * @return
      */
-    public static List<String> getUniqueParams(String expression) {
+    public List<String> getUniqueParams(String expression) {
         Matcher matcher = Pattern.compile(param_regex).matcher(expression);
         Set<String> params = new LinkedHashSet();
         while (matcher.find()) {
@@ -141,7 +207,7 @@ public class ExpressionParser {
      * @param data       变量值
      * @return
      */
-    public static String formatParam(String expression, Map<String, String> data) {
+    public String formatParam(String expression, Map<String, String> data) {
         Matcher m = Pattern.compile(param_regex).matcher(expression);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
@@ -156,10 +222,23 @@ public class ExpressionParser {
     /**
      * 格式化方程式（对方程式进行特殊处理）
      *
-     * @param formula      方程式
+     * @param formula 方程式
      * @return String
      */
-    public static String formatFormula(String formula) {
+    public String formatFormula(String formula) {
+        Queue postQueue = reverseToPost(formula);
+        String resultExpression = execute(postQueue);
+        return resultExpression;
+    }
+
+    /**
+     * 格式化方程式（对方程式进行特殊处理）
+     *
+     * @param formula 方程式
+     * @return String
+     */
+    public String formatFormula(String formula, ArrangerSelector arranger) {
+        this.arrangerSelector = arranger;
         Queue postQueue = reverseToPost(formula);
         String resultExpression = execute(postQueue);
         return resultExpression;
@@ -168,10 +247,10 @@ public class ExpressionParser {
     /**
      * 中缀转后缀表达式
      *
-     * @param formula     方程式
+     * @param formula 方程式
      * @return Queue
      */
-    private static Queue reverseToPost(String formula) {
+    private Queue reverseToPost(String formula) {
         // 存放后序表达式
         Queue resultQueue = new ArrayDeque();
         // 去除表达式中的空格
@@ -196,9 +275,13 @@ public class ExpressionParser {
                 // 如果“）”直接入栈，运算符出栈进入队列，直到遇到“（”，并去除“（”
             } else if (operator_right_bracket.equals(temp)) {
                 while (true) {
+                    // 如果最终都未找到“（”，说明表达式有问题
+                    if (stack.isEmpty()) {
+                        throw new EmptyStackException();
+                    }
                     if (operator_left_bracket.equals(stack.peek())) {
                         stack.pop();
-                        if (!stack.empty() && functionList.contains(stack.peek())) {
+                        if (!stack.isEmpty() && functionList.contains(stack.peek())) {
                             resultQueue.add(stack.pop());
                         }
                         break;
@@ -245,10 +328,10 @@ public class ExpressionParser {
     /**
      * 转换表达式
      *
-     * @param postQueue     四则运算的后序队列
+     * @param postQueue 四则运算的后序队列
      * @return String（格式化后的运算表达式）
      */
-    private static String execute(Queue postQueue) {
+    private String execute(Queue postQueue) {
         if (postQueue.isEmpty()) {
             return null;
         }
@@ -277,7 +360,7 @@ public class ExpressionParser {
                         }
                     }
                     // 对方法函数进行运算
-                    stack.add(executeFunction(functionName, functionParamStack, ExpressionParser.class));
+                    stack.add(executeFunction(functionName, functionParamStack, ExpressionHandler.class));
                     functionParamStack = new Stack();
                 } else {
                     // 没有配对方法，直接入栈
@@ -295,7 +378,6 @@ public class ExpressionParser {
                     stack.push(content);
                 }
             }
-
         }
         // 显示计算结果
         return stack.pop().toString();
@@ -309,7 +391,7 @@ public class ExpressionParser {
      * @param operator   运算符
      * @return String（格式化后的运算表达式）
      */
-    private static String operation(String leftParam, String rightParam, String operator) {
+    private String operation(String leftParam, String rightParam, String operator) {
         // 除法运算需要特殊处理除数为0的情况
         if (operator_divide.equals(operator)) {
             StringBuilder divisor = new StringBuilder();
@@ -327,7 +409,7 @@ public class ExpressionParser {
      * @param functionClazz      方法所属类型
      * @return String（自定义方法格式化后的运算表达式）
      */
-    private static String executeFunction(String functionName, Stack functionParamStack, Class functionClazz) {
+    private String executeFunction(String functionName, Stack functionParamStack, Class functionClazz) {
         String result = null;
         try {
             // 获取对应方法
@@ -335,7 +417,7 @@ public class ExpressionParser {
             // 获取方法返回值
             result = (String) get.invoke(null, functionParamStack);
         } catch (Exception e) {
-            throw new BizException("方法[" + functionName + "]格式化错误，请检查参数正确性！");
+            throw new BizException("方法[" + functionName + "]格式化错误，请检查参数正确性！", e);
         }
         return result;
     }
@@ -347,7 +429,7 @@ public class ExpressionParser {
      * @param content 计算内容
      * @return int
      */
-    private static int getPriority(String content) {
+    private int getPriority(String content) {
         if (operator_add.equals(content) || operator_subtract.equals(content)) {
             return 1;
         } else if (operator_multiply.equals(content) || operator_divide.equals(content)) {
@@ -365,7 +447,7 @@ public class ExpressionParser {
      * @param content 计算内容
      * @return boolean
      */
-    private static boolean isOperator(String content) {
+    private boolean isOperator(String content) {
         if (operator_add.equals(content) || operator_subtract.equals(content)
                 || operator_multiply.equals(content) || operator_divide.equals(content)
                 || operator_separator.equals(content) || operator_left_bracket.equals(content)
@@ -373,5 +455,88 @@ public class ExpressionParser {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 取字段绝对值
+     *
+     * @param stack 去绝对值字段栈
+     * @return 运算表达式
+     */
+    public String abs(Stack stack) {
+        if (stack.isEmpty()) {
+            throw new BizException("Component calculate error: 计算绝对值错误，字段不能为空！");
+        }
+        String absField = stack.pop().toString();
+        if (StringUtils.isBlank(absField)) {
+            throw new BizException("Component calculate error: 计算绝对值错误，字段不能为空！");
+        }
+        return "ABS(" + absField + ")";
+    }
+
+    /**
+     * 字段向上取整
+     *
+     * @param stack 取整字段栈
+     * @return 运算表达式
+     */
+    public String ceiling(Stack stack) {
+        if (stack.isEmpty()) {
+            throw new BizException("Component calculate error: 向上取整错误，字段不能为空！");
+        }
+        String ceilField = stack.pop().toString();
+        if (StringUtils.isBlank(ceilField)) {
+            throw new BizException("Component calculate error: 向上取整错误，字段不能为空！");
+        }
+
+        if (arrangerSelector == null) {
+            throw new BizException("Component calculate error: 向上取整错误，未知的数据源类型！");
+        }
+        return arrangerSelector.calculateCeil(ceilField);
+    }
+
+    /**
+     * 获取多个字段中最大值
+     *
+     * @param stack 参与计算字段栈
+     * @return 运算表达式
+     */
+    public String max(Stack stack) {
+        if (stack.isEmpty() || stack.size() < 2) {
+            throw new BizException("Component calculate error: 取最大值错误，字段个数不能小于2！");
+        }
+
+        String maxField = stack.pop().toString();
+        StringBuilder tempBuilder = new StringBuilder();
+        while (!stack.isEmpty()) {
+            String rightField = stack.pop().toString();
+            tempBuilder.append("(CASE WHEN ").append(maxField).append(" > ").append(rightField)
+                    .append(" THEN ").append(maxField).append(" ELSE ").append(rightField).append(" END)");
+            maxField = tempBuilder.toString();
+            tempBuilder.setLength(0);
+        }
+        return maxField;
+    }
+
+    /**
+     * 获取多个字段中最小值
+     *
+     * @param stack 参与计算字段栈
+     * @return 运算表达式
+     */
+    public String min(Stack stack) {
+        if (stack.isEmpty() || stack.size() < 2) {
+            throw new BizException("Component calculate error: 取最小值错误，字段个数不能小于2！");
+        }
+        String minField = stack.pop().toString();
+        StringBuilder tempBuilder = new StringBuilder();
+        while (!stack.isEmpty()) {
+            String rightField = stack.pop().toString();
+            tempBuilder.append("(CASE WHEN ").append(minField).append(" < ").append(rightField)
+                    .append(" THEN ").append(minField).append(" ELSE ").append(rightField).append(" END)");
+            minField = tempBuilder.toString();
+            tempBuilder.setLength(0);
+        }
+        return minField;
     }
 }
