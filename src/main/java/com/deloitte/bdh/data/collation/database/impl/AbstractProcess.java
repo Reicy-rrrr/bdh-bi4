@@ -48,7 +48,7 @@ public abstract class AbstractProcess {
         ResultSet result = statement.executeQuery();
         ResultSetMetaData metaData = result.getMetaData();
         int columnCount = metaData.getColumnCount();
-        List<LinkedHashMap<String, Object>> rows = Lists.newArrayList();
+        List<Map<String, Object>> rows = Lists.newArrayList();
 
         String tableName = context.getTableName();
         while (result.next()) {

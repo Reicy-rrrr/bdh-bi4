@@ -1,10 +1,10 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.google.common.collect.Lists;
 
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
@@ -15,6 +15,7 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
@@ -25,6 +26,7 @@ import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
+import com.deloitte.bdh.data.collation.model.request.GetDataSetInfoDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
@@ -41,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -265,6 +268,35 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 }
         }
         return columns;
+    }
+
+    @Override
+    public TableData getDataSetInfoPage(GetDataSetInfoDto dto) throws Exception {
+        BiDataSet dataSet = setMapper.selectOne(
+                new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getTableDesc, dto.getTableDesc()));
+        if (null == dataSet) {
+            throw new RuntimeException("未找到目标对象");
+        }
+
+        if (DataSetTypeEnum.DIRECT.getKey().equals(dataSet.getType())) {
+            DbContext context = new DbContext();
+            context.setDbId(dataSet.getRefSourceId());
+            context.setTableName(dataSet.getTableName());
+            context.setPage(dto.getPage());
+            context.setSize(dto.getSize());
+            return dbSelector.getTableData(context);
+        }
+
+        //本地或初始化
+        TableData tableData = new TableData();
+        String querySql = "SELECT * FROM " + dataSet.getTableName();
+        PageInfo<Map<String, Object>> pageInfo = dbHandler.executePageQuery(querySql, dto.getPage(), dto.getSize());
+        if (null != pageInfo) {
+            tableData.setTotal(pageInfo.getTotal());
+            tableData.setMore(pageInfo.isHasNextPage());
+            tableData.setRows(pageInfo.getList());
+        }
+        return tableData;
     }
 
 

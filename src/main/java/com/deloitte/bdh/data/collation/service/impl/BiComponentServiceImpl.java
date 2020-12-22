@@ -57,6 +57,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private Transfer transfer;
     @Autowired
     private BiTenantConfigService biTenantConfigService;
+    @Autowired
+    private BiDataSetService dataSetService;
 
     @Override
     public BiComponentTree selectTree(String modelCode, String componentCode) {
@@ -194,11 +196,25 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         wrapper.eq(BiComponentConnection::getToComponentCode, component.getCode());
         connectionService.remove(wrapper);
 
-        String finalTableName = component.getCode();
         //删除最终表
+        String finalTableName = component.getCode();
         if (StringUtils.isNotBlank(finalTableName)) {
             dbHandler.drop(finalTableName);
         }
+
+        //删除数据集
+        BiComponentParams tableDesc = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, component.getCode())
+                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
+        );
+        if (null != tableDesc) {
+            BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
+                    .eq(BiDataSet::getTableDesc, tableDesc));
+            if (null != dataSet) {
+                dataSetService.removeById(dataSet.getId());
+            }
+        }
+
         biComponentMapper.deleteById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, component.getCode())
