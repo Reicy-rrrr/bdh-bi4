@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.sql;
 
+import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ public abstract class AbstractAnalyseSql implements AnalyseSql {
 
     @Override
     final public Object process(SqlContext context) {
+        log.info(JsonUtil.readObjToJson(context));
         Object result;
         AnalyseSql.Method method = context.getMethod();
         switch (method) {
