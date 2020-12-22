@@ -60,7 +60,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
 
                 @Override
                 public String hana(DataModel model, String tableName) {
-                    return null;
+                    return sourceHana(sql, dataModel);
                 }
             }));
 
@@ -89,7 +89,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
 
                     @Override
                     public String hana(DataModel model, String tableName) {
-                        return null;
+                        return chainHana(sql, dataModel);
                     }
                 }));
             }
@@ -118,7 +118,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
 
                     @Override
                     public String hana(DataModel model, String tableName) {
-                        return null;
+                        return yoyHana(sql, dataModel);
                     }
                 }));
             }
@@ -233,7 +233,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
                 str = " QUARTER(DATE_SUB('#1',interval 1 QUARTER))=QUARTER(#2) AND DATE_FORMAT('#1','%Y')=DATE_FORMAT(#2,'%Y') ";
             } else {
-                str = " QUARTER(DATE_SUB('#1',interval 1 QUARTER))=QUARTER(#2) AND YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year))=DATE_FORMAT(#2,'%Y') ";
+                str = " QUARTER(#2) = 4 AND YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year))=DATE_FORMAT(#2,'%Y') ";
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
@@ -292,7 +292,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
                 str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-4,'month'),'Q')=to_char(#2 ,'Q') AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss'),'yyyy')=to_char(#2,'yyyy') ";
             } else {
-                str = " to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss') + numtoyminterval(-4,'month'),'Q')=to_char(#2 ,'Q') AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss')+ numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
+                str = " to_char(#2 ,'Q') = 4 AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss')+ numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
@@ -351,7 +351,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
                 str = " DATEPART(Q,DATEADD(Q,-1,convert(datetime,'#1', 20)))=DATEPART(Q , #2) AND YEAR('#1')=YEAR(#2)  ";
             } else {
-                str = " DATEPART(Q,DATEADD(Q,-1,convert(datetime,'#1', 20)))=DATEPART(Q , #2) AND format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
+                str = " DATEPART(Q , #2) = 4 AND format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
@@ -372,6 +372,65 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         }
         if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
             str = " DATEPART(Q , '#1')=DATEPART(Q , #2) AND format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String sourceHana(String sql, DataModel dataModel) {
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " YEAR('#1')=YEAR(#2) ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char('#1','yyyy-MM') =to_char(#2,'yyyy-MM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " to_char('#1','yyyy-MM-dd') =to_char(#2,'yyyy-MM-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " QUARTER('#1') =QUARTER(#2) ";
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String chainHana(String sql, DataModel dataModel) {
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " YEAR('#1')-1=YEAR(#2) ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " TO_CHAR(ADD_MONTHS('#1',-1),'yyyy-MM') = TO_CHAR(#2,'yyyy-MM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " TO_CHAR(ADD_DAYS('#1',-1),'yyyy-MM-dd')=TO_CHAR(#2,'yyyy-MM-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            if (Integer.parseInt(getCoreDateValue(dataModel).split("-")[1]) > 4) {
+                str = " RIGHT(QUARTER('#1'),1)-1 = RIGHT(QUARTER(#2),1) AND YEAR('#1') = YEAR(#2) ";
+            } else {
+                str = " RIGHT(QUARTER(#2),1) = 4  AND YEAR('#1')-1 = YEAR(#2) ";
+            }
+        }
+        String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
+        return OracleBuildUtil.append(sql, appendField, 2);
+    }
+
+    private String yoyHana(String sql, DataModel dataModel) {
+        //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
+        String str = null;
+        if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
+            str = " YEAR('#1')-1=YEAR(#2) ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH.getKey().equals(getCoreDateType(dataModel))) {
+            str = " TO_CHAR(ADD_YEARS('#1',-1),'yyyy-MM') = TO_CHAR(#2,'yyyy-MM') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_MONTH_DAY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " TO_CHAR(ADD_YEARS('#1',-1),'yyyy-MM-dd') = TO_CHAR(#2,'yyyy-MM-dd') ";
+        }
+        if (MysqlFormatTypeEnum.YEAR_QUARTERLY.getKey().equals(getCoreDateType(dataModel))) {
+            str = " RIGHT(QUARTER('#1'),1) = RIGHT(QUARTER(#2),1) AND YEAR('#1') -1 = YEAR(#2) ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
         return OracleBuildUtil.append(sql, appendField, 2);
