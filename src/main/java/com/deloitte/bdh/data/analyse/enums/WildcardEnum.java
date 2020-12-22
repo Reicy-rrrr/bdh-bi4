@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public enum WildcardEnum {
     EQ("EQ", "=", "精确匹配"),
     GT("GT", ">", "大于"),
-    GTE("GT", ">=", "大于等于"),
+    GTE("GTE", ">=", "大于等于"),
     LT("LT", "<", "小于"),
     LTE("LTE", "<=", "小于等于"),
     IN("IN", "IN", "包含"){
