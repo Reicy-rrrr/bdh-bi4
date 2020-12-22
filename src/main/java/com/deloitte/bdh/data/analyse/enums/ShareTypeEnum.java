@@ -6,8 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 public enum ShareTypeEnum {
 
     //是否是公开报表
-    IS("1", "是"),
-    NOT("0", "不是"),
+    TRUE("true", "是"),
+    FALSE("false", "不是"),
 
     //shareType
     ZERO("0", "不公开"),

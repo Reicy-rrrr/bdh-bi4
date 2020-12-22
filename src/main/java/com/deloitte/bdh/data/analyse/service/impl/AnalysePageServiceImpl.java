@@ -209,7 +209,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         //公开状态
         List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
 
-        if (isPublic.equals(ShareTypeEnum.NOT.getKey())) {
+        if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
             shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
         } else {
             shareLambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
@@ -226,7 +226,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
             share.setAddress(viewAddress);
         }
-        if (isPublic.equals(ShareTypeEnum.NOT.getKey())) {
+        if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
             share.setType(ShareTypeEnum.FIVE.getKey());
         } else {
             if (StringUtils.isNotEmpty(password)) {
@@ -263,37 +263,43 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
         //获取公开状态
         String isPublic = publishDto.getIsPublic();
-        if (originPage.getParentId().equals(categoryId)) {
+        if(isPublic.equals(ShareTypeEnum.TRUE.getKey())){
             updatePage(publishDto, originPage, originConfig);
-        } else {
-            List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
-                    .eq(BiUiAnalysePage::getParentId, categoryId)
-                    .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
-            if (CollectionUtils.isEmpty(allPageList)) {
-                //新建config
-                BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-                BeanUtils.copyProperties(originConfig, newConfig);
-                newConfig.setId(null);
-                newConfig.setPageId(null);
-                newConfig.setContent(publishDto.getContent());
-                configService.save(newConfig);
-                //新建page
-                BiUiAnalysePage newPage = new BiUiAnalysePage();
-                BeanUtils.copyProperties(originPage, newPage);
-                newPage.setId(null);
-                newPage.setPublishId(newConfig.getId());
-                newPage.setParentId(categoryId);
-                newPage.setIsEdit(YnTypeEnum.NO.getCode());
-                newPage.setOriginPageId(originPage.getId());
-                save(newPage);
-                String newPageId = newPage.getId();
-                //保存pageId到config
-                newConfig.setPageId(newPageId);
-                configService.updateById(newConfig);
-                //把新的pageId传给权限操作
-                dto.setId(newPageId);
-            } else {
+        }
+        else{
+            if (originPage.getParentId().equals(categoryId)) {
                 updatePage(publishDto, originPage, originConfig);
+            }
+            else {
+                List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                        .eq(BiUiAnalysePage::getParentId, categoryId)
+                        .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
+                if (CollectionUtils.isEmpty(allPageList)) {
+                    //新建config
+                    BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                    BeanUtils.copyProperties(originConfig, newConfig);
+                    newConfig.setId(null);
+                    newConfig.setPageId(null);
+                    newConfig.setContent(publishDto.getContent());
+                    configService.save(newConfig);
+                    //新建page
+                    BiUiAnalysePage newPage = new BiUiAnalysePage();
+                    BeanUtils.copyProperties(originPage, newPage);
+                    newPage.setId(null);
+                    newPage.setPublishId(newConfig.getId());
+                    newPage.setParentId(categoryId);
+                    newPage.setIsEdit(YnTypeEnum.NO.getCode());
+                    newPage.setOriginPageId(originPage.getId());
+                    save(newPage);
+                    String newPageId = newPage.getId();
+                    //保存pageId到config
+                    newConfig.setPageId(newPageId);
+                    configService.updateById(newConfig);
+                    //把新的pageId传给权限操作
+                    dto.setId(newPageId);
+                } else {
+                    updatePage(publishDto, originPage, originConfig);
+                }
             }
         }
 
