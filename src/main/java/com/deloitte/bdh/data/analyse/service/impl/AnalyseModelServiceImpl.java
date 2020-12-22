@@ -127,7 +127,14 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         BaseComponentDataResponse response = SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
-        response.setExtra(joinDataUnit(request, response));
+        Map<String,Object> extraMap = Maps.newHashMap();
+        if (MapUtils.isNotEmpty(response.getExtra())){
+            extraMap = response.getExtra();
+        }
+        if (MapUtils.isNotEmpty(joinDataUnit(request, response))){
+            extraMap.putAll(joinDataUnit(request, response));
+        }
+        response.setExtra(extraMap);
         return response;
     }
 
@@ -148,12 +155,15 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 CustomParamsConstants.SCATTER_NAME)), DataModelField.class);
         DataModelField scatterSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
                 CustomParamsConstants.SCATTER_SIZE)), DataModelField.class);
+        DataModelField symbolSize = JSONObject.parseObject(JSON.toJSONString(MapUtils.getObject(dataModel.getCustomParams(),
+                CustomParamsConstants.SYMBOL_SIZE)), DataModelField.class);
         reqAll.addAll(reqX);
         reqAll.addAll(reqY);
         reqAll.addAll(reqY2);
         reqAll.addAll(reqCategory);
         reqAll.add(scatterName);
         reqAll.add(scatterSize);
+        reqAll.add(symbolSize);
 
         Map<String, Object> dataUnitMap = Maps.newHashMap();
         List<Object> dataUnitList = Lists.newArrayList();
@@ -168,6 +178,9 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                     dataUnitList.add(map);
                 }
             }
+        }
+        if (CollectionUtils.isEmpty(dataUnitList)){
+            return null;
         }
         dataUnitMap.put("dataUnit", dataUnitList);
         return dataUnitMap;

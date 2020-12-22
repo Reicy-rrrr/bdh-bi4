@@ -20,6 +20,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,6 +68,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
         request.getDataConfig().getDataModel().setX(originalX);
         request.getDataConfig().getDataModel().setTableName(tableName);
+        response.setExtra(getMinMax(customParams, response.getRows()));
         response.setRows(buildCategory(request, response.getRows(), dataModel.getY()));
         return response;
     }
@@ -171,6 +173,30 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         return returnMap;
     }
 
+    private Map<String, Object> getMinMax(Map<String, Object> customParams, List<Map<String, Object>> rows) {
+
+        Map<String, Object> result = Maps.newHashMap();
+
+        DataModelField symbolSizeField = null;
+        if (MapUtils.isNotEmpty(customParams)) {
+            Object symbolS = MapUtils.getObject(customParams, CustomParamsConstants.SYMBOL_SIZE);
+            if (Objects.nonNull(symbolS)) {
+                symbolSizeField = JSONObject.parseObject(JSON.toJSONString(symbolS), DataModelField.class);
+            }
+        }
+        String symbolSizeName = getColName(symbolSizeField);
+        List<Double> symbolSizeList = Lists.newArrayList();
+        for (Map<String, Object> row : rows) {
+            double value = MapUtils.getDouble(row, symbolSizeName);
+            symbolSizeList.add(value);
+        }
+        Map<String, Object> minMaxMap = Maps.newHashMap();
+        minMaxMap.put("min", Collections.min(symbolSizeList));
+        minMaxMap.put("max", Collections.max(symbolSizeList));
+
+        result.put("minMax",minMaxMap);
+        return result;
+    }
 
     @Override
     protected void validate(DataModel dataModel) {
