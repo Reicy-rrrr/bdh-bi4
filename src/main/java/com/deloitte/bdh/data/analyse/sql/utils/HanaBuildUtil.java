@@ -140,21 +140,4 @@ public class HanaBuildUtil {
         return field + " " + symbol + " " + value;
     }
 
-    public static String append(String sql, String insertField, int type) {
-        StringBuilder sb = new StringBuilder(sql);
-        switch (type) {
-            case 1:
-                //select
-                sb.insert(sb.indexOf("FROM"), "," + insertField + " ");
-                break;
-            case 2:
-                //where
-                sb.insert(sb.indexOf("1=1") + 3, " AND " + insertField + " ");
-                break;
-            default:
-                return sql;
-        }
-        return sb.toString();
-    }
-
 }
