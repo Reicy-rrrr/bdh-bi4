@@ -10,8 +10,6 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.sql.utils.MysqlBuildUtil;
-import com.deloitte.bdh.data.analyse.sql.utils.OracleBuildUtil;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -200,6 +198,16 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         dataModel.setPage(null);
     }
 
+    @Override
+    public void before(DataModel dataModel) {
+        super.before(dataModel);
+        if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+            for (DataModelField s : dataModel.getX()) {
+                s.setDefaultValue("0");
+            }
+        }
+    }
+
     private String sourceMysql(String sql, DataModel dataModel) {
         String str = null;
         if (MysqlFormatTypeEnum.YEAR.getKey().equals(getCoreDateType(dataModel))) {
@@ -215,7 +223,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = " QUARTER('#1')=QUARTER(#2) AND DATE_FORMAT('#1','%Y')=DATE_FORMAT(#2,'%Y')";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return MysqlBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String chainMysql(String sql, DataModel dataModel) {
@@ -237,7 +245,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return MysqlBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String yoyMysql(String sql, DataModel dataModel) {
@@ -256,7 +264,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = " QUARTER('#1')=QUARTER(#2) AND YEAR(DATE_ADD(STR_TO_DATE('#1', '%Y-%m-%d'),interval-1 year)) = DATE_FORMAT(#2,'%Y') ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return MysqlBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String sourceOracle(String sql, DataModel dataModel) {
@@ -274,7 +282,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = "CONCAT(to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss') ,'yyyy') ,to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss') ,'Q'))=CONCAT(to_char(#2,'yyyy') ,to_char(#2 ,'Q')) ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String chainOracle(String sql, DataModel dataModel) {
@@ -296,7 +304,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String yoyOracle(String sql, DataModel dataModel) {
@@ -315,7 +323,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = "  to_char(to_date('#1','yyyy-mm-dd hh24:mi:ss'),'Q')=to_char(#2 ,'Q')  AND to_char( to_date('#1','yyyy-mm-dd hh24:mi:ss')+ numtoyminterval(-1,'year'),'yyyy')=to_char(#2,'yyyy') ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String sourceSqlserver(String sql, DataModel dataModel) {
@@ -333,7 +341,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = " concat(format(convert(datetime,'#1', 20),'yyyy'),DATEPART(Q , convert(datetime,'#1', 20)))=concat(format(#2,'yyyy'),DATEPART(Q , #2)) ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String chainSqlserver(String sql, DataModel dataModel) {
@@ -355,7 +363,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String yoySqlserver(String sql, DataModel dataModel) {
@@ -374,7 +382,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = " DATEPART(Q , '#1')=DATEPART(Q , #2) AND format(convert(datetime,'#1', 20),'yyyy')-1=YEAR(#2) ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String sourceHana(String sql, DataModel dataModel) {
@@ -392,7 +400,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = " QUARTER('#1') =QUARTER(#2) ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String chainHana(String sql, DataModel dataModel) {
@@ -414,7 +422,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             }
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private String yoyHana(String sql, DataModel dataModel) {
@@ -433,7 +441,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             str = " RIGHT(QUARTER('#1'),1) = RIGHT(QUARTER(#2),1) AND YEAR('#1') -1 = YEAR(#2) ";
         }
         String appendField = str.replace("#1", getCoreDateValue(dataModel)).replace("#2", getCoreDateKey(dataModel));
-        return OracleBuildUtil.append(sql, appendField, 2);
+        return append(sql, appendField, 2);
     }
 
     private boolean isOpen(DataModel dataModel) {
@@ -515,14 +523,21 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return fields;
     }
 
-    @Override
-    public void before(DataModel dataModel) {
-        super.before(dataModel);
-        if (CollectionUtils.isNotEmpty(dataModel.getX())) {
-            for (DataModelField s : dataModel.getX()) {
-                s.setDefaultValue("0");
-            }
+    private String append(String sql, String insertField, int type) {
+        StringBuilder sb = new StringBuilder(sql);
+        switch (type) {
+            case 1:
+                //select
+                sb.insert(sb.indexOf("FROM"), "," + insertField + " ");
+                break;
+            case 2:
+                //where
+                sb.insert(sb.indexOf("1=1") + 3, " AND " + insertField + " ");
+                break;
+            default:
+                return sql;
         }
+        return sb.toString();
     }
 
 }
