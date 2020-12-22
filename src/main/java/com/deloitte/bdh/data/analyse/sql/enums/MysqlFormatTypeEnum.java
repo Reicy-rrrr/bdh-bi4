@@ -1,48 +1,50 @@
 package com.deloitte.bdh.data.analyse.sql.enums;
 
 
+import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
+
 public enum MysqlFormatTypeEnum {
-    YEAR("YEAR", "年"),
-    YEAR_QUARTERLY("YEAR_QUARTERLY", "年-季度") {
+    YEAR(FormatTypeEnum.YEAR.getKey(), "年"),
+    YEAR_QUARTERLY(FormatTypeEnum.YEAR_QUARTERLY.getKey(), "年-季度") {
         @Override
         public String expression(String str) {
             return " CONCAT(YEAR(str), '-', QUARTER(str))".replaceAll("str", str);
         }
     },
-    YEAR_MONTH("YEAR_MONTH", "年-月") {
+    YEAR_MONTH(FormatTypeEnum.YEAR_MONTH.getKey(), "年-月") {
         @Override
         public String expression(String str) {
             return " DATE_FORMAT(CONCAT(DATE(str), ' ', FLOOR(MONTH(str) / 1) * 1), '%Y-%m')".replaceAll("str", str);
         }
     },
-    YEAR_WEEK("YEAR_WEEK", "年-周(跨年)") {
+    YEAR_WEEK(FormatTypeEnum.YEAR_WEEK.getKey(), "年-周(跨年)") {
         @Override
         public String expression(String str) {
             return " DATE_FORMAT(str, '%X-%V')".replaceAll("str", str);
         }
     },
-    YEAR_WEEK_EVE("YEAR_WEEK_EVE", "年-周(不跨年)") {
+    YEAR_WEEK_EVE(FormatTypeEnum.YEAR_WEEK_EVE.getKey(), "年-周(不跨年)") {
         @Override
         public String expression(String str) {
             return " DATE_FORMAT(str, '%Y-%u')".replaceAll("str", str);
         }
     },
-    YEAR_MONTH_DAY("YEAR_MONTH_DAY", "年-月-日") {
+    YEAR_MONTH_DAY(FormatTypeEnum.YEAR_MONTH_DAY.getKey(), "年-月-日") {
         @Override
         public String expression(String str) {
             return " DATE_FORMAT(str, '%Y-%m-%d')".replaceAll("str", str);
         }
     },
-    QUARTER("QUARTER", "季度"),
-    MONTH("MONTH", "月"),
-    WEEK("WEEK", "周") {
+    QUARTER(FormatTypeEnum.QUARTER.getKey(), "季度"),
+    MONTH(FormatTypeEnum.MONTH.getKey(), "月"),
+    WEEK(FormatTypeEnum.WEEK.getKey(), "周") {
         @Override
         public String expression(String str) {
             return " WEEKOFYEAR(" + str + ")";
         }
     },
-    DAYOFWEEK("DAYOFWEEK", "星期"),
-    DAY("DAY", "日"),
+    DAYOFWEEK(FormatTypeEnum.DAYOFWEEK.getKey(), "星期"),
+    DAY(FormatTypeEnum.DAY.getKey(), "日"),
     HOUR("HOUR", "小时"),
     ;
 

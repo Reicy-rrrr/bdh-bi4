@@ -1,8 +1,12 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
 import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -17,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -206,6 +211,24 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 s.setDefaultValue("0");
             }
         }
+        if (isOpen(dataModel)) {
+            //判断是否内部删选
+            String coreDateKey = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_KEY);
+            String coreDateType = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_TYPE);
+            if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+                for (DataCondition condition : dataModel.getConditions()) {
+                    if (condition.getId().get(0).equals(coreDateKey) && condition.getFormatType().equals(coreDateType)
+                            && condition.getSymbol().equals(WildcardEnum.LTE.getKey())) {
+                        dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE,
+                                doDate(condition.getFormatType(), condition.getValue().get(0)));
+                        break;
+                    }
+                }
+            }
+
+            //判断过滤 todo
+        }
+
     }
 
     private String sourceMysql(String sql, DataModel dataModel) {
@@ -538,6 +561,41 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 return sql;
         }
         return sb.toString();
+    }
+
+    private String doDate(String forMatType, String value) {
+        FormatTypeEnum typeEnum = FormatTypeEnum.get(forMatType);
+        switch (typeEnum) {
+            case YEAR:
+                value += "-01-01";
+                break;
+            case YEAR_MONTH:
+                value += "-01";
+                break;
+            case YEAR_QUARTERLY:
+                String[] values = value.split("-");
+                switch (values[1]) {
+                    case "1":
+                        value = values[0] + "-01-01";
+                        break;
+                    case "2":
+                        value = values[0] + "-04-01";
+                        break;
+                    case "3":
+                        value = values[0] + "-07-01";
+
+                        break;
+                    case "4":
+                        value = values[0] + "-10-01";
+                        break;
+                }
+                break;
+            case YEAR_MONTH_DAY:
+                break;
+            default:
+                value = DateUtils.formatStandardDate(new Date());
+        }
+        return value;
     }
 
 }
