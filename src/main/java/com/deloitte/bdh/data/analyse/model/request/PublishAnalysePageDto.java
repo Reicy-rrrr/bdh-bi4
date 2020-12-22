@@ -25,7 +25,6 @@ public class PublishAnalysePageDto implements Serializable {
     @ApiModelProperty(value = "配置ID")
     String configId;
 
-    @NotBlank
     @ApiModelProperty(value = "配置内容")
     String content;
 
