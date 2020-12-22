@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * TableData
@@ -28,5 +28,5 @@ public class TableData {
 
     /** 数据列表 */
     @ApiModelProperty(value = "数据行(数组)", example = "[]", required = true)
-    private List<LinkedHashMap<String, Object>> rows;
+    private List<Map<String, Object>> rows;
 }

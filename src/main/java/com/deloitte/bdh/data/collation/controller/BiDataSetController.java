@@ -5,10 +5,13 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.collation.database.po.TableData;
+import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
+import com.deloitte.bdh.data.collation.model.request.GetDataSetInfoDto;
 import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
@@ -72,6 +75,28 @@ public class BiDataSetController {
     @PostMapping("/create")
     public RetResult<Void> create(@RequestBody @Validated RetRequest<CreateDataSetDto> request) {
         dataSetService.create(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "数据集结果预览（分页）", notes = "数据集结果预览（分页）")
+    @PostMapping("/getDataSetInfoPage")
+    public RetResult<TableData> getDataSetInfoPage(@RequestBody @Validated RetRequest<GetDataSetInfoDto> request) throws Exception {
+        return RetResponse.makeOKRsp(dataSetService.getDataSetInfoPage(request.getData()));
+    }
+
+    @ApiOperation(value = "删除数据集", notes = "创建数据集")
+    @PostMapping("/del")
+    public RetResult<Void> del(@RequestBody @Validated RetRequest<String> request) {
+        BiDataSet dataSet = dataSetService.getById(request.getData());
+        if (null != dataSet) {
+            if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                throw new RuntimeException("数据整理的表，请在数据模型里面删除");
+            }
+            if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
+                throw new RuntimeException("初始化数据表，暂不允许删除");
+            }
+            dataSetService.removeById(dataSet.getId());
+        }
         return RetResponse.makeOKRsp();
     }
 }
