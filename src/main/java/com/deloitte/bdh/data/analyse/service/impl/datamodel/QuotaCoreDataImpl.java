@@ -146,7 +146,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                             }
                         }
                         //环比增长率=（本期数-上期数）/上期数×100%。
-                        BigDecimal chainGrowthRate = new BigDecimal("100");
+                        BigDecimal chainGrowthRate = current.compareTo(BigDecimal.ZERO) == 0 ? current : new BigDecimal("100");
                         if (BigDecimal.ZERO.compareTo(chain) != 0) {
                             chainGrowthRate = (current.subtract(chain)).divide(chain, 4, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100"));
                         }
@@ -163,7 +163,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                             }
                         }
                         //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
-                        BigDecimal yoyGrowthRate = new BigDecimal("100");
+                        BigDecimal yoyGrowthRate = current.compareTo(BigDecimal.ZERO) == 0 ? current : new BigDecimal("100");
                         if (BigDecimal.ZERO.compareTo(previous) != 0) {
                             yoyGrowthRate = (current.subtract(previous)).divide(previous.abs(), 4, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100"));
                         }
@@ -216,17 +216,29 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             String coreDateKey = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_KEY);
             String coreDateType = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_TYPE);
             if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+                DataCondition innerSelect = null;
+                DataCondition filter = null;
+
                 for (DataCondition condition : dataModel.getConditions()) {
-                    if (condition.getId().get(0).equals(coreDateKey) && condition.getFormatType().equals(coreDateType)
-                            && condition.getSymbol().equals(WildcardEnum.LTE.getKey())) {
-                        dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE,
-                                doDate(condition.getFormatType(), condition.getValue().get(0)));
-                        break;
+                    if (condition.getId().get(0).equals(coreDateKey) && condition.getFormatType().equals(coreDateType)) {
+                        //内部筛选
+                        if (condition.getSymbol().equals(WildcardEnum.LTE.getKey())) {
+                            innerSelect = condition;
+                            continue;
+                        }
+                        //过滤
+                        if (condition.getSymbol().equals(WildcardEnum.EQ.getKey())) {
+                            filter = condition;
+                            continue;
+                        }
                     }
                 }
+                DataCondition temp = null != filter ? filter : innerSelect;
+                if (null != temp) {
+                    dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE,
+                            doDate(temp.getFormatType(), temp.getValue().get(0)));
+                }
             }
-
-            //判断过滤 todo
         }
 
     }
