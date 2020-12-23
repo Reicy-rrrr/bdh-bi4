@@ -218,35 +218,49 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             String coreDateValue = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_VALUE);
 
             if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
-                DataCondition temp = null;
-                DataCondition innerSelect = null;
-                DataCondition filter = null;
+                DataCondition ltrCondition = null;
+                DataCondition eqCondition = null;
+                String minDate = null;
 
                 for (DataCondition condition : dataModel.getConditions()) {
                     if (condition.getId().get(0).equals(coreDateKey) && condition.getFormatType().equals(coreDateType)) {
-                        //内部筛选
+                        //右值判断
                         if (condition.getSymbol().equals(WildcardEnum.LTE.getKey())) {
-                            innerSelect = condition;
-                            continue;
+                            if (null != ltrCondition) {
+                                //有多个ltr时，选择较小位
+                                if (omparisoncOfDate(parseDate(ltrCondition.getFormatType(), ltrCondition.getValue().get(0)), parseDate(condition.getFormatType(), condition.getValue().get(0)))) {
+                                    ltrCondition = condition;
+                                }
+                            } else {
+                                ltrCondition = condition;
+                            }
                         }
-                        //过滤
+
+                        //eq
                         if (condition.getSymbol().equals(WildcardEnum.EQ.getKey())) {
-                            filter = condition;
-                            continue;
+                            eqCondition = condition;
                         }
+
+                        //in
+                        if (condition.getSymbol().equals(WildcardEnum.IN.getKey())) {
+                            minDate = getMinDateStr(condition.getValue(), condition.getFormatType());
+                        }
+
                     }
                 }
 
-                if (null != innerSelect && omparisoncOfDate(coreDateValue,
-                        parseDate(innerSelect.getFormatType(), innerSelect.getValue().get(0)))) {
-                    temp = innerSelect;
+                if (null != ltrCondition && omparisoncOfDate(coreDateValue,
+                        parseDate(ltrCondition.getFormatType(), ltrCondition.getValue().get(0)))) {
+                    coreDateValue = parseDate(ltrCondition.getFormatType(), ltrCondition.getValue().get(0));
                 }
-                if (null != filter) {
-                    temp = filter;
+                if (null != eqCondition) {
+                    coreDateValue = parseDate(eqCondition.getFormatType(), eqCondition.getValue().get(0));
+                    if (null != minDate && omparisoncOfDate(coreDateValue, minDate)) {
+                        coreDateValue = minDate;
+                    }
                 }
-                if (null != temp) {
-                    dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE,
-                            parseDate(temp.getFormatType(), temp.getValue().get(0)));
+                if (null != coreDateValue) {
+                    dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE, coreDateValue);
                 }
             }
         }
@@ -631,5 +645,24 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         }
     }
 
+    /**
+     * 返回最小的时间
+     */
+    public String getMinDateStr(List<String> list, String forMatType) {
+        try {
+            Long temp = null;
+            String minDate = null;
+            for (String str : list) {
+                long date = DateUtils.parseStandardDate(parseDate(forMatType, str)).getTime();
+                if (null == temp || date < temp) {
+                    temp = date;
+                    minDate = parseDate(forMatType, str);
+                }
+            }
+            return minDate;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
