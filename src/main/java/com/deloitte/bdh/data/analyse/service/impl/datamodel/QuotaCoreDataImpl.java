@@ -215,7 +215,10 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             //判断是否内部删选
             String coreDateKey = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_KEY);
             String coreDateType = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_TYPE);
+            String coreDateValue = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_VALUE);
+
             if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+                DataCondition temp = null;
                 DataCondition innerSelect = null;
                 DataCondition filter = null;
 
@@ -233,10 +236,16 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                         }
                     }
                 }
-                DataCondition temp = null != filter ? filter : innerSelect;
+
+                if (null != innerSelect && omparisoncOfDate(coreDateValue, innerSelect.getValue().get(0))) {
+                    temp = innerSelect;
+                }
+                if (null != filter) {
+                    temp = filter;
+                }
                 if (null != temp) {
                     dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE,
-                            doDate(temp.getFormatType(), temp.getValue().get(0)));
+                            parseDate(temp.getFormatType(), temp.getValue().get(0)));
                 }
             }
         }
@@ -575,7 +584,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return sb.toString();
     }
 
-    private String doDate(String forMatType, String value) {
+    private String parseDate(String forMatType, String value) {
         FormatTypeEnum typeEnum = FormatTypeEnum.get(forMatType);
         switch (typeEnum) {
             case YEAR:
@@ -609,5 +618,17 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         }
         return value;
     }
+
+    /**
+     * 比较时间大小
+     */
+    public boolean omparisoncOfDate(String before, String after) {
+        try {
+            return DateUtils.parseStandardDate(before).getTime() > DateUtils.parseStandardDate(after).getTime();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }
