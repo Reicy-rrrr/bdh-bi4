@@ -1,8 +1,12 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
+import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
 import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
 import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -17,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -141,7 +146,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                             }
                         }
                         //环比增长率=（本期数-上期数）/上期数×100%。
-                        BigDecimal chainGrowthRate = new BigDecimal("100");
+                        BigDecimal chainGrowthRate = current.compareTo(BigDecimal.ZERO) == 0 ? current : new BigDecimal("100");
                         if (BigDecimal.ZERO.compareTo(chain) != 0) {
                             chainGrowthRate = (current.subtract(chain)).divide(chain, 4, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100"));
                         }
@@ -158,7 +163,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                             }
                         }
                         //同比增长率=（本期数-同期数）/|同期数|×100%。本年度与上年度
-                        BigDecimal yoyGrowthRate = new BigDecimal("100");
+                        BigDecimal yoyGrowthRate = current.compareTo(BigDecimal.ZERO) == 0 ? current : new BigDecimal("100");
                         if (BigDecimal.ZERO.compareTo(previous) != 0) {
                             yoyGrowthRate = (current.subtract(previous)).divide(previous.abs(), 4, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100"));
                         }
@@ -206,6 +211,36 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 s.setDefaultValue("0");
             }
         }
+        if (isOpen(dataModel)) {
+            //判断是否内部删选
+            String coreDateKey = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_KEY);
+            String coreDateType = (String) dataModel.getCustomParams().get(CustomParamsConstants.CORE_DATE_TYPE);
+            if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+                DataCondition innerSelect = null;
+                DataCondition filter = null;
+
+                for (DataCondition condition : dataModel.getConditions()) {
+                    if (condition.getId().get(0).equals(coreDateKey) && condition.getFormatType().equals(coreDateType)) {
+                        //内部筛选
+                        if (condition.getSymbol().equals(WildcardEnum.LTE.getKey())) {
+                            innerSelect = condition;
+                            continue;
+                        }
+                        //过滤
+                        if (condition.getSymbol().equals(WildcardEnum.EQ.getKey())) {
+                            filter = condition;
+                            continue;
+                        }
+                    }
+                }
+                DataCondition temp = null != filter ? filter : innerSelect;
+                if (null != temp) {
+                    dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE,
+                            doDate(temp.getFormatType(), temp.getValue().get(0)));
+                }
+            }
+        }
+
     }
 
     private String sourceMysql(String sql, DataModel dataModel) {
@@ -538,6 +573,41 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 return sql;
         }
         return sb.toString();
+    }
+
+    private String doDate(String forMatType, String value) {
+        FormatTypeEnum typeEnum = FormatTypeEnum.get(forMatType);
+        switch (typeEnum) {
+            case YEAR:
+                value += "-01-01";
+                break;
+            case YEAR_MONTH:
+                value += "-01";
+                break;
+            case YEAR_QUARTERLY:
+                String[] values = value.split("-");
+                switch (values[1]) {
+                    case "1":
+                        value = values[0] + "-01-01";
+                        break;
+                    case "2":
+                        value = values[0] + "-04-01";
+                        break;
+                    case "3":
+                        value = values[0] + "-07-01";
+
+                        break;
+                    case "4":
+                        value = values[0] + "-10-01";
+                        break;
+                }
+                break;
+            case YEAR_MONTH_DAY:
+                break;
+            default:
+                value = DateUtils.formatStandardDate(new Date());
+        }
+        return value;
     }
 
 }

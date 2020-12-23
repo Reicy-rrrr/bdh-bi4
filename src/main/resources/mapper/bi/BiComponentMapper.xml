@@ -27,6 +27,7 @@
         <id column="ID" property="id" />
         <result column="CODE" property="code" />
         <result column="NAME" property="name" />
+        <result column="COMMENTS" property="comments" />
         <result column="TYPE" property="type" />
         <result column="EFFECT" property="effect" />
         <result column="REF_MODEL_CODE" property="refModelCode" />

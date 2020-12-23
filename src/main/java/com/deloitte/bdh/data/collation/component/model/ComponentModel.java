@@ -31,6 +31,11 @@ public class ComponentModel {
     @JsonIgnore
     private String name;
 
+    /** 组件描述 */
+    @ApiModelProperty(value = "组件描述", example = "10")
+    @JsonIgnore
+    private String comments;
+
     /** 组件code */
     @ApiModelProperty(value = "组件code", required = true)
     @JsonIgnore
