@@ -56,6 +56,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Value("${bi.analyse.view.address}")
     private String viewAddress;
 
+    @Value("${bi.analyse.public.address}")
+    private String publicAddress;
+
     @Value("${bi.analyse.encryptPass}")
     private String encryptPass;
 
@@ -224,11 +227,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             params.put("tenantCode", ThreadLocalHolder.getTenantCode());
             params.put("refPageId", pageId);
             share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
-            share.setAddress(viewAddress);
+
         }
         if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
             share.setType(ShareTypeEnum.FIVE.getKey());
+            share.setAddress(viewAddress);
         } else {
+            share.setAddress(publicAddress);
             if (StringUtils.isNotEmpty(password)) {
                 share.setType(ShareTypeEnum.TWO.getKey());
             } else {
