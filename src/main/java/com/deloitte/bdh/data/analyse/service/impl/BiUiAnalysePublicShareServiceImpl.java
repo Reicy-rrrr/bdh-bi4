@@ -44,9 +44,12 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
 
     @Override
     public String update(AnalysePublicShareDto dto) {
-        BiUiAnalysePublicShare share = shareMapper.selectOne(new LambdaQueryWrapper<BiUiAnalysePublicShare>()
-                .eq(BiUiAnalysePublicShare::getRefPageId, dto.getPageId())
-        );
+        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, dto.getPageId());
+        //排除订阅分享数据
+        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
+        BiUiAnalysePublicShare share = getOne(lambdaQueryWrapper);
         if (null == share) {
             throw new RuntimeException("未找到对应的目标对象:" + JsonUtil.readObjToJson(dto));
         }
@@ -74,7 +77,7 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
 
         LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, id);
-        //排除订阅数据
+        //排除订阅分享数据
         List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
         lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         BiUiAnalysePublicShare share = getOne(lambdaQueryWrapper);
