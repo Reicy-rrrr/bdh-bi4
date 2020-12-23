@@ -91,6 +91,25 @@ public class EtlServiceImpl implements EtlService {
     private ExpressionHandler expressionHandler;
 
     @Override
+    public List<Object> previewField(ViewFieldValueDto dto) throws Exception {
+        List<Object> results = Lists.newArrayList();
+        List<Map<String, Object>> rows;
+        String sql = "SELECT DISTINCT(" + dto.getField() + ") FROM " + dto.getTableName();
+        BiEtlDatabaseInf databaseInf = databaseInfService.getById(dto.getSourceId());
+        if (SourceTypeEnum.File_Excel.getType().equals(databaseInf.getType())
+                || SourceTypeEnum.File_Csv.getType().equals(databaseInf.getType())) {
+            rows = dbHandler.executeQuery(sql);
+        } else {
+            DbContext context = new DbContext();
+            context.setDbId(databaseInf.getId());
+            context.setQuerySql(sql);
+            rows = dbSelector.executeQuery(context);
+        }
+        rows.forEach(row -> results.addAll(row.values()));
+        return results;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public BiComponent resourceJoin(ResourceComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
@@ -856,7 +875,7 @@ public class EtlServiceImpl implements EtlService {
             String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
             syncSql.setDttColumnsToReturn(JsonUtil.obj2String(fileds));
             if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-                syncSql.setDttWhereClause(dto.getOffsetField() + " > " + dto.getOffsetValue());
+                syncSql.setDttWhereClause(dto.getOffsetField() + " >= " + dto.getOffsetValue());
             }
             syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
             syncSql.setDttPutReader(biTenantConfigService.getReaderId());

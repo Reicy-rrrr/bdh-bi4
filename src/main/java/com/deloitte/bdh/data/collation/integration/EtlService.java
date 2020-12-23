@@ -14,6 +14,15 @@ import java.util.List;
 public interface EtlService {
 
     /**
+     * 预览表字段值
+     *
+     * @param dto 预览表字段值
+     * @return List
+     * @throws Exception
+     */
+    List<Object> previewField(ViewFieldValueDto dto) throws Exception;
+
+    /**
      * 引入数据源组件（创建）
      *
      * @param dto 数据源组件dto

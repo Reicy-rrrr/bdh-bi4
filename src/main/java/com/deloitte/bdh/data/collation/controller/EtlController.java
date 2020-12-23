@@ -38,6 +38,11 @@ public class EtlController {
     @Autowired
     private EtlService etlService;
 
+    @ApiOperation(value = "预览表字段值", notes = "预览表字段值")
+    @PostMapping("/fieldData/preview")
+    public RetResult<List> previewField(@RequestBody @Validated RetRequest<ViewFieldValueDto> request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.previewField(request.getData()));
+    }
 
     @ApiOperation(value = "引入数据源组件", notes = "引入数据源组件")
     @PostMapping("/resource/join")
