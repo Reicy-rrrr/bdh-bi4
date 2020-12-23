@@ -1,5 +1,8 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.google.common.collect.Lists;
 
 
@@ -64,6 +67,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     private BiEtlModelService modelService;
     @Autowired
     private BiComponentParamsService componentParamsService;
+    @Autowired
+    private BiComponentService componentService;
     @Resource
     private DbHandler dbHandler;
     @Resource
@@ -147,31 +152,48 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             newTableDesc = dto.getToTableDesc() + DataSetTypeEnum.MODEL.getSuffix();
         }
 
-        if (dataSet.getTableDesc().equals(newTableDesc)) {
-            //别名无变化直接返回
-            return;
-        }
-
-        Integer count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getTableDesc, newTableDesc));
-        if (count > 0) {
-            throw new RuntimeException("存在相同的表别名");
-        }
-
-        dataSet.setTableDesc(newTableDesc);
-        setMapper.updateById(dataSet);
-
-        //数据整理则修改组件
-        if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
-            BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                    .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
-                    .eq(BiComponentParams::getRefModelCode, dataSet.getRefModelCode())
-            );
-            if (null == param) {
-                throw new RuntimeException("未找到目标模型");
+        //别名有变化
+        if (!dataSet.getTableDesc().equals(newTableDesc)) {
+            Integer count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getTableDesc, newTableDesc));
+            if (count > 0) {
+                throw new RuntimeException("存在相同的表别名");
             }
-            param.setParamValue(newTableDesc);
-            componentParamsService.updateById(param);
+
+            dataSet.setTableDesc(newTableDesc);
+            setMapper.updateById(dataSet);
+
+            //数据整理则修改组件
+            if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                        .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
+                        .eq(BiComponentParams::getRefModelCode, dataSet.getRefModelCode())
+                );
+                if (null == param) {
+                    throw new RuntimeException("未找到目标模型");
+                }
+                param.setParamValue(newTableDesc);
+                componentParamsService.updateById(param);
+            }
         }
+
+        //描述变更
+        String comments = StringUtils.isBlank(dto.getComments()) ? " " : dto.getComments();
+        if (!comments.equals(dataSet.getComments())) {
+            dataSet.setComments(comments);
+            setMapper.updateById(dataSet);
+            //数据整理则修改组件
+            if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
+                        .eq(BiComponent::getCode, dataSet.getTableName())
+                );
+                if (null == component) {
+                    throw new RuntimeException("未找到目标模型");
+                }
+                component.setComments(comments);
+                componentService.updateById(component);
+            }
+        }
+
     }
 
     @Override

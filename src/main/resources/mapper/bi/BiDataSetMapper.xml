@@ -11,6 +11,7 @@
         <result column="TABLE_DESC" property="tableDesc" />
         <result column="REF_MODEL_CODE" property="refModelCode" />
         <result column="PARENT_ID" property="parentId" />
+        <result column="COMMENTS" property="comments" />
         <result column="IS_FILE" property="isFile" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

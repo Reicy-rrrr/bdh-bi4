@@ -61,6 +61,12 @@ public class BiDataSet implements Serializable {
     private String parentId;
 
     /**
+     * 描述
+     */
+    @TableField("COMMENTS")
+    private String comments;
+
+    /**
      * 是否文件夹
      */
     @TableField("IS_FILE")
@@ -133,6 +139,13 @@ public class BiDataSet implements Serializable {
     public void setParentId(String parentId) {
         this.parentId = parentId;
     }
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
     public String getIsFile() {
         return isFile;
     }
@@ -193,6 +206,7 @@ public class BiDataSet implements Serializable {
         ", tableDesc=" + tableDesc +
         ", refModelCode=" + refModelCode +
         ", parentId=" + parentId +
+        ", comments=" + comments +
         ", isFile=" + isFile +
         ", createDate=" + createDate +
         ", createUser=" + createUser +

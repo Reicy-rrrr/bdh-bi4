@@ -22,4 +22,7 @@ public class DataSetReNameDto {
     @ApiModelProperty(value = "表名称", example = "表名称", required = true)
     @NotNull(message = "表名称 不能为空")
     private String toTableDesc;
+
+    @ApiModelProperty(value = "描述", example = "描述", required = true)
+    private String comments;
 }

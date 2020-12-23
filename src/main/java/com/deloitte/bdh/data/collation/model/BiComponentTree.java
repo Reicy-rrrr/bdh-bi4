@@ -32,6 +32,9 @@ public class BiComponentTree implements Serializable {
     @ApiModelProperty(value = "处理器名称", example = "10")
     private String name;
 
+    @ApiModelProperty(value = "描述", example = "10")
+    private String comments;
+
     @ApiModelProperty(value = "组件类型", example = "10")
     private String type;
 
