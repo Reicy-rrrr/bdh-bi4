@@ -237,7 +237,8 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                     }
                 }
 
-                if (null != innerSelect && omparisoncOfDate(coreDateValue, innerSelect.getValue().get(0))) {
+                if (null != innerSelect && omparisoncOfDate(coreDateValue,
+                        parseDate(innerSelect.getFormatType(), innerSelect.getValue().get(0)))) {
                     temp = innerSelect;
                 }
                 if (null != filter) {
