@@ -1,8 +1,11 @@
 package com.deloitte.bdh.data.collation.component;
 
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.data.collation.enums.CalculateTypeEnum;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import javax.script.ScriptEngine;
@@ -33,6 +36,10 @@ public class ExpressionHandler {
      **/
     private static final String operator_regex = "^[\\+\\-\\*\\/\\(\\,\\)]$";
     /**
+     * sql中字符串值正则：'zhangsan'
+     **/
+    private static final String sql_string_value_regex = "^\\'(.+?)\\'$";
+    /**
      * 脚本引擎
      **/
     private static final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
@@ -58,29 +65,51 @@ public class ExpressionHandler {
      **/
     private static final String operator_separator = ",";
     /**
-     * 特殊符号：左括号
+     * 特殊符号：小括号
      **/
-    private static final String operator_left_bracket = "(";
+    private static final Pair<String, String> parentheses = new ImmutablePair("(", ")");
     /**
-     * 特殊符号：右括号
+     * 特殊符号：中括号
      **/
-    private static final String operator_right_bracket = ")";
+    private static final Pair<String, String> square_brackets = new ImmutablePair("[", "]");
     /**
      * 自定义方法
      */
-    private static final Set<String> functionList = Sets.newHashSet();
+    private static final Map<String, String> functions = new HashMap();
+
+    /**
+     * 逻辑筛选
+     */
+    private static final Map<String, String> logics = new HashMap();
+
+    private static final Set<String> arithmetic_operators = Sets.newHashSet("+", "-", "*", "/");
+
+    private static final Set<String> relational_operators = Sets.newHashSet(">", "=", "<", ">=", "<=", "!=", "<>");
+
+    private static final Set<String> logical_operators = Sets.newHashSet("and", "or");
+
+    private static final Set<String> special_symbols = Sets.newHashSet("+", "-", "*", "/", "(", ",", ")", "[", "]");
 
     private ArrangerSelector arrangerSelector;
 
     static {
         // 求绝对值
-        functionList.add("abs");
+        functions.put("abs", "abs");
         // 向上取整
-        functionList.add("ceiling");
+        functions.put("ceiling", "ceil");
         // 最大值
-        functionList.add("max");
+        functions.put("max", "max");
         // 最小值
-        functionList.add("min");
+        functions.put("min", "min");
+
+        logics.put("if", "if_");
+        logics.put("elseif", "elseif_");
+        logics.put("else", "else_");
+        logics.put("case", "case_");
+        logics.put("when", "when_");
+        logics.put("then", "then_");
+        logics.put("end", "end_");
+        logics.put("ifnull", "ifnull_");
     }
 
     /**
@@ -89,15 +118,14 @@ public class ExpressionHandler {
      * @param expression 计算表达式
      * @return boolean
      */
-    public boolean isFormula(String expression) {
+    public boolean isArithmeticFormula(String expression) {
         String result;
         try {
             result = scriptEngine.eval(expression.replace(" ", "")).toString();
         } catch (Exception e) {
             return false;
         }
-        Matcher matcher = Pattern.compile(number_regex).matcher(result);
-        return matcher.matches();
+        return isNumeric(result);
     }
 
     /**
@@ -106,7 +134,7 @@ public class ExpressionHandler {
      * @param expression 计算表达式
      * @return boolean
      */
-    public boolean isParamFormula(String expression) {
+    public boolean isParamArithmeticFormula(String expression) {
         List<String> params = getUniqueParams(expression);
         Map<String, String> data = new HashMap(params.size());
         // 将所有参数用数字替换掉进行计算
@@ -120,8 +148,7 @@ public class ExpressionHandler {
         } catch (Exception e) {
             return false;
         }
-        Matcher matcher = Pattern.compile(number_regex).matcher(result);
-        return matcher.matches();
+        return isNumeric(result);
     }
 
     /**
@@ -145,7 +172,6 @@ public class ExpressionHandler {
         if (queue.isEmpty()) {
             return false;
         }
-        Pattern numberPa = Pattern.compile(number_regex);
         Pattern operatorPa = Pattern.compile(operator_regex);
         Pattern paramPa = Pattern.compile(param_regex);
         boolean flag = true;
@@ -158,16 +184,135 @@ public class ExpressionHandler {
             if (operatorPa.matcher(content).matches()) {
                 continue;
             }
-            if (numberPa.matcher(content).matches()) {
+            if (isNumeric(content)) {
                 continue;
             }
-            if (functionList.contains(content)) {
+            if (functions.containsKey(content)) {
                 continue;
             }
             flag = false;
             break;
         }
         return flag;
+    }
+
+    /**
+     * 验证表达式是否为有效（主要校验关键字是否匹配）
+     *
+     * @param expression 计算表达式
+     * @return boolean
+     */
+    public boolean isFormula(String expression) {
+        // 检查小括号是否匹配
+        if (getSubStringCount(expression, parentheses.getLeft()) != getSubStringCount(expression, parentheses.getRight())) {
+            return false;
+        }
+        // 检查中括号是否匹配
+        if (getSubStringCount(expression, square_brackets.getLeft()) != getSubStringCount(expression, square_brackets.getRight())) {
+            return false;
+        }
+        int ifCount = getSubStringCount(expression, "if");
+        int ifNullCount = getSubStringCount(expression, "ifnull");
+        int elseIfCount = getSubStringCount(expression, "elseif");
+        // 校验if时需要排除ifnull和elseIf的情况
+        ifCount = ifCount - ifNullCount - elseIfCount;
+        int caseCount = getSubStringCount(expression, "case");
+        int whenCount = getSubStringCount(expression, "when");
+        int thenCount = getSubStringCount(expression, "then");
+        int elseCount = getSubStringCount(expression, "else");
+        // 校验else时需要排除elseif的情况
+        elseCount = elseCount - elseIfCount;
+        int endCount = getSubStringCount(expression, "end");
+        // 检查 if - else / case else  || if - end / case - end
+        if (ifCount + caseCount != elseCount || ifCount + caseCount != endCount) {
+            return false;
+        }
+        // 检查 if - elseIf
+        if (ifCount == 0 && elseIfCount > 0) {
+            return false;
+        }
+        // 检查 if - then / elseif - then / when - then
+        if (ifCount + elseIfCount + whenCount != thenCount) {
+            return false;
+        }
+        //
+        if (caseCount == 0 && whenCount > 0 || caseCount > whenCount) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 判断字符串是否为数字格式
+     *
+     * @param value 字符串值
+     * @return boolean
+     */
+    public boolean isNumeric(String value) {
+        Matcher matcher = Pattern.compile(number_regex).matcher(value);
+        return matcher.matches();
+    }
+
+    /**
+     * 判断字符串是否为sql中的字符串格式
+     *
+     * @param value 字符串值
+     * @return boolean
+     */
+    public boolean isSqlStringValue(String value) {
+        Matcher matcher = Pattern.compile(sql_string_value_regex).matcher(value);
+        return matcher.matches();
+    }
+
+    /**
+     * 获取表达式的计算类型
+     *
+     * @param expression 计算表达式
+     * @return CalculateTypeEnum
+     */
+    public CalculateTypeEnum getCalculateType(String expression) {
+        if (StringUtils.isBlank(expression)) {
+            return CalculateTypeEnum.ORDINARY;
+        }
+
+        for (String s : logics.keySet()) {
+            if (expression.contains(s)) {
+                return CalculateTypeEnum.LOGICAL;
+            }
+        }
+
+        for (String s : logical_operators) {
+            if (expression.contains(s)) {
+                return CalculateTypeEnum.LOGICAL;
+            }
+        }
+
+        for (String s : functions.keySet()) {
+            if (expression.contains(s)) {
+                return CalculateTypeEnum.FUNCTION;
+            }
+        }
+        return CalculateTypeEnum.ORDINARY;
+    }
+
+    /**
+     * 获取字符串中子字符串的个数
+     *
+     * @param fullString 全字符串
+     * @param subString  子字符串
+     * @return 子字符串的个数
+     */
+    public int getSubStringCount(String fullString, String subString) {
+        if (StringUtils.isEmpty(fullString) || StringUtils.isEmpty(subString)) {
+            return 0;
+        }
+
+        String temp = fullString.replace(subString, "");
+        int replacedLength = fullString.length() - temp.length();
+        if (replacedLength == 0) {
+            return 0;
+        }
+        return replacedLength / subString.length();
     }
 
     /**
@@ -259,29 +404,38 @@ public class ExpressionHandler {
         Stack stack = new Stack();
         StringBuilder tempStringBuilder = new StringBuilder();
         for (int i = 0; i < formula.length(); i++) {
-            tempStringBuilder = tempStringBuilder.append(formula.charAt(i));
-            if (i + 2 <= formula.length() && !isOperator(String.valueOf(formula.charAt(i + 1))) && !isOperator(tempStringBuilder.toString())) {
+            // 当前位置字符
+            char currChar = formula.charAt(i);
+            // 下个位置字符
+            char nextChar = ' ';
+            if (i + 2 <= formula.length()) {
+                nextChar = formula.charAt(i + 1);
+            }
+            tempStringBuilder = tempStringBuilder.append(currChar);
+            // 当前字符和下个字符不是特殊符号时，往下进行
+            if (!isSpecialSymbol(String.valueOf(currChar)) && !Character.isSpaceChar(nextChar)
+                    && !isSpecialSymbol(String.valueOf(nextChar))) {
                 continue;
             }
+
             String temp = tempStringBuilder.toString();
             // StringBuilder
             tempStringBuilder = new StringBuilder();
-            // 如果“(”直接入栈
-            if (functionList.contains(temp)) {
+            if (functions.containsKey(temp) || logics.containsKey(temp)) {
                 stack.push(temp);
                 resultQueue.add(temp);
-            } else if (operator_left_bracket.equals(temp)) {
+            } else if (square_brackets.getLeft().equals(temp)) {
                 stack.push(temp);
-                // 如果“）”直接入栈，运算符出栈进入队列，直到遇到“（”，并去除“（”
-            } else if (operator_right_bracket.equals(temp)) {
+                // 如果“]”直接入栈，运算符出栈进入队列，直到遇到“[”，并去除“]”
+            } else if (square_brackets.getRight().equals(temp)) {
                 while (true) {
-                    // 如果最终都未找到“（”，说明表达式有问题
+                    // 如果最终都未找到“[”，说明表达式有问题
                     if (stack.isEmpty()) {
                         throw new EmptyStackException();
                     }
-                    if (operator_left_bracket.equals(stack.peek())) {
+                    if (square_brackets.getLeft().equals(stack.peek())) {
                         stack.pop();
-                        if (!stack.isEmpty() && functionList.contains(stack.peek())) {
+                        if (!stack.isEmpty() && (functions.containsKey(stack.peek()) || logics.containsKey(stack.peek()))) {
                             resultQueue.add(stack.pop());
                         }
                         break;
@@ -292,7 +446,30 @@ public class ExpressionHandler {
                         resultQueue.add(operatorString);
                     }
                 }
-            } else if (isOperator(temp)) {
+                // 如果“(”直接入栈
+            } else if (parentheses.getLeft().equals(temp)) {
+                stack.push(temp);
+                // 如果“）”直接入栈，运算符出栈进入队列，直到遇到“（”，并去除“（”
+            } else if (parentheses.getRight().equals(temp)) {
+                while (true) {
+                    // 如果最终都未找到“（”，说明表达式有问题
+                    if (stack.isEmpty()) {
+                        throw new EmptyStackException();
+                    }
+                    if (parentheses.getLeft().equals(stack.peek())) {
+                        stack.pop();
+                        if (!stack.isEmpty() && (functions.containsKey(stack.peek()) || logics.containsKey(stack.peek()))) {
+                            resultQueue.add(stack.pop());
+                        }
+                        break;
+                    }
+                    // ","只用来判断，不加入到后缀表达式中
+                    String operatorString = stack.pop().toString();
+                    if (!operator_separator.equals(operatorString)) {
+                        resultQueue.add(operatorString);
+                    }
+                }
+            } else if (isArithmeticOperator(temp)) {
                 // 如果是普通运算符，将运算优先级大于等于他的从栈中取出加入到队列中，最后将当前运算符入栈
                 while (true) {
                     if (!stack.isEmpty() && getPriority(temp) <= getPriority((String) stack.peek())) {
@@ -310,7 +487,15 @@ public class ExpressionHandler {
                     resultQueue.add("0");
                 }
                 stack.push(temp);
-
+            } else if (isLogicalOperator(temp)) {
+                // 逻辑运算表达式
+                if (resultQueue.isEmpty()) {
+                    throw new BizException("Component calculate error: 错误的逻辑表达式[" + temp + "]，请检查两侧是准确性！");
+                }
+                stack.push(temp);
+            } else if (operator_separator.equals(temp)) {
+                // ","
+                stack.push(temp);
             } else {
                 // 如果是数字直接进入队列
                 resultQueue.add(temp);
@@ -345,7 +530,7 @@ public class ExpressionHandler {
             // 获取当前操作的内容
             String content = (String) postQueue.poll();
             // 是运算方法特殊处理
-            if (functionList != null && functionList.contains(content)) {
+            if (functions.containsKey(content) || logics.containsKey(content)) {
                 // 方法配对成功，获取入参进行运算
                 if (!functionStack.isEmpty() && content.equals(functionStack.peek())) {
                     // 方法名
@@ -360,7 +545,14 @@ public class ExpressionHandler {
                         }
                     }
                     // 对方法函数进行运算
-                    stack.add(executeFunction(functionName, functionParamStack, ExpressionHandler.class));
+                    if (stack.isEmpty()) {
+                        stack.add(executeFunction(functionName, functionParamStack, ExpressionHandler.class));
+                    } else {
+                        // 如果结果中已经有记录，前面函数执行的结果，需要拼接到一起
+                        String ahead = stack.pop().toString();
+                        String behind = executeFunction(functionName, functionParamStack, ExpressionHandler.class);
+                        stack.add(ahead + " " + behind);
+                    }
                     functionParamStack = new Stack();
                 } else {
                     // 没有配对方法，直接入栈
@@ -368,8 +560,8 @@ public class ExpressionHandler {
                     functionStack.push(content);
                 }
             } else {
-                // 如果是运算符进行运算
-                if (isOperator(content)) {
+                // 如果是 计算运算符 或者 逻辑运算符 进行运算
+                if (isArithmeticOperator(content) || isLogicalOperator(content)) {
                     String rightParam = String.valueOf(stack.pop());
                     String leftParam = String.valueOf(stack.pop());
                     stack.push(operation(leftParam, rightParam, content));
@@ -379,8 +571,20 @@ public class ExpressionHandler {
                 }
             }
         }
+
+        if (stack.size() == 1) {
+            return stack.pop().toString();
+        }
+
+        StringBuilder resultBuilder = new StringBuilder();
+        while (true) {
+            if (stack.isEmpty()) {
+                break;
+            }
+            resultBuilder.append(stack.pop().toString());
+        }
         // 显示计算结果
-        return stack.pop().toString();
+        return resultBuilder.toString();
     }
 
     /**
@@ -398,6 +602,10 @@ public class ExpressionHandler {
             divisor.append("(CASE WHEN ").append(rightParam).append("=0 THEN NULL ELSE ").append(rightParam).append(" END)");
             rightParam = divisor.toString();
         }
+
+        if ("and".equals(operator) || "or".equals(operator)) {
+            operator = " " + operator + " ";
+        }
         return new StringBuilder("(").append(leftParam).append(operator).append(rightParam).append(")").toString();
     }
 
@@ -412,16 +620,25 @@ public class ExpressionHandler {
     private String executeFunction(String functionName, Stack functionParamStack, Class functionClazz) {
         String result = null;
         try {
+            // 获取方法映射的名称
+            String methodName = functions.get(functionName);
+            if (StringUtils.isBlank(methodName)) {
+                methodName = logics.get(functionName);
+            }
+            if (StringUtils.isBlank(methodName)) {
+                throw new BizException("未知的方法[" + functionName + "]请检查表达式正确性！");
+            }
             // 获取对应方法
-            Method get = functionClazz.getMethod(functionName, Stack.class);
-            // 获取方法返回值
-            result = (String) get.invoke(null, functionParamStack);
+            Method method = functionClazz.getDeclaredMethod(methodName, Stack.class);
+            // 在访问私有方法前设置访问操作(不设置直接调用会报错)
+            method.setAccessible(true);
+            // 通过当前对象获取方法返回值
+            result = (String) method.invoke(this, functionParamStack);
         } catch (Exception e) {
             throw new BizException("方法[" + functionName + "]格式化错误，请检查参数正确性！", e);
         }
         return result;
     }
-
 
     /**
      * 获取运算符优先级
@@ -442,19 +659,68 @@ public class ExpressionHandler {
     }
 
     /**
-     * 判断是不是运算符
+     * 判断是不是算术运算符
      *
      * @param content 计算内容
      * @return boolean
      */
-    private boolean isOperator(String content) {
-        if (operator_add.equals(content) || operator_subtract.equals(content)
-                || operator_multiply.equals(content) || operator_divide.equals(content)
-                || operator_separator.equals(content) || operator_left_bracket.equals(content)
-                || operator_right_bracket.equals(content)) {
-            return true;
+    private boolean isArithmeticOperator(String content) {
+        if (StringUtils.isBlank(content)) {
+            return false;
         }
-        return false;
+        return arithmetic_operators.contains(content);
+    }
+
+    /**
+     * 判断是不是逻辑运算符
+     *
+     * @param content 计算内容
+     * @return boolean
+     */
+    private boolean isLogicalOperator(String content) {
+        if (StringUtils.isBlank(content)) {
+            return false;
+        }
+        return logical_operators.contains(content);
+    }
+
+    /**
+     * 判断是不是关系运算符
+     *
+     * @param content 计算内容
+     * @return boolean
+     */
+    private boolean isRelationalOperator(String content) {
+        if (StringUtils.isBlank(content)) {
+            return false;
+        }
+        return relational_operators.contains(content);
+    }
+
+    /**
+     * 判断是不是特殊符号
+     *
+     * @param content 内容
+     * @return boolean
+     */
+    private boolean isSpecialSymbol(String content) {
+        if (StringUtils.isBlank(content)) {
+            return false;
+        }
+        return special_symbols.contains(content);
+    }
+
+    /**
+     * 判断是不是函数
+     *
+     * @param content 计算内容
+     * @return boolean
+     */
+    private boolean isFunction(String content) {
+        if (StringUtils.isBlank(content)) {
+            return false;
+        }
+        return functions.containsKey(content);
     }
 
     /**
@@ -463,7 +729,7 @@ public class ExpressionHandler {
      * @param stack 去绝对值字段栈
      * @return 运算表达式
      */
-    public String abs(Stack stack) {
+    private String abs(Stack stack) {
         if (stack.isEmpty()) {
             throw new BizException("Component calculate error: 计算绝对值错误，字段不能为空！");
         }
@@ -480,7 +746,7 @@ public class ExpressionHandler {
      * @param stack 取整字段栈
      * @return 运算表达式
      */
-    public String ceiling(Stack stack) {
+    private String ceil(Stack stack) {
         if (stack.isEmpty()) {
             throw new BizException("Component calculate error: 向上取整错误，字段不能为空！");
         }
@@ -501,7 +767,7 @@ public class ExpressionHandler {
      * @param stack 参与计算字段栈
      * @return 运算表达式
      */
-    public String max(Stack stack) {
+    private String max(Stack stack) {
         if (stack.isEmpty() || stack.size() < 2) {
             throw new BizException("Component calculate error: 取最大值错误，字段个数不能小于2！");
         }
@@ -524,7 +790,7 @@ public class ExpressionHandler {
      * @param stack 参与计算字段栈
      * @return 运算表达式
      */
-    public String min(Stack stack) {
+    private String min(Stack stack) {
         if (stack.isEmpty() || stack.size() < 2) {
             throw new BizException("Component calculate error: 取最小值错误，字段个数不能小于2！");
         }
@@ -538,5 +804,97 @@ public class ExpressionHandler {
             tempBuilder.setLength(0);
         }
         return minField;
+    }
+
+    private String if_(Stack stack) {
+        if (stack == null || stack.isEmpty()) {
+            throw new BizException("Component calculate error: if判断条件不能为空！");
+        }
+        String condition = stack.pop().toString();
+        return new StringBuilder().append(" CASE WHEN ").append(condition).append(" ").toString();
+    }
+
+    private String elseif_(Stack stack) {
+        if (stack == null || stack.isEmpty()) {
+            throw new BizException("Component calculate error: elseif判断条件不能为空！");
+        }
+        String condition = stack.pop().toString();
+        return new StringBuilder().append(" WHEN ").append(condition).append(" ").toString();
+    }
+
+    private String case_(Stack stack) {
+        if (stack == null || stack.isEmpty()) {
+            throw new BizException("Component calculate error: case内容不能为空！");
+        }
+        String field = stack.pop().toString();
+        return new StringBuilder().append(" CASE ").append(field).append(" ").toString();
+    }
+
+    private String when_(Stack stack) {
+        if (stack == null || stack.isEmpty()) {
+            throw new BizException("Component calculate error: when判断条件不能为空！");
+        }
+        String condition = stack.pop().toString();
+        if (!isNumeric(condition) && !isSqlStringValue(condition)) {
+            condition = "'" + condition + "'";
+        }
+        return new StringBuilder().append(" WHEN ").append(condition).append(" ").toString();
+    }
+
+    private String then_(Stack stack) {
+        if (stack == null || stack.isEmpty()) {
+            throw new BizException("Component calculate error: then处理逻辑不能为空！");
+        }
+        String result = stack.pop().toString();
+        if (!isNumeric(result) && !isSqlStringValue(result)) {
+            result = "'" + result + "'";
+        }
+        return new StringBuilder().append(" THEN ").append(result).append(" ").toString();
+    }
+
+    private String else_(Stack stack) {
+        if (stack == null || stack.isEmpty()) {
+            throw new BizException("Component calculate error: else处理逻辑不能为空！");
+        }
+
+        String result = stack.pop().toString();
+        if (!isNumeric(result) && !isSqlStringValue(result)) {
+            result = "'" + result + "'";
+        }
+        return new StringBuilder().append(" ELSE ").append(result).append(" ").toString();
+    }
+
+    private String end_(Stack stack) {
+        return " END ";
+    }
+
+    private String and_(Stack stack) {
+        if (stack == null || stack.size() < 2) {
+            throw new BizException("Component calculate error: and判断条件不能少于2个！");
+        }
+        String condition1 = stack.pop().toString();
+        String condition2 = stack.pop().toString();
+        return new StringBuilder(" ").append(condition1).append(" AND ").append(condition2).append(" ").toString();
+    }
+
+    private String or_(Stack stack) {
+        if (stack == null || stack.size() < 2) {
+            throw new BizException("Component calculate error: or判断条件不能少于2个！");
+        }
+        String condition1 = stack.pop().toString();
+        String condition2 = stack.pop().toString();
+        return new StringBuilder(" ").append(condition1).append(" OR ").append(condition2).append(" ").toString();
+    }
+
+    private String ifnull_(Stack stack) {
+        if (stack == null || stack.size() < 2) {
+            throw new BizException("Component calculate error: ifnull判断条件不能少于2个！");
+        }
+        String field = stack.pop().toString();
+        String value = stack.pop().toString();
+        if (!isNumeric(value) && !isSqlStringValue(value)) {
+            value = "'" + value + "'";
+        }
+        return arrangerSelector.calculateIfNull(field, value);
     }
 }

@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.exception.BizException;
  */
 public enum CalculateTypeEnum {
     ORDINARY("ordinary", "普通四则运算"),
+    LOGICAL("logical", "逻辑判断"),
     FUNCTION("function", "函数式运算"),
     ;
 

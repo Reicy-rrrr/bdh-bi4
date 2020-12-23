@@ -749,18 +749,23 @@ public class EtlServiceImpl implements EtlService {
         if (StringUtils.isBlank(type)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "公式类型不能为空！");
         }
-        CalculateTypeEnum calculateType = CalculateTypeEnum.get(type);
+
         String formula = dto.getFormula();
         if (StringUtils.isBlank(formula)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
         }
-        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
-            boolean checkResult = expressionHandler.isParamFormula(formula);
-            if (!checkResult) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
-            }
-        } else {
+        CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
+        if (calculateType == null) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
+        }
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !expressionHandler.isParamArithmeticFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        }
+        if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        }
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType) && !expressionHandler.isFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
         }
 
         List<String> params = expressionHandler.getUniqueParams(formula);

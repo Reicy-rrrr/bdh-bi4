@@ -8,6 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -168,6 +170,15 @@ public interface ArrangerSelector extends Component {
     String calculateCeil(String field);
 
     /**
+     * ifnull函数实现
+     *
+     * @param field 向上取整字段
+     * @param value 字段为NULL时默认的值
+     * @return String IFNULL表达式
+     */
+    String calculateIfNull(String field, String value);
+
+    /**
      * 获取合并字段后新字段的长度
      *
      * @param leftMapping  左侧字段映射
@@ -212,5 +223,17 @@ public interface ArrangerSelector extends Component {
             fromField = fromMapping.getOriginalFieldName();
         }
         return fromField;
+    }
+
+    /**
+     * 判断字符串是否为数字
+     *
+     * @param value 字符串值
+     * @return
+     */
+    default boolean isNumeric(String value) {
+        String numericRegex = "^(\\-|\\+)?\\d+(\\.\\d+)?$";
+        Matcher matcher = Pattern.compile(numericRegex).matcher(value);
+        return matcher.matches();
     }
 }
