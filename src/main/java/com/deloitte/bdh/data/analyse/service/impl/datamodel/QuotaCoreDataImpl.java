@@ -253,11 +253,11 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                         parseDate(ltrCondition.getFormatType(), ltrCondition.getValue().get(0)))) {
                     coreDateValue = parseDate(ltrCondition.getFormatType(), ltrCondition.getValue().get(0));
                 }
+                if (null != minDate && omparisoncOfDate(coreDateValue, minDate)) {
+                    coreDateValue = minDate;
+                }
                 if (null != eqCondition) {
                     coreDateValue = parseDate(eqCondition.getFormatType(), eqCondition.getValue().get(0));
-                    if (null != minDate && omparisoncOfDate(coreDateValue, minDate)) {
-                        coreDateValue = minDate;
-                    }
                 }
                 if (null != coreDateValue) {
                     dataModel.getCustomParams().put(CustomParamsConstants.CORE_DATE_VALUE, coreDateValue);
