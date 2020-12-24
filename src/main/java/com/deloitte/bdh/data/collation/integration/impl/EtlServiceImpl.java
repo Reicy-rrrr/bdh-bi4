@@ -91,6 +91,25 @@ public class EtlServiceImpl implements EtlService {
     private ExpressionHandler expressionHandler;
 
     @Override
+    public List<Object> previewField(ViewFieldValueDto dto) throws Exception {
+        List<Object> results = Lists.newArrayList();
+        List<Map<String, Object>> rows;
+        String sql = "SELECT DISTINCT(" + dto.getField() + ") FROM " + dto.getTableName();
+        BiEtlDatabaseInf databaseInf = databaseInfService.getById(dto.getSourceId());
+        if (SourceTypeEnum.File_Excel.getType().equals(databaseInf.getType())
+                || SourceTypeEnum.File_Csv.getType().equals(databaseInf.getType())) {
+            rows = dbHandler.executeQuery(sql);
+        } else {
+            DbContext context = new DbContext();
+            context.setDbId(databaseInf.getId());
+            context.setQuerySql(sql);
+            rows = dbSelector.executeQuery(context);
+        }
+        rows.forEach(row -> results.addAll(row.values()));
+        return results;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public BiComponent resourceJoin(ResourceComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
@@ -730,18 +749,23 @@ public class EtlServiceImpl implements EtlService {
         if (StringUtils.isBlank(type)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "公式类型不能为空！");
         }
-        CalculateTypeEnum calculateType = CalculateTypeEnum.get(type);
+
         String formula = dto.getFormula();
         if (StringUtils.isBlank(formula)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
         }
-        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
-            boolean checkResult = expressionHandler.isParamFormula(formula);
-            if (!checkResult) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
-            }
-        } else {
+        CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
+        if (calculateType == null) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
+        }
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !expressionHandler.isParamArithmeticFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        }
+        if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        }
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType) && !expressionHandler.isFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
         }
 
         List<String> params = expressionHandler.getUniqueParams(formula);
@@ -856,7 +880,7 @@ public class EtlServiceImpl implements EtlService {
             String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
             syncSql.setDttColumnsToReturn(JsonUtil.obj2String(fileds));
             if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-                syncSql.setDttWhereClause(dto.getOffsetField() + " > " + dto.getOffsetValue());
+                syncSql.setDttWhereClause(dto.getOffsetField() + " >= " + dto.getOffsetValue());
             }
             syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
             syncSql.setDttPutReader(biTenantConfigService.getReaderId());

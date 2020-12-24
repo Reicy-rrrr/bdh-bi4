@@ -465,6 +465,11 @@ public class OracleArranger implements ArrangerSelector {
         return "CEIL(" + field + ")";
     }
 
+    @Override
+    public String calculateIfNull(String field, String value) {
+        return "NVL(" + field + "," + value + ")";
+    }
+
     /**
      * 转换字段为整数类型
      *

@@ -468,6 +468,11 @@ public class SqlserverArranger implements ArrangerSelector {
         return "CEILING(" + field + ")";
     }
 
+    @Override
+    public String calculateIfNull(String field, String value) {
+        return "ISNULL(" + field + "," + value + ")";
+    }
+
     /**
      * 转换字段为整数类型
      *

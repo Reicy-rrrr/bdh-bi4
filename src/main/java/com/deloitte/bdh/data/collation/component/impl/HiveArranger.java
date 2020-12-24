@@ -467,4 +467,9 @@ public class HiveArranger implements ArrangerSelector {
     public String calculateCeil(String field) {
         return "CEIL(" + field + ")";
     }
+
+    @Override
+    public String calculateIfNull(String field, String value) {
+        return "IFNULL(" + field + "," + value + ")";
+    }
 }

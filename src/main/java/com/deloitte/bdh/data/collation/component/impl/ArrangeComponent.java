@@ -643,15 +643,26 @@ public class ArrangeComponent implements ComponentHandler {
         if (StringUtils.isBlank(formulaType)) {
             throw new BizException("Arrange component calculate error: 计算类型不能为空！");
         }
-        CalculateTypeEnum calculateType = CalculateTypeEnum.get(formulaType);
-        if (calculateType == null || CalculateTypeEnum.FUNCTION.equals(calculateType)) {
+        CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
+        if (calculateType == null) {
             throw new BizException("Arrange component calculate error: 暂不支持的计算类型！");
         }
-        if (!expressionHandler.isParamFormula(formula)) {
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !expressionHandler.isParamArithmeticFormula(formula)) {
+            throw new BizException("Arrange component calculate error: 非法的计算公式！");
+        }
+        if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
+            throw new BizException("Arrange component calculate error: 非法的计算公式！");
+        }
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType) && !expressionHandler.isFormula(formula)) {
             throw new BizException("Arrange component calculate error: 非法的计算公式！");
         }
         // 格式化公式（对公式中的字段进行特殊处理）
-        String finalFormula = expressionHandler.formatFormula(formula);
+        String finalFormula = null;
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
+            finalFormula = expressionHandler.formatFormula(formula);
+        } else {
+            finalFormula = expressionHandler.formatFormula(formula, arranger);
+        }
         // 公式中参与计算的字段
         List<String> params = expressionHandler.getUniqueParams(formula);
         // 从组件信息
@@ -666,7 +677,7 @@ public class ArrangeComponent implements ComponentHandler {
             }
             // 参与四则运算的字段必须为数字类型
             DataTypeEnum dataType = DataTypeEnum.get(fromMapping.getFinalFieldType());
-            if (!DataTypeEnum.Integer.equals(dataType) && !DataTypeEnum.Float.equals(dataType)) {
+            if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !DataTypeEnum.Integer.equals(dataType) && !DataTypeEnum.Float.equals(dataType)) {
                 throw new BizException("Arrange component calculate error: 计算公式中发现非数字类型的字段！");
             }
             String fieldName = arranger.getFromField(fromMapping, fromComponent.getTypeEnum());
