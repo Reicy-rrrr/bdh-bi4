@@ -1,12 +1,19 @@
 package com.deloitte.bdh.data.collation.model;
 
 import com.deloitte.bdh.common.util.SpringUtil;
-import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
+import com.deloitte.bdh.data.analyse.sql.utils.RelaBaseBuildUtil;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
+import com.deloitte.bdh.data.collation.model.request.ConditionDto;
+import com.google.common.collect.Lists;
 import lombok.Data;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 
 @Data
 public class RunPlan {
@@ -65,12 +72,27 @@ public class RunPlan {
         return this;
     }
 
-    public RunPlan synCount() throws Exception {
+    public RunPlan synCount(List<ConditionDto> conditionDtos) throws Exception {
         String condition = null;
+
+        List<String> list = Lists.newArrayList();
+        list.add(" 1=1 ");
         if (config.getType().equals(SyncTypeEnum.INCREMENT.getValue())) {
             if (StringUtils.isNotBlank(config.getOffsetValue())) {
-                condition = "'" + config.getOffsetField() + "' > =" + "'" + config.getOffsetValue() + "'";
+                list.add("'" + config.getOffsetField() + "' > =" + "'" + config.getOffsetValue() + "'");
             }
+        }
+        if (CollectionUtils.isNotEmpty(conditionDtos)) {
+            for (ConditionDto conditionDto : conditionDtos) {
+                WildcardEnum wildcardEnum = WildcardEnum.get(conditionDto.getSymbol());
+                String value = wildcardEnum.expression(conditionDto.getValues());
+                String symbol = wildcardEnum.getCode();
+                String express = RelaBaseBuildUtil.condition(conditionDto.getField(), symbol, value);
+                list.add(express);
+            }
+        }
+        if (list.size() > 1) {
+            condition = AnalyseUtil.join(" AND ", list.toArray(new String[0]));
         }
 
         DbContext context = new DbContext();

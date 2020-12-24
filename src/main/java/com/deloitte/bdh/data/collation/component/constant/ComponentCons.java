@@ -6,6 +6,7 @@ package com.deloitte.bdh.data.collation.component.constant;
 public class ComponentCons {
     //以下为数据源组件参数
     public static final String DULICATE = "isDuplicate";
+    public static final String CONDITION = "condition";
 
     //1：为数据源组件,为”引用副本“时没有值，2：为输出组件时没有值
     public static final String REF_PROCESSORS_CDOE = "refProcessorsCode";

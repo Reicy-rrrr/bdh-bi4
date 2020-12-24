@@ -9,9 +9,13 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.analyse.sql.utils.RelaBaseBuildUtil;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.component.ExpressionHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
@@ -147,6 +151,11 @@ public class EtlServiceImpl implements EtlService {
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
+            //设置过滤条件
+            if (CollectionUtils.isNotEmpty(dto.getConditions())) {
+                params.put(ComponentCons.CONDITION, JsonUtil.obj2String(dto.getConditions()));
+            }
+
             String mappingCode = GenerateCodeUtil.generate();
             component.setRefMappingCode(mappingCode);
             dto.setBelongMappingCode(mappingCode);
@@ -204,7 +213,7 @@ public class EtlServiceImpl implements EtlService {
                         .modelCode(biEtlModel.getCode())
                         .cronExpression(biEtlModel.getCronExpression())
                         .mappingConfigCode(mappingConfig)
-                        .synCount();
+                        .synCount(dto.getConditions());
 
 
                 //step2.1.2: 调用NIFI生成processors
@@ -879,8 +888,24 @@ public class EtlServiceImpl implements EtlService {
             syncSql.setDttTableName(mappingConfig.getFromTableName());
             String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
             syncSql.setDttColumnsToReturn(JsonUtil.obj2String(fileds));
+
+            List<String> list = Lists.newArrayList();
+            list.add(" 1=1 ");
             if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-                syncSql.setDttWhereClause(dto.getOffsetField() + " >= " + dto.getOffsetValue());
+                list.add(dto.getOffsetField() + " >= " + dto.getOffsetValue());
+            }
+            if (CollectionUtils.isNotEmpty(dto.getConditions())) {
+                for (ConditionDto conditionDto : dto.getConditions()) {
+                    WildcardEnum wildcardEnum = WildcardEnum.get(conditionDto.getSymbol());
+                    String value = wildcardEnum.expression(conditionDto.getValues());
+                    String symbol = wildcardEnum.getCode();
+                    String express = RelaBaseBuildUtil.condition(conditionDto.getField(), symbol, value);
+                    list.add(express);
+                }
+            }
+            if (list.size() > 1) {
+                String whereClause = AnalyseUtil.join(" AND ", list.toArray(new String[0]));
+                syncSql.setDttWhereClause(whereClause);
             }
             syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
             syncSql.setDttPutReader(biTenantConfigService.getReaderId());
@@ -898,14 +923,26 @@ public class EtlServiceImpl implements EtlService {
         String duplicate = dto.getDuplicate();
         String belongMappingCode = dto.getBelongMappingCode();
         String offsetField = dto.getOffsetField();
+        List<ConditionDto> conditionDtos = dto.getConditions();
 //        String offsetValue = dto.getOffsetValue();
 
         BiComponentParams dulicateParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, oldComponent.getCode())
                 .eq(BiComponentParams::getParamKey, ComponentCons.DULICATE));
 
+        BiComponentParams conditionParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, oldComponent.getCode())
+                .eq(BiComponentParams::getParamKey, ComponentCons.CONDITION));
+
         //副本类型变更
         if (!dulicateParam.getParamValue().equals(duplicate)) {
+            return true;
+        }
+
+        //过滤条件变更
+        String newConditionValue = CollectionUtils.isNotEmpty(conditionDtos) ? JsonUtil.obj2String(conditionDtos) : "null";
+        String oldConditionValue = null != conditionParam && StringUtils.isNotBlank(conditionParam.getParamValue()) ? conditionParam.getParamValue() : "null";
+        if (!Md5Util.getMD5(newConditionValue).equals(oldConditionValue)) {
             return true;
         }
 

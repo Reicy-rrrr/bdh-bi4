@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.sql.utils;
 
-import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import com.deloitte.bdh.data.collation.enums.MysqlDataTypeEnum;
@@ -10,7 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.List;
 
 
-public class MysqlBuildUtil {
+public class MysqlBuildUtil extends RelaBaseBuildUtil {
     public static final List<String> MENSURE_DECIMAL_TYPE = Lists.newArrayList(
             MysqlDataTypeEnum.FLOAT.getType().toUpperCase(),
             MysqlDataTypeEnum.DOUBLE.getType().toUpperCase(),
@@ -48,18 +47,6 @@ public class MysqlBuildUtil {
             }
         }
         return fieldExpress + " AS `" + (StringUtils.isBlank(alias) ? field : alias) + "`";
-    }
-
-    public static String from(String tableName, String alias) {
-        return tableName + " AS `" + (StringUtils.isBlank(alias) ? tableName : alias) + "`";
-
-    }
-
-    public static String where(String tableName, String field, String quota, String symbol, String value) {
-        if (DataModelTypeEnum.DL.getCode().equals(quota)) {
-            return null;
-        }
-        return condition(selectField(tableName, field), symbol, value);
     }
 
     public static String where(String tableName, String field, String quota, String formatType, String symbol, String value) {
@@ -109,14 +96,6 @@ public class MysqlBuildUtil {
         return fieldExpress + " " + orderType;
     }
 
-    private static String selectField(String tableName, String field) {
-        return "`" + tableName + "`.`" + field + "`";
-    }
-
-    private static String aggregate(String field, String aggregateType) {
-        return AggregateTypeEnum.get(aggregateType).expression(field);
-    }
-
     private static String ifNull(String field) {
         return " IFNULL( " + field + " ,0)";
     }
@@ -127,13 +106,6 @@ public class MysqlBuildUtil {
 
     private static String format(String field, String formatType) {
         return MysqlFormatTypeEnum.get(formatType).expression(field);
-    }
-
-    private static String condition(String field, String symbol, String value) {
-        if (StringUtils.isBlank(symbol) || StringUtils.isBlank(value)) {
-            return null;
-        }
-        return field + " " + symbol + " " + value;
     }
 
 }

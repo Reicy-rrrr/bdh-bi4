@@ -55,4 +55,8 @@ public class ResourceComponentDto {
 
     @ApiModelProperty(value = "坐标", example = "1")
     private String position = NifiProcessUtil.randPosition();
+
+    @ApiModelProperty(value = "过滤条件", example = "0")
+    private List<ConditionDto> conditions;
+
 }
