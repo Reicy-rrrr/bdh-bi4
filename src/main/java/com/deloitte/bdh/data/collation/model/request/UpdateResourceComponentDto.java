@@ -50,4 +50,7 @@ public class UpdateResourceComponentDto {
     @ApiModelProperty(value = "字段列表", example = "0")
     private List<TableField> fields;
 
+    @ApiModelProperty(value = "过滤条件", example = "0")
+    private List<ConditionDto> conditions;
+
 }

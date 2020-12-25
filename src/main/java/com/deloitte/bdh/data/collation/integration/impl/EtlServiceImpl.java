@@ -9,9 +9,13 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.SqlFormatUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.analyse.sql.utils.RelaBaseBuildUtil;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.component.ExpressionHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
@@ -91,6 +95,25 @@ public class EtlServiceImpl implements EtlService {
     private ExpressionHandler expressionHandler;
 
     @Override
+    public List<Object> previewField(ViewFieldValueDto dto) throws Exception {
+        List<Object> results = Lists.newArrayList();
+        List<Map<String, Object>> rows;
+        String sql = "SELECT DISTINCT(" + dto.getField() + ") FROM " + dto.getTableName();
+        BiEtlDatabaseInf databaseInf = databaseInfService.getById(dto.getSourceId());
+        if (SourceTypeEnum.File_Excel.getType().equals(databaseInf.getType())
+                || SourceTypeEnum.File_Csv.getType().equals(databaseInf.getType())) {
+            rows = dbHandler.executeQuery(sql);
+        } else {
+            DbContext context = new DbContext();
+            context.setDbId(databaseInf.getId());
+            context.setQuerySql(sql);
+            rows = dbSelector.executeQuery(context);
+        }
+        rows.forEach(row -> results.addAll(row.values()));
+        return results;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public BiComponent resourceJoin(ResourceComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
@@ -128,6 +151,11 @@ public class EtlServiceImpl implements EtlService {
 
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
+            //设置过滤条件
+            if (CollectionUtils.isNotEmpty(dto.getConditions())) {
+                params.put(ComponentCons.CONDITION, JsonUtil.obj2String(dto.getConditions()));
+            }
+
             String mappingCode = GenerateCodeUtil.generate();
             component.setRefMappingCode(mappingCode);
             dto.setBelongMappingCode(mappingCode);
@@ -185,7 +213,7 @@ public class EtlServiceImpl implements EtlService {
                         .modelCode(biEtlModel.getCode())
                         .cronExpression(biEtlModel.getCronExpression())
                         .mappingConfigCode(mappingConfig)
-                        .synCount();
+                        .synCount(dto.getConditions());
 
 
                 //step2.1.2: 调用NIFI生成processors
@@ -730,18 +758,23 @@ public class EtlServiceImpl implements EtlService {
         if (StringUtils.isBlank(type)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "公式类型不能为空！");
         }
-        CalculateTypeEnum calculateType = CalculateTypeEnum.get(type);
+
         String formula = dto.getFormula();
         if (StringUtils.isBlank(formula)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
         }
-        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
-            boolean checkResult = expressionHandler.isParamFormula(formula);
-            if (!checkResult) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
-            }
-        } else {
+        CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
+        if (calculateType == null) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
+        }
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !expressionHandler.isParamArithmeticFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        }
+        if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        }
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType) && !expressionHandler.isFormula(formula)) {
+            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
         }
 
         List<String> params = expressionHandler.getUniqueParams(formula);
@@ -855,8 +888,24 @@ public class EtlServiceImpl implements EtlService {
             syncSql.setDttTableName(mappingConfig.getFromTableName());
             String fileds = dto.getFields().stream().map(TableField::getName).collect(Collectors.joining(","));
             syncSql.setDttColumnsToReturn(JsonUtil.obj2String(fileds));
+
+            List<String> list = Lists.newArrayList();
+            list.add(" 1=1 ");
             if (StringUtils.isNotBlank(dto.getOffsetValue())) {
-                syncSql.setDttWhereClause(dto.getOffsetField() + " > " + dto.getOffsetValue());
+                list.add(dto.getOffsetField() + " >= " + dto.getOffsetValue());
+            }
+            if (CollectionUtils.isNotEmpty(dto.getConditions())) {
+                for (ConditionDto conditionDto : dto.getConditions()) {
+                    WildcardEnum wildcardEnum = WildcardEnum.get(conditionDto.getSymbol());
+                    String value = wildcardEnum.expression(conditionDto.getValues());
+                    String symbol = wildcardEnum.getCode();
+                    String express = RelaBaseBuildUtil.condition(conditionDto.getField(), symbol, value);
+                    list.add(express);
+                }
+            }
+            if (list.size() > 1) {
+                String whereClause = AnalyseUtil.join(" AND ", list.toArray(new String[0]));
+                syncSql.setDttWhereClause(whereClause);
             }
             syncSql.setDttMaxValueColumns(mappingConfig.getOffsetField());
             syncSql.setDttPutReader(biTenantConfigService.getReaderId());
@@ -874,14 +923,26 @@ public class EtlServiceImpl implements EtlService {
         String duplicate = dto.getDuplicate();
         String belongMappingCode = dto.getBelongMappingCode();
         String offsetField = dto.getOffsetField();
+        List<ConditionDto> conditionDtos = dto.getConditions();
 //        String offsetValue = dto.getOffsetValue();
 
         BiComponentParams dulicateParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                 .eq(BiComponentParams::getRefComponentCode, oldComponent.getCode())
                 .eq(BiComponentParams::getParamKey, ComponentCons.DULICATE));
 
+        BiComponentParams conditionParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefComponentCode, oldComponent.getCode())
+                .eq(BiComponentParams::getParamKey, ComponentCons.CONDITION));
+
         //副本类型变更
         if (!dulicateParam.getParamValue().equals(duplicate)) {
+            return true;
+        }
+
+        //过滤条件变更
+        String newConditionValue = CollectionUtils.isNotEmpty(conditionDtos) ? JsonUtil.obj2String(conditionDtos) : "null";
+        String oldConditionValue = null != conditionParam && StringUtils.isNotBlank(conditionParam.getParamValue()) ? conditionParam.getParamValue() : "null";
+        if (!Md5Util.getMD5(newConditionValue).equals(oldConditionValue)) {
             return true;
         }
 

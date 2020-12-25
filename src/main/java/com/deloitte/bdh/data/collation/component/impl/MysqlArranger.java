@@ -471,11 +471,11 @@ public class MysqlArranger implements ArrangerSelector {
         } else {
             // 转换数据格式
             if (DataTypeEnum.DateTime.equals(dataType)) {
-                fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d %H:%i:%s')";
+                fillValue = "STR_TO_DATE('" + fillValue + "', '%Y-%m-%d %H:%i:%s')";
             } else if (DataTypeEnum.Date.equals(dataType)) {
-                fillValue = "STR_TO_DATE('" + fillValue +  "', '%Y-%m-%d')";
+                fillValue = "STR_TO_DATE('" + fillValue + "', '%Y-%m-%d')";
             } else if (DataTypeEnum.Text.equals(dataType)) {
-                fillValue = "'" + fillValue +  "'";
+                fillValue = "'" + fillValue + "'";
             }
         }
 
@@ -497,5 +497,10 @@ public class MysqlArranger implements ArrangerSelector {
     @Override
     public String calculateCeil(String field) {
         return "CEIL(" + field + ")";
+    }
+
+    @Override
+    public String calculateIfNull(String field, String value) {
+        return "IFNULL(" + field + "," + value + ")";
     }
 }

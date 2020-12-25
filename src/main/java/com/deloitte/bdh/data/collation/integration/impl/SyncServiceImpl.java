@@ -5,15 +5,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.integration.SyncService;
 import com.deloitte.bdh.data.collation.model.*;
+import com.deloitte.bdh.data.collation.model.request.ConditionDto;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -21,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +42,8 @@ public class SyncServiceImpl implements SyncService {
     private DbHandler dbHandler;
     @Autowired
     private BiComponentService componentService;
+    @Autowired
+    private BiComponentParamsService paramsService;
     @Autowired
     private BiEtlDatabaseInfService biEtlDatabaseInfService;
     @Autowired
@@ -443,7 +450,10 @@ public class SyncServiceImpl implements SyncService {
                 .eq(BiComponent::getRefModelCode, modelCode)
                 .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
         );
-
+        List<BiComponentParams> componentParams = paramsService.list(new LambdaQueryWrapper<BiComponentParams>()
+                .eq(BiComponentParams::getRefModelCode, modelCode)
+                .eq(BiComponentParams::getParamKey, ComponentCons.CONDITION)
+        );
         BiProcessors out = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
                 .eq(BiProcessors::getRelModelCode, modelCode)
                 .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
@@ -490,6 +500,17 @@ public class SyncServiceImpl implements SyncService {
                     continue;
                 }
 
+                //设置filter
+                List<ConditionDto> conditionDtos = Lists.newArrayList();
+                Optional<BiComponentParams> optional = componentParams.stream()
+                        .filter(s -> s.getRefComponentCode().equals(component.getCode())).findAny();
+                if (optional.isPresent()) {
+                    String paramValue = optional.get().getParamValue();
+                    if (StringUtils.isNotBlank(paramValue)) {
+                        conditionDtos = JsonUtil.string2Obj(paramValue, new TypeReference<List<ConditionDto>>() {
+                        });
+                    }
+                }
                 RunPlan runPlan = RunPlan.builder()
                         .groupCode(groupCode)
                         .planType("0")
@@ -498,7 +519,7 @@ public class SyncServiceImpl implements SyncService {
                         .modelCode(modelCode)
                         .cronExpression(model.getCronExpression())
                         .mappingConfigCode(config)
-                        .synCount();
+                        .synCount(conditionDtos);
                 runPlans.add(runPlan);
             }
         }

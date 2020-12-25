@@ -53,7 +53,7 @@
             t5.RESOURCE_ID IS NULL
             AND t1.PUBLISH_ID IS NOT NULL
         <if test="queryDto.name != null and queryDto.name != ''">
-            AND t1.`NAME` LIKE '%' || #{queryDto.name,jdbcType=VARCHAR} || '%'
+            AND t1.`NAME` LIKE concat('%', #{queryDto.name,jdbcType=VARCHAR},'%')
         </if>
         <if test="queryDto.resourcesIds != null and queryDto.resourcesIds.size() > 0">
             AND t1.CATEGORY_ID IN
