@@ -216,7 +216,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         );
         if (null != tableDesc) {
             BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
-                    .eq(BiDataSet::getTableDesc, tableDesc));
+                    .eq(BiDataSet::getTableDesc, tableDesc.getParamValue()));
             if (null != dataSet) {
                 dataSetService.removeById(dataSet.getId());
             }
