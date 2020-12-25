@@ -69,14 +69,6 @@ public class BiDataSetController {
     @ApiOperation(value = "数据集文件夹重命名", notes = "数据集文件夹重命名")
     @PostMapping("/reNameFile")
     public RetResult<Void> reNameFile(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
-        BiDataSet hasOne = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableDesc, request.getData().getToTableDesc())
-                .isNull(BiDataSet::getType)
-        );
-        if (null != hasOne) {
-            throw new RuntimeException("文件夹名字已存在");
-        }
-
         BiDataSet dataSet = dataSetService.getById(request.getData().getId());
         dataSet.setTableDesc(request.getData().getToTableDesc());
         dataSet.setTableName(request.getData().getToTableDesc());

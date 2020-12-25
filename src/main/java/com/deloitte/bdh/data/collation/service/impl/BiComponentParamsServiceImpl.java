@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentParamsMapper;
@@ -21,17 +20,4 @@ import org.springframework.stereotype.Service;
 @DS(DSConstant.BI_DB)
 public class BiComponentParamsServiceImpl extends AbstractService<BiComponentParamsMapper, BiComponentParams> implements BiComponentParamsService {
 
-    @Override
-    public boolean isParamExists(String paramKey, String paramValue) {
-        LambdaQueryWrapper<BiComponentParams> queryWrapper = new LambdaQueryWrapper();
-        queryWrapper.eq(BiComponentParams::getParamKey, paramKey);
-        queryWrapper.eq(BiComponentParams::getParamValue, paramValue);
-        queryWrapper.orderByDesc(BiComponentParams::getCode);
-        queryWrapper.last("limit 1");
-        BiComponentParams result = getOne(queryWrapper);
-        if (null == result) {
-            return false;
-        }
-        return true;
-    }
 }

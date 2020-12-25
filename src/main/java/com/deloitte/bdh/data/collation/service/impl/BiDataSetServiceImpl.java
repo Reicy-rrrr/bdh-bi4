@@ -195,17 +195,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     public void fileCreate(CreateDataSetFileDto dto) {
-        BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableDesc, dto.getFolderName())
-                .eq(BiDataSet::getTableName, dto.getFolderName())
-                .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
-        );
-
-        if (null != biDataSet) {
-            throw new RuntimeException("文件夹已存在相同表名");
-        }
-
         BiDataSet dataSet = new BiDataSet();
+        dataSet.setCode(GenerateCodeUtil.generate());
         dataSet.setTableName(dto.getFolderName());
         dataSet.setTableDesc(dto.getFolderName());
         dataSet.setParentId("0");

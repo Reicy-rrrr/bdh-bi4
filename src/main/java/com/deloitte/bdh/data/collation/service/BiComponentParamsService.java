@@ -13,12 +13,4 @@ import com.deloitte.bdh.common.base.Service;
  */
 public interface BiComponentParamsService extends Service<BiComponentParams> {
 
-    /**
-     * 判断是否存在指定key 和 value 的参数
-     *
-     * @param paramKey   参数key
-     * @param paramValue 参数value
-     * @return boolean
-     */
-    boolean isParamExists(String paramKey, String paramValue);
 }
