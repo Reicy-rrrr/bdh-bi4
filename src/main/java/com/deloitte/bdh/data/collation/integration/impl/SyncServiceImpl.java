@@ -189,8 +189,8 @@ public class SyncServiceImpl implements SyncService {
             }
             count++;
             //基于条件实时查询 localCount
-            String condition = assemblyCondition(plan.getIsFirst(), config);
-            long nowCount = dbHandler.getCount(config.getToTableName(), condition);
+//            String condition = assemblyCondition(plan.getIsFirst(), config);
+            long nowCount = dbHandler.getCount(config.getToTableName(), null);
 
             //判断目标数据库与源数据库的表count
             String sqlCount = plan.getSqlCount();
@@ -209,7 +209,7 @@ public class SyncServiceImpl implements SyncService {
                 plan.setResultDesc(PlanResultEnum.SUCCESS.getValue());
 
                 //获取停止nifi后的本地最新的数据count
-                nowCount = dbHandler.getCount(config.getToTableName(), condition);
+                nowCount = dbHandler.getCount(config.getToTableName(), null);
                 plan.setSqlLocalCount(String.valueOf(nowCount));
                 // 设置MappingConfig 的 LOCAL_COUNT和 OFFSET_VALUE todo
                 config.setLocalCount(String.valueOf(nowCount));
@@ -244,6 +244,7 @@ public class SyncServiceImpl implements SyncService {
         }
     }
 
+    @Deprecated
     private String assemblyCondition(String isFirst, BiEtlMappingConfig config) {
         String condition = null;
         //非第一次且是增量
