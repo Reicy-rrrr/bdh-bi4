@@ -3,10 +3,7 @@ package com.deloitte.bdh.data.collation.integration;
 import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
-import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
-import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
-import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
+import com.deloitte.bdh.data.collation.model.resp.*;
 
 import java.util.List;
 
@@ -175,6 +172,14 @@ public interface EtlService {
      * @throws Exception
      */
     void remove(String code) throws Exception;
+
+    /**
+     * 获取运算符列表
+     *
+     * @return List<CalculateOperatorResp>
+     * @throws Exception
+     */
+    List<CalculateOperatorResp> getOperators() throws Exception;
 
     /**
      * 验证组件计算公式有效性

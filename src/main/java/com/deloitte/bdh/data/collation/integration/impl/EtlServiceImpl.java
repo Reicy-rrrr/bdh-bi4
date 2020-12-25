@@ -29,10 +29,7 @@ import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
-import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
-import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
-import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
+import com.deloitte.bdh.data.collation.model.resp.*;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
@@ -738,6 +735,21 @@ public class EtlServiceImpl implements EtlService {
             default:
                 componentService.remove(component);
         }
+    }
+
+    @Override
+    public List<CalculateOperatorResp> getOperators() throws Exception {
+        List<CalculateOperatorResp> operators = Lists.newArrayList();
+        CalculateOperatorEnum[] operatorEnums = CalculateOperatorEnum.values();
+        for (CalculateOperatorEnum operatorEnum : operatorEnums) {
+            CalculateOperatorResp operator = new CalculateOperatorResp();
+            operator.setOperator(operatorEnum.getOperator());
+            operator.setName(operatorEnum.getName());
+            operator.setDesc(operatorEnum.getDesc());
+            operator.setExample(operatorEnum.getExample());
+            operators.add(operator);
+        }
+        return operators;
     }
 
     @Override
