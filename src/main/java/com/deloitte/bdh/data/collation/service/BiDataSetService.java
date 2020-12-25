@@ -36,7 +36,7 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     List<BiDataSet> getTableList();
 
-    List<TableColumn> getColumns(String tableDesc) throws Exception;
+    List<TableColumn> getColumns(String code) throws Exception;
 
     TableData getDataSetInfoPage(GetDataSetInfoDto dto) throws Exception;
 

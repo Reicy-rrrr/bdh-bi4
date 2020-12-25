@@ -239,9 +239,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
-    public List<TableColumn> getColumns(String tableDesc) throws Exception {
+    public List<TableColumn> getColumns(String code) throws Exception {
         BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableDesc, tableDesc));
+                .eq(BiDataSet::getCode, code));
         if (null == biDataSet) {
             throw new RuntimeException("未找到目标对象");
         }
