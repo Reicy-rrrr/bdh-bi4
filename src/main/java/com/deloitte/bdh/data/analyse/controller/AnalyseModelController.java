@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.controller;
 
-import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
@@ -9,7 +8,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataR
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
-import com.deloitte.bdh.data.collation.database.po.TableInfo;
+import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +34,7 @@ public class AnalyseModelController {
 
     @ApiOperation(value = "获取所有表", notes = "获取所有表")
     @PostMapping("/getAllTable")
-    public RetResult<List<TableInfo>> getAllTable(@RequestBody @Validated RetRequest<Void> request) {
+    public RetResult<List<DataSetTableInfo>> getAllTable(@RequestBody @Validated RetRequest<Void> request) {
         return RetResponse.makeOKRsp(analyseModelService.getAllTable());
     }
 

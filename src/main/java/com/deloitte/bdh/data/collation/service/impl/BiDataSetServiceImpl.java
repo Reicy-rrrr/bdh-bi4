@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.google.common.collect.Lists;
@@ -88,6 +88,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             set.setTableName("默认文件夹");
             set.setTableDesc("默认文件夹");
             set.setParentId("0");
+            set.setCode(GenerateCodeUtil.generate());
             set.setIsFile(YesOrNoEnum.YES.getKey());
             set.setTenantId(ThreadLocalHolder.getTenantId());
             setMapper.insert(set);
@@ -154,11 +155,6 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
         //别名有变化
         if (!dataSet.getTableDesc().equals(newTableDesc)) {
-            Integer count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getTableDesc, newTableDesc));
-            if (count > 0) {
-                throw new RuntimeException("存在相同的表别名");
-            }
-
             dataSet.setTableDesc(newTableDesc);
             setMapper.updateById(dataSet);
 
@@ -167,6 +163,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 BiComponentParams param = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
                         .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
                         .eq(BiComponentParams::getRefModelCode, dataSet.getRefModelCode())
+                        .eq(BiComponentParams::getRefComponentCode, dataSet.getCode())
                 );
                 if (null == param) {
                     throw new RuntimeException("未找到目标模型");
@@ -184,7 +181,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             //数据整理则修改组件
             if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
                 BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
-                        .eq(BiComponent::getCode, dataSet.getTableName())
+                        .eq(BiComponent::getCode, dataSet.getCode())
                 );
                 if (null == component) {
                     throw new RuntimeException("未找到目标模型");
@@ -223,13 +220,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Override
     public void create(CreateDataSetDto dto) {
         String tableDesc = dto.getTableNameDesc() + DataSetTypeEnum.DIRECT.getSuffix();
-        BiDataSet biDataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableDesc, tableDesc)
-                .eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey()));
-        if (null != biDataSet) {
-            throw new RuntimeException("数据集已存在相同表名");
-        }
         BiDataSet dataSet = new BiDataSet();
+        dataSet.setCode(GenerateCodeUtil.generate());
         // 数据集合类型（0, "数据直连"，1, "数据整理"）
         dataSet.setType(DataSetTypeEnum.DIRECT.getKey());
         dataSet.setRefSourceId(dto.getRefSourceId());
@@ -294,8 +286,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     public TableData getDataSetInfoPage(GetDataSetInfoDto dto) throws Exception {
-        BiDataSet dataSet = setMapper.selectOne(
-                new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getTableDesc, dto.getTableDesc()));
+        BiDataSet dataSet = setMapper.selectById(dto.getId());
         if (null == dataSet) {
             throw new RuntimeException("未找到目标对象");
         }
@@ -336,6 +327,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     private void initDataSet(String parentId) {
         BiDataSet defaultTable = new BiDataSet();
+        defaultTable.setCode(GenerateCodeUtil.generate());
         defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
         defaultTable.setTableName("ORDERS_USCA_BI");
         defaultTable.setTableDesc("ORDERS_USCA_BI");
@@ -345,6 +337,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(defaultTable);
 
         BiDataSet chineseOrder = new BiDataSet();
+        defaultTable.setCode(GenerateCodeUtil.generate());
         chineseOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
         chineseOrder.setTableName("TEST_CHINESE_ORDER");
         chineseOrder.setTableDesc("中国订单");
@@ -354,6 +347,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(chineseOrder);
 
         BiDataSet chineseRefund = new BiDataSet();
+        defaultTable.setCode(GenerateCodeUtil.generate());
         chineseRefund.setType(DataSetTypeEnum.DEFAULT.getKey());
         chineseRefund.setTableName("TEST_CHINESE_REFUND");
         chineseRefund.setTableDesc("中国退货");
@@ -363,6 +357,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(chineseRefund);
 
         BiDataSet chineseSalesman = new BiDataSet();
+        defaultTable.setCode(GenerateCodeUtil.generate());
         chineseSalesman.setType(DataSetTypeEnum.DEFAULT.getKey());
         chineseSalesman.setTableName("TEST_CHINESE_SALESMAN");
         chineseSalesman.setTableDesc("中国销售员");
@@ -372,6 +367,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(chineseSalesman);
 
         BiDataSet globalOrder = new BiDataSet();
+        defaultTable.setCode(GenerateCodeUtil.generate());
         globalOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
         globalOrder.setTableName("TEST_GLOBAL_ORDER");
         globalOrder.setTableDesc("世界订单");
