@@ -389,6 +389,15 @@ public class EtlServiceImpl implements EtlService {
             throw new RuntimeException("EtlServiceImpl.out.error : 未找到目标 模型");
         }
 
+        //校验只能增加一个输出组件
+        int num = componentService.count(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefModelCode, biEtlModel.getCode())
+                .eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey())
+        );
+        if (num > 0) {
+            throw new RuntimeException("已存在输出组件");
+        }
+
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
         component.setCode(componentCode);
