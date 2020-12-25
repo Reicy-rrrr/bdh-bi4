@@ -1,26 +1,33 @@
 package com.deloitte.bdh.data.collation.component.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
+import com.deloitte.bdh.data.analyse.sql.utils.RelaBaseBuildUtil;
+import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
+import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
+import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
+import com.deloitte.bdh.data.collation.model.request.ConditionDto;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingFieldService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -117,15 +124,17 @@ public class SourceComponent implements ComponentHandler {
         List<String> tempFields = fieldMappings.stream().map(FieldMappingModel::getTempFieldName).collect(Collectors.toList());
         component.setFields(tempFields);
         component.setFieldMappings(fieldMappings);
-        buildQuerySql(component);
+        buildQuerySql(component, config.getOffsetField(), config.getOffsetValue());
     }
 
     /**
      * 初始化sql
      *
-     * @param component
+     * @param component   组件模型
+     * @param offsetField 偏移字段
+     * @param offsetValue 便宜字段值
      */
-    private void buildQuerySql(ComponentModel component) {
+    private void buildQuerySql(ComponentModel component, String offsetField, String offsetValue) {
         String tableName = component.getTableName();
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(sql_key_select);
@@ -146,7 +155,53 @@ public class SourceComponent implements ComponentHandler {
         sqlBuilder.append(sql_key_blank);
         sqlBuilder.append(sql_key_from);
         sqlBuilder.append(tableName);
+
+        String whereCase = buildWhereCase(component, offsetField, offsetValue);
+        sqlBuilder.append(sql_key_blank);
+        sqlBuilder.append(sql_key_where);
+        sqlBuilder.append(whereCase);
         component.setQuerySql(sqlBuilder.toString());
+    }
+
+    /**
+     * 初始化where条件
+     *
+     * @param component   组件模型
+     * @param offsetField 偏移字段
+     * @param offsetValue 便宜字段值
+     * @return String
+     */
+    private String buildWhereCase(ComponentModel component, String offsetField, String offsetValue) {
+        List<BiComponentParams> params = component.getParams();
+        String conditionStr = null;
+        for (BiComponentParams param : params) {
+            if (param == null) {
+                continue;
+            }
+            if (ComponentCons.CONDITION.equals(param.getParamKey())) {
+                conditionStr = param.getParamValue();
+                break;
+            }
+        }
+        List<ConditionDto> conditions = Lists.newArrayList();
+        if (StringUtils.isNotBlank(conditionStr)) {
+            conditions = JSON.parseArray(conditionStr, ConditionDto.class);
+        }
+        List<String> list = Lists.newArrayList(" 1=1 ");
+        if (StringUtils.isNotBlank(offsetValue)) {
+            list.add(offsetField + " >= " + offsetValue);
+        }
+        if (CollectionUtils.isNotEmpty(conditions)) {
+            for (ConditionDto conditionDto : conditions) {
+                WildcardEnum wildcardEnum = WildcardEnum.get(conditionDto.getSymbol());
+                String value = wildcardEnum.expression(conditionDto.getValues());
+                String symbol = wildcardEnum.getCode();
+                String express = RelaBaseBuildUtil.condition(conditionDto.getField(), symbol, value);
+                list.add(express);
+            }
+        }
+        String whereClause = AnalyseUtil.join(" AND ", list.toArray(new String[0]));
+        return whereClause;
     }
 
     /**

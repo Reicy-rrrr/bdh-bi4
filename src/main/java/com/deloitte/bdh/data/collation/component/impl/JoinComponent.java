@@ -9,7 +9,6 @@ import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.component.model.JoinFieldModel;
 import com.deloitte.bdh.data.collation.component.model.JoinModel;
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.JoinTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingField;
@@ -116,8 +115,6 @@ public class JoinComponent implements ComponentHandler {
                 continue;
             }
 
-            String fromTableName = fromComponent.getTableName();
-            ComponentTypeEnum fromType = fromComponent.getTypeEnum();
             List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
             if (CollectionUtils.isEmpty(fromMappings)) {
                 continue;
@@ -133,20 +130,11 @@ public class JoinComponent implements ComponentHandler {
                 }
                 // 将从组件的字段添加到连接组件中
                 currMappings.add(fieldMapping.clone());
-                if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                    sqlBuilder.append(sql_key_blank);
-                    sqlBuilder.append(fullName);
-                    sqlBuilder.append(sql_key_blank);
-                    sqlBuilder.append(sql_key_as);
-                    sqlBuilder.append(tempFieldName);
-                    sqlBuilder.append(sql_key_comma);
-                } else {
-                    sqlBuilder.append(sql_key_blank);
-                    sqlBuilder.append(fromTableName);
-                    sqlBuilder.append(sql_key_separator);
-                    sqlBuilder.append(tempFieldName);
-                    sqlBuilder.append(sql_key_comma);
-                }
+                sqlBuilder.append(sql_key_blank);
+                sqlBuilder.append(fromComponent.getCode());
+                sqlBuilder.append(sql_key_separator);
+                sqlBuilder.append(tempFieldName);
+                sqlBuilder.append(sql_key_comma);
             }
         }
         // 删除SELECT中最后多余的“,”
@@ -179,50 +167,34 @@ public class JoinComponent implements ComponentHandler {
         if (StringUtils.isBlank(joinModel.getLeftTableName())) {
             String leftTableName = joinModel.getTableName();
             ComponentModel leftComp = componentModels.get(leftTableName);
-            // 如果为数据源组件，直接使用表名查询；其他组件使用子查询
-            if (ComponentTypeEnum.DATASOURCE.equals(leftComp.getTypeEnum())) {
-                sqlBuilder.append(currComponent.getTableName());
-                sqlBuilder.append(sql_key_blank);
-            } else {
-                sqlBuilder.append(sql_key_bracket_left);
-                sqlBuilder.append(leftComp.getQuerySql());
-                // 子查询使用组件code作为别名
-                sqlBuilder.append(sql_key_bracket_right);
-                sqlBuilder.append(leftComp.getCode());
-                sqlBuilder.append(sql_key_blank);
-            }
+            // 使用子查询
+            sqlBuilder.append(sql_key_bracket_left);
+            sqlBuilder.append(leftComp.getQuerySql());
+            // 子查询使用组件code作为别名
+            sqlBuilder.append(sql_key_bracket_right);
+            sqlBuilder.append(leftComp.getCode());
+            sqlBuilder.append(sql_key_blank);
         }
         List<JoinModel> rightModels = joinModel.getRight();
         if (CollectionUtils.isEmpty(rightModels)) {
             return;
         }
 
-        Map<String, FieldMappingModel> currMappings = currComponent.getFieldMappings().stream()
-                .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, fieldMapping -> fieldMapping));
-
         for (JoinModel rightModel : rightModels) {
             String rightTableName = rightModel.getTableName();
             ComponentModel rightComponent = componentModels.get(rightTableName);
 
-            Map<String, FieldMappingModel> rightMappings = rightComponent.getFieldMappings().stream()
-                    .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, fieldMapping -> fieldMapping));
-
             JoinTypeEnum joinType = JoinTypeEnum.values(rightModel.getJoinType());
             sqlBuilder.append(joinType.getValue());
             sqlBuilder.append(sql_key_blank);
-            if (ComponentTypeEnum.DATASOURCE.equals(rightComponent.getTypeEnum())) {
-                sqlBuilder.append(rightComponent.getTableName());
-                sqlBuilder.append(sql_key_blank);
-            } else {
-                sqlBuilder.append(sql_key_bracket_left);
-                sqlBuilder.append(sql_key_blank);
-                sqlBuilder.append(rightComponent.getQuerySql());
-                // 子查询使用组件code作为别名
-                sqlBuilder.append(sql_key_bracket_right);
-                sqlBuilder.append(sql_key_blank);
-                sqlBuilder.append(rightComponent.getTableName());
-                sqlBuilder.append(sql_key_blank);
-            }
+            sqlBuilder.append(sql_key_bracket_left);
+            sqlBuilder.append(sql_key_blank);
+            sqlBuilder.append(rightComponent.getQuerySql());
+            // 子查询使用组件code作为别名
+            sqlBuilder.append(sql_key_bracket_right);
+            sqlBuilder.append(sql_key_blank);
+            sqlBuilder.append(rightComponent.getCode());
+            sqlBuilder.append(sql_key_blank);
 
             sqlBuilder.append(sql_key_on);
             List<JoinFieldModel> joinFields = rightModel.getJoinFields();
@@ -234,22 +206,14 @@ public class JoinComponent implements ComponentHandler {
                 if (index != 0) {
                     sqlBuilder.append(sql_key_and);
                 }
-                sqlBuilder.append(currComponent.getTableName());
+                sqlBuilder.append(currComponent.getCode());
                 sqlBuilder.append(sql_key_separator);
-                if (ComponentTypeEnum.DATASOURCE.equals(currComponent.getTypeEnum())) {
-                    sqlBuilder.append(currMappings.get(joinField.getLeftField()).getOriginalFieldName());
-                } else {
-                    sqlBuilder.append(joinField.getLeftField());
-                }
+                sqlBuilder.append(joinField.getLeftField());
 
                 sqlBuilder.append(sql_key_equal);
-                sqlBuilder.append(rightComponent.getTableName());
+                sqlBuilder.append(rightComponent.getCode());
                 sqlBuilder.append(sql_key_separator);
-                if (ComponentTypeEnum.DATASOURCE.equals(rightComponent.getTypeEnum())) {
-                    sqlBuilder.append(rightMappings.get(joinField.getRightField()).getOriginalFieldName());
-                } else {
-                    sqlBuilder.append(joinField.getRightField());
-                }
+                sqlBuilder.append(joinField.getRightField());
                 sqlBuilder.append(sql_key_blank);
             }
 

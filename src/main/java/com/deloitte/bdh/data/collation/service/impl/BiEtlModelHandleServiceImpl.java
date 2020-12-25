@@ -132,16 +132,11 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
 
         List<FieldMappingModel> mappings = componentModel.getFieldMappings();
         mappings.forEach(fieldMapping -> {
-            if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-                sqlBuilder.append(fieldMapping.getOriginalFieldName());
-                sqlBuilder.append(ComponentHandler.sql_key_comma);
-            } else {
-                sqlBuilder.append(fieldMapping.getTempFieldName());
-                sqlBuilder.append(ComponentHandler.sql_key_blank);
-                sqlBuilder.append(ComponentHandler.sql_key_as);
-                sqlBuilder.append(fieldMapping.getFinalFieldName());
-                sqlBuilder.append(ComponentHandler.sql_key_comma);
-            }
+            sqlBuilder.append(fieldMapping.getTempFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_as);
+            sqlBuilder.append(fieldMapping.getFinalFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_comma);
         });
         // 删除SELECT中最后多余的“,”
         if (sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma) == (sqlBuilder.length() - 1)) {
@@ -149,18 +144,12 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         }
         sqlBuilder.append(ComponentHandler.sql_key_blank);
         sqlBuilder.append(ComponentHandler.sql_key_from);
-
-        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-            sqlBuilder.append(componentModel.getTableName());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-        } else {
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
-            sqlBuilder.append(componentModel.getQuerySql());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(componentModel.getTableName());
-        }
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+        sqlBuilder.append(componentModel.getQuerySql());
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(componentModel.getCode());
         componentModel.setPreviewSql(sqlBuilder.toString());
     }
 
@@ -169,22 +158,17 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         if (!componentModel.isHandled()) {
             throw new BizException("当前组件还未处理，不支持预览sql！");
         }
-        ComponentTypeEnum type = componentModel.getTypeEnum();
-
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(ComponentHandler.sql_key_select);
         List<FieldMappingModel> mappings = componentModel.getFieldMappings();
+        Map<String, FieldMappingModel> mappingMap = mappings.stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
         mappings.forEach(fieldMapping -> {
-            if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-                sqlBuilder.append(fieldMapping.getOriginalFieldName());
-                sqlBuilder.append(ComponentHandler.sql_key_comma);
-            } else {
-                sqlBuilder.append(fieldMapping.getTempFieldName());
-                sqlBuilder.append(ComponentHandler.sql_key_blank);
-                sqlBuilder.append(ComponentHandler.sql_key_as);
-                sqlBuilder.append(fieldMapping.getFinalFieldName());
-                sqlBuilder.append(ComponentHandler.sql_key_comma);
-            }
+            sqlBuilder.append(fieldMapping.getTempFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_blank);
+            sqlBuilder.append(ComponentHandler.sql_key_as);
+            sqlBuilder.append(fieldMapping.getFinalFieldName());
+            sqlBuilder.append(ComponentHandler.sql_key_comma);
         });
         // 删除SELECT中最后多余的“,”
         if (sqlBuilder.lastIndexOf(ComponentHandler.sql_key_comma) == (sqlBuilder.length() - 1)) {
@@ -193,50 +177,29 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         sqlBuilder.append(ComponentHandler.sql_key_blank);
         sqlBuilder.append(ComponentHandler.sql_key_from);
 
-        Map<String, FieldMappingModel> mappingMap = mappings.stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
-        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-            sqlBuilder.append(componentModel.getTableName());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            if (!CollectionUtils.isEmpty(nullFields)) {
-                sqlBuilder.append(ComponentHandler.sql_key_where);
-                for (int index = 0; index < nullFields.size(); index++) {
-                    String nullField = nullFields.get(index);
-                    FieldMappingModel mapping = MapUtils.getObject(mappingMap, nullField);
-                    if (index > 0) {
-                        sqlBuilder.append(ComponentHandler.sql_key_and);
-                    }
-                    // 日期类型不能用 ='' 判断
-                    if (DataTypeEnum.Date.getType().equals(mapping.getFinalFieldType()) || DataTypeEnum.DateTime.getType().equals(mapping.getFinalFieldType())) {
-                        sqlBuilder.append(mapping.getFinalFieldName());
-                        sqlBuilder.append(" IS NULL ");
-                    } else {
-                        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
-                        sqlBuilder.append(mapping.getFinalFieldName());
-                        sqlBuilder.append(" IS NULL OR ");
-                        sqlBuilder.append(mapping.getFinalFieldName());
-                        sqlBuilder.append(" = ''");
-                        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
-                    }
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+        sqlBuilder.append(componentModel.getQuerySql());
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(componentModel.getCode());
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        if (!CollectionUtils.isEmpty(nullFields)) {
+            sqlBuilder.append(ComponentHandler.sql_key_where);
+            for (int index = 0; index < nullFields.size(); index++) {
+                String nullField = nullFields.get(index);
+                FieldMappingModel mapping = MapUtils.getObject(mappingMap, nullField);
+                if (index > 0) {
+                    sqlBuilder.append(ComponentHandler.sql_key_or);
                 }
-            }
-        } else {
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
-            sqlBuilder.append(componentModel.getQuerySql());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(componentModel.getTableName());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            if (!CollectionUtils.isEmpty(nullFields)) {
-                sqlBuilder.append(ComponentHandler.sql_key_where);
-                for (int index = 0; index < nullFields.size(); index++) {
-                    String nullField = nullFields.get(index);
-                    FieldMappingModel mapping = MapUtils.getObject(mappingMap, nullField);
-                    if (index > 0) {
-                        sqlBuilder.append(ComponentHandler.sql_key_or);
-                    }
+                sqlBuilder.append(mapping.getTempFieldName());
+                sqlBuilder.append(" IS NULL ");
+
+                DataTypeEnum dataType = DataTypeEnum.get(mapping.getFinalFieldType());
+                if (DataTypeEnum.Text.equals(dataType)) {
+                    sqlBuilder.append(" OR ");
                     sqlBuilder.append(mapping.getTempFieldName());
-                    sqlBuilder.append(" IS NULL ");
+                    sqlBuilder.append(" = ''");
                 }
             }
         }
@@ -248,7 +211,6 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         if (!componentModel.isHandled()) {
             throw new BizException("当前组件还未处理，不支持预览sql！");
         }
-        ComponentTypeEnum type = componentModel.getTypeEnum();
 
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(ComponentHandler.sql_key_select);
@@ -259,29 +221,20 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
             throw new BizException("组件字段值预览失败，不存在的字段！");
         }
 
-        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-            sqlBuilder.append(mapping.getOriginalFieldName());
-        } else {
-            sqlBuilder.append(mapping.getTempFieldName());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(ComponentHandler.sql_key_as);
-            sqlBuilder.append(mapping.getFinalFieldName());
-        }
+        sqlBuilder.append(mapping.getTempFieldName());
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_as);
+        sqlBuilder.append(mapping.getFinalFieldName());
 
         sqlBuilder.append(ComponentHandler.sql_key_blank);
         sqlBuilder.append(ComponentHandler.sql_key_from);
 
-        if (ComponentTypeEnum.DATASOURCE.equals(type)) {
-            sqlBuilder.append(componentModel.getTableName());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-        } else {
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
-            sqlBuilder.append(componentModel.getQuerySql());
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
-            sqlBuilder.append(ComponentHandler.sql_key_blank);
-            sqlBuilder.append(componentModel.getTableName());
-        }
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_left);
+        sqlBuilder.append(componentModel.getQuerySql());
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(ComponentHandler.sql_key_bracket_right);
+        sqlBuilder.append(ComponentHandler.sql_key_blank);
+        sqlBuilder.append(componentModel.getCode());
         componentModel.setPreviewSql(sqlBuilder.toString());
     }
 
