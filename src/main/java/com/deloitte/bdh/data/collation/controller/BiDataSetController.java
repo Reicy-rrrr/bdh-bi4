@@ -116,6 +116,12 @@ public class BiDataSetController {
                 if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
                     throw new RuntimeException("初始化数据表，暂不允许删除");
                 }
+            } else {
+                int count = dataSetService.count(new LambdaQueryWrapper<BiDataSet>()
+                        .eq(BiDataSet::getParentId, dataSet.getId()));
+                if (count > 0) {
+                    throw new RuntimeException("文件夹下包含文件，不允许删除");
+                }
             }
             dataSetService.removeById(dataSet.getId());
         }
