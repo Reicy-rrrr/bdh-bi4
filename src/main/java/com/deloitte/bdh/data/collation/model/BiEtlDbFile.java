@@ -45,6 +45,12 @@ public class BiEtlDbFile implements Serializable {
     private String storedFileName;
 
     /**
+     * 存储文件的key（存储OSS时返回的key）
+     */
+    @TableField("STORED_FILE_KEY")
+    private String storedFileKey;
+
+    /**
      * 文件类型
      */
     @TableField("FILE_TYPE")

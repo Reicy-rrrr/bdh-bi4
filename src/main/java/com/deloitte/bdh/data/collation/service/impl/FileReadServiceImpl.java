@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import com.opencsv.CSVReader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -95,6 +97,17 @@ public class FileReadServiceImpl implements FileReadService {
             default:
                 throw new BizException("错误的文件类型，系统暂不支持！");
         }
+    }
+
+    @Override
+    public void readIntoDB(InputStream inputStream, String fileType, Map<String, TableField> columnTypes, String tableName) {
+        byte[] bytes = null;
+        try {
+            bytes = IOUtils.toByteArray(inputStream);
+        } catch (IOException e) {
+            throw new BizException("File read error: 读取文件错误！");
+        }
+        readIntoDB(bytes, fileType, columnTypes, tableName);
     }
 
     /**

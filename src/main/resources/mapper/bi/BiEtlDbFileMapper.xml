@@ -8,6 +8,7 @@
         <result column="DB_ID" property="dbId" />
         <result column="ORIGINAL_FILE_NAME" property="originalFileName" />
         <result column="STORED_FILE_NAME" property="storedFileName" />
+        <result column="STORED_FILE_KEY" property="storedFileKey" />
         <result column="FILE_TYPE" property="fileType" />
         <result column="FILE_PATH" property="filePath" />
         <result column="FILE_SIZE" property="fileSize" />

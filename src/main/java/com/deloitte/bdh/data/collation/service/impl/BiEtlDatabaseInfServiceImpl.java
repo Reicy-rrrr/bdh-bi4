@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +62,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Autowired
     private NifiProcessService nifiProcessService;
     @Autowired
-    private FtpService ftpService;
+    private AliyunOssUtil aliyunOss;
     @Autowired
     private FileReadService fileReadService;
     @Autowired
@@ -162,10 +164,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         String fileName = dbFile.getStoredFileName();
         String filePath = dbFile.getFilePath();
-        // 从ftp服务器获取文件
-        byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
+        // 从oss服务器获取文件
+        InputStream fileStream = aliyunOss.getFileStream(filePath, fileName);
         // 读取文件
-        fileReadService.readIntoDB(fileBytes, fileType, tableFieldMap, tableName);
+        fileReadService.readIntoDB(fileStream, fileType, tableFieldMap, tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(inf.getId());
         // 修改文件状态为已读
@@ -221,8 +223,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 读取文件
         String fileName = dbFile.getStoredFileName();
         String filePath = dbFile.getFilePath();
-        // 从ftp服务器获取文件
-        byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
+        // 从oss服务器获取文件
+        InputStream fileStream = aliyunOss.getFileStream(filePath, fileName);
         // 读取文件
         String fileType = dbFile.getFileType();
 
@@ -255,7 +257,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             throw new BizException(errorMsg.toString());
         }
 
-        fileReadService.readIntoDB(fileBytes, fileType, importFields, tableName);
+        fileReadService.readIntoDB(fileStream, fileType, importFields, tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(database.getId());
         // 修改文件状态为已读
@@ -310,8 +312,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 读取新文件
         String fileName = dbFile.getStoredFileName();
         String filePath = dbFile.getFilePath();
-        // 从ftp服务器获取文件
-        byte[] fileBytes = ftpService.getFileBytes(filePath, fileName);
+        // 从oss服务器获取文件
+        InputStream fileStream = aliyunOss.getFileStream(filePath, fileName);
         // 读取文件
         String fileType = dbFile.getFileType();
         // 根据字段信息创建表
@@ -319,7 +321,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         dbHandler.createTable(dbId, tableName, tableFields);
         // 新字段描述为源文件表头
         Map<String, TableField> tableFieldMap = tableFields.stream().collect(Collectors.toMap(TableField::getDesc, tableField -> tableField));
-        fileReadService.readIntoDB(fileBytes, fileType, tableFieldMap, tableName);
+        fileReadService.readIntoDB(fileStream, fileType, tableFieldMap, tableName);
         // 设置文件的关联数据源id
         dbFile.setDbId(database.getId());
         // 修改文件状态为已读
