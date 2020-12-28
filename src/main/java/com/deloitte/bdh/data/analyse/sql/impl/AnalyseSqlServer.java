@@ -16,7 +16,6 @@ import com.deloitte.bdh.data.analyse.sql.utils.SqlserverBuildUtil;
 import com.deloitte.bdh.data.analyse.utils.AnalyseUtil;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
-import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +40,10 @@ public class AnalyseSqlServer extends AbstractRela {
         String groupBy = this.groupBy(model);
         String having = this.having(model);
         String orderBy = this.orderBy(model);
+        String page = this.page(context);
+        if (StringUtils.isNotBlank(page)) {
+            return page.replace("SQL", compatibleOrderBy(StringUtils.join(select, from, where, groupBy, having, orderBy)));
+        }
         return StringUtils.join(select, from, where, groupBy, having, orderBy);
     }
 
@@ -174,7 +177,13 @@ public class AnalyseSqlServer extends AbstractRela {
 
     @Override
     protected String page(SqlContext context) {
-        return null;
+        DataModel model = context.getModel();
+        if (null == model.getPage()) {
+            return "";
+        }
+        return "SELECT * FROM (SELECT * , (ROW_NUMBER() OVER(ORDER BY @@SERVERNAME)-1)/" + model.getPageSize() + " AS TEMP_NUM FROM (\n" +
+                "        SQL\n" +
+                ") temp1) temp2 WHERE TEMP_NUM = " + model.getPage() + "-1";
     }
 
     @Override
@@ -189,7 +198,7 @@ public class AnalyseSqlServer extends AbstractRela {
             String countSql = StringUtils.join(select, from, where, groupBy, having);
 
             if (StringUtils.isNotBlank(countSql)) {
-                countSql = "SELECT count(1) AS TOTAL FROM (" + countSql + ") TABLE_COUNT";
+                countSql = "SELECT count(1) AS TOTAL FROM (" + compatibleOrderBy(countSql) + ") TABLE_COUNT";
                 context.setQuerySql(countSql);
                 List<Map<String, Object>> result = expand(context);
                 if (CollectionUtils.isNotEmpty(result)) {
@@ -206,17 +215,13 @@ public class AnalyseSqlServer extends AbstractRela {
         dbContext.setDbId(context.getDbId());
         dbContext.setQuerySql(context.getQuerySql());
         try {
-            //判断是否分页
-            if (null != context.getModel().getPage()) {
-                dbContext.setPage(context.getModel().getPage());
-                dbContext.setSize(context.getModel().getPageSize());
-                PageInfo<Map<String, Object>> pageInfo = dbSelector.executePageQuery(dbContext);
-                if (null == pageInfo) {
-                    return null;
+            List<Map<String, Object>> list = dbSelector.executeQuery(dbContext);
+            if (CollectionUtils.isNotEmpty(list)) {
+                for (Map<String, Object> map : list) {
+                    map.remove("TEMP_NUM");
                 }
-                return pageInfo.getList();
             }
-            return dbSelector.executeQuery(dbContext);
+            return list;
         } catch (Exception e) {
             log.error("执行异常:", e);
             throw new RuntimeException("执行SQL异常");
@@ -247,5 +252,15 @@ public class AnalyseSqlServer extends AbstractRela {
             convertValueList.add(value);
         }
         return WildcardEnum.get(symbol).expression(convertValueList);
+    }
+
+    private String compatibleOrderBy(String sql) {
+        if (StringUtils.isBlank(sql)) {
+            return sql;
+        }
+        if (!sql.contains("ORDER BY")) {
+            return sql;
+        }
+        return sql.replace("SELECT ", "SELECT TOP 99.999999999999 percent");
     }
 }
