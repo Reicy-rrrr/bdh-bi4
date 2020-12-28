@@ -23,9 +23,6 @@ public class BiUiModelFolder implements Serializable {
     @TableId(value = "ID", type = IdType.AUTO)
     private String id;
 
-    @TableField("PAGE_ID")
-    private String pageId;
-
     /**
      * 数据模型id
      */

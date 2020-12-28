@@ -6,7 +6,6 @@
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiModelField">
         <id column="ID" property="id"/>
         <result column="PARENT_ID" property="parentId"/>
-        <result column="PAGE_ID" property="pageId"/>
         <result column="MODEL_ID" property="modelId"/>
         <result column="FOLDER_ID" property="folderId"/>
         <result column="ALIAS_NAME" property="aliasName"/>

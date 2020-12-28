@@ -2,17 +2,11 @@ package com.deloitte.bdh.data.analyse.controller;
 
 
 import com.deloitte.bdh.common.base.*;
-import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
-import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -73,13 +67,6 @@ public class AnalyseCategoryController {
     @PostMapping("/updateAnalyseCategory")
     public RetResult<AnalyseCategoryDto> updateAnalyseCategory(@RequestBody @Validated RetRequest<UpdateAnalyseCategoryDto> request) {
         return RetResponse.makeOKRsp(analyseCategoryService.updateAnalyseCategory(request));
-    }
-
-    @ApiOperation(value = "初始化租户目录", notes = "初始化租户目录")
-    @PostMapping("/initTenantAnalyse")
-    public RetResult<Void> initTenantAnalyse(@RequestBody @Validated RetRequest<Void> request) {
-        analyseCategoryService.initTenantAnalyse(request);
-        return RetResponse.makeOKRsp();
     }
 
 }

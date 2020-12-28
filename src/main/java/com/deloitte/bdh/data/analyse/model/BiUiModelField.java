@@ -26,9 +26,6 @@ public class BiUiModelField implements Serializable {
     @TableField("PARENT_ID")
     private String parentId;
 
-    @TableField("PAGE_ID")
-    private String pageId;
-
     /**
      * 数据模型id
      */

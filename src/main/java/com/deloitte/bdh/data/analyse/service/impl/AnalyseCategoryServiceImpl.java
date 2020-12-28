@@ -15,7 +15,6 @@ import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalyseDefaultCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -23,7 +22,6 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
-import com.deloitte.bdh.data.analyse.service.AnalyseDefaultCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.google.common.collect.Lists;
@@ -49,9 +47,6 @@ import java.util.stream.Collectors;
 @Service
 @DS(DSConstant.BI_DB)
 public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCategoryMapper, BiUiAnalyseCategory> implements AnalyseCategoryService {
-
-    @Resource
-    private AnalyseDefaultCategoryService analyseDefaultCategoryService;
 
     @Resource
     private AnalysePageService pageService;
@@ -278,55 +273,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         return treeDataModels;
     }
 
-
-    @Override
-    public void initTenantAnalyse(RetRequest<Void> request) {
-        if (StringUtils.isBlank(ThreadLocalHolder.getTenantId())) {
-            throw new BizException("租户id不能为空");
-        }
-        List<BiUiAnalyseCategory> initCategoryList = Lists.newArrayList();
-        //初始化默认文件夹
-        List<BiUiAnalyseDefaultCategory> defaultCategoryList = analyseDefaultCategoryService.list();
-        //查询已存在文件夹
-        LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalyseCategory::getTenantId, ThreadLocalHolder.getTenantId());
-        List<BiUiAnalyseCategory> existAnalyseCategoryList = this.list(query);
-
-        Map<String, BiUiAnalyseCategory> existCategoryNameMap = Maps.newHashMap();
-        Map<String, BiUiAnalyseDefaultCategory> defaultCategoryIdMap = Maps.newHashMap();
-        for (BiUiAnalyseCategory category : existAnalyseCategoryList) {
-            existCategoryNameMap.put(category.getName(), category);
-        }
-        for (BiUiAnalyseDefaultCategory defaultCategory : defaultCategoryList) {
-            defaultCategoryIdMap.put(defaultCategory.getId(), defaultCategory);
-        }
-        //初始化数据
-        for (BiUiAnalyseDefaultCategory defaultCategory : defaultCategoryList) {
-            String name = defaultCategory.getName();
-            BiUiAnalyseCategory category = existCategoryNameMap.get(name);
-            if (category == null) {
-                category = new BiUiAnalyseCategory();
-                BeanUtils.copyProperties(defaultCategory, category);
-                category.setTenantId(ThreadLocalHolder.getTenantId());
-                this.save(category);
-                initCategoryList.add(category);
-            }
-        }
-        //处理文件夹的上下级关系
-        for (BiUiAnalyseCategory category : initCategoryList) {
-            if (!StringUtils.equals(category.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
-                //默认的parent
-                BiUiAnalyseDefaultCategory defaultParent = defaultCategoryIdMap.get(category.getParentId());
-                //当前的上级
-                BiUiAnalyseCategory parent = existCategoryNameMap.get(defaultParent.getName());
-                //更新
-                category.setParentId(parent.getId());
-                this.updateById(category);
-            }
-        }
-        //todo 默认文件夹的权限问题
-        //todo 初始化默认报表
-    }
 
     @Override
     public void delAnalyseCategory(RetRequest<String> request) {
