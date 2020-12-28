@@ -30,4 +30,7 @@ public class CreateDataSetDto {
     @ApiModelProperty(value = "表别名", example = "表别名", required = true)
     @NotNull(message = "表别名 不能为空")
     private String tableNameDesc;
+
+    @ApiModelProperty(value = "comments", example = "comments", required = true)
+    private String comments;
 }

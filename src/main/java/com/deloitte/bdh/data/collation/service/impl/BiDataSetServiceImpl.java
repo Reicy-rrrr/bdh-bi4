@@ -221,6 +221,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         dataSet.setParentId(dto.getFolderId());
         dataSet.setIsFile(YesOrNoEnum.NO.getKey());
         dataSet.setTenantId(ThreadLocalHolder.getTenantId());
+        dataSet.setComments(dto.getComments());
         setMapper.insert(dataSet);
     }
 
