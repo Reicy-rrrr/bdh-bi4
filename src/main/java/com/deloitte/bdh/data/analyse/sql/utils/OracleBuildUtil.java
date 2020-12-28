@@ -56,6 +56,10 @@ public class OracleBuildUtil extends RelaBaseBuildUtil{
         return fieldExpress + " AS " + (StringUtils.isBlank(alias) ? field : alias) + " ";
     }
 
+    public static String from(String tableName, String alias) {
+        return tableName + " " + (StringUtils.isBlank(alias) ? tableName : alias) + " ";
+    }
+
     public static String where(String tableName, String field, String quota, String formatType, String symbol, String value) {
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             return null;

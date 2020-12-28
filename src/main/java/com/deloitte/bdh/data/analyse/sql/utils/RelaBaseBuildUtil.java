@@ -9,8 +9,7 @@ public class RelaBaseBuildUtil {
 
 
     public static String from(String tableName, String alias) {
-        return tableName + " AS `" + (StringUtils.isBlank(alias) ? tableName : alias) + "`";
-
+        return tableName + " AS " + (StringUtils.isBlank(alias) ? tableName : alias) + " ";
     }
 
     public static String where(String tableName, String field, String quota, String symbol, String value) {
@@ -22,7 +21,7 @@ public class RelaBaseBuildUtil {
 
 
     public static String selectField(String tableName, String field) {
-        return "`" + tableName + "`.`" + field + "`";
+        return " " + tableName + "." + field + " ";
     }
 
     public static String condition(String field, String symbol, String value) {
