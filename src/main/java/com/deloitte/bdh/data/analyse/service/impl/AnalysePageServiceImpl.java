@@ -169,13 +169,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             updateBatchById(pages);
             return;
         }
-        //删除度量维度配置
-        LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
-        folderQueryWrapper.in(BiUiModelFolder::getPageId, pageIds);
-        folderService.remove(folderQueryWrapper);
-        LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
-        fieldQueryWrapper.in(BiUiModelField::getPageId, pageIds);
-        fieldService.remove(fieldQueryWrapper);
+
         //删除config
         LambdaQueryWrapper<BiUiAnalysePageConfig> configQueryWrapper = new LambdaQueryWrapper<>();
         configQueryWrapper.in(BiUiAnalysePageConfig::getPageId, pageIds);

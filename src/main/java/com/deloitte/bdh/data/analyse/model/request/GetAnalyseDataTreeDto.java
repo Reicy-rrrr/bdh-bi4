@@ -15,9 +15,9 @@ import java.io.Serializable;
 @Data
 public class GetAnalyseDataTreeDto implements Serializable {
 
-    @ApiModelProperty(value = "tenantId", required = true)
-    @NotBlank(message = "pageid 不能为空")
-    private String pageId;
+    @ApiModelProperty(value = "Y：来自数据集；N：来自报表", required = true)
+    @NotBlank
+    private String isDataResource;
 
     @ApiModelProperty(value = "数据模型ID", required = true)
     @NotBlank

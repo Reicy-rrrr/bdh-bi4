@@ -6,6 +6,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -24,9 +25,9 @@ import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
@@ -196,43 +197,47 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
      */
     private Map<String, Object> getHistoryData(RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
         LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
-        folderQueryWrapper.eq(BiUiModelFolder::getPageId, request.getData().getPageId());
         folderQueryWrapper.eq(BiUiModelFolder::getModelId, request.getData().getModelId());
         folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
         String dlId = null;
+        Map<String, Object> result = Maps.newHashMap();
+
         if (CollectionUtils.isEmpty(folderList)) {
-            folderList = Lists.newArrayList();
-            //初始化维度文件夹
-            BiUiModelFolder wd = new BiUiModelFolder();
-            wd.setModelId(request.getData().getModelId());
-            wd.setPageId(request.getData().getPageId());
-            wd.setParentId("0");
-            wd.setName(DataModelTypeEnum.WD.getDesc());
-            wd.setType(DataModelTypeEnum.WD.getCode());
-            wd.setTenantId(ThreadLocalHolder.getTenantId());
-            folderService.save(wd);
-            wdId = wd.getId();
+            if (request.getData().getIsDataResource().equalsIgnoreCase(YnTypeEnum.YES.getCode())) {
+                folderList = Lists.newArrayList();
+                //初始化维度文件夹
+                BiUiModelFolder wd = new BiUiModelFolder();
+                wd.setModelId(request.getData().getModelId());
+                wd.setParentId("0");
+                wd.setName(DataModelTypeEnum.WD.getDesc());
+                wd.setType(DataModelTypeEnum.WD.getCode());
+                wd.setTenantId(ThreadLocalHolder.getTenantId());
+                folderService.save(wd);
+                wdId = wd.getId();
 
-            //初始化度量文件夹
-            BiUiModelFolder dl = new BiUiModelFolder();
-            dl.setModelId(request.getData().getModelId());
-            dl.setPageId(request.getData().getPageId());
-            dl.setParentId("0");
-            dl.setName(DataModelTypeEnum.DL.getDesc());
-            dl.setType(DataModelTypeEnum.DL.getCode());
-            dl.setIp(request.getIp());
-            dl.setTenantId(ThreadLocalHolder.getTenantId());
-            folderService.save(dl);
-            dlId = dl.getId();
+                //初始化度量文件夹
+                BiUiModelFolder dl = new BiUiModelFolder();
+                dl.setModelId(request.getData().getModelId());
+                dl.setParentId("0");
+                dl.setName(DataModelTypeEnum.DL.getDesc());
+                dl.setType(DataModelTypeEnum.DL.getCode());
+                dl.setIp(request.getIp());
+                dl.setTenantId(ThreadLocalHolder.getTenantId());
+                folderService.save(dl);
+                dlId = dl.getId();
 
-            folderList.add(wd);
-            folderList.add(dl);
+                folderList.add(wd);
+                folderList.add(dl);
+            }
+            else if (request.getData().getIsDataResource().equalsIgnoreCase(YnTypeEnum.NO.getCode())){
+                throw new BizException("请先配置数据集字段.");
+            }
+
         }
 
         LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
-        fieldQueryWrapper.eq(BiUiModelField::getPageId, request.getData().getPageId());
         fieldQueryWrapper.eq(BiUiModelField::getModelId, request.getData().getModelId());
         fieldQueryWrapper.orderByAsc(BiUiModelField::getSortOrder);
         List<BiUiModelField> fieldList = fieldService.list(fieldQueryWrapper);
@@ -246,7 +251,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 field.setModelId(request.getData().getModelId());
                 field.setFieldDesc(column.getDesc());
                 field.setParentId("0");
-                field.setPageId(request.getData().getPageId());
                 if (AnalyseConstants.MENSURE_TYPE.contains(column.getDataType().toUpperCase())) {
                     field.setFolderId(dlId);
                     field.setIsDimention(YnTypeEnum.NO.getCode());
@@ -261,7 +265,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 fieldList.add(field);
             }
         }
-        Map<String, Object> result = Maps.newHashMap();
         result.put("folder", folderList);
         result.put("field", fieldList);
         return result;
