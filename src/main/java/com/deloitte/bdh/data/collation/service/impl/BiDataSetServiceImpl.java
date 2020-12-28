@@ -2,12 +2,14 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
-import com.deloitte.bdh.data.analyse.model.request.SelectCategoryDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.data.analyse.model.BiUiModelField;
+import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.request.SelectDataSetDto;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.google.common.collect.Lists;
 
@@ -79,18 +81,16 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     private DbHandler dbHandler;
     @Resource
     private DbSelector dbSelector;
-
+    @Resource
+    private AnalyseModelFolderService folderService;
+    @Resource
+    private AnalyseModelFieldService fieldService;
     @Resource
     AnalyseUserResourceService userResourceService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<BiDataSet> getFiles() {
-//        List<BiDataSet> setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
-//                .eq(BiDataSet::getParentId, "0")
-//                .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
-//                .orderByDesc(BiDataSet::getCreateDate)
-//        );
 
         SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
         selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
@@ -121,13 +121,6 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Override
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
         List<DataSetResp> result = Lists.newArrayList();
-
-//        LambdaQueryWrapper<BiDataSet> fUOLamQW = new LambdaQueryWrapper();
-//        fUOLamQW.eq(BiDataSet::getParentId, dto.getFileId());
-//        fUOLamQW.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
-//        fUOLamQW.orderByDesc(BiDataSet::getCreateDate);
-//        List<BiDataSet> dataSetList = setMapper.selectList(fUOLamQW);
-
         SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
         selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
         selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
@@ -335,6 +328,37 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             tableData.setRows(pageInfo.getList());
         }
         return tableData;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(String code) {
+        BiDataSet dataSet = setMapper.selectById(code);
+        if (null != dataSet) {
+            if (StringUtils.isNotBlank(dataSet.getType())) {
+                if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                    throw new RuntimeException("数据整理的表，请在数据模型里面删除");
+                }
+                if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
+                    throw new RuntimeException("初始化数据表，暂不允许删除");
+                }
+                //删除度量维度配置
+                LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
+                folderQueryWrapper.in(BiUiModelFolder::getModelId, code);
+                folderService.remove(folderQueryWrapper);
+                LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
+                fieldQueryWrapper.in(BiUiModelField::getModelId, code);
+                fieldService.remove(fieldQueryWrapper);
+
+            } else {
+                int count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>()
+                        .eq(BiDataSet::getParentId, dataSet.getId()));
+                if (count > 0) {
+                    throw new RuntimeException("文件夹下包含文件，不允许删除");
+                }
+            }
+            setMapper.deleteById(dataSet.getId());
+        }
     }
 
 
