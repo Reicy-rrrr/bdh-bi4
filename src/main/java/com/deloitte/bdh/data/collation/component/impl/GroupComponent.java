@@ -131,17 +131,10 @@ public class GroupComponent implements ComponentHandler {
                 throw new BizException("从组件中不存在的字段，处理失败！");
             }
 
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                sqlBuilder.append(fromFieldMappings.get(groupField).getOriginalFieldName());
-                sqlBuilder.append(sql_key_blank);
-                sqlBuilder.append(sql_key_as);
-                sqlBuilder.append(fromFieldMappings.get(groupField).getTempFieldName());
-                groupBuilder.append(fromFieldMappings.get(groupField).getOriginalFieldName());
-            } else {
-                sqlBuilder.append(groupField);
-                groupBuilder.append(groupField);
-            }
+            sqlBuilder.append(groupField);
             sqlBuilder.append(sql_key_comma);
+
+            groupBuilder.append(groupField);
             groupBuilder.append(sql_key_comma);
             currFieldMappings.add(fromFieldMappings.get(groupField).clone());
         });
@@ -180,11 +173,7 @@ public class GroupComponent implements ComponentHandler {
 
                 sqlBuilder.append(paramKey.toUpperCase());
                 sqlBuilder.append(sql_key_bracket_left);
-                if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                    sqlBuilder.append(fromMapping.getOriginalFieldName());
-                } else {
-                    sqlBuilder.append(field);
-                }
+                sqlBuilder.append(field);
                 sqlBuilder.append(sql_key_bracket_right);
                 sqlBuilder.append(sql_key_as);
                 sqlBuilder.append(newTempName);
@@ -231,15 +220,11 @@ public class GroupComponent implements ComponentHandler {
      */
     private void buildFromPart(StringBuilder sqlBuilder, ComponentModel fromComponent) {
         sqlBuilder.append(sql_key_from);
-        if (ComponentTypeEnum.DATASOURCE.equals(fromComponent.getTypeEnum())) {
-            sqlBuilder.append(fromComponent.getTableName());
-        } else {
-            sqlBuilder.append(sql_key_bracket_left);
-            sqlBuilder.append(fromComponent.getQuerySql());
-            sqlBuilder.append(sql_key_bracket_right);
-            sqlBuilder.append(sql_key_blank);
-            sqlBuilder.append(fromComponent.getTableName());
-        }
+        sqlBuilder.append(sql_key_bracket_left);
+        sqlBuilder.append(fromComponent.getQuerySql());
+        sqlBuilder.append(sql_key_bracket_right);
+        sqlBuilder.append(sql_key_blank);
+        sqlBuilder.append(fromComponent.getCode());
         sqlBuilder.append(sql_key_blank);
     }
 

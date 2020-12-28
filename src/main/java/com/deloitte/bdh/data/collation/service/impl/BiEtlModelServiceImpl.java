@@ -325,6 +325,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             dataSet.setType(DataSetTypeEnum.MODEL.getKey());
             dataSet.setTableName(componentModel.getTableName());
             dataSet.setTableDesc(componentModel.getTableDesc());
+            dataSet.setCode(componentModel.getCode());
             dataSet.setComments(componentModel.getComments());
             dataSet.setRefModelCode(biEtlModel.getCode());
             dataSet.setParentId(componentModel.getFolderId());

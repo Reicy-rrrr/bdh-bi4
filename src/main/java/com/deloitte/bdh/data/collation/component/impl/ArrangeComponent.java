@@ -207,16 +207,8 @@ public class ArrangeComponent implements ComponentHandler {
                 continue;
             }
 
-            if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-                selectBuilder.append(fromMapping.getOriginalFieldName());
-                selectBuilder.append(sql_key_blank);
-                selectBuilder.append(sql_key_as);
-                selectBuilder.append(fromMapping.getTempFieldName());
-                selectBuilder.append(sql_key_comma);
-            } else {
-                selectBuilder.append(fromMapping.getTempFieldName());
-                selectBuilder.append(sql_key_comma);
-            }
+            selectBuilder.append(fromMapping.getTempFieldName());
+            selectBuilder.append(sql_key_comma);
 
             FieldMappingModel clone = fromMapping.clone();
             currMappings.add(clone);
@@ -236,20 +228,13 @@ public class ArrangeComponent implements ComponentHandler {
     }
 
     private StringBuilder buildFrom(ComponentModel fromComponent) {
-        String fromTableName = fromComponent.getTableName();
-        ComponentTypeEnum fromType = fromComponent.getTypeEnum();
-
         StringBuilder fromBuilder = new StringBuilder();
         fromBuilder.append(sql_key_from);
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fromBuilder.append(fromTableName);
-        } else {
-            fromBuilder.append(sql_key_bracket_left);
-            fromBuilder.append(fromComponent.getQuerySql());
-            fromBuilder.append(sql_key_bracket_right);
-            fromBuilder.append(sql_key_blank);
-            fromBuilder.append(fromTableName);
-        }
+        fromBuilder.append(sql_key_bracket_left);
+        fromBuilder.append(fromComponent.getQuerySql());
+        fromBuilder.append(sql_key_bracket_right);
+        fromBuilder.append(sql_key_blank);
+        fromBuilder.append(fromComponent.getCode());
         fromBuilder.append(sql_key_blank);
         return fromBuilder;
     }
@@ -680,7 +665,7 @@ public class ArrangeComponent implements ComponentHandler {
             if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !DataTypeEnum.Integer.equals(dataType) && !DataTypeEnum.Float.equals(dataType)) {
                 throw new BizException("Arrange component calculate error: 计算公式中发现非数字类型的字段！");
             }
-            String fieldName = arranger.getFromField(fromMapping, fromComponent.getTypeEnum());
+            String fieldName = fromMapping.getTempFieldName();
             paramMapping.put(param, fieldName);
         }
         // 新字段的表达式

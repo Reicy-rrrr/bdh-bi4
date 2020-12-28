@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.beust.jcommander.internal.Sets;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -21,8 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -113,8 +116,12 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置输出组件信息");
         }
         BiComponent out = componentOptional.get();
-        validate(out, components, connections);
-        //todo 待完善
+        Set<String> usedCode = validate(out, components, connections);
+        usedCode.add(out.getCode());
+        if (usedCode.size() != components.size()) {
+            components.removeIf(component -> usedCode.contains(component.getCode()));
+            throw new RuntimeException("以下组件单独存在:" + components.stream().map(BiComponent::getName).collect(Collectors.joining("、")));
+        }
     }
 
     @Override
@@ -203,16 +210,10 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         }
 
         //删除数据集
-        BiComponentParams tableDesc = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefComponentCode, component.getCode())
-                .eq(BiComponentParams::getParamKey, ComponentCons.TO_TABLE_DESC)
-        );
-        if (null != tableDesc) {
-            BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
-                    .eq(BiDataSet::getTableDesc, tableDesc));
-            if (null != dataSet) {
-                dataSetService.removeById(dataSet.getId());
-            }
+        BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getCode, component.getCode()));
+        if (null != dataSet) {
+            dataSetService.removeById(dataSet.getId());
         }
 
         biComponentMapper.deleteById(component.getId());
@@ -310,7 +311,8 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         return CollectionUtils.isNotEmpty(syncPlans);
     }
 
-    private void validate(BiComponent component, List<BiComponent> components, List<BiComponentConnection> connections) {
+    private Set<String> validate(BiComponent component, List<BiComponent> components, List<BiComponentConnection> connections) {
+        Set<String> usedCode = Sets.newHashSet();
         if (EffectEnum.DISABLE.getKey().equals(component.getEffect())) {
             throw new RuntimeException("EtlServiceImpl.runModel.validate : 未生效的组件," + component.getName());
         }
@@ -321,7 +323,6 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             if (CollectionUtils.isNotEmpty(collects)) {
                 throw new RuntimeException("EtlServiceImpl.runModel.validate : 数据源组件不能被关联");
             }
-            return;
         } else {
             if (CollectionUtils.isEmpty(collects)) {
                 throw new RuntimeException("EtlServiceImpl.runModel.validate : 未与组件进行关联");
@@ -330,6 +331,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
 
         collects.forEach(connection -> {
             String fromCode = connection.getFromComponentCode();
+            usedCode.add(fromCode);
             if (fromCode.equals(component.getCode())) {
                 throw new RuntimeException("EtlServiceImpl.runModel.validate : 组件关联不能指向自己");
             }
@@ -338,8 +340,11 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             if (!fromComponents.isPresent()) {
                 throw new RuntimeException("EtlServiceImpl.runModel.validate : 未找到该组件的来源组件,组件名称:" + component.getName());
             }
-            validate(fromComponents.get(), components, connections);
+            Set<String> innerSet = validate(fromComponents.get(), components, connections);
+            if (CollectionUtils.isNotEmpty(innerSet)) {
+                usedCode.addAll(innerSet);
+            }
         });
-
+        return usedCode;
     }
 }

@@ -27,7 +27,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
 
     @Override
     public String getTableName(DataModel model) {
-        return checkDataSet(model).getTableDesc();
+        return checkDataSet(model).getTableName();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         context.setModel(model);
         context.setMethod(AnalyseSql.Method.ASSEMBLY_QUERYSQL);
         String sql = (String) bean.process(context);
-        model.setTableName(dataSet.getTableDesc());
+        model.setTableName(dataSet.getCode());
         return sql;
     }
 
@@ -100,7 +100,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         if (null == result) {
             return null;
         }
-        model.setTableName(dataSet.getTableDesc());
+        model.setTableName(dataSet.getCode());
         return (Long) result;
     }
 
@@ -132,7 +132,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
 
     private BiDataSet checkDataSet(DataModel model) {
         BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableDesc, model.getTableName()));
+                .eq(BiDataSet::getCode, model.getTableName()));
 
         if (null == dataSet) {
             throw new RuntimeException("未在数据集找到目标对象");
@@ -146,7 +146,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         switch (typeEnum) {
             case DEFAULT:
             case MODEL:
-                sql = type.local(model, dataSet.getTableDesc());
+                sql = type.local(model, dataSet.getTableName());
                 break;
             default:
                 BiEtlDatabaseInf databaseInf = databaseInfService.getById(dataSet.getRefSourceId());
@@ -156,20 +156,20 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
                 SourceTypeEnum sourceTypeEnum = SourceTypeEnum.values(databaseInf.getType());
                 switch (sourceTypeEnum) {
                     case Mysql:
-                        sql = type.mysql(model, dataSet.getTableDesc());
+                        sql = type.mysql(model, dataSet.getTableName());
                         break;
                     case Oracle:
-                        sql = type.oracle(model, dataSet.getTableDesc());
+                        sql = type.oracle(model, dataSet.getTableName());
                         break;
                     case SQLServer:
-                        sql = type.sqlServer(model, dataSet.getTableDesc());
+                        sql = type.sqlServer(model, dataSet.getTableName());
                         break;
                     case Hana:
-                        sql = type.hana(model, dataSet.getTableDesc());
+                        sql = type.hana(model, dataSet.getTableName());
                         break;
                     case File_Excel:
                     case File_Csv:
-                        sql = type.local(model, dataSet.getTableDesc());
+                        sql = type.local(model, dataSet.getTableName());
                         break;
                     default:
                         throw new RuntimeException("数据集不支持的类型");

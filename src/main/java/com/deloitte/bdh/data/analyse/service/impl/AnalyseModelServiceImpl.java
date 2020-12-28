@@ -28,8 +28,8 @@ import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
-import com.deloitte.bdh.data.collation.database.po.TableInfo;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
+import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -61,12 +61,14 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     private BiDataSetService dataSetService;
 
     @Override
-    public List<TableInfo> getAllTable() {
-        List<TableInfo> tableInfos = Lists.newArrayList();
+    public List<DataSetTableInfo> getAllTable() {
+        List<DataSetTableInfo> tableInfos = Lists.newArrayList();
         List<BiDataSet> dataSetList = dataSetService.getTableList();
         if (CollectionUtils.isNotEmpty(dataSetList)) {
             for (BiDataSet dataSet : dataSetList) {
-                TableInfo tableInfo = new TableInfo();
+                DataSetTableInfo tableInfo = new DataSetTableInfo();
+                tableInfo.setId(dataSet.getId());
+                tableInfo.setCode(dataSet.getCode());
                 tableInfo.setToTableName(dataSet.getTableName());
                 tableInfo.setToTableDesc(dataSet.getTableDesc());
                 tableInfos.add(tableInfo);
@@ -127,11 +129,11 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         BaseComponentDataResponse response = SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
-        Map<String,Object> extraMap = Maps.newHashMap();
-        if (MapUtils.isNotEmpty(response.getExtra())){
+        Map<String, Object> extraMap = Maps.newHashMap();
+        if (MapUtils.isNotEmpty(response.getExtra())) {
             extraMap = response.getExtra();
         }
-        if (MapUtils.isNotEmpty(joinDataUnit(request, response))){
+        if (MapUtils.isNotEmpty(joinDataUnit(request, response))) {
             extraMap.putAll(joinDataUnit(request, response));
         }
         response.setExtra(extraMap);
@@ -179,7 +181,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 }
             }
         }
-        if (CollectionUtils.isEmpty(dataUnitList)){
+        if (CollectionUtils.isEmpty(dataUnitList)) {
             return null;
         }
         dataUnitMap.put("dataUnit", dataUnitList);

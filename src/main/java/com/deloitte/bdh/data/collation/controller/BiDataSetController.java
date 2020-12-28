@@ -69,14 +69,6 @@ public class BiDataSetController {
     @ApiOperation(value = "数据集文件夹重命名", notes = "数据集文件夹重命名")
     @PostMapping("/reNameFile")
     public RetResult<Void> reNameFile(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
-        BiDataSet hasOne = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getTableDesc, request.getData().getToTableDesc())
-                .isNull(BiDataSet::getType)
-        );
-        if (null != hasOne) {
-            throw new RuntimeException("文件夹名字已存在");
-        }
-
         BiDataSet dataSet = dataSetService.getById(request.getData().getId());
         dataSet.setTableDesc(request.getData().getToTableDesc());
         dataSet.setTableName(request.getData().getToTableDesc());
@@ -115,6 +107,12 @@ public class BiDataSetController {
                 }
                 if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
                     throw new RuntimeException("初始化数据表，暂不允许删除");
+                }
+            } else {
+                int count = dataSetService.count(new LambdaQueryWrapper<BiDataSet>()
+                        .eq(BiDataSet::getParentId, dataSet.getId()));
+                if (count > 0) {
+                    throw new RuntimeException("文件夹下包含文件，不允许删除");
                 }
             }
             dataSetService.removeById(dataSet.getId());

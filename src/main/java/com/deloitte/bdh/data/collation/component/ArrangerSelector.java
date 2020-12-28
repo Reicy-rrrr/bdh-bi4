@@ -8,8 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -208,32 +206,5 @@ public interface ArrangerSelector extends Component {
         List<Integer> numbers = Arrays.stream(nums).filter(num -> StringUtils.isNotBlank(num))
                 .map(Integer::valueOf).collect(Collectors.toList());
         return numbers;
-    }
-
-    /**
-     * 获取从组件字段
-     *
-     * @param fromMapping 从组件映射
-     * @param fromType    从组件类型
-     * @return
-     */
-    default String getFromField(FieldMappingModel fromMapping, ComponentTypeEnum fromType) {
-        String fromField = fromMapping.getTempFieldName();
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fromField = fromMapping.getOriginalFieldName();
-        }
-        return fromField;
-    }
-
-    /**
-     * 判断字符串是否为数字
-     *
-     * @param value 字符串值
-     * @return
-     */
-    default boolean isNumeric(String value) {
-        String numericRegex = "^(\\-|\\+)?\\d+(\\.\\d+)?$";
-        Matcher matcher = Pattern.compile(numericRegex).matcher(value);
-        return matcher.matches();
     }
 }

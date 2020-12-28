@@ -14,7 +14,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2020-12-10
+ * @since 2020-12-25
  */
 @TableName("BI_DATA_SET")
 public class BiDataSet implements Serializable {
@@ -89,6 +89,12 @@ public class BiDataSet implements Serializable {
 
     @TableField("TENANT_ID")
     private String tenantId;
+
+    /**
+     * 编码
+     */
+    @TableField("CODE")
+    private String code;
 
     public String getId() {
         return id;
@@ -195,6 +201,13 @@ public class BiDataSet implements Serializable {
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     @Override
     public String toString() {
@@ -214,6 +227,7 @@ public class BiDataSet implements Serializable {
         ", modifiedUser=" + modifiedUser +
         ", ip=" + ip +
         ", tenantId=" + tenantId +
+        ", code=" + code +
         "}";
     }
 }

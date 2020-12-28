@@ -27,7 +27,6 @@ public class SubscribeDto {
     @ApiModelProperty(value = "定时配置")
     private String cronData;
 
-    @NotEmpty
     @ApiModelProperty(value = "收件人")
     private List<UserIdMailDto> receiver;
 

@@ -14,8 +14,8 @@ public class GetDataSetInfoDto extends PageDto {
     /**
      * 数据表名称
      */
-    @ApiModelProperty(value = "数据表别名", example = "tb_user", required = true)
-    @NotNull(message = "数据表别名 不能为空")
-    private String tableDesc;
+    @ApiModelProperty(value = "id", example = "tb_user", required = true)
+    @NotNull(message = "id 不能为空")
+    private String id;
 
 }

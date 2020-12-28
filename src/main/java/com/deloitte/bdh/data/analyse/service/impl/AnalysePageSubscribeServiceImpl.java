@@ -96,6 +96,9 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     @Override
     public void subscribe(SubscribeDto request) {
         CronUtil.validate(CronUtil.createCronExpression(request.getCronData()));
+        if (StringUtils.equals("1", request.getStatus()) && CollectionUtils.isEmpty(request.getReceiver())) {
+            throw new BizException("收件人不能为空");
+        }
         //保存计划任务配置
         LambdaQueryWrapper<BiUiAnalyseSubscribe> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, request.getPageId());
@@ -105,7 +108,11 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
             subscribe.setTaskId(GenerateCodeUtil.genPage());
         }
         BeanUtils.copyProperties(request, subscribe);
-        subscribe.setReceiver(JSON.toJSONString(request.getReceiver()));
+        if (CollectionUtils.isNotEmpty(request.getReceiver())) {
+            subscribe.setReceiver(JSON.toJSONString(request.getReceiver()));
+        } else {
+            subscribe.setReceiver(null);
+        }
         String imgUrl = getImgUrl(request);
         subscribe.setImgUrl(imgUrl);
         subscribe.setAccessUrl(getAccessUrl(request));
@@ -167,8 +174,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         if (null == subscribe) {
             throw new BizException("目标数据不存在");
         }
-        List<UserIdMailDto> userIdMailDtoList = JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class);
-        if (CollectionUtils.isNotEmpty(userIdMailDtoList)) {
+        if (StringUtils.isNotBlank(subscribe.getReceiver())) {
             List<UserIdMailDto> receiveList = JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class);
             if (CollectionUtils.isNotEmpty(receiveList)) {
                 String imgUrl;
@@ -225,7 +231,6 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     }
                 }
             }
-
         }
     }
 

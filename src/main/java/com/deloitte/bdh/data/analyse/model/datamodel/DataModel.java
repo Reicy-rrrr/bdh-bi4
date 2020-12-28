@@ -19,7 +19,7 @@ public class DataModel {
     String componentId;
 
     @NotBlank
-    @ApiModelProperty(value = "查询的表", notes = "树上所选表")
+    @ApiModelProperty(value = "查询的表(数据集编码)", notes = "树上所选表的编码")
     String tableName;
 
     @ApiModelProperty(value = "横向显示的字段", notes = "横向显示的字段")

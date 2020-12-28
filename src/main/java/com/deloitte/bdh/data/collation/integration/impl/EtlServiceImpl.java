@@ -29,10 +29,7 @@ import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
-import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
-import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
-import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
+import com.deloitte.bdh.data.collation.model.resp.*;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
@@ -392,6 +389,15 @@ public class EtlServiceImpl implements EtlService {
             throw new RuntimeException("EtlServiceImpl.out.error : 未找到目标 模型");
         }
 
+        //校验只能增加一个输出组件
+        int num = componentService.count(new LambdaQueryWrapper<BiComponent>()
+                .eq(BiComponent::getRefModelCode, biEtlModel.getCode())
+                .eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey())
+        );
+        if (num > 0) {
+            throw new RuntimeException("已存在输出组件");
+        }
+
         String componentCode = GenerateCodeUtil.getComponent();
         BiComponent component = new BiComponent();
         component.setCode(componentCode);
@@ -413,11 +419,6 @@ public class EtlServiceImpl implements EtlService {
         // 设置组件参数：创建最终表,表名默认为 模板名称_组件名称
         String tableDesc = StringUtils.isBlank(dto.getTableName()) ? (biEtlModel.getName() + "_" + component.getName()) : dto.getTableName();
         tableDesc = tableDesc + DataSetTypeEnum.MODEL.getSuffix();
-        // 校验表描述是否重复
-        boolean tableDescExists = componentParamsService.isParamExists(ComponentCons.TO_TABLE_DESC, tableDesc);
-        if (tableDescExists) {
-            throw new BizException("EtlServiceImpl.out.error : 表名已存在");
-        }
 
         String folderId = dto.getFolderId();
         if (StringUtils.isBlank(folderId)) {
@@ -464,14 +465,7 @@ public class EtlServiceImpl implements EtlService {
         checkAnalyseField(originalTableDesc, dto.getFields());
         // 如果未传递新表名，就使用原始表名
         String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName() + DataSetTypeEnum.MODEL.getSuffix();
-        // 如果使用新表名，校验表名是否重复
-        if (!tableDesc.equals(originalTableDesc)) {
-            // 校验表描述是否重复
-            boolean tableDescExists = componentParamsService.isParamExists(ComponentCons.TO_TABLE_DESC, tableDesc);
-            if (tableDescExists) {
-                throw new BizException("EtlServiceImpl.out.update.error : 表名已存在");
-            }
-        }
+
         // 如果未传递新文件夹id，使用原始文件夹id
         String folderId = StringUtils.isBlank(dto.getFolderId()) ? originalFolderId : dto.getFolderId();
 
@@ -738,6 +732,21 @@ public class EtlServiceImpl implements EtlService {
             default:
                 componentService.remove(component);
         }
+    }
+
+    @Override
+    public List<CalculateOperatorResp> getOperators() throws Exception {
+        List<CalculateOperatorResp> operators = Lists.newArrayList();
+        CalculateOperatorEnum[] operatorEnums = CalculateOperatorEnum.values();
+        for (CalculateOperatorEnum operatorEnum : operatorEnums) {
+            CalculateOperatorResp operator = new CalculateOperatorResp();
+            operator.setOperator(operatorEnum.getOperator());
+            operator.setName(operatorEnum.getName());
+            operator.setDesc(operatorEnum.getDesc());
+            operator.setExample(operatorEnum.getExample());
+            operators.add(operator);
+        }
+        return operators;
     }
 
     @Override

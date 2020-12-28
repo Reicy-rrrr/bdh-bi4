@@ -258,6 +258,12 @@ public class EtlController {
         return RetResponse.makeOKRsp(etlService.previewSql(request.getData()));
     }
 
+    @ApiOperation(value = "获取运算符列表", notes = "获取运算符列表")
+    @PostMapping("/component/formula/getOperators")
+    public RetResult<List> getOperators(@RequestBody @Validated RetRequest request) throws Exception {
+        return RetResponse.makeOKRsp(etlService.getOperators());
+    }
+
     @ApiOperation(value = "验证组件公式", notes = "验证组件公式")
     @PostMapping("/component/formula/check")
     public RetResult<ComponentFormulaCheckResp> checkFormula(@RequestBody @Validated RetRequest<ComponentFormulaCheckDto> request) throws Exception {

@@ -49,7 +49,7 @@ public class MysqlArranger implements ArrangerSelector {
         rightMapping.getTableField().setName(rightField);
         rightMapping.getTableField().setDesc(rightMapping.getFinalFieldDesc());
 
-        String fromField = getFromField(fromFieldMapping, fromType);
+        String fromField = fromFieldMapping.getTempFieldName();
         String leftSql = "SUBSTRING_INDEX(" + fromField + ", '" + separator + "', 1) AS " + leftFieldTemp;
         String rightSql = "SUBSTRING(" + fromField + ", IF(INSTR(" + fromField + ", '" + separator + "') > 0, INSTR(" + fromField + ", '" + separator + "'), LENGTH(" + fromField + ")) + 1) AS " + rightFieldTemp;
 
@@ -84,7 +84,7 @@ public class MysqlArranger implements ArrangerSelector {
         rightMapping.getTableField().setName(rightField);
         rightMapping.getTableField().setDesc(rightMapping.getFinalFieldDesc());
 
-        String fromField = getFromField(fromFieldMapping, fromType);
+        String fromField = fromFieldMapping.getTempFieldName();
         String leftSql = "SUBSTRING(" + fromField + ", 1, " + length + ") AS " + leftFieldTemp;
         String rightSql = "SUBSTRING(" + fromField + ", " + (length + 1) + ", LENGTH(" + fromField + ") - " + length + ") AS " + rightFieldTemp;
 
@@ -96,7 +96,7 @@ public class MysqlArranger implements ArrangerSelector {
 
     @Override
     public ArrangeResultModel replace(FieldMappingModel fromFieldMapping, List<ArrangeReplaceContentModel> contents, String fromTable, ComponentTypeEnum fromType) {
-        String fromField = getFromField(fromFieldMapping, fromType);
+        String fromField = fromFieldMapping.getTempFieldName();
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < contents.size(); i++) {
             ArrangeReplaceContentModel replaceContent = contents.get(i);
@@ -123,8 +123,8 @@ public class MysqlArranger implements ArrangerSelector {
         } else {
             connector = "'" + connector + "'";
         }
-        String leftField = getFromField(leftMapping, fromType);
-        String rightField = getFromField(rightMapping, fromType);
+        String leftField = leftMapping.getTempFieldName();;
+        String rightField = rightMapping.getTempFieldName();;
 
         StringBuilder fieldBuilder = new StringBuilder();
         fieldBuilder.append("CONCAT(");
@@ -165,7 +165,7 @@ public class MysqlArranger implements ArrangerSelector {
     public List<String> nonNull(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<String> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String fromField = getFromField(fromMapping, fromType);
+            String fromField = fromMapping.getTempFieldName();
             // 日期类型不能用 ='' 判断
             if (DataTypeEnum.Date.getType().equals(fromMapping.getFinalFieldType()) || DataTypeEnum.DateTime.getType().equals(fromMapping.getFinalFieldType())) {
                 results.add(fromField + " IS NOT NULL");
@@ -180,7 +180,7 @@ public class MysqlArranger implements ArrangerSelector {
     public List<ArrangeResultModel> toUpperCase(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<ArrangeResultModel> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String fromField = getFromField(fromMapping, fromType);
+            String fromField = fromMapping.getTempFieldName();
             String segment = "UPPER(" + fromField + ") AS " + fromMapping.getTempFieldName();
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
         });
@@ -191,7 +191,7 @@ public class MysqlArranger implements ArrangerSelector {
     public List<ArrangeResultModel> toLowerCase(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<ArrangeResultModel> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String fromField = getFromField(fromMapping, fromType);
+            String fromField = fromMapping.getTempFieldName();
             String segment = "LOWER(" + fromField + ") AS " + fromMapping.getTempFieldName();
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
         });
@@ -202,7 +202,7 @@ public class MysqlArranger implements ArrangerSelector {
     public List<ArrangeResultModel> trim(List<FieldMappingModel> fromFieldMappings, String fromTable, ComponentTypeEnum fromType) {
         List<ArrangeResultModel> results = Lists.newArrayList();
         fromFieldMappings.forEach(fromMapping -> {
-            String fromField = getFromField(fromMapping, fromType);
+            String fromField = fromMapping.getTempFieldName();
             String segment = "TRIM(" + fromField + ") AS " + fromMapping.getTempFieldName();
             results.add(new ArrangeResultModel(fromMapping.getTempFieldName(), segment, false, fromMapping));
         });
@@ -217,7 +217,7 @@ public class MysqlArranger implements ArrangerSelector {
         String type = blankModel.getType();
         // 去除空格长度
         Integer length = blankModel.getLength();
-        String fromField = getFromField(fromMapping, fromType);
+        String fromField = fromMapping.getTempFieldName();
         if (ComponentCons.ARRANGE_PARAM_KEY_SPACE_LEFT.equals(type) && length != null && length != 0) {
             // 从左侧开始，去除在长度为length的范围内的空字符
             segment = "CONCAT(REPLACE(SUBSTRING(" + fromField + ", 1, " + length + "), ' ', ''), SUBSTRING(" + fromField + ", 11)) AS " + fromMapping.getTempFieldName();
@@ -238,11 +238,7 @@ public class MysqlArranger implements ArrangerSelector {
         StringBuilder fieldBuilder = new StringBuilder();
         fieldBuilder.append("CASE ");
         // 原字段（要进行分组的字段）
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fieldBuilder.append(fromFieldMapping.getOriginalFieldName());
-        } else {
-            fieldBuilder.append(fromFieldMapping.getTempFieldName());
-        }
+        fieldBuilder.append(fromFieldMapping.getTempFieldName());
         fieldBuilder.append(sql_key_blank);
 
         // 初始化分组后的字段信息
@@ -299,12 +295,7 @@ public class MysqlArranger implements ArrangerSelector {
         List<ArrangeGroupSectFieldModel> groups = groupModel.getGroups();
         String otherValue = groupModel.getOther();
         // 原字段（要进行分组的字段）
-        String sourceField;
-        if (ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            sourceField = fromFieldMapping.getOriginalFieldName();
-        } else {
-            sourceField = fromFieldMapping.getTempFieldName();
-        }
+        String sourceField = fromFieldMapping.getTempFieldName();
 
         // 初始化分组后的字段信息
         String newField = fromFieldMapping.getFinalFieldName() + "_group";
@@ -370,13 +361,7 @@ public class MysqlArranger implements ArrangerSelector {
 
     @Override
     public ArrangeResultModel modify(FieldMappingModel fromFieldMapping, String targetDesc, DataTypeEnum targetType, String fromTable, ComponentTypeEnum fromType) {
-        String fromField = fromFieldMapping.getOriginalFieldName();
-        String tempSegment = fromField + " AS " + fromFieldMapping.getTempFieldName();
-        if (!ComponentTypeEnum.DATASOURCE.equals(fromType)) {
-            fromField = fromFieldMapping.getTempFieldName();
-            tempSegment = fromField;
-        }
-
+        String fromField = fromFieldMapping.getTempFieldName();
         FieldMappingModel mapping = fromFieldMapping.clone();
         TableField field = mapping.getTableField();
         // 修改字段
@@ -389,7 +374,7 @@ public class MysqlArranger implements ArrangerSelector {
         String type = field.getType();
         // 前后字段类型一致，不转换
         if (targetType.getType().equals(type)) {
-            return new ArrangeResultModel(mapping.getTempFieldName(), tempSegment, false, mapping);
+            return new ArrangeResultModel(mapping.getTempFieldName(), fromField, false, mapping);
         }
 
         // 重置字段类型（系统中的数据类型）
@@ -479,7 +464,7 @@ public class MysqlArranger implements ArrangerSelector {
             }
         }
 
-        String fromField = getFromField(fromFieldMapping, fromType);
+        String fromField = fromFieldMapping.getTempFieldName();;
         StringBuilder segmentBuilder = new StringBuilder();
         segmentBuilder.append("CASE WHEN ");
         segmentBuilder.append(fromField);
