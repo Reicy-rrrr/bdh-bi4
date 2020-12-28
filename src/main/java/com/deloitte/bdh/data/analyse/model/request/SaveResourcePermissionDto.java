@@ -21,7 +21,7 @@ public class SaveResourcePermissionDto implements Serializable {
     private String id;
 
     @NotBlank
-    @ApiModelProperty(value = "资源类型：'page'，'category'")
+    @ApiModelProperty(value = "资源类型：'page'，'category'，'data_set'，'data_set_category'")
     private String resourceType;
 
     @ApiModelProperty(value = "查看权限用户")

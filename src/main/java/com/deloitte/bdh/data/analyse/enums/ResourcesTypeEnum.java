@@ -1,7 +1,5 @@
 package com.deloitte.bdh.data.analyse.enums;
 
-import com.deloitte.bdh.common.exception.BizException;
-
 /**
  * Author:LIJUN
  * Date:09/12/2020
@@ -11,6 +9,8 @@ public enum ResourcesTypeEnum {
 
     PAGE("page", "报表"),
     CATEGORY("category", "文件夹"),
+    DATA_SET("date_set", "数据集"),
+    DATA_SET_CATEGORY("date_set_category", "数据集文件架"),
     ;
 
     private String code;
@@ -39,7 +39,7 @@ public enum ResourcesTypeEnum {
                 return enums[i];
             }
         }
-        throw new BizException("暂不支持的认证类型！");
+        return null;
     }
 
     public String getCode() {

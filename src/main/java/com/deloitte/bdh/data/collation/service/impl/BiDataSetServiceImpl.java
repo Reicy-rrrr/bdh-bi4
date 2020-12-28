@@ -1,7 +1,13 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.model.request.SelectCategoryDto;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
+import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.google.common.collect.Lists;
 
@@ -74,14 +80,26 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Resource
     private DbSelector dbSelector;
 
+    @Resource
+    AnalyseUserResourceService userResourceService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<BiDataSet> getFiles() {
-        List<BiDataSet> setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getParentId, "0")
-                .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
-                .orderByDesc(BiDataSet::getCreateDate)
-        );
+//        List<BiDataSet> setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
+//                .eq(BiDataSet::getParentId, "0")
+//                .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
+//                .orderByDesc(BiDataSet::getCreateDate)
+//        );
+
+        SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+        selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+        selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
+        selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+        selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+        selectDataSetDto.setParentId("0");
+        selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
+        List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
 
         if (CollectionUtils.isEmpty(setList)) {
             BiDataSet set = new BiDataSet();
@@ -104,11 +122,20 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
         List<DataSetResp> result = Lists.newArrayList();
 
-        LambdaQueryWrapper<BiDataSet> fUOLamQW = new LambdaQueryWrapper();
-        fUOLamQW.eq(BiDataSet::getParentId, dto.getFileId());
-        fUOLamQW.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
-        fUOLamQW.orderByDesc(BiDataSet::getCreateDate);
-        List<BiDataSet> dataSetList = setMapper.selectList(fUOLamQW);
+//        LambdaQueryWrapper<BiDataSet> fUOLamQW = new LambdaQueryWrapper();
+//        fUOLamQW.eq(BiDataSet::getParentId, dto.getFileId());
+//        fUOLamQW.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
+//        fUOLamQW.orderByDesc(BiDataSet::getCreateDate);
+//        List<BiDataSet> dataSetList = setMapper.selectList(fUOLamQW);
+
+        SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+        selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+        selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+        selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+        selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+        selectDataSetDto.setParentId(dto.getFileId());
+        selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
+        List<BiDataSet> dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
 
         if (CollectionUtils.isNotEmpty(dataSetList)) {
             for (BiDataSet dataSet : dataSetList) {
@@ -206,6 +233,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         dataSet.setIsFile(YesOrNoEnum.YES.getKey());
         dataSet.setTenantId(ThreadLocalHolder.getTenantId());
         setMapper.insert(dataSet);
+
+        //保存权限
+        userResourceService.saveResourcePermission(dto.getPermissionDto());
     }
 
     @Override
@@ -223,6 +253,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         dataSet.setTenantId(ThreadLocalHolder.getTenantId());
         dataSet.setComments(dto.getComments());
         setMapper.insert(dataSet);
+
+        //保存权限
+        userResourceService.saveResourcePermission(dto.getPermissionDto());
     }
 
     @Override

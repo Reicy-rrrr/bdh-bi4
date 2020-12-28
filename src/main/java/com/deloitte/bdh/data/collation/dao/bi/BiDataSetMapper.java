@@ -2,6 +2,10 @@ package com.deloitte.bdh.data.collation.dao.bi;
 
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.common.base.Mapper;
+import com.deloitte.bdh.data.collation.model.request.SelectDataSetDto;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,5 @@ import com.deloitte.bdh.common.base.Mapper;
  */
 public interface BiDataSetMapper extends Mapper<BiDataSet> {
 
+    List<BiDataSet> selectDataSetCategory(@Param("queryDto") SelectDataSetDto queryDto);
 }
