@@ -632,8 +632,14 @@ public class ArrangeComponent implements ComponentHandler {
         if (calculateType == null) {
             throw new BizException("Arrange component calculate error: 暂不支持的计算类型！");
         }
-        if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !expressionHandler.isParamArithmeticFormula(formula)) {
-            throw new BizException("Arrange component calculate error: 非法的计算公式！");
+
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
+            if (formula.contains("%")) {
+                throw new BizException("Arrange component calculate error: 暂不支持百分比[%]的计算！");
+            }
+            if (!expressionHandler.isParamArithmeticFormula(formula)) {
+                throw new BizException("Arrange component calculate error: 非法的计算公式！");
+            }
         }
         if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
             throw new BizException("Arrange component calculate error: 非法的计算公式！");

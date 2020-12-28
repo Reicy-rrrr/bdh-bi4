@@ -776,8 +776,13 @@ public class EtlServiceImpl implements EtlService {
         if (calculateType == null) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
         }
-        if (CalculateTypeEnum.ORDINARY.equals(calculateType) && !expressionHandler.isParamArithmeticFormula(formula)) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+        if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
+            if (formula.contains("%")) {
+                throw new BizException("Arrange component calculate error: 暂不支持百分比[%]的计算！");
+            }
+            if (!expressionHandler.isParamArithmeticFormula(formula)) {
+                throw new BizException("Arrange component calculate error: 非法的计算公式！");
+            }
         }
         if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
