@@ -134,15 +134,15 @@ public class AnalysePageController {
 
     @ApiOperation(value = "获取图形指标列表", notes = "获取图形指标列表")
     @PostMapping("/getChartComponent")
-    public PageResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated PageRequest<pageComponentDto> request) {
+    public RetResult<PageResult<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated PageRequest<pageComponentDto> request) {
 
         PageHelper.startPage(request.getPage(),request.getSize());
         List<BiUiAnalysePageComponent> list = biUiAnalysePageComponentService.getChartComponent(request.getData());
-        PageInfo info = new PageInfo(list);
-        PageResult result = new PageResult(info);
+        PageInfo<BiUiAnalysePageComponent> info = new PageInfo(list);
+        PageResult<BiUiAnalysePageComponent> result = new PageResult(info);
         result.setMore(info.isHasNextPage());
         result.setTotal(info.getTotal());
-        return result;
+        return RetResponse.makeOKRsp(result);
     }
 
 
