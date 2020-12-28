@@ -13,6 +13,8 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -132,9 +134,15 @@ public class AnalysePageController {
 
     @ApiOperation(value = "获取图形指标列表", notes = "获取图形指标列表")
     @PostMapping("/getChartComponent")
-    public RetResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated RetRequest<pageComponentDto> request) {
+    public PageResult<List<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated PageRequest<pageComponentDto> request) {
 
-        return RetResponse.makeOKRsp(biUiAnalysePageComponentService.getChartComponent(request.getData()));
+        PageHelper.startPage(request.getPage(),request.getSize());
+        List<BiUiAnalysePageComponent> list = biUiAnalysePageComponentService.getChartComponent(request.getData());
+        PageInfo info = new PageInfo(list);
+        PageResult result = new PageResult(info);
+        result.setMore(info.isHasNextPage());
+        result.setTotal(info.getTotal());
+        return result;
     }
 
 
