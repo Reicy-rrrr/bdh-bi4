@@ -1,13 +1,11 @@
 package com.deloitte.bdh.data.collation.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.database.po.TableData;
-import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
 import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
@@ -19,7 +17,6 @@ import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -98,25 +95,8 @@ public class BiDataSetController {
 
     @ApiOperation(value = "删除数据集或文件夹", notes = "删除数据集或文件夹")
     @PostMapping("/del")
-    public RetResult<Void> del(@RequestBody @Validated RetRequest<String> request) {
-        BiDataSet dataSet = dataSetService.getById(request.getData());
-        if (null != dataSet) {
-            if (StringUtils.isNotBlank(dataSet.getType())) {
-                if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
-                    throw new RuntimeException("数据整理的表，请在数据模型里面删除");
-                }
-                if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
-                    throw new RuntimeException("初始化数据表，暂不允许删除");
-                }
-            } else {
-                int count = dataSetService.count(new LambdaQueryWrapper<BiDataSet>()
-                        .eq(BiDataSet::getParentId, dataSet.getId()));
-                if (count > 0) {
-                    throw new RuntimeException("文件夹下包含文件，不允许删除");
-                }
-            }
-            dataSetService.removeById(dataSet.getId());
-        }
+    public RetResult<Void> delete(@RequestBody @Validated RetRequest<String> request) {
+        dataSetService.delete(request.getData());
         return RetResponse.makeOKRsp();
     }
 }
