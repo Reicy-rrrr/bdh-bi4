@@ -47,7 +47,7 @@
         WHERE
             t5.RESOURCE_ID IS NULL
         <if test="queryDto.name != null and queryDto.name != ''">
-            AND t1.`NAME` LIKE '%' || #{queryDto.name,jdbcType=VARCHAR} || '%'
+            AND t1.`NAME` LIKE CONCAT('%',#{queryDto.name,jdbcType=VARCHAR},'%')
         </if>
         <if test="queryDto.type != null and queryDto.type != ''">
             AND t1.TYPE = #{queryDto.type,jdbcType=VARCHAR}

@@ -11,7 +11,7 @@ public class GetAnalyseCategoryDto {
     @ApiModelProperty(value = "名称")
     private String name;
 
-    @ApiModelProperty(value = "我的分析,预定义报表")
+    @ApiModelProperty(value = "我的分析(CUSTOMER),图形指标库(COMPONENT)")
     private String type;
 
 }
