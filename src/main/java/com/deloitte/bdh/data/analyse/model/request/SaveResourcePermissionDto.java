@@ -17,7 +17,6 @@ import java.util.List;
 public class SaveResourcePermissionDto implements Serializable {
 
     @ApiModelProperty(value = "资源id，若是保存报表权限为page id，文件夹权限则为category id")
-    @NotBlank
     private String id;
 
     @NotBlank
