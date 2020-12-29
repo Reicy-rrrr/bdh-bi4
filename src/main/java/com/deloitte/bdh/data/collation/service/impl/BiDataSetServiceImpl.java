@@ -101,7 +101,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         selectDataSetDto.setParentId("0");
         selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
         List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
-
+        userResourceService.setDataSetCategoryPermission(setList);
         if (CollectionUtils.isEmpty(setList)) {
             BiDataSet set = new BiDataSet();
             set.setTableName("默认文件夹");
