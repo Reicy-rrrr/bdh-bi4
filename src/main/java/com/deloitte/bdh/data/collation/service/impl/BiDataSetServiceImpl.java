@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
@@ -228,7 +229,11 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(dataSet);
 
         //保存权限
-        userResourceService.saveResourcePermission(dto.getPermissionDto());
+        if (null != dto.getPermissionDto()) {
+            dto.getPermissionDto().setId(dataSet.getId());
+            dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
+            userResourceService.saveResourcePermission(dto.getPermissionDto());
+        }
     }
 
     @Override
@@ -248,7 +253,11 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(dataSet);
 
         //保存权限
-        userResourceService.saveResourcePermission(dto.getPermissionDto());
+        if (null != dto.getPermissionDto()) {
+            dto.getPermissionDto().setId(dataSet.getId());
+            dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+            userResourceService.saveResourcePermission(dto.getPermissionDto());
+        }
     }
 
     @Override
@@ -349,7 +358,6 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
                 fieldQueryWrapper.in(BiUiModelField::getModelId, dataSet.getCode());
                 fieldService.remove(fieldQueryWrapper);
-
             } else {
                 int count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>()
                         .eq(BiDataSet::getParentId, dataSet.getId()));
@@ -358,8 +366,12 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 }
             }
             setMapper.deleteById(dataSet.getId());
-
-            //todo 删除权限
+            //删除权限配置
+            LambdaQueryWrapper<BiUiAnalyseUserResource> resourceQueryWrapper = new LambdaQueryWrapper<>();
+            resourceQueryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dataSet.getId());
+            resourceQueryWrapper.in(BiUiAnalyseUserResource::getResourceType,
+                    Lists.newArrayList(ResourcesTypeEnum.DATA_SET.getCode(), ResourcesTypeEnum.DATA_SET_CATEGORY.getCode()));
+            userResourceService.remove(resourceQueryWrapper);
         }
     }
 
