@@ -15,6 +15,8 @@ public class ComponentCons {
     public static final String TO_TABLE_DESC = "toTableDesc";
     /** 输出组件：所属数据集的文件夹id */
     public static final String FOLDER_ID = "folderId";
+    /** 输出组件：权限 */
+    public static final String PERMISSION = "permission";
 
     /** 关联组件参数 */
     public static final String JOIN_PARAM_KEY_TABLES = "tables";
