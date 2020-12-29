@@ -139,6 +139,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 if (!StringUtil.isEmpty(model.getCronData())) {
                     resp.setCronDesc(CronUtil.createDescription(model.getCronData()));
                 }
+                resp.setStatus(RunStatusEnum.getEnum(resp.getStatus()).getvalue());
                 models.add(resp);
             }
         }

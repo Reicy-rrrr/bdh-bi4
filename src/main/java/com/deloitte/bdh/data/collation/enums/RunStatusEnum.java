@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 public enum RunStatusEnum {
 
     RUNNING("RUNNING", "运行中"),
-    STOP("STOPPED", "已停止");
+    STOP("STOPPED", "停止");
 
     private String key;
 
