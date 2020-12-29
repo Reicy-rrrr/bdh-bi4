@@ -80,7 +80,7 @@ public class AnalysePageDto implements Serializable {
     @ApiModelProperty("HOMEPAGE")
     private String homePage;
 
-    @TableField("INTERNAL_FLAG")
+    @ApiModelProperty("INTERNAL_FLAG")
     private String internalFlag;
 
     @ApiModelProperty(value = "permitted Action")

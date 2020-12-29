@@ -4,23 +4,18 @@ import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
  * Author:LIJUN
- * Date:09/12/2020
+ * Date:29/12/2020
  * Description:
  */
 @Data
-public class SaveResourcePermissionDto implements Serializable {
-
-    @ApiModelProperty(value = "资源id，若是保存报表权限为page id，文件夹权限则为category id")
-    private String id;
-
-    @ApiModelProperty(value = "资源类型：'page'，'category'，'data_set'，'data_set_category'")
-    private String resourceType;
+public class ResourcePermissionDto implements Serializable {
 
     @ApiModelProperty(value = "查看权限用户")
     private List<String> viewUserList = Lists.newArrayList();

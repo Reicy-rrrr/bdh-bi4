@@ -3,6 +3,8 @@ package com.deloitte.bdh.data.analyse.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.ResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import io.swagger.annotations.Api;
@@ -33,5 +35,11 @@ public class AnalyseUserResourceController {
     public RetResult<Void> saveResourcePermission(@RequestBody @Valid RetRequest<SaveResourcePermissionDto> request) {
         userResourceService.saveResourcePermission(request.getData());
         return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "查询资源权限", notes = "查询资源权限")
+    @PostMapping("/getResourcePermission")
+    public RetResult<ResourcePermissionDto> getResourcePermission(@RequestBody @Valid RetRequest<GetResourcePermissionDto> request) {
+        return RetResponse.makeOKRsp(userResourceService.getResourcePermission(request.getData()));
     }
 }

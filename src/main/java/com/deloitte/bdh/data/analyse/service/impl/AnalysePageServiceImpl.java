@@ -90,16 +90,24 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
         PageHelper.startPage(request.getPage(), request.getSize());
-        SelectPublishedPageDto dto = new SelectPublishedPageDto();
-        dto.setUserId(ThreadLocalHolder.getOperator());
-        dto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
-        dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        dto.setTenantId(ThreadLocalHolder.getTenantId());
-        dto.setName(request.getData().getName());
-        dto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
-        List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(dto);
-        PageInfo<AnalysePageDto> pageInfo = PageInfo.of(pageList);
-        pageInfo.setList(pageList);
+        SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
+        selectPublishedPageDto.setUserId(ThreadLocalHolder.getOperator());
+        selectPublishedPageDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+        selectPublishedPageDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+        selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
+        selectPublishedPageDto.setName(request.getData().getName());
+        selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
+        List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
+        //处理查询之后做操作返回total不正确
+        PageInfo pageInfo = PageInfo.of(pageList);
+        List<AnalysePageDto> pageDtoList = Lists.newArrayList();
+        pageList.forEach(page -> {
+            AnalysePageDto dto = new AnalysePageDto();
+            BeanUtils.copyProperties(page, dto);
+            pageDtoList.add(dto);
+        });
+        userResourceService.setPagePermission(pageDtoList);
+        pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
     }
 

@@ -11,11 +11,14 @@ import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
+import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.ResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,9 +41,6 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
     @Override
     public void saveResourcePermission(SaveResourcePermissionDto dto) {
         if (null != dto) {
-            if (null == ResourcesTypeEnum.values(dto.getResourceType())) {
-                throw new BizException("不支持的资源类型");
-            }
             //删除之前的配置
             LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
@@ -89,6 +89,30 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 this.saveBatch(resourceList);
             }
         }
+    }
+
+    @Override
+    public ResourcePermissionDto getResourcePermission(GetResourcePermissionDto dto) {
+        LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
+        queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, dto.getResourceType());
+        List<BiUiAnalyseUserResource> list = list(queryWrapper);
+        List<String> viewUserList = Lists.newArrayList();
+        List<String> editUserList = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (BiUiAnalyseUserResource userResource : list) {
+                if (StringUtils.contains(userResource.getPermittedAction(), PermittedActionEnum.VIEW.getCode())) {
+                    viewUserList.add(userResource.getUserId());
+                }
+                if (StringUtils.contains(userResource.getPermittedAction(), PermittedActionEnum.EDIT.getCode())) {
+                    editUserList.add(userResource.getUserId());
+                }
+            }
+        }
+        ResourcePermissionDto result = new ResourcePermissionDto();
+        result.setViewUserList(viewUserList);
+        result.setEditUserList(editUserList);
+        return result;
     }
 
     @Override

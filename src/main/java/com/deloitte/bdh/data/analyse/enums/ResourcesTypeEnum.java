@@ -1,5 +1,8 @@
 package com.deloitte.bdh.data.analyse.enums;
 
+import com.deloitte.bdh.common.exception.BizException;
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Author:LIJUN
  * Date:09/12/2020
@@ -35,11 +38,11 @@ public enum ResourcesTypeEnum {
     public static ResourcesTypeEnum values(String code) {
         ResourcesTypeEnum[] enums = ResourcesTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
-            if (enums[i].getCode().equals(code)) {
+            if (StringUtils.equals(enums[i].getCode(),code)) {
                 return enums[i];
             }
         }
-        return null;
+        throw new BizException("不支持的资源类型");
     }
 
     public String getCode() {
