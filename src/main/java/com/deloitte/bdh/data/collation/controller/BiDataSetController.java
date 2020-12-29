@@ -96,7 +96,7 @@ public class BiDataSetController {
     @ApiOperation(value = "删除数据集或文件夹", notes = "删除数据集或文件夹")
     @PostMapping("/del")
     public RetResult<Void> delete(@RequestBody @Validated RetRequest<String> request) {
-        dataSetService.delete(request.getData());
+        dataSetService.delete(request.getData(),false);
         return RetResponse.makeOKRsp();
     }
 }

@@ -332,11 +332,11 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(String code) {
-        BiDataSet dataSet = setMapper.selectById(code);
+    public void delete(String id, boolean canDel) {
+        BiDataSet dataSet = setMapper.selectById(id);
         if (null != dataSet) {
             if (StringUtils.isNotBlank(dataSet.getType())) {
-                if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                if (!canDel && DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
                     throw new RuntimeException("数据整理的表，请在数据模型里面删除");
                 }
                 if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
@@ -344,10 +344,10 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 }
                 //删除度量维度配置
                 LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
-                folderQueryWrapper.in(BiUiModelFolder::getModelId, code);
+                folderQueryWrapper.in(BiUiModelFolder::getModelId, dataSet.getCode());
                 folderService.remove(folderQueryWrapper);
                 LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
-                fieldQueryWrapper.in(BiUiModelField::getModelId, code);
+                fieldQueryWrapper.in(BiUiModelField::getModelId, dataSet.getCode());
                 fieldService.remove(fieldQueryWrapper);
 
             } else {
@@ -358,6 +358,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 }
             }
             setMapper.deleteById(dataSet.getId());
+
+            //todo 删除权限
         }
     }
 

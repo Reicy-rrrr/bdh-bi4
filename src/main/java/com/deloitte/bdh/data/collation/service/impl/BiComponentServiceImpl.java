@@ -210,7 +210,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         }
 
         //删除数据集
-        dataSetService.delete(component.getCode());
+        dataSetService.delete(component.getCode(), true);
 
         biComponentMapper.deleteById(component.getId());
         componentParamsService.remove(new LambdaQueryWrapper<BiComponentParams>()
