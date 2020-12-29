@@ -3,26 +3,26 @@ package com.deloitte.bdh.data.collation.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Sets;
+import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
+import com.deloitte.bdh.data.collation.dao.bi.BiComponentMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.*;
-import com.deloitte.bdh.data.collation.dao.bi.BiComponentMapper;
-import com.deloitte.bdh.data.collation.model.BiComponentTree;
-import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
+import com.deloitte.bdh.data.collation.model.request.ComponentRenameDto;
 import com.deloitte.bdh.data.collation.nifi.template.config.OutSql;
+import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
-import com.deloitte.bdh.common.base.AbstractService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -305,6 +305,28 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .isNull(BiEtlSyncPlan::getPlanResult));
 
         return CollectionUtils.isNotEmpty(syncPlans);
+    }
+
+    @Override
+    public BiComponent rename(ComponentRenameDto dto) {
+        String componentId = dto.getComponentId();
+        if (StringUtils.isBlank(componentId)) {
+            throw new BizException("Component rename error: 组件id不能为空！");
+        }
+
+        String name = dto.getName();
+        if (StringUtils.isBlank(name)) {
+            throw new BizException("Component rename error: 组件名称不能为空！");
+        }
+
+        BiComponent biComponent = getById(componentId);
+        if (biComponent == null) {
+            throw new BizException("Component rename error: 未查询到组件信息！");
+        }
+
+        biComponent.setName(name);
+        updateById(biComponent);
+        return biComponent;
     }
 
     private Set<String> validate(BiComponent component, List<BiComponent> components, List<BiComponentConnection> connections) {

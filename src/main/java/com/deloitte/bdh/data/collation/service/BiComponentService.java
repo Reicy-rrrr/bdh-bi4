@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiComponentTree;
+import com.deloitte.bdh.data.collation.model.request.ComponentRenameDto;
 
 
 /**
@@ -55,4 +56,11 @@ public interface BiComponentService extends Service<BiComponent> {
      */
     boolean isSync(String componentCode);
 
+    /**
+     * 重命名组件
+     *
+     * @param dto
+     * @return BiComponent
+     */
+    BiComponent rename(ComponentRenameDto dto);
 }
