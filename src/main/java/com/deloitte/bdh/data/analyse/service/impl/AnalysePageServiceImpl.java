@@ -281,10 +281,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                     if (CollectionUtils.isEmpty(allPageList)) {
                         //新建config
                         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-                        BeanUtils.copyProperties(originConfig, newConfig);
+                        if (originConfig != null) {
+                            BeanUtils.copyProperties(originConfig, newConfig);
+                        }
                         newConfig.setId(null);
                         newConfig.setPageId(null);
                         newConfig.setContent(publishDto.getContent());
+                        newConfig.setTenantId(ThreadLocalHolder.getTenantId());
                         configService.save(newConfig);
                         //新建page
                         BiUiAnalysePage newPage = new BiUiAnalysePage();
