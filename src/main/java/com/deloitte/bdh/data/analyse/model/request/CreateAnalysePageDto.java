@@ -3,8 +3,6 @@ package com.deloitte.bdh.data.analyse.model.request;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
-
 @Data
 public class CreateAnalysePageDto {
     /**
@@ -41,5 +39,8 @@ public class CreateAnalysePageDto {
 
     @ApiModelProperty(value = "图标")
     private String icon;
+
+    @ApiModelProperty(value = "是否是德勤方案")
+    private String internalFlag;
 
 }

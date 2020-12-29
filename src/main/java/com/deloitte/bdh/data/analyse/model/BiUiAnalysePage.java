@@ -89,6 +89,9 @@ public class BiUiAnalysePage implements Serializable {
     @TableField("IP")
     private String ip;
 
+    @TableField("INTERNAL_FLAG")
+    private String internalFlag;
+
     @TableField("TENANT_ID")
     private String tenantId;
 

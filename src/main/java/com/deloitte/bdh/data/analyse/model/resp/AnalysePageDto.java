@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.model.resp;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -80,6 +79,9 @@ public class AnalysePageDto implements Serializable {
      */
     @ApiModelProperty("HOMEPAGE")
     private String homePage;
+
+    @TableField("INTERNAL_FLAG")
+    private String internalFlag;
 
     @ApiModelProperty(value = "permitted Action")
     private String permittedAction;

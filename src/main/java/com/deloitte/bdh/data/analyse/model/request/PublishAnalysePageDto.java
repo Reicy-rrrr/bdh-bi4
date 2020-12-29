@@ -34,6 +34,9 @@ public class PublishAnalysePageDto implements Serializable {
     @ApiModelProperty(value = "报表密码")
     String password;
 
+    @ApiModelProperty(value = "是否是德勤方案")
+    String internalFlag;
+
     @ApiModelProperty(value = "可见编辑权限配置")
     SaveResourcePermissionDto saveResourcePermissionDto;
 

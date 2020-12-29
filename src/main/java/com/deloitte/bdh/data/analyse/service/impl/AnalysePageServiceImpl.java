@@ -19,11 +19,15 @@ import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
-import com.deloitte.bdh.data.analyse.model.*;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.*;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -247,67 +251,70 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request) {
 
         PublishAnalysePageDto publishDto = request.getData();
+        String internalFlag = publishDto.getInternalFlag();
         String pageId = publishDto.getPageId();
         String configId = publishDto.getConfigId();
         String categoryId = publishDto.getCategoryId();
         SaveResourcePermissionDto dto = publishDto.getSaveResourcePermissionDto();
-
         BiUiAnalysePageConfig originConfig = configService.getById(configId);
         BiUiAnalysePage originPage = getById(pageId);
-        String password = publishDto.getPassword();
-
         if (originPage == null) {
             throw new BizException("报表已经不存在了。");
         }
 
-        //获取公开状态
-        String isPublic = publishDto.getIsPublic();
-        if(isPublic.equals(ShareTypeEnum.TRUE.getKey())){
+        if (internalFlag.equals(YesOrNoEnum.YES.getKey())) {
             updatePage(publishDto, originPage, originConfig);
-        }
-        else{
-            if (originPage.getParentId().equals(categoryId)) {
+        } else {
+            String password = publishDto.getPassword();
+
+            //获取公开状态
+            String isPublic = publishDto.getIsPublic();
+            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 updatePage(publishDto, originPage, originConfig);
-            }
-            else {
-                List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
-                        .eq(BiUiAnalysePage::getParentId, categoryId)
-                        .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
-                if (CollectionUtils.isEmpty(allPageList)) {
-                    //新建config
-                    BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-                    BeanUtils.copyProperties(originConfig, newConfig);
-                    newConfig.setId(null);
-                    newConfig.setPageId(null);
-                    newConfig.setContent(publishDto.getContent());
-                    configService.save(newConfig);
-                    //新建page
-                    BiUiAnalysePage newPage = new BiUiAnalysePage();
-                    BeanUtils.copyProperties(originPage, newPage);
-                    newPage.setId(null);
-                    newPage.setPublishId(newConfig.getId());
-                    newPage.setParentId(categoryId);
-                    newPage.setIsEdit(YnTypeEnum.NO.getCode());
-                    newPage.setOriginPageId(originPage.getId());
-                    save(newPage);
-                    String newPageId = newPage.getId();
-                    //保存pageId到config
-                    newConfig.setPageId(newPageId);
-                    configService.updateById(newConfig);
-                    //把新的pageId传给权限操作
-                    dto.setId(newPageId);
-                } else {
+            } else {
+                if (originPage.getParentId().equals(categoryId)) {
                     updatePage(publishDto, originPage, originConfig);
+                } else {
+                    List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                            .eq(BiUiAnalysePage::getParentId, categoryId)
+                            .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
+                    if (CollectionUtils.isEmpty(allPageList)) {
+                        //新建config
+                        BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                        BeanUtils.copyProperties(originConfig, newConfig);
+                        newConfig.setId(null);
+                        newConfig.setPageId(null);
+                        newConfig.setContent(publishDto.getContent());
+                        configService.save(newConfig);
+                        //新建page
+                        BiUiAnalysePage newPage = new BiUiAnalysePage();
+                        BeanUtils.copyProperties(originPage, newPage);
+                        newPage.setId(null);
+                        newPage.setPublishId(newConfig.getId());
+                        newPage.setParentId(categoryId);
+                        newPage.setIsEdit(YnTypeEnum.NO.getCode());
+                        newPage.setOriginPageId(originPage.getId());
+                        save(newPage);
+                        String newPageId = newPage.getId();
+                        //保存pageId到config
+                        newConfig.setPageId(newPageId);
+                        configService.updateById(newConfig);
+                        //把新的pageId传给权限操作
+                        dto.setId(newPageId);
+                    } else {
+                        updatePage(publishDto, originPage, originConfig);
+                    }
                 }
             }
+
+            //可见编辑权限
+            userResourceService.saveResourcePermission(dto);
+            //生成链接
+            setAccessUrl(dto.getId(), password, isPublic);
+            //数据权限
+            userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), pageId);
         }
 
-        //可见编辑权限
-        userResourceService.saveResourcePermission(dto);
-        //生成链接
-        setAccessUrl(dto.getId(), password, isPublic);
-        //数据权限
-        userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), pageId);
         return null;
     }
 
@@ -315,9 +322,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
         //新建config
         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-        BeanUtils.copyProperties(originConfig, newConfig);
+        if (originConfig != null) {
+            BeanUtils.copyProperties(originConfig, newConfig);
+        }
         newConfig.setId(null);
         newConfig.setContent(dto.getContent());
+        newConfig.setTenantId(ThreadLocalHolder.getTenantId());
         configService.save(newConfig);
         //更新page
         originPage.setPublishId(newConfig.getId());
