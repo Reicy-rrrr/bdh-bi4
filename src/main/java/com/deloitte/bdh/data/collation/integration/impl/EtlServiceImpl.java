@@ -90,6 +90,9 @@ public class EtlServiceImpl implements EtlService {
     private AnalyseModelFieldService analyseModelFieldService;
     @Autowired
     private ExpressionHandler expressionHandler;
+    @Autowired
+    private BiDataSetService dataSetService;
+
 
     @Override
     public List<Object> previewField(ViewFieldValueDto dto) throws Exception {
@@ -465,8 +468,11 @@ public class EtlServiceImpl implements EtlService {
             }
         }
 
-        //校验分析那面是否用到原表，若用到则校验新字段，只能增加字段
-        checkAnalyseField(originalTableDesc, dto.getFields());
+        //校验分析那面是否用到原表,若有变更，应删除数据集及字段配置
+        boolean pass = checkAnalyseField(dto.getComponentCode(), dto.getFields());
+        if (!pass) {
+            dataSetService.delete(dto.getComponentCode(), true);
+        }
         // 如果未传递新表名，就使用原始表名
         String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName() + DataSetTypeEnum.MODEL.getSuffix();
 
@@ -1179,25 +1185,31 @@ public class EtlServiceImpl implements EtlService {
         return component;
     }
 
-    private void checkAnalyseField(String queryTableName, List<String> columns) {
+    private boolean checkAnalyseField(String queryTableName, List<String> columns) {
         Map<String, List<String>> analyseTable = analyseModelFieldService.getTables(queryTableName);
         if (null != analyseTable) {
             List<String> analyseFields = analyseTable.get(queryTableName);
-            if (CollectionUtils.isNotEmpty(analyseFields)) {
-                analyseFields.forEach(field -> {
-                    boolean exist = false;
-                    for (String newFieldName : columns) {
-                        if (field.equals(newFieldName)) {
-                            exist = true;
-                            break;
-                        }
+            if (CollectionUtils.isEmpty(analyseFields) && CollectionUtils.isEmpty(columns)) {
+                return true;
+            }
+            if (CollectionUtils.isNotEmpty(analyseFields) && CollectionUtils.isNotEmpty(columns)
+                    && analyseFields.size() != columns.size()) {
+                return false;
+            }
+            for (String field : analyseFields) {
+                boolean exist = false;
+                for (String newFieldName : columns) {
+                    if (field.equals(newFieldName)) {
+                        exist = true;
+                        break;
                     }
-                    if (!exist) {
-                        throw new RuntimeException("用于分析管理的表字段缺失:" + field);
-                    }
-                });
+                }
+                if (!exist) {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
 }
