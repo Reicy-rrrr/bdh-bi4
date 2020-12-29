@@ -51,7 +51,7 @@ public class BiUiAnalysePageComponentServiceImpl extends AbstractService<BiUiAna
     public Boolean delChartComponent(pageComponentDto dto) {
 
         return remove(new LambdaQueryWrapper<BiUiAnalysePageComponent>()
-                .eq(BiUiAnalysePageComponent::getComponentId, dto.getComponentId())
+                .in(BiUiAnalysePageComponent::getComponentId, dto.getComponentIds())
                 .eq(BiUiAnalysePageComponent::getParentId, dto.getParentId()));
     }
 

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 
 @Data
@@ -14,6 +15,9 @@ public class pageComponentDto implements Serializable {
 
     @ApiModelProperty(value = "组件ID")
     private String componentId;
+
+    @ApiModelProperty(value = "组件ID,批量")
+    private List<String> componentIds;
 
     @ApiModelProperty(value = "content")
     private String content;
