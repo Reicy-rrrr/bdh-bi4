@@ -332,8 +332,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(String id, boolean canDel) {
-        BiDataSet dataSet = setMapper.selectById(id);
+    public void delete(String code, boolean canDel) {
+        BiDataSet dataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getCode,code));
         if (null != dataSet) {
             if (StringUtils.isNotBlank(dataSet.getType())) {
                 if (!canDel && DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
