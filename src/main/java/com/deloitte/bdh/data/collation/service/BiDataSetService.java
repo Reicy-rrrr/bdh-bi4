@@ -40,6 +40,6 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     TableData getDataSetInfoPage(GetDataSetInfoDto dto) throws Exception;
 
-    void delete(String code);
+    void delete(String code, boolean canDel);
 
 }

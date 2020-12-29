@@ -13,6 +13,8 @@ import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
@@ -328,7 +330,14 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
 
             //设置数据集 此处是否该删除维度和度量？todo
-            dataSetService.remove(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getRefModelCode, biEtlModel.getCode()));
+            BiDataSet oldDateSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getRefModelCode, biEtlModel.getCode()));
+            if (null != oldDateSet) {
+                dataSetService.removeById(oldDateSet.getId());
+                //删除权限并更新
+                userResourceService.remove(new LambdaQueryWrapper<BiUiAnalyseUserResource>()
+                        .eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.DATA_SET.getCode())
+                        .eq(BiUiAnalyseUserResource::getResourceId, oldDateSet.getId()));
+            }
             BiDataSet dataSet = new BiDataSet();
             dataSet.setType(DataSetTypeEnum.MODEL.getKey());
             dataSet.setTableName(componentModel.getTableName());
@@ -340,13 +349,17 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             dataSet.setIsFile(YesOrNoEnum.NO.getKey());
             dataSet.setTenantId(ThreadLocalHolder.getTenantId());
             dataSetService.save(dataSet);
-
+            //删除权限并更新
             Optional<BiComponentParams> optional = componentModel.getParams().stream()
                     .filter(s -> s.getParamKey().equals(ComponentCons.PERMISSION)).findAny();
             if (optional.isPresent()) {
-                SaveResourcePermissionDto permissionDto = JsonUtil.readJsonToObjectByFastjson(optional.get().getParamValue(), SaveResourcePermissionDto.class);
+                SaveResourcePermissionDto permissionDto = JsonUtil.readJsonToObjectByFastjson(optional.get().getParamValue()
+                        , SaveResourcePermissionDto.class);
+                permissionDto.setId(dataSet.getId());
+                permissionDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
                 userResourceService.saveResourcePermission(permissionDto);
             }
+
         }
         biEtlModelMapper.updateById(biEtlModel);
         return biEtlModel;
