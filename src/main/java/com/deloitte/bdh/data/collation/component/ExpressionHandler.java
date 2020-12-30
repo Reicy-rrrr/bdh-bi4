@@ -170,14 +170,14 @@ public class ExpressionHandler {
             queue = reverseToPost(expression);
         } catch (EmptyStackException e) {
             // 出现异常（括号不匹配），错误的表达式
-            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中()是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中()是否匹配！");
         } catch (Exception e) {
             // 出现异常，错误的表达式
-            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
         }
         // 后续队列为空，错误的表达式
         if (queue.isEmpty()) {
-            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
         }
         Pattern operatorPa = Pattern.compile(operator_regex);
         Pattern paramPa = Pattern.compile(param_regex);
@@ -220,7 +220,7 @@ public class ExpressionHandler {
         }
         // 检查中括号是否匹配
         if (getSubStringCount(expression, square_brackets.getLeft()) != getSubStringCount(expression, square_brackets.getRight())) {
-            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中[]是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中[]是否匹配！");
         }
         int ifCount = getSubStringCount(expression, "if");
         int ifNullCount = getSubStringCount(expression, "ifnull");
