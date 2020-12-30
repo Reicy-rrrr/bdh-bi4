@@ -8,7 +8,6 @@ import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.ComponentFormulaCheckResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
@@ -266,7 +265,7 @@ public class EtlController {
 
     @ApiOperation(value = "验证组件公式", notes = "验证组件公式")
     @PostMapping("/component/formula/check")
-    public RetResult<ComponentFormulaCheckResp> checkFormula(@RequestBody @Validated RetRequest<ComponentFormulaCheckDto> request) throws Exception {
+    public RetResult<String> checkFormula(@RequestBody @Validated RetRequest<ComponentFormulaCheckDto> request) throws Exception {
         return RetResponse.makeOKRsp(etlService.checkFormula(request.getData()));
     }
 }

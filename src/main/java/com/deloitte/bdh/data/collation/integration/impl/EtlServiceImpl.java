@@ -25,7 +25,10 @@ import com.deloitte.bdh.data.collation.integration.EtlService;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.*;
+import com.deloitte.bdh.data.collation.model.resp.CalculateOperatorResp;
+import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
+import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
+import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
@@ -765,57 +768,57 @@ public class EtlServiceImpl implements EtlService {
     }
 
     @Override
-    public ComponentFormulaCheckResp checkFormula(ComponentFormulaCheckDto dto) throws Exception {
+    public String checkFormula(ComponentFormulaCheckDto dto) throws Exception {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);
         if (model == null) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "未找到模板信息！");
+            throw new BizException("未找到模板信息！");
         }
 
         String componentId = dto.getComponentId();
         BiComponent component = componentService.getById(componentId);
         if (component == null) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "未找到组件信息！");
+            throw new BizException("未找到组件信息！");
         }
 
         String formula = dto.getFormula();
         if (StringUtils.isBlank(formula)) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
+            throw new BizException("计算公式不能为空！");
         }
         CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
         if (calculateType == null) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
+            throw new BizException("暂不支持的计算类型！");
         }
 
         Pair<Boolean, String> checkResult = null;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
             if (formula.contains("%")) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，暂不支持百分比[%]的计算！");
+                throw new BizException("非法的计算公式，暂不支持百分比[%]的计算！");
             }
 
             checkResult = expressionHandler.isParamArithmeticFormula(formula);
             if (!checkResult.getKey()) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, checkResult.getValue());
+                throw new BizException(checkResult.getValue());
             }
         }
 
         if (CalculateTypeEnum.FUNCTION.equals(calculateType)) {
             checkResult = expressionHandler.isParamFunctionFormula(formula);
             if (!checkResult.getKey()) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, checkResult.getValue());
+                throw new BizException(checkResult.getValue());
             }
         }
 
         if (CalculateTypeEnum.LOGICAL.equals(calculateType)) {
             checkResult = expressionHandler.isFormula(formula);
             if (!checkResult.getKey()) {
-                return new ComponentFormulaCheckResp(Boolean.FALSE, checkResult.getValue());
+                throw new BizException(checkResult.getValue());
             }
         }
 
         List<String> params = expressionHandler.getUniqueParams(formula);
         if (CollectionUtils.isEmpty(params)) {
-            return new ComponentFormulaCheckResp(Boolean.TRUE, "验证通过！");
+            return "验证通过";
         }
         // 处理组件后验证字段是否有效
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(model.getCode(), component.getCode());
@@ -828,9 +831,9 @@ public class EtlServiceImpl implements EtlService {
             }
         }
         if (CollectionUtils.isNotEmpty(unknownFields)) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "存在未知的字段，请检查！");
+            throw new BizException("存在未知的字段，请检查！");
         }
-        return new ComponentFormulaCheckResp(Boolean.TRUE, "验证通过！");
+        return "验证通过";
     }
 
     private List<BiComponentParams> transferToParams(String componentCode, String modelCode, Map<String, Object> source) {

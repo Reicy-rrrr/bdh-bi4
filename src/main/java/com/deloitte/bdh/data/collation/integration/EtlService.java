@@ -185,8 +185,8 @@ public interface EtlService {
      * 验证组件计算公式有效性
      *
      * @param dto 验证公式dto
-     * @return ComponentFormulaCheckResp
+     * @return String
      * @throws Exception
      */
-    ComponentFormulaCheckResp checkFormula(ComponentFormulaCheckDto dto) throws Exception;
+    String checkFormula(ComponentFormulaCheckDto dto) throws Exception;
 }
