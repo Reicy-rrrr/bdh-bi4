@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 运算符对象
  *
@@ -36,5 +38,5 @@ public class CalculateOperatorResp {
      * 公式示例
      **/
     @ApiModelProperty(value = "公式示例", example = "2+3=5")
-    private String example;
+    private List<String> examples;
 }

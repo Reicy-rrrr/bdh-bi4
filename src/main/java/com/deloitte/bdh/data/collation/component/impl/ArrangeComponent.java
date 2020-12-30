@@ -624,29 +624,36 @@ public class ArrangeComponent implements ComponentHandler {
         if (StringUtils.isBlank(formula)) {
             throw new BizException("Arrange component calculate error: 计算表达式不能为空！");
         }
-        String formulaType = calculateModel.getFormulaType();
-        if (StringUtils.isBlank(formulaType)) {
-            throw new BizException("Arrange component calculate error: 计算类型不能为空！");
-        }
         CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
         if (calculateType == null) {
             throw new BizException("Arrange component calculate error: 暂不支持的计算类型！");
         }
 
+        Pair<Boolean, String> checkResult = null;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
             if (formula.contains("%")) {
                 throw new BizException("Arrange component calculate error: 暂不支持百分比[%]的计算！");
             }
-            if (!expressionHandler.isParamArithmeticFormula(formula)) {
-                throw new BizException("Arrange component calculate error: 非法的计算公式！");
+            checkResult = expressionHandler.isParamArithmeticFormula(formula);
+            if (!checkResult.getKey()) {
+                throw new BizException("Arrange component calculate error:" + checkResult.getValue());
             }
         }
-        if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
-            throw new BizException("Arrange component calculate error: 非法的计算公式！");
+
+        if (CalculateTypeEnum.FUNCTION.equals(calculateType)) {
+            checkResult = expressionHandler.isParamFunctionFormula(formula);
+            if (!checkResult.getKey()) {
+                throw new BizException("Arrange component calculate error:" + checkResult.getValue());
+            }
         }
-        if (CalculateTypeEnum.LOGICAL.equals(calculateType) && !expressionHandler.isFormula(formula)) {
-            throw new BizException("Arrange component calculate error: 非法的计算公式！");
+
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType)) {
+            checkResult = expressionHandler.isFormula(formula);
+            if (!checkResult.getKey()) {
+                throw new BizException("Arrange component calculate error:" + checkResult.getValue());
+            }
         }
+
         // 格式化公式（对公式中的字段进行特殊处理）
         String finalFormula = null;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {

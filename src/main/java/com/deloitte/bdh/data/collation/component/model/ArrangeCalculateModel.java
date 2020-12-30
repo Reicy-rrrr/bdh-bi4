@@ -20,9 +20,6 @@ public class ArrangeCalculateModel {
     /** 新字段名称 */
     @ApiModelProperty(value = "新字段名称", example = "利润汇总", required = true)
     private String name;
-    @ApiModelProperty(value = "公式类型", example = "ordinary/function", required = true)
-    @NotNull(message = "公式类型")
-    private String formulaType;
     @ApiModelProperty(value = "计算公式", example = "sales*quantity-discount", required = true)
     @NotNull(message = "计算公式")
     private String formula;

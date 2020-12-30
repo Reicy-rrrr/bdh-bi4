@@ -7,11 +7,7 @@ import com.beust.jcommander.internal.Sets;
 import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
-import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.common.util.Md5Util;
-import com.deloitte.bdh.common.util.SqlFormatUtil;
-import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.sql.utils.RelaBaseBuildUtil;
@@ -37,6 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -756,7 +753,12 @@ public class EtlServiceImpl implements EtlService {
             operator.setOperator(operatorEnum.getOperator());
             operator.setName(operatorEnum.getName());
             operator.setDesc(operatorEnum.getDesc());
-            operator.setExample(operatorEnum.getExample());
+            String exampleStr = operatorEnum.getExample();
+            if (StringUtils.isNotBlank(exampleStr) && exampleStr.contains(";")) {
+                operator.setExamples(Lists.newArrayList(operatorEnum.getExample().split(";")));
+            } else {
+                operator.setExamples(Lists.newArrayList(operatorEnum.getExample()));
+            }
             operators.add(operator);
         }
         return operators;
@@ -776,11 +778,6 @@ public class EtlServiceImpl implements EtlService {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "未找到组件信息！");
         }
 
-        String type = dto.getFormulaType();
-        if (StringUtils.isBlank(type)) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "公式类型不能为空！");
-        }
-
         String formula = dto.getFormula();
         if (StringUtils.isBlank(formula)) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "计算公式不能为空！");
@@ -789,19 +786,31 @@ public class EtlServiceImpl implements EtlService {
         if (calculateType == null) {
             return new ComponentFormulaCheckResp(Boolean.FALSE, "暂不支持的计算类型！");
         }
+
+        Pair<Boolean, String> checkResult = null;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
             if (formula.contains("%")) {
-                throw new BizException("暂不支持百分比[%]的计算！");
+                return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，暂不支持百分比[%]的计算！");
             }
-            if (!expressionHandler.isParamArithmeticFormula(formula)) {
-                throw new BizException("非法的计算公式，请验证公式准确性！");
+
+            checkResult = expressionHandler.isParamArithmeticFormula(formula);
+            if (!checkResult.getKey()) {
+                return new ComponentFormulaCheckResp(Boolean.FALSE, checkResult.getValue());
             }
         }
-        if (CalculateTypeEnum.FUNCTION.equals(calculateType) && !expressionHandler.isParamFunctionFormula(formula)) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+
+        if (CalculateTypeEnum.FUNCTION.equals(calculateType)) {
+            checkResult = expressionHandler.isParamFunctionFormula(formula);
+            if (!checkResult.getKey()) {
+                return new ComponentFormulaCheckResp(Boolean.FALSE, checkResult.getValue());
+            }
         }
-        if (CalculateTypeEnum.LOGICAL.equals(calculateType) && !expressionHandler.isFormula(formula)) {
-            return new ComponentFormulaCheckResp(Boolean.FALSE, "非法的计算公式，请验证公式准确性！");
+
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType)) {
+            checkResult = expressionHandler.isFormula(formula);
+            if (!checkResult.getKey()) {
+                return new ComponentFormulaCheckResp(Boolean.FALSE, checkResult.getValue());
+            }
         }
 
         List<String> params = expressionHandler.getUniqueParams(formula);

@@ -4,7 +4,7 @@ import com.deloitte.bdh.common.exception.BizException;
 
 /**
  * 计算公式
- *
+ * 多个示例使用";"进行分割，以便接口返回list
  * @author chenghzhang
  * @date 2020/12/25
  */
@@ -18,7 +18,7 @@ public enum CalculateOperatorEnum {
     MULTIPLY("*", "乘号 *", "数值内容相乘", "2*3=6"),
     DIVIDE("/", "除号 /", "数值内容相除", "6/3=2"),
     PARENTHESES("()", "括号 ()", "计算优先级", "5*(3-2)=5"),
-    IF("if", "if [expr] then [v1] elseif [expr2] then [v2] … else [v3] end", "如果表达式expr成立,则返回结果v1,如果表达式expr2成立,则返回结果v2,否则返回v3", "if [${利润}>0] then ['盈利'] elseif ${利润=0} then ['平衡'] else ['亏损'] end"),
+    IF("if", "if [expr] then [v1] elseif [expr2] then [v2] … else [v3] end", "如果表达式expr成立,则返回结果v1,如果表达式expr2成立,则返回结果v2,否则返回v3", "if [${利润}>0] then ['盈利'] elseif ${利润=0} then ['平衡'] else ['亏损'] end;if ([${折扣}<0] or [${折扣}=0]) then ['无折扣'] elseif ([${折扣}<0.5] and [${折扣}>0]) then ['低折扣'] else ['高折扣'] end;"),
     CASE("case", "case [expr] when [v1] then [r1] … else [r2] end", "如果表达式expr等于v1,则返回结果r1,否则返回结果r2", "case [${销售人员}] when ['王晓义'] then ['华东经理'] when ['黄成橵'] then ['华南经理'] else ['普通销售'] end"),
     AND("and", "IF [expr1] and [expr3]", "对两个表达式进行逻辑或操作", "([${name}='张三'] and [${age}>25])"),
     OR("or", "IF [expr1] or [expr2] ", "对两个表达式进行逻辑合取操作", "([${name}='张三'] or [${age}>25])"),

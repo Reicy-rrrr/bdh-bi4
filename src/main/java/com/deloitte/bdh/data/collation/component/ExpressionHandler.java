@@ -118,14 +118,17 @@ public class ExpressionHandler {
      * @param expression 计算表达式
      * @return boolean
      */
-    public boolean isArithmeticFormula(String expression) {
+    public Pair<Boolean, String> isArithmeticFormula(String expression) {
         String result;
         try {
             result = scriptEngine.eval(expression.replace(" ", "")).toString();
         } catch (Exception e) {
-            return false;
+            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
         }
-        return isNumeric(result);
+        if (!isNumeric(result)) {
+            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
+        }
+        return new ImmutablePair(Boolean.TRUE, "合法的四则运算");
     }
 
     /**
@@ -134,7 +137,7 @@ public class ExpressionHandler {
      * @param expression 计算表达式
      * @return boolean
      */
-    public boolean isParamArithmeticFormula(String expression) {
+    public Pair<Boolean, String> isParamArithmeticFormula(String expression) {
         List<String> params = getUniqueParams(expression);
         Map<String, String> data = new HashMap(params.size());
         // 将所有参数用数字替换掉进行计算
@@ -146,9 +149,13 @@ public class ExpressionHandler {
         try {
             result = scriptEngine.eval(finalExpression.replace(" ", "")).toString();
         } catch (Exception e) {
-            return false;
+            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
         }
-        return isNumeric(result);
+
+        if (!isNumeric(result)) {
+            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
+        }
+        return new ImmutablePair(Boolean.TRUE, "校验通过！");
     }
 
     /**
@@ -157,20 +164,20 @@ public class ExpressionHandler {
      * @param expression 计算表达式
      * @return boolean
      */
-    public boolean isParamFunctionFormula(String expression) {
+    public Pair<Boolean, String> isParamFunctionFormula(String expression) {
         Queue queue = null;
         try {
             queue = reverseToPost(expression);
         } catch (EmptyStackException e) {
             // 出现异常（括号不匹配），错误的表达式
-            return false;
+            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中()是否匹配！");
         } catch (Exception e) {
             // 出现异常，错误的表达式
-            return false;
+            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
         }
         // 后续队列为空，错误的表达式
         if (queue.isEmpty()) {
-            return false;
+            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
         }
         Pattern operatorPa = Pattern.compile(operator_regex);
         Pattern paramPa = Pattern.compile(param_regex);
@@ -193,7 +200,11 @@ public class ExpressionHandler {
             flag = false;
             break;
         }
-        return flag;
+
+        if (!flag) {
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查是否存在支持的运算符或者函数！");
+        }
+        return new ImmutablePair(Boolean.TRUE, "校验通过！");
     }
 
     /**
@@ -202,14 +213,14 @@ public class ExpressionHandler {
      * @param expression 计算表达式
      * @return boolean
      */
-    public boolean isFormula(String expression) {
+    public Pair<Boolean, String> isFormula(String expression) {
         // 检查小括号是否匹配
         if (getSubStringCount(expression, parentheses.getLeft()) != getSubStringCount(expression, parentheses.getRight())) {
-            return false;
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中()是否匹配！");
         }
         // 检查中括号是否匹配
         if (getSubStringCount(expression, square_brackets.getLeft()) != getSubStringCount(expression, square_brackets.getRight())) {
-            return false;
+            new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中[]是否匹配！");
         }
         int ifCount = getSubStringCount(expression, "if");
         int ifNullCount = getSubStringCount(expression, "ifnull");
@@ -224,22 +235,27 @@ public class ExpressionHandler {
         elseCount = elseCount - elseIfCount;
         int endCount = getSubStringCount(expression, "end");
         // 检查 if - else / case else  || if - end / case - end
-        if (ifCount + caseCount != elseCount || ifCount + caseCount != endCount) {
-            return false;
+        if (ifCount + caseCount != elseCount) {
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/else、case/else是否匹配！");
         }
+
+        if (ifCount + caseCount != endCount) {
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/end、case/end是否匹配！");
+        }
+
         // 检查 if - elseIf
         if (ifCount == 0 && elseIfCount > 0) {
-            return false;
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/elseif是否匹配！");
         }
         // 检查 if - then / elseif - then / when - then
         if (ifCount + elseIfCount + whenCount != thenCount) {
-            return false;
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/then、elseif/then、when/then是否匹配！");
         }
         //
         if (caseCount == 0 && whenCount > 0 || caseCount > whenCount) {
-            return false;
+            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中case/when是否匹配！");
         }
-        return true;
+        return new ImmutablePair(Boolean.TRUE, "校验通过！");
     }
 
     /**
@@ -836,6 +852,7 @@ public class ExpressionHandler {
         }
         String condition = stack.pop().toString();
         if (!isNumeric(condition) && !isSqlStringValue(condition)) {
+            // sql中单引号转义使用两个连续单引号
             condition = "'" + condition.replace("'", "''") + "'";
         }
         return new StringBuilder().append(" WHEN ").append(condition).append(" ").toString();
@@ -847,6 +864,7 @@ public class ExpressionHandler {
         }
         String result = stack.pop().toString();
         if (!isNumeric(result) && !isSqlStringValue(result)) {
+            // sql中单引号转义使用两个连续单引号
             result = "'" + result.replace("'", "''") + "'";
         }
         return new StringBuilder().append(" THEN ").append(result).append(" ").toString();
@@ -859,6 +877,7 @@ public class ExpressionHandler {
 
         String result = stack.pop().toString();
         if (!isNumeric(result) && !isSqlStringValue(result)) {
+            // sql中单引号转义使用两个连续单引号
             result = "'" + result.replace("'", "''") + "'";
         }
         return new StringBuilder().append(" ELSE ").append(result).append(" ").toString();
@@ -893,6 +912,7 @@ public class ExpressionHandler {
         String field = stack.pop().toString();
         String value = stack.pop().toString();
         if (!isNumeric(value) && !isSqlStringValue(value)) {
+            // sql中单引号转义使用两个连续单引号
             value = "'" + value.replace("'", "''") + "'";
         }
         return arrangerSelector.calculateIfNull(field, value);
