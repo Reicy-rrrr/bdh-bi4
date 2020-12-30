@@ -836,7 +836,7 @@ public class ExpressionHandler {
         }
         String condition = stack.pop().toString();
         if (!isNumeric(condition) && !isSqlStringValue(condition)) {
-            condition = "'" + condition + "'";
+            condition = "'" + condition.replace("'", "''") + "'";
         }
         return new StringBuilder().append(" WHEN ").append(condition).append(" ").toString();
     }
@@ -847,7 +847,7 @@ public class ExpressionHandler {
         }
         String result = stack.pop().toString();
         if (!isNumeric(result) && !isSqlStringValue(result)) {
-            result = "'" + result + "'";
+            result = "'" + result.replace("'", "''") + "'";
         }
         return new StringBuilder().append(" THEN ").append(result).append(" ").toString();
     }
@@ -859,7 +859,7 @@ public class ExpressionHandler {
 
         String result = stack.pop().toString();
         if (!isNumeric(result) && !isSqlStringValue(result)) {
-            result = "'" + result + "'";
+            result = "'" + result.replace("'", "''") + "'";
         }
         return new StringBuilder().append(" ELSE ").append(result).append(" ").toString();
     }
@@ -893,7 +893,7 @@ public class ExpressionHandler {
         String field = stack.pop().toString();
         String value = stack.pop().toString();
         if (!isNumeric(value) && !isSqlStringValue(value)) {
-            value = "'" + value + "'";
+            value = "'" + value.replace("'", "''") + "'";
         }
         return arrangerSelector.calculateIfNull(field, value);
     }
