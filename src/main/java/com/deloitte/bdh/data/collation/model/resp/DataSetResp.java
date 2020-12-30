@@ -23,5 +23,6 @@ public class DataSetResp extends BiDataSet {
     @ApiModelProperty(value = "上次刷新时间")
     private String lastExecuteDate;
 
-
+    @ApiModelProperty(value = "权限")
+    private String permittedAction;
 }

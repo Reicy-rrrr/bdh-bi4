@@ -18,6 +18,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
+import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
@@ -129,13 +130,14 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.CATEGORY.getCode());
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getUserId, ThreadLocalHolder.getOperator());
         List<BiUiAnalyseUserResource> categoryResources = this.list(resourceLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(categoryResources)) {
+            Map<String, BiUiAnalyseUserResource> categoryIdResourcesMap = categoryResources.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
 
-        Map<String, BiUiAnalyseUserResource> categoryIdResourcesMap = categoryResources.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
-
-        for (AnalyseCategoryDto dto : categoryList) {
-            BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
-            if (resource != null && StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            for (AnalyseCategoryDto dto : categoryList) {
+                BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
+                if (resource != null && StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                    dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+                }
             }
         }
     }
@@ -152,19 +154,20 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.PAGE.getCode());
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getUserId, ThreadLocalHolder.getOperator());
         List<BiUiAnalyseUserResource> categoryResources = this.list(resourceLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(categoryResources)) {
+            Map<String, BiUiAnalyseUserResource> categoryIdResourcesMap = categoryResources.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
 
-        Map<String, BiUiAnalyseUserResource> categoryIdResourcesMap = categoryResources.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
-
-        for (AnalysePageDto dto : pageDtoList) {
-            BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
-            if (resource != null && StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            for (AnalysePageDto dto : pageDtoList) {
+                BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
+                if (resource != null && StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                    dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+                }
             }
         }
     }
 
     @Override
-    public void setDataSetCategoryPermission(List<BiDataSet> dataSetList) {
+    public void setDataSetCategoryPermission(List<DataSetResp> dataSetList) {
         List<String> idList = new ArrayList<>();
         dataSetList.forEach(dataSet -> idList.add(dataSet.getId()));
 
@@ -175,13 +178,14 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
         resourceLambdaQueryWrapper.eq(BiUiAnalyseUserResource::getUserId, ThreadLocalHolder.getOperator());
         List<BiUiAnalyseUserResource> resourceList = this.list(resourceLambdaQueryWrapper);
+        if (CollectionUtils.isNotEmpty(resourceList)) {
+            Map<String, BiUiAnalyseUserResource> dataSetCategoryIdResourcesMap = resourceList.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
 
-        Map<String, BiUiAnalyseUserResource> dataSetCategoryIdResourcesMap = resourceList.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
-
-        for (BiDataSet dto : dataSetList) {
-            BiUiAnalyseUserResource resource = MapUtils.getObject(dataSetCategoryIdResourcesMap, dto.getId());
-            if (resource != null && StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            for (DataSetResp dto : dataSetList) {
+                BiUiAnalyseUserResource resource = MapUtils.getObject(dataSetCategoryIdResourcesMap, dto.getId());
+                if (resource != null && StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                    dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+                }
             }
         }
     }

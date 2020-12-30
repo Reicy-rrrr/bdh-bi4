@@ -74,8 +74,6 @@ public class BiDataSet implements Serializable {
     @TableField("IS_FILE")
     private String isFile;
 
-    private String permittedAction;
-
     @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
 
@@ -213,14 +211,6 @@ public class BiDataSet implements Serializable {
         this.code = code;
     }
 
-    public String getPermittedAction() {
-        return permittedAction;
-    }
-
-    public void setPermittedAction(String permittedAction) {
-        this.permittedAction = permittedAction;
-    }
-
     @Override
     public String toString() {
         return "BiDataSet{" +
@@ -240,7 +230,6 @@ public class BiDataSet implements Serializable {
         ", ip=" + ip +
         ", tenantId=" + tenantId +
         ", code=" + code +
-        ", permittedAction=" + permittedAction +
         "}";
     }
 }
