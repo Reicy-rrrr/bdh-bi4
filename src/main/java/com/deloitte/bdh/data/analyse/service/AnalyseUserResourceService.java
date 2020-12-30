@@ -8,6 +8,7 @@ import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
+import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 
 import java.util.List;
 
@@ -27,5 +28,5 @@ public interface AnalyseUserResourceService extends Service<BiUiAnalyseUserResou
 
     void setPagePermission(List<AnalysePageDto> pageDtoList);
 
-    void setDataSetCategoryPermission(List<BiDataSet> dataSetList);
+    void setDataSetCategoryPermission(List<DataSetResp> dataSetList);
 }

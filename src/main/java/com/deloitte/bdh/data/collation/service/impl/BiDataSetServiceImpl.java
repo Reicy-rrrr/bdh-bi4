@@ -91,7 +91,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<BiDataSet> getFiles() {
+    public List<DataSetResp> getFiles() {
 
         SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
         selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
@@ -101,8 +101,15 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         selectDataSetDto.setParentId("0");
         selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
         List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
-        userResourceService.setDataSetCategoryPermission(setList);
-        if (CollectionUtils.isEmpty(setList)) {
+        List<DataSetResp> respList = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(setList)) {
+            for (BiDataSet dataSet : setList) {
+                DataSetResp resp = new DataSetResp();
+                BeanUtils.copyProperties(dataSet, resp);
+                respList.add(resp);
+            }
+            userResourceService.setDataSetCategoryPermission(respList);
+        } else {
             BiDataSet set = new BiDataSet();
             set.setTableName("默认文件夹");
             set.setTableDesc("默认文件夹");
@@ -116,7 +123,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             //设置初始数据
             initDataSet(set.getId());
         }
-        return setList;
+        return respList;
     }
 
     @Override
