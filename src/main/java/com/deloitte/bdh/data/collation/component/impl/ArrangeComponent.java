@@ -674,10 +674,12 @@ public class ArrangeComponent implements ComponentHandler {
             String fieldName = fromMapping.getTempFieldName();
             paramMapping.put(param, fieldName);
         }
+
         // 新字段的表达式
         String newFieldExpression = expressionHandler.formatParam(finalFormula, paramMapping);
         // 获取计算字段的名称
-        String finalFieldName = getCalculateFieldName(fromMappings.keySet());
+        Set<String> finalFieldNames = fromComponent.getFieldMappings().stream().map(FieldMappingModel::getFinalFieldName).collect(Collectors.toSet());
+        String finalFieldName = getCalculateFieldName(finalFieldNames);
         // 新字段描述
         String fieldDesc = StringUtils.isBlank(calculateModel.getName()) ? finalFieldName : calculateModel.getName();
         TableField tableField = new TableField(DataTypeEnum.Float.getType(), finalFieldName, fieldDesc, "decimal(32,8)", "decimal", "32", "8");
@@ -692,7 +694,7 @@ public class ArrangeComponent implements ComponentHandler {
     }
 
     private String getCalculateFieldName(Set<String> fieldNames) {
-        String newFieldName = "calculate_column";
+        String newFieldName = "calculate_column1";
         if (!fieldNames.contains(newFieldName)) {
             return newFieldName;
         }
