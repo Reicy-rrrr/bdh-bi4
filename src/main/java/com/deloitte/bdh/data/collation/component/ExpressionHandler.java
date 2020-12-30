@@ -399,7 +399,7 @@ public class ExpressionHandler {
         // 存放后序表达式
         Queue resultQueue = new ArrayDeque();
         // 去除表达式中的空格
-        formula = formula.replace(" ", "");
+        formula = formula.replace(" ", "").replace("\n", "");
         // 定义临时存储运算符的栈
         Stack stack = new Stack();
         StringBuilder tempStringBuilder = new StringBuilder();
