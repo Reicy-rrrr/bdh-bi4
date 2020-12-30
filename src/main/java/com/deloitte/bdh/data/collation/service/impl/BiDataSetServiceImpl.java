@@ -101,15 +101,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         selectDataSetDto.setParentId("0");
         selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
         List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
-        List<DataSetResp> respList = Lists.newArrayList();
-        if (CollectionUtils.isNotEmpty(setList)) {
-            for (BiDataSet dataSet : setList) {
-                DataSetResp resp = new DataSetResp();
-                BeanUtils.copyProperties(dataSet, resp);
-                respList.add(resp);
-            }
-            userResourceService.setDataSetCategoryPermission(respList);
-        } else {
+        if (CollectionUtils.isEmpty(setList)) {
             BiDataSet set = new BiDataSet();
             set.setTableName("默认文件夹");
             set.setTableDesc("默认文件夹");
@@ -123,6 +115,13 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             //设置初始数据
             initDataSet(set.getId());
         }
+        List<DataSetResp> respList = Lists.newArrayList();
+        for (BiDataSet dataSet : setList) {
+            DataSetResp resp = new DataSetResp();
+            BeanUtils.copyProperties(dataSet, resp);
+            respList.add(resp);
+        }
+        userResourceService.setDataSetCategoryPermission(respList);
         return respList;
     }
 
