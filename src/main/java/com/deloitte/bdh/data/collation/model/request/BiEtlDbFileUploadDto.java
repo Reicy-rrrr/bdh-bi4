@@ -27,6 +27,10 @@ public class BiEtlDbFileUploadDto {
     @NotNull(message = "租户id 不能为空")
     private String tenantId;
 
+    @ApiModelProperty(value = "租户code", example = "1001", required = true)
+    @NotNull(message = "租户code 不能为空")
+    private String tenantCode;
+
     @ApiModelProperty(value = "操作用户id", example = "1010", required = true)
     @NotNull(message = "操作用户id 不能为空")
     private String operator;

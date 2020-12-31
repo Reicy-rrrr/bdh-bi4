@@ -54,21 +54,7 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
     public BiEtlDbFileUploadResp upload(BiEtlDbFileUploadDto fileUploadDto) {
         // 租户id
         String tenantId = fileUploadDto.getTenantId();
-        if (StringUtils.isBlank(tenantId)) {
-            log.error("接收到的租户id为空，上传文件失败");
-            throw new BizException("租户id不能为空");
-        }
-        // 设置全局租户id
-        ThreadLocalHolder.set("tenantId", tenantId);
-
         String operator = fileUploadDto.getOperator();
-        if (StringUtils.isBlank(operator)) {
-            log.error("接收到的当前操作人id为空，上传文件失败");
-            throw new BizException("操作人id不能为空");
-        }
-        // 设置全局用户
-        ThreadLocalHolder.set("operator", operator);
-
         MultipartFile file = fileUploadDto.getFile();
 
         String fileName = file.getOriginalFilename();
