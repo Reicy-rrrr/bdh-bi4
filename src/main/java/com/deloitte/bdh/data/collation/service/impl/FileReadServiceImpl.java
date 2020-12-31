@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
+import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ExcelUtils;
@@ -39,6 +41,7 @@ import java.util.*;
  * @author chenghzhang
  */
 @Service
+@DS(DSConstant.BI_DB)
 public class FileReadServiceImpl implements FileReadService {
 
     private static final Logger logger = LoggerFactory.getLogger(FileReadServiceImpl.class);
