@@ -406,7 +406,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(defaultTable);
 
         BiDataSet chineseOrder = new BiDataSet();
-        defaultTable.setCode(GenerateCodeUtil.generate());
+        chineseOrder.setCode(GenerateCodeUtil.generate());
         chineseOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
         chineseOrder.setTableName("TEST_CHINESE_ORDER");
         chineseOrder.setTableDesc("中国订单");
@@ -416,7 +416,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(chineseOrder);
 
         BiDataSet chineseRefund = new BiDataSet();
-        defaultTable.setCode(GenerateCodeUtil.generate());
+        chineseRefund.setCode(GenerateCodeUtil.generate());
         chineseRefund.setType(DataSetTypeEnum.DEFAULT.getKey());
         chineseRefund.setTableName("TEST_CHINESE_REFUND");
         chineseRefund.setTableDesc("中国退货");
@@ -426,7 +426,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(chineseRefund);
 
         BiDataSet chineseSalesman = new BiDataSet();
-        defaultTable.setCode(GenerateCodeUtil.generate());
+        chineseSalesman.setCode(GenerateCodeUtil.generate());
         chineseSalesman.setType(DataSetTypeEnum.DEFAULT.getKey());
         chineseSalesman.setTableName("TEST_CHINESE_SALESMAN");
         chineseSalesman.setTableDesc("中国销售员");
@@ -436,7 +436,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(chineseSalesman);
 
         BiDataSet globalOrder = new BiDataSet();
-        defaultTable.setCode(GenerateCodeUtil.generate());
+        globalOrder.setCode(GenerateCodeUtil.generate());
         globalOrder.setType(DataSetTypeEnum.DEFAULT.getKey());
         globalOrder.setTableName("TEST_GLOBAL_ORDER");
         globalOrder.setTableDesc("世界订单");
