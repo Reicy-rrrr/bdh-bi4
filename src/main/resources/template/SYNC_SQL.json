@@ -207,7 +207,7 @@
                                 "success"
                             ],
                             "backPressureObjectThreshold":10000,
-                            "backPressureDataSizeThreshold":"1 GB",
+                            "backPressureDataSizeThreshold":"3 GB",
                             "flowFileExpiration":"0 sec",
                             "prioritizers":[
 
@@ -259,7 +259,7 @@
                                 "success"
                             ],
                             "backPressureObjectThreshold":10000,
-                            "backPressureDataSizeThreshold":"1 GB",
+                            "backPressureDataSizeThreshold":"3 GB",
                             "flowFileExpiration":"0 sec",
                             "prioritizers":[
 
