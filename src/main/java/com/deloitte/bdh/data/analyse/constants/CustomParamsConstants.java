@@ -23,4 +23,7 @@ public class CustomParamsConstants {
 
     //符号地图
     public static final String SYMBOL_SIZE = "symbolSize";
+
+    //是否聚合
+    public static final String VIEW_DETAIL = "viewDetail";
 }

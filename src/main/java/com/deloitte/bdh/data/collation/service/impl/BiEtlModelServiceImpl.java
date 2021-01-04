@@ -96,6 +96,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         List<BiEtlModel> models = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getParentCode, "0")
                 .eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey())
+                .eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator())
                 .orderByDesc(BiEtlModel::getCreateDate)
         );
 

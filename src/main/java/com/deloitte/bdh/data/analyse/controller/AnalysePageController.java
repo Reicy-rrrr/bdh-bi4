@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
@@ -97,7 +98,10 @@ public class AnalysePageController {
     @ApiOperation(value = "设置主页", notes = "设置主页")
     @PostMapping("/setHomePage")
     public RetResult<Void> setHomePage(@RequestBody @Validated RetRequest<String> request) {
-        BiUiAnalysePage homePage = analysePageService.getOne(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getHomePage, "1"));
+        LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePage::getHomePage, "1");
+        queryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
+        BiUiAnalysePage homePage = analysePageService.getOne(queryWrapper);
         if (null != homePage) {
             homePage.setHomePage("0");
             analysePageService.updateById(homePage);
@@ -111,7 +115,10 @@ public class AnalysePageController {
     @ApiOperation(value = "获取主页的ID", notes = "获取主页的ID")
     @PostMapping("/getHomePageId")
     public RetResult<String> getHomePageId(@RequestBody @Validated RetRequest<Void> request) {
-        BiUiAnalysePage homePage = analysePageService.getOne(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getHomePage, "1"));
+        LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePage::getHomePage, "1");
+        queryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
+        BiUiAnalysePage homePage = analysePageService.getOne(queryWrapper);
         if (null != homePage) {
             return RetResponse.makeOKRsp(homePage.getId());
         }

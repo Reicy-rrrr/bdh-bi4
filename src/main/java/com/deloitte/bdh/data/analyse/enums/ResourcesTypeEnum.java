@@ -13,7 +13,7 @@ public enum ResourcesTypeEnum {
     PAGE("page", "报表"),
     CATEGORY("category", "文件夹"),
     DATA_SET("date_set", "数据集"),
-    DATA_SET_CATEGORY("date_set_category", "数据集文件架"),
+    DATA_SET_CATEGORY("date_set_category", "数据集文件夹"),
     ;
 
     private String code;

@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -42,6 +43,12 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         }
 
         BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
+        if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
+            String viewDetail = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.VIEW_DETAIL);
+            if (StringUtils.equals(viewDetail, "true")) {
+                return response;
+            }
+        }
         request.getDataConfig().getDataModel().setX(originalX);
         int modelSize = dataModel.getY().size();
         List<Map<String, Object>> y2 = Lists.newArrayList();

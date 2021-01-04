@@ -35,14 +35,6 @@ public class AnalyseCategoryController {
         return RetResponse.makeOKRsp(analyseCategoryService.getTree(request));
     }
 
-//    @ApiOperation(value = "我的分析", notes = "我的分析")
-//    @PostMapping("/getCustomerCategoryTree")
-//    public RetResult<List<AnalyseCategoryTree>> getCustomerCategoryTree(@RequestBody @Validated RetRequest<GetAnalyseCategoryDto> request) {
-//        request.getData().setType(CategoryTypeEnum.CUSTOMER.getCode());
-//        List<AnalyseCategoryTree> tree = analyseCategoryService.getTree(request);
-//        return RetResponse.makeOKRsp();
-//    }
-
     @ApiOperation(value = "新增文件夹", notes = "新增文件夹")
     @PostMapping("/createAnalyseCategory")
     public RetResult<AnalyseCategoryDto> createAnalyseCategory(@RequestBody @Validated RetRequest<CreateAnalyseCategoryDto> request) {

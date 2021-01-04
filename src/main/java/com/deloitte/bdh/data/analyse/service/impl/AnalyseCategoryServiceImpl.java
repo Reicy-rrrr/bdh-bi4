@@ -10,10 +10,7 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseCategoryMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
-import com.deloitte.bdh.data.analyse.enums.CategoryTreeChildrenTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
-import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.*;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
@@ -105,6 +102,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         selectCategoryDto.setTenantId(ThreadLocalHolder.getTenantId());
         selectCategoryDto.setName(request.getData().getName());
         selectCategoryDto.setType(request.getData().getType());
+        if (StringUtils.equals(request.getData().getType(), CategoryTypeEnum.COMPONENT.getCode())) {
+            selectCategoryDto.setCerateUser(ThreadLocalHolder.getOperator());
+        }
         List<AnalyseCategoryDto> categoryList = categoryMapper.selectCategory(selectCategoryDto);
 
         List<String> categoryIds = new ArrayList<>();

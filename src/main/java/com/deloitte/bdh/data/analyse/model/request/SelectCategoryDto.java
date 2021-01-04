@@ -25,4 +25,6 @@ public class SelectCategoryDto implements Serializable {
     private String name;
 
     private String type;
+
+    private String cerateUser;
 }

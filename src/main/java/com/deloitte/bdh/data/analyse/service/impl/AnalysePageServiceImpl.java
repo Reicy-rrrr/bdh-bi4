@@ -360,6 +360,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
         }
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getCode());
+        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList);

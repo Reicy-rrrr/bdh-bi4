@@ -57,7 +57,9 @@ public class BiUiAnalysePageComponentServiceImpl extends AbstractService<BiUiAna
 
     @Override
     public List<BiUiAnalysePageComponent> getChartComponent(pageComponentDto dto) {
-        return list(new LambdaQueryWrapper<BiUiAnalysePageComponent>()
-                .eq(BiUiAnalysePageComponent::getParentId, dto.getParentId()));
+        LambdaQueryWrapper<BiUiAnalysePageComponent> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePageComponent::getParentId, dto.getParentId());
+        queryWrapper.eq(BiUiAnalysePageComponent::getCreateUser, ThreadLocalHolder.getOperator());
+        return list(queryWrapper);
     }
 }

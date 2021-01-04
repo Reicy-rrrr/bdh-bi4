@@ -90,6 +90,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtils.isNotBlank(dto.getEffect())) {
             lambdaQueryWrapper.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
         }
+        lambdaQueryWrapper.eq(BiEtlDatabaseInf::getCreateUser, ThreadLocalHolder.getOperator());
         lambdaQueryWrapper.orderByDesc(BiEtlDatabaseInf::getCreateDate);
         PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo<>(this.list(lambdaQueryWrapper));
         return new PageResult<>(pageInfo);
