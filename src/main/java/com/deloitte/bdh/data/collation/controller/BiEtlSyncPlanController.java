@@ -37,7 +37,6 @@ import java.util.Map;
 public class BiEtlSyncPlanController {
     @Autowired
     private SyncService sync;
-
     @Autowired
     private BiEtlSyncPlanService syncPlanService;
 
@@ -68,5 +67,13 @@ public class BiEtlSyncPlanController {
     @PostMapping("/list")
     public RetResult<PageResult> list(@RequestBody @Validated RetRequest<BiEtlSyncPlanListDto> request) {
         return RetResponse.makeOKRsp(new PageResult(syncPlanService.selectPlanList(request.getData())));
+    }
+
+
+    @ApiOperation(value = "清除执行记录", notes = "清除执行记录")
+    @PostMapping("/clear")
+    public RetResult<Void> clear(RetRequest request) throws Exception {
+        syncPlanService.clear();
+        return RetResponse.makeOKRsp();
     }
 }

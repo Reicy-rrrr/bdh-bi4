@@ -2,7 +2,6 @@ package com.deloitte.bdh.data.collation.model.request;
 
 
 import com.deloitte.bdh.common.util.NifiProcessUtil;
-import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -38,6 +37,4 @@ public class OutComponentDto {
     @ApiModelProperty(value = "数据集文件夹id", example = "12")
     private String folderId;
 
-    @ApiModelProperty(value = "保存资源权限", example = "保存资源权限", required = true)
-    private SaveResourcePermissionDto permissionDto;
 }

@@ -430,9 +430,6 @@ public class EtlServiceImpl implements EtlService {
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_DESC, tableDesc);
         params.put(ComponentCons.FOLDER_ID, folderId);
-        if (null != dto.getPermissionDto()) {
-            params.put(ComponentCons.PERMISSION, JsonUtil.obj2String(dto.getPermissionDto()));
-        }
 
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
@@ -493,9 +490,7 @@ public class EtlServiceImpl implements EtlService {
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.TO_TABLE_DESC, tableDesc);
         params.put(ComponentCons.FOLDER_ID, folderId);
-        if (null != dto.getPermissionDto()) {
-            params.put(ComponentCons.PERMISSION, JsonUtil.obj2String(dto.getPermissionDto()));
-        }
+
         List<BiComponentParams> biComponentParams = transferToParams(dto.getComponentCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         // 更新组件信息

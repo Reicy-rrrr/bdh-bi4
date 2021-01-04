@@ -9,6 +9,7 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlSyncPlanMapper;
@@ -105,6 +106,15 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             }
         }
         return result;
+    }
+
+    @Override
+    public void clear() {
+        syncPlanMapper.delete(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTED)
+                .lt(BiEtlSyncPlan::getCreateDate, DateUtils.getLastOfDay())
+                .isNotNull(BiEtlSyncPlan::getPlanResult)
+        );
     }
 
     /**

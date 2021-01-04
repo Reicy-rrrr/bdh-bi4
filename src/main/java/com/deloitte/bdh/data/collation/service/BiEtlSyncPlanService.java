@@ -26,4 +26,7 @@ public interface BiEtlSyncPlanService extends Service<BiEtlSyncPlan> {
      * @return
      */
     PageInfo<BiEtlSyncPlanResult> selectPlanList(BiEtlSyncPlanListDto dto);
+
+    void clear();
+
 }

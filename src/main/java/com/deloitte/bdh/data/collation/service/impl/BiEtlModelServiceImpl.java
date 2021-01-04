@@ -13,11 +13,6 @@ import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
-import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
-import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
@@ -31,7 +26,6 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
@@ -61,7 +55,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -96,8 +89,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     private BiTenantConfigService biTenantConfigService;
     @Resource
     private BiDataSetService dataSetService;
-    @Resource
-    AnalyseUserResourceService userResourceService;
 
 
     @Override
@@ -334,10 +325,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             BiDataSet oldDateSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getRefModelCode, biEtlModel.getCode()));
             if (null != oldDateSet) {
                 dataSetService.removeById(oldDateSet.getId());
-                //删除权限并更新
-                userResourceService.remove(new LambdaQueryWrapper<BiUiAnalyseUserResource>()
-                        .eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.DATA_SET.getCode())
-                        .eq(BiUiAnalyseUserResource::getResourceId, oldDateSet.getId()));
             }
             BiDataSet dataSet = new BiDataSet();
             dataSet.setType(DataSetTypeEnum.MODEL.getKey());
@@ -350,17 +337,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             dataSet.setIsFile(YesOrNoEnum.NO.getKey());
             dataSet.setTenantId(ThreadLocalHolder.getTenantId());
             dataSetService.save(dataSet);
-            //删除权限并更新
-            Optional<BiComponentParams> optional = componentModel.getParams().stream()
-                    .filter(s -> s.getParamKey().equals(ComponentCons.PERMISSION)).findAny();
-            if (optional.isPresent()) {
-                SaveResourcePermissionDto permissionDto = JsonUtil.readJsonToObjectByFastjson(optional.get().getParamValue()
-                        , SaveResourcePermissionDto.class);
-                permissionDto.setId(dataSet.getId());
-                permissionDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
-                userResourceService.saveResourcePermission(permissionDto);
-            }
-
         }
         biEtlModelMapper.updateById(biEtlModel);
         return biEtlModel;
