@@ -414,8 +414,8 @@ public class DateUtils {
         return cal.getTime();
     }
 
-    public static String getLastOfDay() {
-        return formatStandardDateTime(getStartTimeOfDay(addDays(new Date(), -1)));
+    public static String getLastOfDay(int amount) {
+        return formatStandardDateTime(getStartTimeOfDay(addDays(new Date(), amount)));
     }
 
 

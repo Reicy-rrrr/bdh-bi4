@@ -112,7 +112,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     public void clear() {
         syncPlanMapper.delete(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTED)
-                .lt(BiEtlSyncPlan::getCreateDate, DateUtils.getLastOfDay())
+                .lt(BiEtlSyncPlan::getCreateDate, DateUtils.getLastOfDay(-31))
                 .isNotNull(BiEtlSyncPlan::getPlanResult)
         );
     }
