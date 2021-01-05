@@ -13,6 +13,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +38,9 @@ public class AnalysePageConfigController {
     @ApiOperation(value = "查看单个页面配置详情", notes = "查看单个页面配置详情")
     @PostMapping("/getAnalysePageConfig")
     public RetResult<AnalysePageConfigDto> getAnalysePageConfig(@RequestBody @Validated RetRequest<GetAnalysePageConfigDto> request) {
+        if (null == request.getData() || StringUtils.isBlank(request.getData().getPageId())) {
+            return RetResponse.makeOKRsp();
+        }
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfig(request));
     }
 

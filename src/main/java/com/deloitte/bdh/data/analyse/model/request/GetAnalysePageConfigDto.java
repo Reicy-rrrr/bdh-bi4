@@ -10,7 +10,6 @@ import org.hibernate.validator.constraints.NotBlank;
 public class GetAnalysePageConfigDto {
 
     @ApiModelProperty(value = "pageId")
-    @NotBlank
     private String pageId;
 
     @ApiModelProperty(value = "类型:EDIT,PUBLISH")
