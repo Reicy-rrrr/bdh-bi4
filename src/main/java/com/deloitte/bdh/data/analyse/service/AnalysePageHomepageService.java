@@ -13,6 +13,10 @@ import java.util.List;
  */
 public interface AnalysePageHomepageService extends Service<BiUiAnalysePageHomepage> {
 
-    void setHomepage(List<AnalysePageDto> pageDtoList);
+    void fillHomePage(List<AnalysePageDto> pageDtoList);
+
+    void setHomePage(String pageId);
+
+    String getHomePageId();
 
 }

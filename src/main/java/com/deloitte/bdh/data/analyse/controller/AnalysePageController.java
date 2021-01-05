@@ -103,30 +103,14 @@ public class AnalysePageController {
     @ApiOperation(value = "设置主页", notes = "设置主页")
     @PostMapping("/setHomePage")
     public RetResult<Void> setHomePage(@RequestBody @Validated RetRequest<String> request) {
-        LambdaQueryWrapper<BiUiAnalysePageHomepage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalysePageHomepage::getCreateUser, ThreadLocalHolder.getOperator());
-        BiUiAnalysePageHomepage homePage = analysePageHomepageService.getOne(queryWrapper);
-        if (null == homePage) {
-            homePage = new BiUiAnalysePageHomepage();
-            homePage.setUserId(ThreadLocalHolder.getOperator());
-            homePage.setPageId(request.getData());
-            analysePageHomepageService.save(homePage);
-        }
-        homePage.setPageId(request.getData());
-        analysePageHomepageService.updateById(homePage);
+        analysePageHomepageService.setHomePage(request.getData());
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "获取主页的ID", notes = "获取主页的ID")
     @PostMapping("/getHomePageId")
     public RetResult<String> getHomePageId(@RequestBody @Validated RetRequest<Void> request) {
-        LambdaQueryWrapper<BiUiAnalysePageHomepage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalysePageHomepage::getCreateUser, ThreadLocalHolder.getOperator());
-        BiUiAnalysePageHomepage homePage = analysePageHomepageService.getOne(queryWrapper);
-        if (null != homePage) {
-            return RetResponse.makeOKRsp(homePage.getPageId());
-        }
-        return RetResponse.makeOKRsp(null);
+        return RetResponse.makeOKRsp(analysePageHomepageService.getHomePageId());
     }
 
     @ApiOperation(value = "保存图形指标", notes = "保存图形指标")
