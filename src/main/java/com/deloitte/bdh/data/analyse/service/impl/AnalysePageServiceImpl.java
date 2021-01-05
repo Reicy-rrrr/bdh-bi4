@@ -113,14 +113,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public AnalysePageDto getAnalysePage(String id) {
-        if (StringUtils.isBlank(id)) {
-            throw new BizException("参数不能为空");
-        }
-        BiUiAnalysePage page = this.getById(id);
-        if (null != page) {
-            AnalysePageDto dto = new AnalysePageDto();
-            BeanUtils.copyProperties(page, dto);
-            return dto;
+        if (StringUtils.isNotBlank(id)) {
+            BiUiAnalysePage page = this.getById(id);
+            if (null != page) {
+                AnalysePageDto dto = new AnalysePageDto();
+                BeanUtils.copyProperties(page, dto);
+                return dto;
+            }
         }
         return null;
     }
