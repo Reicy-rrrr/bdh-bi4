@@ -103,7 +103,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         selectCategoryDto.setName(request.getData().getName());
         selectCategoryDto.setType(request.getData().getType());
         if (StringUtils.equals(request.getData().getType(), CategoryTypeEnum.COMPONENT.getCode())) {
-            selectCategoryDto.setCerateUser(ThreadLocalHolder.getOperator());
+            selectCategoryDto.setCreateUser(ThreadLocalHolder.getOperator());
         }
         List<AnalyseCategoryDto> categoryList = categoryMapper.selectCategory(selectCategoryDto);
 

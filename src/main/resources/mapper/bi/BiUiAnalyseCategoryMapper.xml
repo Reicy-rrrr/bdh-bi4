@@ -55,7 +55,7 @@
         <if test="queryDto.tenantId != null and queryDto.tenantId != ''">
             AND t1.TENANT_ID = #{queryDto.tenantId,jdbcType=VARCHAR}
         </if>
-        <if test="queryDto.createUser != null and queryDto.createUser != ''">
+        <if test="queryDto.createUser != null">
             AND t1.CREATE_USER = #{queryDto.createUser,jdbcType=VARCHAR}
         </if>
     </select>
