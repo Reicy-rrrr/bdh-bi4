@@ -3,7 +3,7 @@
 <mapper namespace="com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper">
 
     <!-- 查询表字段 -->
-    <select id="selectDemoList" parameterType="String" resultType="Map">
+    <select id="selectDemoList" parameterType="String" resultType="java.util.LinkedHashMap">
         ${querySql}
     </select>
 

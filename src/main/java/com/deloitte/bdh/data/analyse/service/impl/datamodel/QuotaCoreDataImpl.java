@@ -35,6 +35,12 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         DataModel dataModel = request.getDataConfig().getDataModel();
         String sql = buildSql(dataModel);
         return execute(dataModel, sql, list -> {
+            if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
+                String viewDetail = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.VIEW_DETAIL);
+                if (StringUtils.equals(viewDetail, "true")) {
+                    return list;
+                }
+            }
             //未开启直接返回
             if (!isOpen(dataModel)) {
                 return decoration(setDefalut(dataModel, list));

@@ -12,7 +12,6 @@
         <result column="CATEGORY_ID" property="parentId"/>
         <result column="ICON" property="icon"/>
         <result column="ORIGIN_PAGE_ID" property="originPageId"/>
-        <result column="HOME_PAGE" property="homePage"/>
         <result column="INTERNAL_FLAG" property="internalFlag"/>
     </resultMap>
 
@@ -26,8 +25,7 @@
         t1.ICON,
         t1.CATEGORY_ID,
         t1.EDIT_ID,
-        t1.PUBLISH_ID,
-        t1.HOME_PAGE
+        t1.PUBLISH_ID
         FROM
         BI_UI_ANALYSE_PAGE t1
         LEFT JOIN (

@@ -73,12 +73,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     private AnalysePageConfigService configService;
 
     @Resource
-    private AnalyseModelFolderService folderService;
-
-    @Resource
-    private AnalyseModelFieldService fieldService;
-
-    @Resource
     private AnalyseUserResourceService userResourceService;
 
     @Resource
@@ -86,6 +80,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Resource
     private BiUiAnalysePageMapper analysePageMapper;
+
+    @Resource
+    private AnalysePageHomepageService homepageService;
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
@@ -107,6 +104,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageDtoList.add(dto);
         });
         userResourceService.setPagePermission(pageDtoList);
+        homepageService.setHomepage(pageDtoList);
         pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
     }

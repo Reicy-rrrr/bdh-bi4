@@ -66,6 +66,12 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
             }
         }
         BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
+        if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
+            String viewDetail = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.VIEW_DETAIL);
+            if (StringUtils.equals(viewDetail, "true")) {
+                return response;
+            }
+        }
         request.getDataConfig().getDataModel().setX(originalX);
         request.getDataConfig().getDataModel().setTableName(tableName);
         response.setExtra(getMinMax(customParams, response.getRows()));

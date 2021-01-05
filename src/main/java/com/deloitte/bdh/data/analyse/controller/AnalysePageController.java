@@ -7,10 +7,12 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageHomepage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.analyse.service.AnalysePageHomepageService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
@@ -45,6 +47,9 @@ public class AnalysePageController {
 
     @Resource
     BiUiAnalysePageComponentService biUiAnalysePageComponentService;
+
+    @Resource
+    AnalysePageHomepageService analysePageHomepageService;
 
     @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
     @PostMapping("/getChildAnalysePageList")
@@ -98,29 +103,28 @@ public class AnalysePageController {
     @ApiOperation(value = "设置主页", notes = "设置主页")
     @PostMapping("/setHomePage")
     public RetResult<Void> setHomePage(@RequestBody @Validated RetRequest<String> request) {
-        LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalysePage::getHomePage, "1");
-        queryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
-        BiUiAnalysePage homePage = analysePageService.getOne(queryWrapper);
-        if (null != homePage) {
-            homePage.setHomePage("0");
-            analysePageService.updateById(homePage);
+        LambdaQueryWrapper<BiUiAnalysePageHomepage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePageHomepage::getCreateUser, ThreadLocalHolder.getOperator());
+        BiUiAnalysePageHomepage homePage = analysePageHomepageService.getOne(queryWrapper);
+        if (null == homePage) {
+            homePage = new BiUiAnalysePageHomepage();
+            homePage.setUserId(ThreadLocalHolder.getOperator());
+            homePage.setPageId(request.getData());
+            analysePageHomepageService.save(homePage);
         }
-        BiUiAnalysePage newHomePage = analysePageService.getById(request.getData());
-        newHomePage.setHomePage("1");
-        analysePageService.updateById(newHomePage);
+        homePage.setPageId(request.getData());
+        analysePageHomepageService.updateById(homePage);
         return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "获取主页的ID", notes = "获取主页的ID")
     @PostMapping("/getHomePageId")
     public RetResult<String> getHomePageId(@RequestBody @Validated RetRequest<Void> request) {
-        LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalysePage::getHomePage, "1");
-        queryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
-        BiUiAnalysePage homePage = analysePageService.getOne(queryWrapper);
+        LambdaQueryWrapper<BiUiAnalysePageHomepage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePageHomepage::getCreateUser, ThreadLocalHolder.getOperator());
+        BiUiAnalysePageHomepage homePage = analysePageHomepageService.getOne(queryWrapper);
         if (null != homePage) {
-            return RetResponse.makeOKRsp(homePage.getId());
+            return RetResponse.makeOKRsp(homePage.getPageId());
         }
         return RetResponse.makeOKRsp(null);
     }

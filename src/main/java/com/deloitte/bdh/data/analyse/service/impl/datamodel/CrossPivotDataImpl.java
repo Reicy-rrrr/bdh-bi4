@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -43,6 +44,12 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
 
         String sql = buildSql(request.getDataConfig().getDataModel());
         BaseComponentDataResponse response = execute(dataModel, sql);
+        if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
+            String viewDetail = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.VIEW_DETAIL);
+            if (StringUtils.equals(viewDetail, "true")) {
+                return response;
+            }
+        }
         //设置原始X轴数据构造树
         request.getDataConfig().getDataModel().setX(originalX);
         buildColumns(request, response);

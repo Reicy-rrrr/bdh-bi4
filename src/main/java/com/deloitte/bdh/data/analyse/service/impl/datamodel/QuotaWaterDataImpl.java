@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -9,6 +10,8 @@ import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataR
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,7 +25,14 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
 
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
+        DataModel dataModel = request.getDataConfig().getDataModel();
         return execute(request.getDataConfig().getDataModel(), buildSql(request.getDataConfig().getDataModel()), list -> {
+            if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
+                String viewDetail = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.VIEW_DETAIL);
+                if (StringUtils.equals(viewDetail, "true")) {
+                    return list;
+                }
+            }
             List<Map<String, Object>> result = Lists.newArrayList();
             Map<String, Object> map = Maps.newHashMap();
             //度量只会一个

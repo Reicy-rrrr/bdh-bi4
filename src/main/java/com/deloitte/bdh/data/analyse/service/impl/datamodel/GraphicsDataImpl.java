@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -9,6 +10,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataR
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +25,15 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
 
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
-        String sql = buildSql(request.getDataConfig().getDataModel());
+        DataModel dataModel = request.getDataConfig().getDataModel();
+        String sql = buildSql(dataModel);
         return execute(request.getDataConfig().getDataModel(), sql, list -> {
+            if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
+                String viewDetail = MapUtils.getString(dataModel.getCustomParams(), CustomParamsConstants.VIEW_DETAIL);
+                if (org.apache.commons.lang3.StringUtils.equals(viewDetail, "true")) {
+                    return list;
+                }
+            }
             List<DataModelField> fields = request.getDataConfig().getDataModel().getX();
             List<String> wds = Lists.newArrayList();
             List<String> dls = Lists.newArrayList();
