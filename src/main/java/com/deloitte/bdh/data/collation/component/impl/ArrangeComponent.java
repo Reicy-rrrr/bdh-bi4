@@ -690,6 +690,13 @@ public class ArrangeComponent implements ComponentHandler {
         // 新字段描述
         String fieldDesc = StringUtils.isBlank(calculateModel.getName()) ? finalFieldName : calculateModel.getName();
         TableField tableField = new TableField(DataTypeEnum.Float.getType(), finalFieldName, fieldDesc, "decimal(32,8)", "decimal", "32", "8");
+        if (CalculateTypeEnum.LOGICAL.equals(calculateType)) {
+            tableField.setType(DataTypeEnum.Text.getType());
+            tableField.setColumnType("varchar(255)");
+            tableField.setDataType("varchar");
+            tableField.setLength("255");
+            tableField.setScale("0");
+        }
         // 获取临时别名
         String tempName = getColumnAlias(component.getTableName() + "." + finalFieldName);
         FieldMappingModel newMapping = new FieldMappingModel(tempName, finalFieldName, tableField.getType(), fieldDesc, finalFieldName, component.getTableName(), tableField.getColumnType(), false, tableField);
