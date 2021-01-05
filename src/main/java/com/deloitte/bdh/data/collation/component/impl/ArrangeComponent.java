@@ -716,7 +716,7 @@ public class ArrangeComponent implements ComponentHandler {
         int countFlag = 1;
         while (fieldNames.contains(newFieldName)) {
             countFlag++;
-            newFieldName = newFieldName + countFlag;
+            newFieldName = "calculate_column" + countFlag;
         }
         return newFieldName;
     }
