@@ -57,13 +57,15 @@ public class BiUiAnalysePublicShareController {
     @ApiOperation(value = "获取当前page的公开分享状态", notes = "获取当前page的公开分享状态")
     @PostMapping("/get")
     public RetResult<BiUiAnalysePublicShare> get(@RequestBody @Validated RetRequest<String> request) {
-        return RetResponse.makeOKRsp(shareService.get(request.getData()));
+//        return RetResponse.makeOKRsp(shareService.get(request.getData()));
+        return RetResponse.makeOKRsp();
     }
 
     @ApiOperation(value = "改变公开状态", notes = "改变公开状态")
     @PostMapping("/update")
     public RetResult<String> update(@RequestBody @Validated RetRequest<AnalysePublicShareDto> request) {
-        return RetResponse.makeOKRsp(shareService.update(request.getData()));
+        return RetResponse.makeOKRsp();
+//        return RetResponse.makeOKRsp(shareService.update(request.getData()));
     }
 
     @ApiOperation(value = "解密", notes = "解密")
@@ -93,7 +95,7 @@ public class BiUiAnalysePublicShareController {
         }
         //正常只有一条数据，为防止脏数据影响，用list取
         List<BiUiAnalysePublicShare> share = shareService.list(queryWrapper);
-        if (CollectionUtils.isEmpty(share) || ShareTypeEnum.ZERO.getKey().equals(share.get(0).getType())) {
+        if (CollectionUtils.isEmpty(share)) {
             result.put("refPageId", null);
         } else {
             ThreadLocalHolder.set("tenantId", share.get(0).getTenantId());

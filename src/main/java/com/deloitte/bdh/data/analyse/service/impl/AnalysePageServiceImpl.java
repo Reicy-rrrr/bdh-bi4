@@ -214,13 +214,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, pageId);
         //公开状态
         List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
-
-        if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
-            shareLambdaQueryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
-        } else {
-            shareLambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
-        }
-
+        shareLambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         BiUiAnalysePublicShare share = shareService.getOne(shareLambdaQueryWrapper);
         if (null == share) {
             share = new BiUiAnalysePublicShare();
@@ -233,7 +227,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
         }
         if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
-            share.setType(ShareTypeEnum.FIVE.getKey());
+            share.setType(ShareTypeEnum.ZERO.getKey());
             share.setAddress(viewAddress);
         } else {
             share.setAddress(publicAddress);

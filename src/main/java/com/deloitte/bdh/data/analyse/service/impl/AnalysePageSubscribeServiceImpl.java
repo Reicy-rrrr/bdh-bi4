@@ -264,7 +264,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         if (null == share) {
             share = new BiUiAnalysePublicShare();
             share.setRefPageId(request.getPageId());
-            share.setType("4");
+            share.setType(ShareTypeEnum.FOUR.getKey());
             share.setTenantId(ThreadLocalHolder.getTenantId());
             Map<String, Object> params = Maps.newHashMap();
             params.put("tenantCode", ThreadLocalHolder.getTenantCode());

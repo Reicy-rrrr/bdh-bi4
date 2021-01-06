@@ -14,10 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -48,6 +46,23 @@ public class WebLogAspect {
     }
 
     /**
+     * @param point
+     * @return
+     * @throws Throwable
+     */
+    @Around("logPointCut()")
+    public Object process(ProceedingJoinPoint point) throws Throwable {
+        String traceId = UUIDUtil.generate();
+        MDC.put("traceId", traceId);
+        Long startTime = System.currentTimeMillis();
+        //用改变后的参数执行目标方法
+        Object returnValue = point.proceed();
+        logger.info("共耗时 : " + (System.currentTimeMillis() - startTime) + "毫秒");
+        MDC.clear();
+        return returnValue;
+    }
+
+    /**
      * 在切入点开始处切入内容
      */
     @Before("logPointCut()")
@@ -57,7 +72,6 @@ public class WebLogAspect {
                 .getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();
         String traceId = UUIDUtil.generate();
-        MDC.put("traceId", traceId);
         // 记录下请求内容
         logger.info("请求地址 : " + request.getRequestURL().toString());
         logger.info("HTTP METHOD : " + request.getMethod());

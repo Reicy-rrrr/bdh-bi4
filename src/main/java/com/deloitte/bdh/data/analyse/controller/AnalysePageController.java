@@ -18,6 +18,7 @@ import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -146,7 +147,8 @@ public class AnalysePageController {
     public RetResult<BiUiAnalysePublicShare> getUrl(@RequestBody @Validated RetRequest<PublishAnalysePageDto> request) {
         LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId());
-        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
+        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
         return RetResponse.makeOKRsp(share);
     }

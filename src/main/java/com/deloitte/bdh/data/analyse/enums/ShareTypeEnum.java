@@ -10,11 +10,11 @@ public enum ShareTypeEnum {
     FALSE("false", "不是"),
 
     //shareType
-    ZERO("0", "不公开"),
+    ZERO("0", "非公开"),
     ONE("1", "公开"),
     TWO("2", "加密公开"),
     FOUR("4", "订阅公开"),
-    FIVE("5", "分享"),
+    FIVE("5", "订阅查看"),
 
     ;
 
