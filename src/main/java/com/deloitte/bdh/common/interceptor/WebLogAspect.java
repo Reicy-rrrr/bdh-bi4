@@ -54,24 +54,26 @@ public class WebLogAspect {
     public Object process(ProceedingJoinPoint point) throws Throwable {
         String traceId = UUIDUtil.generate();
         MDC.put("traceId", traceId);
-        Long startTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         //用改变后的参数执行目标方法
+        doBefore(point);
         Object returnValue = point.proceed();
+        doAfterReturning(returnValue);
         logger.info("共耗时 : " + (System.currentTimeMillis() - startTime) + "毫秒");
         MDC.clear();
+        ThreadLocalHolder.clear();
         return returnValue;
     }
 
     /**
      * 在切入点开始处切入内容
      */
-    @Before("logPointCut()")
-    public void doBefore(JoinPoint joinPoint) throws Throwable {
+    public void doBefore(JoinPoint joinPoint) {
         // 接收到请求，记录请求内容
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
                 .getRequestAttributes();
+        assert attributes != null;
         HttpServletRequest request = attributes.getRequest();
-        String traceId = UUIDUtil.generate();
         // 记录下请求内容
         logger.info("请求地址 : " + request.getRequestURL().toString());
         logger.info("HTTP METHOD : " + request.getMethod());
@@ -114,20 +116,15 @@ public class WebLogAspect {
 
     /**
      * 在切入点return内容之后切入内容
-     *
-     * @param ret returning的值和doAfterReturning的参数名一致
      */
-    @AfterReturning(returning = "ret", pointcut = "logPointCut()")
-    public void doAfterReturning(Object ret) throws Throwable {
+    public void doAfterReturning(Object ret) {
         // 处理完请求，返回内容
-        if (ret != null && ret instanceof RetResult) {
+        if (null != ret && ret instanceof RetResult) {
             RetResult baseResult = (RetResult) ret;
             String traceId = MDC.get("traceId");
             baseResult.setTraceId(traceId);
         }
         logger.info("返回值 : " + JSON.toJSONStringWithDateFormat(ret, "yyyy-MM-dd HH:mm:ss"));
-        MDC.clear();
-        ThreadLocalHolder.clear();
     }
 
 }
