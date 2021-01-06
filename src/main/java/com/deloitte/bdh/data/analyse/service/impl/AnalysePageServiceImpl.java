@@ -374,11 +374,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (CollectionUtils.isNotEmpty(nameList)) {
             throw new BizException("已存在相同报表名称");
         }
-        //字母和数字
-        String regEx = "[A-Z,a-z,0-9,-]*";
-        Pattern pattern = Pattern.compile(regEx);
-        if (!pattern.matcher(code).matches()) {
-            throw new BizException("编码只能由字母和数字组成");
+        if (StringUtils.isNotBlank(code)) {
+            //字母和数字
+            String regEx = "[A-Z,a-z,0-9,-]*";
+            Pattern pattern = Pattern.compile(regEx);
+            if (!pattern.matcher(code).matches()) {
+                throw new BizException("编码只能由字母和数字组成");
+            }
         }
         query.clear();
         query.eq(BiUiAnalysePage::getTenantId, tenantId);
