@@ -205,36 +205,30 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         Map<String, Object> result = Maps.newHashMap();
 
         if (CollectionUtils.isEmpty(folderList)) {
-            if (request.getData().getIsDataResource().equalsIgnoreCase(YnTypeEnum.YES.getCode())) {
-                folderList = Lists.newArrayList();
-                //初始化维度文件夹
-                BiUiModelFolder wd = new BiUiModelFolder();
-                wd.setModelId(request.getData().getModelId());
-                wd.setParentId("0");
-                wd.setName(DataModelTypeEnum.WD.getDesc());
-                wd.setType(DataModelTypeEnum.WD.getCode());
-                wd.setTenantId(ThreadLocalHolder.getTenantId());
-                folderService.save(wd);
-                wdId = wd.getId();
+            folderList = Lists.newArrayList();
+            //初始化维度文件夹
+            BiUiModelFolder wd = new BiUiModelFolder();
+            wd.setModelId(request.getData().getModelId());
+            wd.setParentId("0");
+            wd.setName(DataModelTypeEnum.WD.getDesc());
+            wd.setType(DataModelTypeEnum.WD.getCode());
+            wd.setTenantId(ThreadLocalHolder.getTenantId());
+            folderService.save(wd);
+            wdId = wd.getId();
 
-                //初始化度量文件夹
-                BiUiModelFolder dl = new BiUiModelFolder();
-                dl.setModelId(request.getData().getModelId());
-                dl.setParentId("0");
-                dl.setName(DataModelTypeEnum.DL.getDesc());
-                dl.setType(DataModelTypeEnum.DL.getCode());
-                dl.setIp(request.getIp());
-                dl.setTenantId(ThreadLocalHolder.getTenantId());
-                folderService.save(dl);
-                dlId = dl.getId();
+            //初始化度量文件夹
+            BiUiModelFolder dl = new BiUiModelFolder();
+            dl.setModelId(request.getData().getModelId());
+            dl.setParentId("0");
+            dl.setName(DataModelTypeEnum.DL.getDesc());
+            dl.setType(DataModelTypeEnum.DL.getCode());
+            dl.setIp(request.getIp());
+            dl.setTenantId(ThreadLocalHolder.getTenantId());
+            folderService.save(dl);
+            dlId = dl.getId();
 
-                folderList.add(wd);
-                folderList.add(dl);
-            }
-            else if (request.getData().getIsDataResource().equalsIgnoreCase(YnTypeEnum.NO.getCode())){
-                throw new BizException("请先配置数据集字段.");
-            }
-
+            folderList.add(wd);
+            folderList.add(dl);
         }
 
         LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();

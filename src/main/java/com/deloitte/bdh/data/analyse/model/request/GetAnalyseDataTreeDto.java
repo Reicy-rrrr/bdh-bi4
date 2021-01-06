@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -15,8 +14,8 @@ import java.io.Serializable;
 @Data
 public class GetAnalyseDataTreeDto implements Serializable {
 
+    @Deprecated
     @ApiModelProperty(value = "Y：来自数据集；N：来自报表", required = true)
-    @NotBlank
     private String isDataResource;
 
     @ApiModelProperty(value = "数据模型ID", required = true)
