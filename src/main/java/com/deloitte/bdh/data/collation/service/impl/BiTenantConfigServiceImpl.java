@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.properties.BdhDataSourceProperties;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -24,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -48,6 +48,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
     private NifiProcessService nifiProcessService;
     @Resource
     private XxJobService jobService;
+    @Resource
+    private BiProperties biProperties;
 
     @Override
     public void init() throws Exception {
@@ -110,8 +112,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         try {
             //调用NIFI 创建模板
             Map<String, Object> reqNifi = Maps.newHashMap();
-            reqNifi.put("name", "ZH_" + ThreadLocalHolder.getTenantCode());
-            reqNifi.put("comments", "ZH_" + ThreadLocalHolder.getTenantCode() + "的顶级模板");
+            reqNifi.put("name", "TenantCode_" + ThreadLocalHolder.getTenantCode());
+            reqNifi.put("comments", "TenantCode_" + ThreadLocalHolder.getTenantCode() + "的顶级模板");
             reqNifi.put("position", JsonUtil.JsonStrToMap(NifiProcessUtil.randPosition()));
             Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
             return MapUtils.getString(sourceMap, "id");
@@ -137,13 +139,13 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             Map<String, Object> createParams = Maps.newHashMap();
             createParams.put("id", rootGroupId);
             createParams.put("type", PoolTypeEnum.DBCPConnectionPool.getKey());
-            createParams.put("name", "ZH_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
+            createParams.put("name", "TenantCode_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
             createParams.put("dbUser", userName);
             createParams.put("passWord", passWord);
             createParams.put("dbUrl", url);
             createParams.put("driverName", SourceTypeEnum.Mysql.getDriverName());
-            createParams.put("driverLocations", "/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
-            createParams.put("comments", "ZH_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
+            createParams.put("driverLocations", biProperties.getMysqlDriver());
+            createParams.put("comments", "TenantCode_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
             Map<String, Object> sourceMap = nifiProcessService.createControllerService(createParams);
             nifiProcessService.runControllerService(MapUtils.getString(sourceMap, "id"), EffectEnum.ENABLE.getKey());
             return MapUtils.getString(sourceMap, "id");

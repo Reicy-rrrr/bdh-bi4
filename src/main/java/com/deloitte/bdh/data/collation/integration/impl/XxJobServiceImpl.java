@@ -3,20 +3,21 @@ package com.deloitte.bdh.data.collation.integration.impl;
 import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 @Service
 @Slf4j
 public class XxJobServiceImpl implements XxJobService {
-    @Value("${xxjob.transfer.url}")
-    private String url;
+    @Resource
+    private BiProperties properties;
 
     @Override
     public String getJob(String jobDesc) {
@@ -25,7 +26,7 @@ public class XxJobServiceImpl implements XxJobService {
             Map<String, Object> reqXxJob = Maps.newHashMap();
             reqXxJob.put("jobDesc", jobDesc);
             reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-            return JsonUtil.readObjToJson(returnCheck(HttpClientUtil.post(url + GET_JOB, null, reqXxJob)));
+            return JsonUtil.readObjToJson(returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + GET_JOB, null, reqXxJob)));
         } catch (Exception e) {
             return null;
         }
@@ -35,14 +36,14 @@ public class XxJobServiceImpl implements XxJobService {
     public void add(String modelCode, String callBackAddress, String cron, Map<String, String> params) throws Exception {
         log.info("XxJobServiceImpl.add, modelCode:{} ", modelCode);
         Map<String, Object> reqXxJob = assembleParams(modelCode, callBackAddress, cron, params);
-        returnCheck(HttpClientUtil.post(url + ADD_PATH, null, reqXxJob));
+        returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + ADD_PATH, null, reqXxJob));
     }
 
     @Override
     public void addOrUpdate(String modelCode, String callBackAddress, String cron, Map<String, String> params) throws Exception {
         log.info("XxJobServiceImpl.update, modelCode:{} ", modelCode);
         Map<String, Object> reqXxJob = assembleParams(modelCode, callBackAddress, cron, params);
-        returnCheck(HttpClientUtil.post(url + UPDATE_PATH, null, reqXxJob));
+        returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + UPDATE_PATH, null, reqXxJob));
     }
 
     @Override
@@ -51,7 +52,7 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        HttpClientUtil.post(url + REMOVE_PATH, null, reqXxJob);
+        HttpClientUtil.post(properties.getXxjobUrl() + REMOVE_PATH, null, reqXxJob);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        returnCheck(HttpClientUtil.post(url + START_PATH, null, reqXxJob));
+        returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + START_PATH, null, reqXxJob));
     }
 
     @Override
@@ -69,7 +70,7 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        returnCheck(HttpClientUtil.post(url + STOP_PATH, null, reqXxJob));
+        returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + STOP_PATH, null, reqXxJob));
     }
 
     @Override
@@ -78,19 +79,19 @@ public class XxJobServiceImpl implements XxJobService {
         Map<String, Object> reqXxJob = Maps.newHashMap();
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-        returnCheck(HttpClientUtil.post(url + TRIGGER_PATH, null, reqXxJob));
+        returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + TRIGGER_PATH, null, reqXxJob));
     }
 
     @Override
     public void triggerParams(String modelCode, Map<String, String> params) throws Exception {
         log.info("XxJobServiceImpl.triggerParams, modelCode:{} ", modelCode);
         Map<String, Object> reqXxJob = Maps.newHashMap();
-        reqXxJob.put("tenantCode",ThreadLocalHolder.getTenantCode());
+        reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
         reqXxJob.put("jobDesc", modelCode);
         reqXxJob.put("params", params);
         //追加类型
         reqXxJob.put("type", "1");
-        returnCheck(HttpClientUtil.post(url + TRIGGER_PARAMS_PATH, null, reqXxJob));
+        returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + TRIGGER_PARAMS_PATH, null, reqXxJob));
     }
 
     @Override
@@ -99,7 +100,7 @@ public class XxJobServiceImpl implements XxJobService {
         try {
             Map<String, Object> reqXxJob = Maps.newHashMap();
             reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-            Map map = returnCheck(HttpClientUtil.post(url + LOAD_BY_TENANT, null, reqXxJob));
+            Map map = returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + LOAD_BY_TENANT, null, reqXxJob));
             return JsonUtil.readObjToJson(map);
         } catch (Exception e) {
             return null;
@@ -112,7 +113,7 @@ public class XxJobServiceImpl implements XxJobService {
         try {
             Map<String, Object> reqXxJob = Maps.newHashMap();
             reqXxJob.put("tenantCode", ThreadLocalHolder.getTenantCode());
-            returnCheck(HttpClientUtil.post(url + saveGroup, null, reqXxJob));
+            returnCheck(HttpClientUtil.post(properties.getXxjobUrl() + saveGroup, null, reqXxJob));
             return true;
         } catch (Exception e) {
             return false;

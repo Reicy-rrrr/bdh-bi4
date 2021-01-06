@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
@@ -79,6 +80,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiEtlModelService modelService;
     @Autowired
     private BiTenantConfigService biTenantConfigService;
+    @Resource
+    private BiProperties biProperties;
 
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
@@ -589,13 +592,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
         //todo 应该读取配置
         if (SourceTypeEnum.Mysql.getType().equals(dto.getType())) {
-            inf.setDriverLocations("/usr/java/jdk1.8.0_171/mysql-connector-java-8.0.21.jar");
+            inf.setDriverLocations(biProperties.getMysqlDriver());
         } else if (SourceTypeEnum.Oracle.getType().equals(dto.getType())) {
-            inf.setDriverLocations("/data/OJDBC-Full/ojdbc6.jar");
+            inf.setDriverLocations(biProperties.getOracleDriver());
         } else if (SourceTypeEnum.SQLServer.getType().equals(dto.getType())) {
-            inf.setDriverLocations("/usr/java/jdk1.8.0_171/sqljdbc4-4.0.jar");
+            inf.setDriverLocations(biProperties.getSqlServerDriver());
         } else if (SourceTypeEnum.Hana.getType().equals(dto.getType())) {
-            inf.setDriverLocations("/data/hana/ngdbc-2.3.56.jar");
+            inf.setDriverLocations(biProperties.getHanaDriver());
         }
         inf.setEffect(EffectEnum.DISABLE.getKey());
 
@@ -644,7 +647,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         createParams.put("comments", inf.getComments());
 
         createParams.put("hive-db-connect-url", NifiProcessUtil.getDbUrl(inf.getType(), inf.getAddress(), inf.getPort(), inf.getDbName()));
-        createParams.put("hive-config-resources", "/data/hive-site.xml");
+        createParams.put("hive-config-resources", biProperties.getHiveSet());
         createParams.put("hive-db-user", inf.getDbUser());
         createParams.put("hive-db-password", inf.getDbPassword());
         Map<String, Object> sourceMap = nifiProcessService.createOtherControllerService(createParams);

@@ -2,15 +2,17 @@ package com.deloitte.bdh.data.collation.nifi.template.servie.impl;
 
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +20,14 @@ import java.util.Map;
 public abstract class AbstractTransfer implements Transfer {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractTransfer.class);
 
-    @Value("${nifi.template.mapping}")
-    protected String mapping;
+    @Resource
+    private BiProperties config;
 
     protected String getTemplateId(String templateType) {
-        if (null == mapping) {
+        if (StringUtils.isBlank(config.getMapping())) {
             throw new RuntimeException("EtlTransferImpl.getTemplateId.error:未配置mapping");
         }
-        List<String> list = Arrays.asList(mapping.split(","));
+        List<String> list = Arrays.asList(config.getMapping().split(","));
         String[] strings = list.stream().filter(s -> s.contains(templateType)).findAny().get()
                 .split("&");
         return strings[1];

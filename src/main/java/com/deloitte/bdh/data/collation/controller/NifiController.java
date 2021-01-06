@@ -4,6 +4,7 @@ package com.deloitte.bdh.data.collation.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 
@@ -169,6 +169,9 @@ public class NifiController {
     @ApiOperation(value = "getTime", notes = "getTime")
     @PostMapping("/getTime")
     public RetResult<String> getTime() throws Exception {
-        return RetResponse.makeOKRsp(JsonUtil.obj2String(LocalDateTime.now()));
+        return RetResponse.makeOKRsp(JsonUtil.obj2String(biProperties));
     }
+
+    @Autowired
+    private BiProperties biProperties;
 }

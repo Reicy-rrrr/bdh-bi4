@@ -1,40 +1,33 @@
 package com.deloitte.bdh.data.collation.integration.impl;
 
 import com.deloitte.bdh.common.http.HttpClientUtil;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.redis.RedisClusterUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.enums.NifiEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 public abstract class AbstractNifiProcess implements NifiProcessService {
-    @Value("${nifi.transfer.url}")
-    protected String url;
-    @Value("${nifi.transfer.username}")
-    protected String username;
-    @Value("${nifi.transfer.password}")
-    protected String password;
-    @Value("${nifi.transfer.expiredTime}")
-    protected String expiredTime;
-
-
+    @Resource
+    protected BiProperties biProperties;
     @Autowired
     private RedisClusterUtil redisClusterUtil;
 
     @Override
     public String getToken() throws Exception {
-        String nifiToken = redisClusterUtil.STRINGS.get(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username);
+        String nifiToken = redisClusterUtil.STRINGS.get(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + biProperties.getNifiUserName());
         if (StringUtil.isEmpty(nifiToken)) {
             Map<String, Object> req = Maps.newHashMap();
-            req.put("username", username);
-            req.put("password", password);
-            nifiToken = HttpClientUtil.httpPostRequest(url + NifiEnum.ACCESS_TOKEN.getKey(), req);
-            redisClusterUtil.STRINGS.set(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, nifiToken);
-            redisClusterUtil.KEYS.expired(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + username, Integer.parseInt(expiredTime));
+            req.put("username", biProperties.getNifiUserName());
+            req.put("password", biProperties.getNifiPwd());
+            nifiToken = HttpClientUtil.httpPostRequest(biProperties.getNifiUrl() + NifiEnum.ACCESS_TOKEN.getKey(), req);
+            redisClusterUtil.STRINGS.set(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + biProperties.getNifiUserName(), nifiToken);
+            redisClusterUtil.KEYS.expired(NifiEnum.REDIS_ACCESS_TOKEN.getKey() + biProperties.getNifiUserName(), Integer.parseInt(biProperties.getExpiredTime()));
         }
         return nifiToken;
     }
