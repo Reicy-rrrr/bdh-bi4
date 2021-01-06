@@ -10,7 +10,6 @@ import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.ExpressionHandler;
 import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.*;
-import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.*;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
@@ -51,10 +50,6 @@ public class ArrangeComponent implements ComponentHandler {
 
     private BiEtlDatabaseInfService etlDatabaseInfService;
 
-    private DbHandler dbHandler;
-
-    private ComponentHandler componentHandler;
-
     private ArrangerSelector arranger;
 
     private ExpressionHandler expressionHandler;
@@ -74,7 +69,7 @@ public class ArrangeComponent implements ComponentHandler {
 
 
         String modelCode = component.getRefModelCode();
-        LambdaQueryWrapper<BiEtlMappingConfig> queryWrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<BiEtlMappingConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiEtlMappingConfig::getRefModelCode, modelCode);
         queryWrapper.orderByDesc(BiEtlMappingConfig::getId);
         queryWrapper.last("limit 1");
@@ -188,11 +183,10 @@ public class ArrangeComponent implements ComponentHandler {
 
     private StringBuilder buildSelect(ComponentModel fromComponent, List<ArrangeResultModel> arrangeCases,
                                       List<FieldMappingModel> currMappings, Set<String> excludeFields) {
-        ComponentTypeEnum fromType = fromComponent.getTypeEnum();
         List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
 
         Map<String, Boolean> newFlags = arrangeCases.stream()
-                .collect(Collectors.toMap(ArrangeResultModel::getField, resultModel -> resultModel.getIsNew()));
+                .collect(Collectors.toMap(ArrangeResultModel::getField, ArrangeResultModel::getIsNew));
         StringBuilder selectBuilder = new StringBuilder();
         selectBuilder.append(sql_key_select);
 
@@ -252,11 +246,9 @@ public class ArrangeComponent implements ComponentHandler {
                 continue;
             }
 
-            if (i >= 1) {
-                whereBuilder.append(sql_key_and);
-                whereBuilder.append(whereCases.get(i));
-                whereBuilder.append(sql_key_blank);
-            }
+            whereBuilder.append(sql_key_and);
+            whereBuilder.append(whereCases.get(i));
+            whereBuilder.append(sql_key_blank);
         }
         return whereBuilder;
     }
@@ -299,7 +291,7 @@ public class ArrangeComponent implements ComponentHandler {
             String splitValue = splitModel.getValue();
             FieldMappingModel originalMapping = MapUtils.getObject(fromMappingMap, splitField);
             if (ComponentCons.ARRANGE_PARAM_KEY_SPLIT_LENGTH.equals(splitType)) {
-                resultModels.addAll(arranger.split(originalMapping, Integer.valueOf(splitValue), fromTableName, fromType));
+                resultModels.addAll(arranger.split(originalMapping, Integer.parseInt(splitValue), fromTableName, fromType));
             } else {
                 resultModels.addAll(arranger.split(originalMapping, splitValue, fromTableName, fromType));
             }
@@ -377,7 +369,7 @@ public class ArrangeComponent implements ComponentHandler {
      * @param context   组件内容
      * @return List<ArrangeResultModel>
      */
-    private Pair<List<String>, List<ArrangeResultModel>> nullValue(ComponentModel component, String context) {
+    private ImmutablePair<List<String>, List<ArrangeResultModel>> nullValue(ComponentModel component, String context) {
         ArrangeNullModel nullModel = JSONArray.parseObject(context, ArrangeNullModel.class);
         if (nullModel == null) {
             throw new BizException("Arrange component null handle error: 空值字段不能为空！");
@@ -419,7 +411,7 @@ public class ArrangeComponent implements ComponentHandler {
             }
         }
 
-        return new ImmutablePair(whereCases, arrangeCases);
+        return new ImmutablePair<>(whereCases, arrangeCases);
     }
 
     /**
@@ -579,20 +571,12 @@ public class ArrangeComponent implements ComponentHandler {
             DataTypeEnum sourceType = DataTypeEnum.get(fromMapping.getFinalFieldType());
             switch (targetType) {
                 case Integer:
-                    if (DataTypeEnum.Date.equals(sourceType) || DataTypeEnum.DateTime.equals(sourceType)) {
-                        throw new BizException("不支持从日期或者日期时间类型转换为整数类型！");
-                    }
-                    break;
                 case Float:
                     if (DataTypeEnum.Date.equals(sourceType) || DataTypeEnum.DateTime.equals(sourceType)) {
                         throw new BizException("不支持从日期或者日期时间类型转换为浮点类型！");
                     }
                     break;
                 case Date:
-                    if (DataTypeEnum.Integer.equals(sourceType) || DataTypeEnum.Float.equals(sourceType)) {
-                        throw new BizException("不支持从整数或者浮点类型转换为日期类型！");
-                    }
-                    break;
                 case DateTime:
                     if (DataTypeEnum.Integer.equals(sourceType) || DataTypeEnum.Float.equals(sourceType)) {
                         throw new BizException("不支持从整数或者浮点类型转换为日期时间类型！");
@@ -629,7 +613,7 @@ public class ArrangeComponent implements ComponentHandler {
             throw new BizException("Arrange component calculate error: 暂不支持的计算类型！");
         }
 
-        Pair<Boolean, String> checkResult = null;
+        Pair<Boolean, String> checkResult;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
             if (formula.contains("%")) {
                 throw new BizException("Arrange component calculate error: 暂不支持百分比[%]的计算！");
@@ -655,7 +639,7 @@ public class ArrangeComponent implements ComponentHandler {
         }
 
         // 格式化公式（对公式中的字段进行特殊处理）
-        String finalFormula = null;
+        String finalFormula;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
             finalFormula = expressionHandler.formatFormula(formula);
         } else {
@@ -703,8 +687,7 @@ public class ArrangeComponent implements ComponentHandler {
         // 字段表达式转换为别名形式
         newFieldExpression = newFieldExpression + " AS " + tempName;
         ArrangeResultModel resultModel = new ArrangeResultModel(tempName, newFieldExpression, true, newMapping);
-        List<ArrangeResultModel> resultModels = Lists.newArrayList(resultModel);
-        return resultModels;
+        return Lists.newArrayList(resultModel);
     }
 
     private String getCalculateFieldName(Set<String> fieldNames) {
@@ -729,16 +712,6 @@ public class ArrangeComponent implements ComponentHandler {
     @Autowired
     public void setEtlDatabaseInfService(BiEtlDatabaseInfService etlDatabaseInfService) {
         this.etlDatabaseInfService = etlDatabaseInfService;
-    }
-
-    @Autowired
-    public void setDbHandler(DbHandler dbHandler) {
-        this.dbHandler = dbHandler;
-    }
-
-    @Autowired
-    public void setComponentHandler(ComponentHandler componentHandler) {
-        this.componentHandler = componentHandler;
     }
 
     @Autowired

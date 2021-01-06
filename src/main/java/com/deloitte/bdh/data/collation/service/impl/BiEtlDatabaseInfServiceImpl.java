@@ -493,6 +493,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         biEtlDatabaseInf.setName(dto.getName());
         biEtlDatabaseInf.setComments(dto.getComments());
         biEtlDatabaseInf.setType(dto.getType());
+        if (StringUtils.isNotBlank(dto.getAddress())) {
+            biEtlDatabaseInf.setAddress(dto.getAddress());
+        }
         if (StringUtils.isNotBlank(dto.getDbName())) {
             biEtlDatabaseInf.setDbName(dto.getDbName());
         }
