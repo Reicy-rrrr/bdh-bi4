@@ -42,4 +42,6 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     void delete(String code, boolean canDel);
 
+    void delRelationByDbId(String id);
+
 }

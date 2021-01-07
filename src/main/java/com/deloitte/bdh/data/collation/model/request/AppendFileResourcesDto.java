@@ -28,4 +28,7 @@ public class AppendFileResourcesDto {
 
     @ApiModelProperty(value = "字段类型", example = "id:1, code:2, value:3", required = true)
     private Map<String, String> columns;
+
+    @ApiModelProperty(value = "数据源名称", example = "数据源名称", required = true)
+    private String name;
 }

@@ -348,7 +348,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(String code, boolean canDel) {
-        BiDataSet dataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getCode,code));
+        BiDataSet dataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getCode, code));
         if (null != dataSet) {
             if (StringUtils.isNotBlank(dataSet.getType())) {
                 if (!canDel && DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
@@ -358,12 +358,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                     throw new RuntimeException("初始化数据表，暂不允许删除");
                 }
                 //删除度量维度配置
-                LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
-                folderQueryWrapper.in(BiUiModelFolder::getModelId, dataSet.getCode());
-                folderService.remove(folderQueryWrapper);
-                LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
-                fieldQueryWrapper.in(BiUiModelField::getModelId, dataSet.getCode());
-                fieldService.remove(fieldQueryWrapper);
+                folderService.remove(new LambdaQueryWrapper<BiUiModelFolder>().eq(BiUiModelFolder::getModelId, dataSet.getCode()));
+                fieldService.remove(new LambdaQueryWrapper<BiUiModelField>().eq(BiUiModelField::getModelId, dataSet.getCode()));
             } else {
                 int count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>()
                         .eq(BiDataSet::getParentId, dataSet.getId()));
@@ -378,6 +374,20 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             resourceQueryWrapper.in(BiUiAnalyseUserResource::getResourceType,
                     Lists.newArrayList(ResourcesTypeEnum.DATA_SET.getCode(), ResourcesTypeEnum.DATA_SET_CATEGORY.getCode()));
             userResourceService.remove(resourceQueryWrapper);
+        }
+    }
+
+    @Override
+    public void delRelationByDbId(String id) {
+        List<BiDataSet> dataSetList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getRefSourceId, id));
+        if (CollectionUtils.isNotEmpty(dataSetList)) {
+            List<String> codes = dataSetList.stream().map(BiDataSet::getCode).collect(Collectors.toList());
+            //删除度量维度配置
+            folderService.remove(new LambdaQueryWrapper<BiUiModelFolder>()
+                    .in(BiUiModelFolder::getModelId, codes));
+            fieldService.remove(new LambdaQueryWrapper<BiUiModelField>()
+                    .in(BiUiModelField::getModelId, codes));
         }
     }
 

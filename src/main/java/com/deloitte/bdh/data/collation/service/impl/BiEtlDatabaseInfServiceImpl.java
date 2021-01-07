@@ -82,6 +82,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiTenantConfigService biTenantConfigService;
     @Resource
     private BiProperties biProperties;
+    @Resource
+    private BiDataSetService dataSetService;
 
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
@@ -267,6 +269,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 修改文件状态为已读
         dbFile.setReadFlag(0);
         biEtlDbFileService.updateById(dbFile);
+        if (StringUtils.isNotBlank(dto.getName())) {
+            database.setName(dto.getName());
+            this.updateById(database);
+        }
         return database;
     }
 
@@ -331,6 +337,14 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         // 修改文件状态为已读
         dbFile.setReadFlag(0);
         biEtlDbFileService.updateById(dbFile);
+
+        //修改数据源名称
+        if (StringUtils.isNotBlank(dto.getName())) {
+            database.setName(dto.getName());
+            this.updateById(database);
+        }
+        //删除数据集的维度和度量
+        ThreadLocalHolder.async(() -> dataSetService.delRelationByDbId(database.getId()));
         return database;
     }
 
@@ -538,6 +552,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return biEtlDatabaseInf;
     }
 
+    @Deprecated
     private BiEtlDatabaseInf updateResourceFromFile(UpdateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf source = biEtlDatabaseInfMapper.selectById(dto.getId());
         if (source == null) {
