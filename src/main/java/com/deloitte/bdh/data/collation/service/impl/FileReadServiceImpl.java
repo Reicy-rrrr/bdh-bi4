@@ -329,6 +329,9 @@ public class FileReadServiceImpl implements FileReadService {
         List<Map<String, Object>> lines = Lists.newArrayList();
         for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
             Row row = sheet.getRow(rowIndex);
+            if (null == row) {
+                throw new BizException("数据落库失败，请检查上传的文件,存在空行");
+            }
             Map<String, Object> line = Maps.newLinkedHashMap();
             for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
                 Cell cell = row.getCell(cellIndex);
