@@ -35,7 +35,7 @@ public class PublishAnalysePageDto implements Serializable {
     String password;
 
     @ApiModelProperty(value = "是否是德勤方案")
-    String internalFlag;
+    String deloitteFlag;
 
     @ApiModelProperty(value = "可见编辑权限配置")
     SaveResourcePermissionDto saveResourcePermissionDto;

@@ -250,18 +250,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request) {
 
         PublishAnalysePageDto publishDto = request.getData();
-        String internalFlag = publishDto.getInternalFlag();
-        String pageId = publishDto.getPageId();
-        String configId = publishDto.getConfigId();
         String categoryId = publishDto.getCategoryId();
         SaveResourcePermissionDto dto = publishDto.getSaveResourcePermissionDto();
-        BiUiAnalysePageConfig originConfig = configService.getById(configId);
-        BiUiAnalysePage originPage = getById(pageId);
+        BiUiAnalysePageConfig originConfig = configService.getById(publishDto.getConfigId());
+        BiUiAnalysePage originPage = getById(publishDto.getPageId());
         if (originPage == null) {
             throw new BizException("报表已经不存在了。");
         }
 
-        if (internalFlag.equals(YesOrNoEnum.YES.getKey())) {
+        if (StringUtils.equals(publishDto.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
             updatePage(publishDto, originPage, originConfig);
         } else {
             String password = publishDto.getPassword();
@@ -314,7 +311,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             //生成链接
             setAccessUrl(dto.getId(), password, isPublic);
             //数据权限
-            userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), pageId);
+            userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), publishDto.getPageId());
         }
 
         return null;

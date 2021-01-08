@@ -83,8 +83,8 @@ public class BiUiAnalysePage implements Serializable {
     @TableField("IP")
     private String ip;
 
-    @TableField("INTERNAL_FLAG")
-    private String internalFlag;
+    @TableField("DELOITTE_FLAG")
+    private String deloitteFlag;
 
     @TableField("TENANT_ID")
     private String tenantId;

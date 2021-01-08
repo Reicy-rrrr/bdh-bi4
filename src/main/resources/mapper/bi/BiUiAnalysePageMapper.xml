@@ -12,7 +12,7 @@
         <result column="CATEGORY_ID" property="parentId"/>
         <result column="ICON" property="icon"/>
         <result column="ORIGIN_PAGE_ID" property="originPageId"/>
-        <result column="INTERNAL_FLAG" property="internalFlag"/>
+        <result column="DELOITTE_FLAG" property="deloitteFlag"/>
     </resultMap>
 
     <select id="selectPublishedPage" resultMap="BaseResultMap">

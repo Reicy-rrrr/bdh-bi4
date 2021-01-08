@@ -41,6 +41,6 @@ public class CreateAnalysePageDto {
     private String icon;
 
     @ApiModelProperty(value = "是否是德勤方案")
-    private String internalFlag;
+    private String deloitteFlag;
 
 }
