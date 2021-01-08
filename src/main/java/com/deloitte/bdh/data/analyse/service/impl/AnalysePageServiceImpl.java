@@ -328,6 +328,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             BeanUtils.copyProperties(originConfig, newConfig);
         }
         newConfig.setId(null);
+        newConfig.setPageId(dto.getPageId());
         newConfig.setContent(dto.getContent());
         newConfig.setTenantId(ThreadLocalHolder.getTenantId());
         configService.save(newConfig);
