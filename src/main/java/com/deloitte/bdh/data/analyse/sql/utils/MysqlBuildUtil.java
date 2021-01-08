@@ -101,7 +101,8 @@ public class MysqlBuildUtil extends RelaBaseBuildUtil {
     }
 
     private static String formatPrecision(String field, Integer precision) {
-        return " FORMAT(ROUND( " + field + " ," + precision + ")" + " ," + precision + ")";
+        return " ROUND( " + field + " ," + precision + ")";
+//        return " FORMAT(ROUND( " + field + " ," + precision + ")" + " ," + precision + ")";
     }
 
     private static String format(String field, String formatType) {

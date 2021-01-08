@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -31,6 +32,15 @@ import java.util.List;
 public class AnalyseModelController {
     @Resource
     AnalyseModelService analyseModelService;
+
+    @ApiOperation(value = "获取所有表1", notes = "获取所有表1")
+    @PostMapping("/getAllTable1")
+    public RetResult<Object> getAllTable1(@RequestBody @Validated RetRequest<Void> request) {
+        BigDecimal value = new BigDecimal("1.2").setScale(4,BigDecimal.ROUND_HALF_UP);
+        System.out.println(value);
+        return RetResponse.makeOKRsp(value);
+//        return RetResponse.makeOKRsp(analyseModelService.getAllTable());
+    }
 
     @ApiOperation(value = "获取所有表", notes = "获取所有表")
     @PostMapping("/getAllTable")
