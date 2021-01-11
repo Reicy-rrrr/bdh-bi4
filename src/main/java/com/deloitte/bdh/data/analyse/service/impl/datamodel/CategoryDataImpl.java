@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
@@ -139,7 +140,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                     newRow.put("precision", MapUtils.getObject(precisionMap, colName));
                 }
                 if (null != MapUtils.getObject(dataUnitMap, colName)) {
-                    newRow.put("dataUnit", MapUtils.getObject(dataUnitMap, colName));
+                    newRow.put("dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, colName)));
                 }
                 newRows.add(newRow);
             }

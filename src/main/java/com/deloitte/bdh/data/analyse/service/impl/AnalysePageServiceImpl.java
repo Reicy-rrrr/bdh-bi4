@@ -87,7 +87,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
         if (0 == request.getSize()) {
-            PageHelper.startPage(request.getPage(), request.getSize(), false, false, true);
+            PageHelper.startPage(request.getPage(), request.getSize(), true, false, true);
         } else {
             PageHelper.startPage(request.getPage(), request.getSize());
         }
