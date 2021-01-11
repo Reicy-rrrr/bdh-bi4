@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
+import com.deloitte.bdh.data.collation.service.KafkaTestService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -168,10 +169,13 @@ public class NifiController {
 
     @ApiOperation(value = "getTime", notes = "getTime")
     @PostMapping("/getTime")
-    public RetResult<String> getTime() throws Exception {
-        return RetResponse.makeOKRsp(JsonUtil.obj2String(biProperties));
+    public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        kafkaTestService.send(request.getData());
+        return RetResponse.makeOKRsp("ok");
     }
 
     @Autowired
     private BiProperties biProperties;
+    @Autowired
+    private KafkaTestService kafkaTestService;
 }

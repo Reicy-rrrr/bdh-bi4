@@ -42,5 +42,14 @@ public class BiProperties {
 
     @Value("${nifi.hive.set}")
     private String hiveSet;
+
+    @Value("${kafka.bootstrap.servers}")
+    private String kafkaServers;
+
+    @Value("${kafka.topic}")
+    private String kafkaTopic;
+
+    @Value("${kafka.group.id}")
+    private String kafkaGroupId;
 }
 
