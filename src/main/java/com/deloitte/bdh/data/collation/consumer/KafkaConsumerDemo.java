@@ -1,7 +1,6 @@
-package com.deloitte.bdh.data.collation.service.impl;
+package com.deloitte.bdh.data.collation.consumer;
 
 import com.deloitte.bdh.common.properties.BiProperties;
-import com.deloitte.bdh.common.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -25,7 +24,28 @@ public class KafkaConsumerDemo implements ApplicationRunner {
     private BiProperties properties;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
+        KafkaConsumer<String, String> consumer = config();
+        while (true) {
+            try {
+                ConsumerRecords<String, String> records = consumer.poll(1000);
+                //必须在下次Poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG。
+                //建议开一个单独的线程池来消费消息，然后异步返回结果。
+                for (ConsumerRecord<String, String> record : records) {
+                    log.info("测试消费体：" + record.toString());
+                }
+            } catch (Exception e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Throwable ignore) {
+
+                }
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private KafkaConsumer<String, String> config() {
         //加载kafka.properties。
         Properties props = new Properties();
         //设置接入点，请通过控制台获取对应Topic的接入点。
@@ -43,10 +63,10 @@ public class KafkaConsumerDemo implements ApplicationRunner {
         //属于同一个组的消费实例，会负载消费消息。
         props.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getKafkaGroupId());
         //构造消息对象，也即生成一个消费实例。
-        KafkaConsumer<String, String> consumer = new org.apache.kafka.clients.consumer.KafkaConsumer<String, String>(props);
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         //设置消费组订阅的Topic，可以订阅多个。
         //如果GROUP_ID_CONFIG是一样，则订阅的Topic也建议设置成一样。
-        List<String> subscribedTopics = new ArrayList<String>();
+        List<String> subscribedTopics = new ArrayList<>();
         //如果需要订阅多个Topic，则在这里添加进去即可。
         //每个Topic需要先在控制台进行创建。
         String topicStr = properties.getKafkaTopic();
@@ -55,26 +75,7 @@ public class KafkaConsumerDemo implements ApplicationRunner {
             subscribedTopics.add(topic.trim());
         }
         consumer.subscribe(subscribedTopics);
-
-        //循环消费消息。
-        log.info("配置{}完成，开始接收消息", JsonUtil.obj2String(props));
-        while (true) {
-            try {
-                ConsumerRecords<String, String> records = consumer.poll(1000);
-                //必须在下次Poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG。
-                //建议开一个单独的线程池来消费消息，然后异步返回结果。
-                for (ConsumerRecord<String, String> record : records) {
-                    System.out.println(String.format("Consume partition:%d offset:%d", record.partition(), record.offset()));
-                }
-            } catch (Exception e) {
-                try {
-                    Thread.sleep(1000);
-                } catch (Throwable ignore) {
-
-                }
-                e.printStackTrace();
-            }
-        }
+        return consumer;
     }
 }
 
