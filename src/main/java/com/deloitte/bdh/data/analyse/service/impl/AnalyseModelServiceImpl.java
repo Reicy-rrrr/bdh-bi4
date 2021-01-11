@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -129,16 +130,21 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     @Override
     public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
-        BaseComponentDataResponse response = SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
-        Map<String, Object> extraMap = Maps.newHashMap();
-        if (MapUtils.isNotEmpty(response.getExtra())) {
-            extraMap = response.getExtra();
+        BaseComponentDataResponse response = new BaseComponentDataResponse();
+        try {
+            response = SpringUtil.getBean(name, AnalyseDataService.class).handle(request);
+            Map<String, Object> extraMap = Maps.newHashMap();
+            if (MapUtils.isNotEmpty(response.getExtra())) {
+                extraMap = response.getExtra();
+            }
+            if (MapUtils.isNotEmpty(joinDataUnit(request, response))) {
+                extraMap.putAll(joinDataUnit(request, response));
+            }
+            response.setExtra(extraMap);
+        } catch (SQLException e) {
+            response.setRows(null);
         }
-        if (MapUtils.isNotEmpty(joinDataUnit(request, response))) {
-            extraMap.putAll(joinDataUnit(request, response));
-        }
-        response.setExtra(extraMap);
-        return response;
+            return response;
     }
 
     /*
