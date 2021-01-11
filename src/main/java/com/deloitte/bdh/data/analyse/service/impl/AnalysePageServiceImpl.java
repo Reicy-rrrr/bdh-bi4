@@ -86,7 +86,11 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
-        PageHelper.startPage(request.getPage(), request.getSize());
+        if (0 == request.getSize()) {
+            PageHelper.startPage(request.getPage(), request.getSize(), false, false, true);
+        } else {
+            PageHelper.startPage(request.getPage(), request.getSize());
+        }
         SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
         selectPublishedPageDto.setUserId(ThreadLocalHolder.getOperator());
         selectPublishedPageDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());

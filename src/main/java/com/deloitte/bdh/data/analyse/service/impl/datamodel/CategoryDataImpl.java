@@ -79,6 +79,20 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
 
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
+        Map<String, String> precisionMap = Maps.newHashMap();
+        Map<String, String> dataUnitMap = Maps.newHashMap();
+        for (DataModelField y : yList) {
+            String colName = y.getId();
+            if (StringUtils.isNotBlank(y.getAlias())) {
+                colName = y.getAlias();
+            }
+            if (null != y.getPrecision()) {
+                precisionMap.put(colName, y.getPrecision().toString());
+            }
+            if (StringUtils.isNotBlank(y.getDataUnit())) {
+                dataUnitMap.put(colName, y.getDataUnit());
+            }
+        }
         for (Map<String, Object> row : rows) {
 
             //x轴名称
@@ -119,10 +133,47 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
                 }
 
                 newRow.put("value", MapUtils.getObject(row, colName));
+
+                //设置精度和数据单位
+                if (null != MapUtils.getObject(precisionMap, colName)) {
+                    newRow.put("precision", MapUtils.getObject(precisionMap, colName));
+                }
+                if (null != MapUtils.getObject(dataUnitMap, colName)) {
+                    newRow.put("dataUnit", MapUtils.getObject(dataUnitMap, colName));
+                }
                 newRows.add(newRow);
             }
         }
         return newRows;
+    }
+
+    private void setExtraField(DataModel dataModel, List<Map<String, Object>> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            Map<String, String> precisionMap = Maps.newHashMap();
+            Map<String, String> dataUnitMap = Maps.newHashMap();
+            for (DataModelField field : dataModel.getX()) {
+                String name = field.getId();
+                if (StringUtils.isNotBlank(field.getAlias())) {
+                    name = field.getAlias();
+                }
+                if (null != field.getPrecision()) {
+                    precisionMap.put(name, field.getPrecision().toString());
+                }
+                if (StringUtils.isNotBlank(field.getDataUnit())) {
+                    dataUnitMap.put(name, field.getDataUnit());
+                }
+            }
+            for (Map<String, Object> map : list) {
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    if (null != MapUtils.getObject(precisionMap, entry.getKey())) {
+                        map.put(entry.getKey() + "-precision", MapUtils.getObject(precisionMap, entry.getKey()));
+                    }
+                    if (null != MapUtils.getObject(dataUnitMap, entry.getKey())) {
+                        map.put(entry.getKey() + "-dataUnit", MapUtils.getObject(dataUnitMap, entry.getKey()));
+                    }
+                }
+            }
+        }
     }
 
     private Map<String, MaxMinDto> getMinMax(List<Map<String, Object>> rows) {

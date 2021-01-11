@@ -6,7 +6,10 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -47,10 +50,40 @@ public abstract class AbstractDataService {
         if (StringUtils.isNotBlank(sql)) {
             list = sourceSelection.execute(dataModel, sql);
         }
+//        setExtraField(dataModel, list);
         response.setRows(rowsInterface.set(list));
         response.setTotal(sourceSelection.getCount(dataModel));
         response.setSql(sql);
         return response;
+    }
+
+    private void setExtraField(DataModel dataModel, List<Map<String, Object>> list) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            Map<String, String> precisionMap = Maps.newHashMap();
+            Map<String, String> dataUnitMap = Maps.newHashMap();
+            for (DataModelField field : dataModel.getX()) {
+                String name = field.getId();
+                if (StringUtils.isNotBlank(field.getAlias())) {
+                    name = field.getAlias();
+                }
+                if (null != field.getPrecision()) {
+                    precisionMap.put(name, field.getPrecision().toString());
+                }
+                if (StringUtils.isNotBlank(field.getDataUnit())) {
+                    dataUnitMap.put(name, field.getDataUnit());
+                }
+            }
+            for (Map<String, Object> map : list) {
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    if (null != MapUtils.getObject(precisionMap, entry.getKey())) {
+                        map.put(entry.getKey() + "-precision", MapUtils.getObject(precisionMap, entry.getKey()));
+                    }
+                    if (null != MapUtils.getObject(dataUnitMap, entry.getKey())) {
+                        map.put(entry.getKey() + "-dataUnit", MapUtils.getObject(dataUnitMap, entry.getKey()));
+                    }
+                }
+            }
+        }
     }
 
     final protected String buildSql(DataModel dataModel) {
