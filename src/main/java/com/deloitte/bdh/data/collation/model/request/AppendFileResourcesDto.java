@@ -27,6 +27,7 @@ public class AppendFileResourcesDto {
     private String fileId;
 
     @ApiModelProperty(value = "字段类型", example = "id:1, code:2, value:3", required = true)
+    @NotNull(message = "字段类型 不能为空")
     private Map<String, String> columns;
 
     @ApiModelProperty(value = "数据源名称", example = "数据源名称", required = true)

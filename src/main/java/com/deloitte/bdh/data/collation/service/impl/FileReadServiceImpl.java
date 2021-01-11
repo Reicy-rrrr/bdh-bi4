@@ -166,7 +166,7 @@ public class FileReadServiceImpl implements FileReadService {
 
             readResult.setHeaders(headers);
             List<Map<String, Object>> lines = Lists.newArrayList();
-            for (int rowIndex = 1; rowIndex < dataSheet.getLastRowNum(); rowIndex++) {
+            for (int rowIndex = 1; rowIndex <= dataSheet.getLastRowNum(); rowIndex++) {
                 Row row = dataSheet.getRow(rowIndex);
                 Map<String, Object> document = Maps.newHashMap();
                 for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {

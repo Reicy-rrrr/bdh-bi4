@@ -31,5 +31,6 @@ public class CreateFileResourcesDto {
     private String fileId;
 
     @ApiModelProperty(value = "字段类型", example = "id:1, code:2, value:3", required = true)
+    @NotNull(message = "字段类型 不能为空")
     private LinkedHashMap<String, String> columns;
 }
