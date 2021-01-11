@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -65,10 +66,12 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
             }
             //求百分比
             for (Map<String, Object> map : result) {
-                BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
-                        .multiply(new BigDecimal("100"))
-                        .divide(count, 2, BigDecimal.ROUND_HALF_UP);
-                map.put("percent", per.doubleValue());
+                if (!NumberUtils.DOUBLE_ZERO.equals(count.doubleValue())) {
+                    BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
+                            .multiply(new BigDecimal("100"))
+                            .divide(count, 2, BigDecimal.ROUND_HALF_UP);
+                    map.put("percent", per.doubleValue());
+                }
             }
             return result;
         });
