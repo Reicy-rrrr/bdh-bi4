@@ -52,4 +52,17 @@ public class KafkaMessage<T> {
     public void process() {
         SpringUtil.getBean(this.beanName, Consumer.class).invoke(this);
     }
+
+    @Override
+    public String toString() {
+        return "KafkaMessage{" +
+                "tenantCode='" + tenantCode + '\'' +
+                ", tenantId='" + tenantId + '\'' +
+                ", operator='" + operator + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", body='" + body + '\'' +
+                ", beanName='" + beanName + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }
