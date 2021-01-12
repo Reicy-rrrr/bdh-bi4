@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import com.deloitte.bdh.common.properties.BiProperties;
+import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.Producter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +26,7 @@ public class KafkaProducter implements Producter {
         try {
             KafkaProducer<String, String> producer = init();
             String key = message.getKey();
-            String value = message.getBody();
-
-            ProducerRecord<String, String> kafkaMessage = new ProducerRecord<>(properties.getKafkaTopic(), key, value);
+            ProducerRecord<String, String> kafkaMessage = new ProducerRecord<>(properties.getKafkaTopic(), key, JsonUtil.obj2String(message));
             Future<RecordMetadata> future = producer.send(kafkaMessage);
             producer.flush();
             //同步获得Future对象的结果。
