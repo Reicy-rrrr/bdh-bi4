@@ -114,7 +114,7 @@ public class ArrangeComponent implements ComponentHandler {
         Set<String> excludeFields = Sets.newHashSet();
         switch (arrangeType) {
             case REMOVE:
-                excludeFields.addAll(remove(context));
+                excludeFields.addAll(remove(component, context));
                 break;
             case SPLIT:
                 arrangeCases.addAll(split(component, context));
@@ -258,8 +258,15 @@ public class ArrangeComponent implements ComponentHandler {
      *
      * @param context 移除字段
      */
-    private Set<String> remove(String context) {
+    private Set<String> remove(ComponentModel component, String context) {
+        ComponentModel fromComponent = component.getFrom().get(0);
         List<String> fields = JSONArray.parseArray(context, String.class);
+        if (CollectionUtils.isEmpty(fields)) {
+            throw new BizException("Arrange component remove error: 移除的字段列表不能为空");
+        }
+        if (fromComponent.getFields().size() == fields.size()) {
+            throw new BizException("Arrange component remove error: 不能移除所有字段");
+        }
         return Sets.newHashSet(fields);
     }
 
@@ -558,6 +565,24 @@ public class ArrangeComponent implements ComponentHandler {
         }
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
+
+        if (fromComponent.getFieldMappings().size() != modifyModels.size()) {
+            throw new BizException(" 字段列表发生变化，请重新编辑");
+        }
+
+        for (FieldMappingModel var : fromComponent.getFieldMappings()) {
+            boolean exist = false;
+            for (ArrangeModifyModel var2 : modifyModels) {
+                if (var.getTempFieldName().equals(var2.getName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException(" 字段列表发生变化，请重新设置");
+            }
+        }
+
         Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
 
