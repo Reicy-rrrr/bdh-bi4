@@ -52,7 +52,7 @@ public class AnalyseHana extends AbstractRela {
         if (CollectionUtils.isNotEmpty(model.getX())) {
             for (DataModelField s : model.getX()) {
                 String express = HanaBuildUtil.select(model.getTableName(), s.getId(), s.getQuota(), s.getAggregateType(),
-                        s.getFormatType(), s.getDataType(), s.getPrecision(), s.getAlias(), s.getDefaultValue());
+                        s.getFormatType(), s.getDataType(), s.getDataUnit(), s.getPrecision(), s.getAlias(), s.getDefaultValue());
                 if (StringUtils.isNotBlank(express)) {
                     list.add(express);
                 }

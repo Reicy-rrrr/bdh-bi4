@@ -4,6 +4,7 @@ import com.beust.jcommander.internal.Maps;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
@@ -80,6 +81,13 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
         map.put("field", field.getId());
         map.put("alias", field.getAlias());
         map.put("value", value);
+        //设置精度和数据单位
+        if (null != field.getPrecision()) {
+            map.put("precision", field.getPrecision());
+        }
+        if (StringUtils.isNotBlank(field.getDataUnit())) {
+            map.put("dataUnit", DataUnitEnum.getDesc(field.getDataUnit()));
+        }
         return map;
     }
 

@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.sql.utils;
 
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.sql.enums.SqlserverFormatTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SQLServerDataTypeEnum;
 import com.google.common.collect.Lists;
@@ -29,12 +30,15 @@ public class SqlserverBuildUtil extends RelaBaseBuildUtil{
             "'");
 
     public static String select(String tableName, String field, String quota, String aggregateType,
-                                String formatType, String dataType, Integer precision, String alias, String defaultValue) {
+                                String formatType, String dataType, String dataUnit, Integer precision, String alias, String defaultValue) {
         //获取表名+字段名
         String fieldExpress = selectField(tableName, field);
         //判断度量和维度
         if (DataModelTypeEnum.DL.getCode().equals(quota)) {
             fieldExpress = aggregate(fieldExpress, aggregateType);
+            if (StringUtils.isNotBlank(dataUnit)) {
+                fieldExpress = calWithUnit(fieldExpress, dataUnit);
+            }
             //设置度量的精度
             if (StringUtils.isNotBlank(dataType) && null != precision && MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
                 fieldExpress = formatPrecision(fieldExpress, precision);
@@ -112,6 +116,10 @@ public class SqlserverBuildUtil extends RelaBaseBuildUtil{
 
     private static String format(String field, String formatType) {
         return SqlserverFormatTypeEnum.get(formatType).expression(field);
+    }
+
+    private static String calWithUnit(String field, String dataUnit) {
+        return DataUnitEnum.values(dataUnit).expression(field);
     }
 
 }

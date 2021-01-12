@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
@@ -38,12 +39,20 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
             List<DataModelField> fields = request.getDataConfig().getDataModel().getX();
             List<String> wds = Lists.newArrayList();
             List<String> dls = Lists.newArrayList();
+            Map<String, String> precisionMap = Maps.newHashMap();
+            Map<String, String> dataUnitMap = Maps.newHashMap();
             for (DataModelField field : fields) {
                 String name = StringUtils.isBlank(field.getAlias()) ? field.getId() : field.getAlias();
                 if (DataModelTypeEnum.WD.getCode().equals(field.getQuota())) {
                     wds.add(name);
                 } else {
                     dls.add(name);
+                }
+                if (null != field.getPrecision()) {
+                    precisionMap.put(name, field.getPrecision().toString());
+                }
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(field.getDataUnit())) {
+                    dataUnitMap.put(name, field.getDataUnit());
                 }
             }
 
@@ -61,6 +70,18 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
                 for (String str : dls) {
                     one.put("count", map.get(str));
                     count = count.add(new BigDecimal(String.valueOf(map.get(str))));
+                }
+
+                //设置精度和数据单位
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    if (null != MapUtils.getObject(precisionMap, entry.getKey())) {
+                        one.put("precision", MapUtils.getObject(precisionMap, entry.getKey()));
+                    }
+                }
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    if (null != MapUtils.getObject(dataUnitMap, entry.getKey())) {
+                        one.put("dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, entry.getKey())));
+                    }
                 }
                 result.add(one);
             }

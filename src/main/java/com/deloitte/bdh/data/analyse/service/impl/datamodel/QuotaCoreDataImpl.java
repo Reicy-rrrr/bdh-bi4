@@ -4,6 +4,7 @@ import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
@@ -20,6 +21,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +45,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
             }
             //未开启直接返回
             if (!isOpen(dataModel)) {
-                return decoration(setDefalut(dataModel, list));
+                return decoration(dataModel, setDefalut(dataModel, list));
             }
 
             List<Map<String, Object>> sourceSqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
@@ -177,7 +179,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                     }
                 }
             }
-            return decoration(sourceSqlList);
+            return decoration(dataModel, sourceSqlList);
         });
     }
 
@@ -561,7 +563,7 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         return list;
     }
 
-    private List<Map<String, Object>> decoration(List<Map<String, Object>> args) {
+    private List<Map<String, Object>> decoration(DataModel dataModel, List<Map<String, Object>> args) {
         List<Map<String, Object>> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(args)) {
             for (Map<String, Object> args0 : args) {
@@ -573,6 +575,14 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                         newMap.put("name", var.getKey());
                         newMap.put("value", var.getValue());
                     }
+                }
+                DataModelField field = dataModel.getX().get(0);
+                //设置精度和数据单位
+                if (null != field.getPrecision()) {
+                    newMap.put("precision", field.getPrecision());
+                }
+                if (StringUtils.isNotBlank(field.getDataUnit())) {
+                    newMap.put("dataUnit", DataUnitEnum.getDesc(field.getDataUnit()));
                 }
                 list.add(newMap);
             }

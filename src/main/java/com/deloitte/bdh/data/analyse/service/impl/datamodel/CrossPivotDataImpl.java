@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -65,6 +66,8 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
             if (CollectionUtils.isNotEmpty(dataModel.getX())) {
                 List<String> colNameWDList = Lists.newArrayList();
                 List<String> colNameDLList = Lists.newArrayList();
+                Map<String, String> precisionMap = Maps.newHashMap();
+                Map<String, String> dataUnitMap = Maps.newHashMap();
                 for (int i = 0; i < dataModel.getX().size(); i++) {
                     String quota = dataModel.getX().get(i).getQuota();
                     String colName = dataModel.getX().get(i).getId();
@@ -76,16 +79,40 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
                     } else {
                         colNameDLList.add(colName);
                     }
+                    if (null != dataModel.getX().get(i).getPrecision()) {
+                        precisionMap.put(colName, dataModel.getX().get(i).getPrecision().toString());
+                    }
+                    if (StringUtils.isNotBlank(dataModel.getX().get(i).getDataUnit())) {
+                        dataUnitMap.put(colName, dataModel.getX().get(i).getDataUnit());
+                    }
                 }
+                List<Map<String, Object>> newRows = Lists.newArrayList();
+                for (Map<String, Object> row : rows) {
+                    Map<String, Object> newRow = Maps.newHashMap();
+                    newRow.putAll(row);
+                    //设置精度和数据单位
+                    for (Map.Entry<String, Object> entry : row.entrySet()) {
+                        if (null != MapUtils.getObject(precisionMap, entry.getKey())) {
+                            newRow.put(entry.getKey() + "-precision", MapUtils.getObject(precisionMap, entry.getKey()));
+                        }
+                    }
+                    for (Map.Entry<String, Object> entry : row.entrySet()) {
+                        if (null != MapUtils.getObject(dataUnitMap, entry.getKey())) {
+                            newRow.put(entry.getKey() + "-dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, entry.getKey())));
+                        }
+                    }
+                    newRows.add(newRow);
+                }
+                response.setRows(newRows);
                 String[] colNameWDArr = colNameWDList.toArray(new String[0]);
                 String[] colNameDLArr = colNameDLList.toArray(new String[0]);
 
                 //构造树形结构
-                List<ListTree> x = buildTree(rows, "", 0, colNameWDArr, colNameDLArr);
+                List<ListTree> x = buildTree(newRows, "", 0, colNameWDArr, colNameDLArr, precisionMap, dataUnitMap);
                 columns.put("x", x);
             }
 
-            if (CollectionUtils.isNotEmpty(dataModel.getX())) {
+            if (CollectionUtils.isNotEmpty(dataModel.getY())) {
                 String[] colNameYArr = new String[dataModel.getY().size()];
                 for (int i = 0; i < dataModel.getY().size(); i++) {
                     String colName = dataModel.getY().get(i).getId();
@@ -98,14 +125,15 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
         }
     }
 
-    private List<ListTree> buildTree(List<Map<String, Object>> rows, String parentName, int currentNode, String[] colNameWDArr, String[] colNameDLArr) {
+    private List<ListTree> buildTree(List<Map<String, Object>> rows, String parentName, int currentNode, String[] colNameWDArr,
+                                     String[] colNameDLArr, Map<String, String> precisionMap, Map<String, String> dataUnitMap) {
         List<ListTree> treeDataModels = Lists.newArrayList();
 
         Map<String, List<Map<String, Object>>> keyMap = Maps.newHashMap();
         for (Map<String, Object> row : rows) {
             for (int i = 0; i < colNameWDArr.length; i++) {
+                String name = MapUtils.getString(row, colNameWDArr[i]);
                 if (i == currentNode) {
-                    String name = MapUtils.getString(row, colNameWDArr[i]);
                     if (keyMap.containsKey(name)) {
                         keyMap.get(name).add(row);
                     } else {
@@ -114,8 +142,8 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
                         keyMap.put(name, list);
                     }
                 }
-            }
 
+            }
         }
         for (String key : keyMap.keySet()) {
             ListTree tree = new ListTree();
@@ -132,7 +160,8 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
                     tree.setKey(key);
                 }
 //                tree.setKey(colNameArr[currentNode]);
-                tree.setChildren(buildTree(keyMap.get(key), tree.getKey(), currentNode + 1, colNameWDArr, colNameDLArr));
+                tree.setChildren(buildTree(keyMap.get(key), tree.getKey(), currentNode + 1, colNameWDArr,
+                        colNameDLArr, precisionMap, dataUnitMap));
                 treeDataModels.add(tree);
                 //长度大于1才添加度量为最后一级
                 if (null != colNameDLArr && colNameDLArr.length > 1) {

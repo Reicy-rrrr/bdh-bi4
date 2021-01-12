@@ -1,15 +1,18 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +24,21 @@ public class QuotaDashboardDataImpl extends AbstractDataService implements Analy
 
     @Override
     public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
-        return execute(request.getDataConfig().getDataModel(), buildSql(request.getDataConfig().getDataModel()));
+        DataModel dataModel = request.getDataConfig().getDataModel();
+        BaseComponentDataResponse response = execute(dataModel, buildSql(request.getDataConfig().getDataModel()));
+        List<Map<String, Object>> rows = response.getRows();
+        DataModelField field = dataModel.getX().get(0);
+        if (CollectionUtils.isNotEmpty(rows)) {
+            Map<String, Object> map = rows.get(0);
+            //设置精度和数据单位
+            if (null != field.getPrecision()) {
+                map.put("precision", field.getPrecision());
+            }
+            if (StringUtils.isNotBlank(field.getDataUnit())) {
+                map.put("dataUnit", DataUnitEnum.getDesc(field.getDataUnit()));
+            }
+        }
+        return response;
     }
 
     @Override

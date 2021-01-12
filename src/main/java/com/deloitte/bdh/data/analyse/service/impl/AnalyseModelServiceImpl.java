@@ -34,6 +34,7 @@ import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +52,7 @@ import java.util.Objects;
  * @author chenghzhang
  * @date 2020/10/27
  */
+@Slf4j
 @Service
 @DS(DSConstant.BI_DB)
 public class AnalyseModelServiceImpl implements AnalyseModelService {
@@ -142,6 +144,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             }
             response.setExtra(extraMap);
         } catch (SQLException e) {
+            log.error(e.getMessage());
             response.setRows(null);
         }
             return response;

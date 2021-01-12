@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.enums.MapEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -94,6 +95,20 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                 symbolSizeField = JSONObject.parseObject(JSON.toJSONString(symbolS), DataModelField.class);
             }
         }
+        Map<String, String> precisionMap = Maps.newHashMap();
+        Map<String, String> dataUnitMap = Maps.newHashMap();
+        for (DataModelField y : yList) {
+            String colName = y.getId();
+            if (StringUtils.isNotBlank(y.getAlias())) {
+                colName = y.getAlias();
+            }
+            if (null != y.getPrecision()) {
+                precisionMap.put(colName, y.getPrecision().toString());
+            }
+            if (StringUtils.isNotBlank(y.getDataUnit())) {
+                dataUnitMap.put(colName, y.getDataUnit());
+            }
+        }
 
         for (Map<String, Object> row : rows) {
 
@@ -159,6 +174,14 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                     if (!Double.isNaN(symbolSize)) {
                         newRow.put("symbolSize", StringUtils.join(symbolSizeName, ": ", symbolSize));
                     }
+                }
+
+                //设置精度和数据单位
+                if (null != MapUtils.getObject(precisionMap, colName)) {
+                    newRow.put("precision", MapUtils.getObject(precisionMap, colName));
+                }
+                if (null != MapUtils.getObject(dataUnitMap, colName)) {
+                    newRow.put("dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, colName)));
                 }
                 newRows.add(newRow);
             }

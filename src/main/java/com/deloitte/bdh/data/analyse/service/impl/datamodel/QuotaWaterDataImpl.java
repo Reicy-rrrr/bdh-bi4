@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
@@ -36,11 +37,19 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
             List<Map<String, Object>> result = Lists.newArrayList();
             Map<String, Object> map = Maps.newHashMap();
             //度量只会一个
+            DataModelField field = dataModel.getX().get(0);
             for (Map<String, Object> var : list) {
                 for (Map.Entry<String, Object> param : var.entrySet()) {
                     map.put("name", param.getKey());
                     map.put("percent", new BigDecimal(String.valueOf(param.getValue())));
                 }
+            }
+            //设置精度和数据单位
+            if (null != field.getPrecision()) {
+                map.put("precision", field.getPrecision());
+            }
+            if (StringUtils.isNotBlank(field.getDataUnit())) {
+                map.put("dataUnit", DataUnitEnum.getDesc(field.getDataUnit()));
             }
             result.add(map);
             return result;

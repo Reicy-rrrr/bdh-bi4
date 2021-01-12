@@ -6,6 +6,7 @@ import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
@@ -141,8 +142,25 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
                 scatterNameField = JSONObject.parseObject(JSON.toJSONString(scatterN), DataModelField.class);
             }
         }
-        for (Map<String, Object> row : rows) {
 
+        Map<String, String> precisionMap = Maps.newHashMap();
+        Map<String, String> dataUnitMap = Maps.newHashMap();
+        for (DataModelField x : dataModel.getX()) {
+            String colName = x.getId();
+            if (StringUtils.isNotBlank(x.getAlias())) {
+                colName = x.getAlias();
+            }
+            if (null != x.getPrecision()) {
+                precisionMap.put(colName, x.getPrecision().toString());
+            }
+            if (StringUtils.isNotBlank(x.getDataUnit())) {
+                dataUnitMap.put(colName, x.getDataUnit());
+            }
+        }
+        List<Map<String, Object>> newRows = com.google.common.collect.Lists.newArrayList();
+        for (Map<String, Object> row : rows) {
+            Map<String, Object> newRow = Maps.newHashMap();
+            newRow.putAll(row);
             //散点名称
             String scatterColName = getColName(scatterNameField);
             String scatterName = "";
@@ -156,22 +174,34 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
                 String cateColName = getColName(cateModel);
                 String cateName = MapUtils.getString(row, cateColName);
                 if (cateModel.getQuota().equals(DataModelTypeEnum.WD.getCode())) {
-                    row.put("category", cateName);
+                    newRow.put("category", cateName);
                 }
                 if (StringUtils.isNotEmpty(scatterName)) {
                     if (cateModel.getQuota().equals(DataModelTypeEnum.DL.getCode())) {
-                        row.put("name", scatterName);
+                        newRow.put("name", scatterName);
                     } else if (cateModel.getQuota().equals(DataModelTypeEnum.WD.getCode())) {
-                        row.put("name", cateName + "-" + scatterName);
+                        newRow.put("name", cateName + "-" + scatterName);
                     }
                 }
             } else {
                 if (StringUtils.isNotEmpty(scatterName)) {
-                    row.put("name", scatterName);
+                    newRow.put("name", scatterName);
                 }
             }
+            //设置精度和数据单位
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                if (null != MapUtils.getObject(precisionMap, entry.getKey())) {
+                    newRow.put(entry.getKey() + "-precision", MapUtils.getObject(precisionMap, entry.getKey()));
+                }
+            }
+            for (Map.Entry<String, Object> entry : row.entrySet()) {
+                if (null != MapUtils.getObject(dataUnitMap, entry.getKey())) {
+                    newRow.put(entry.getKey() + "-dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, entry.getKey())));
+                }
+            }
+            newRows.add(newRow);
         }
-        return rows;
+        return newRows;
     }
 
     @Override

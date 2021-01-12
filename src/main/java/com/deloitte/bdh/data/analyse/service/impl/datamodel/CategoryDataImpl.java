@@ -148,35 +148,6 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         return newRows;
     }
 
-    private void setExtraField(DataModel dataModel, List<Map<String, Object>> list) {
-        if (CollectionUtils.isNotEmpty(list)) {
-            Map<String, String> precisionMap = Maps.newHashMap();
-            Map<String, String> dataUnitMap = Maps.newHashMap();
-            for (DataModelField field : dataModel.getX()) {
-                String name = field.getId();
-                if (StringUtils.isNotBlank(field.getAlias())) {
-                    name = field.getAlias();
-                }
-                if (null != field.getPrecision()) {
-                    precisionMap.put(name, field.getPrecision().toString());
-                }
-                if (StringUtils.isNotBlank(field.getDataUnit())) {
-                    dataUnitMap.put(name, field.getDataUnit());
-                }
-            }
-            for (Map<String, Object> map : list) {
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    if (null != MapUtils.getObject(precisionMap, entry.getKey())) {
-                        map.put(entry.getKey() + "-precision", MapUtils.getObject(precisionMap, entry.getKey()));
-                    }
-                    if (null != MapUtils.getObject(dataUnitMap, entry.getKey())) {
-                        map.put(entry.getKey() + "-dataUnit", MapUtils.getObject(dataUnitMap, entry.getKey()));
-                    }
-                }
-            }
-        }
-    }
-
     private Map<String, MaxMinDto> getMinMax(List<Map<String, Object>> rows) {
         Map<String, MaxMinDto> result = Maps.newHashMap();
         Map<String, List<Object>> categoryMap = Maps.newHashMap();
