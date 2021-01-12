@@ -263,17 +263,17 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
 
         if (StringUtils.equals(publishDto.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
-            updatePage(publishDto, originPage, originConfig);
+            updatePage(publishDto, originPage, originConfig, "false");
         } else {
             String password = publishDto.getPassword();
 
             //获取公开状态
             String isPublic = publishDto.getIsPublic();
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                updatePage(publishDto, originPage, originConfig);
+                updatePage(publishDto, originPage, originConfig, isPublic);
             } else {
                 if (originPage.getParentId().equals(categoryId)) {
-                    updatePage(publishDto, originPage, originConfig);
+                    updatePage(publishDto, originPage, originConfig, isPublic);
                 } else {
                     List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
                             .eq(BiUiAnalysePage::getParentId, categoryId)
@@ -305,7 +305,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         //把新的pageId传给权限操作
                         dto.setId(newPageId);
                     } else {
-                        updatePage(publishDto, originPage, originConfig);
+                        updatePage(publishDto, originPage, originConfig, isPublic);
                     }
                 }
             }
@@ -321,7 +321,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return null;
     }
 
-    private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig) {
+    private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig, String isPublic) {
 
         //新建config
         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
@@ -334,6 +334,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         newConfig.setTenantId(ThreadLocalHolder.getTenantId());
         configService.save(newConfig);
         //更新page
+        if (StringUtils.isNotBlank(isPublic)){
+            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+                originPage.setIsPublic("1");
+            } else {
+                originPage.setIsPublic("0");
+            }
+        }
         originPage.setPublishId(newConfig.getId());
         if (StringUtils.isEmpty(originPage.getOriginPageId())) {
             originPage.setOriginPageId(originPage.getId());

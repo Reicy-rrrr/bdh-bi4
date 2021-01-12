@@ -13,6 +13,7 @@
         <result column="ICON" property="icon"/>
         <result column="ORIGIN_PAGE_ID" property="originPageId"/>
         <result column="DELOITTE_FLAG" property="deloitteFlag"/>
+        <result column="IS_PUBLIC" property="isPublic"/>
     </resultMap>
 
     <select id="selectPublishedPage" resultMap="BaseResultMap">
@@ -25,7 +26,8 @@
         t1.ICON,
         t1.CATEGORY_ID,
         t1.EDIT_ID,
-        t1.PUBLISH_ID
+        t1.PUBLISH_ID,
+        t1.IS_PUBLIC
         FROM
         BI_UI_ANALYSE_PAGE t1
         LEFT JOIN (

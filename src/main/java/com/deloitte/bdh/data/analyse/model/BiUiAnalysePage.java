@@ -80,6 +80,9 @@ public class BiUiAnalysePage implements Serializable {
     @TableField("IS_EDIT")
     private String isEdit;
 
+    @TableField("IS_PUBLIC")
+    private String isPublic;
+
     @TableField("IP")
     private String ip;
 
