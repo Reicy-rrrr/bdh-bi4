@@ -1,6 +1,9 @@
-package com.deloitte.bdh.data.collation.consumer;
+package com.deloitte.bdh.data.collation.mq.consumer;
 
 import com.deloitte.bdh.common.properties.BiProperties;
+import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,7 +22,7 @@ import java.util.Properties;
 
 @Slf4j
 @Component
-public class KafkaConsumerDemo implements ApplicationRunner {
+public class BiConsumer implements ApplicationRunner {
     @Resource
     private BiProperties properties;
 
@@ -33,6 +36,10 @@ public class KafkaConsumerDemo implements ApplicationRunner {
                 //建议开一个单独的线程池来消费消息，然后异步返回结果。
                 for (ConsumerRecord<String, String> record : records) {
                     log.info("测试消费体：" + record.toString());
+                    KafkaMessage message = JsonUtil.string2Obj(record.value(), KafkaMessage.class);
+                    if (null != message) {
+                        ThreadLocalHolder.async(message.getTenantCode(), message.getTenantId(), message.getOperator(), message::process);
+                    }
                 }
             } catch (Exception e) {
                 try {

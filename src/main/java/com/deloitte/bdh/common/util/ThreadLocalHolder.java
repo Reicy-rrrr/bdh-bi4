@@ -104,6 +104,13 @@ public final class ThreadLocalHolder {
         });
     }
 
+    public static void async(String tenantCode, String tenantId, String operator, Async async) {
+        set("tenantCode", tenantCode);
+        set("tenantId", tenantId);
+        set("operator", operator);
+        async(async);
+    }
+
     public interface Async {
         void invoke() throws Exception;
     }

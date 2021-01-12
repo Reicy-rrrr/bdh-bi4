@@ -6,11 +6,11 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
-import com.deloitte.bdh.data.collation.service.KafkaTestService;
+import com.deloitte.bdh.data.collation.service.Producter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -170,12 +170,13 @@ public class NifiController {
     @ApiOperation(value = "getTime", notes = "getTime")
     @PostMapping("/getTime")
     public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        kafkaTestService.send(request.getData());
+        KafkaMessage message = new KafkaMessage(null, request, request.getData());
+        producter.send(message);
         return RetResponse.makeOKRsp("ok");
     }
 
     @Autowired
     private BiProperties biProperties;
     @Autowired
-    private KafkaTestService kafkaTestService;
+    private Producter producter;
 }
