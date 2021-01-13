@@ -8,7 +8,7 @@ import java.util.List;
 
 
 @Data
-public class AnalyseFieldTree {
+public class AnalyseDataModelTree {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,47 +53,60 @@ public class AnalyseFieldTree {
     /**
      * 所在文件夹
      */
-    @TableField("FOLDER_ID")
+    @ApiModelProperty("FOLDER_ID")
     private String folderId;
 
     /**
      * 别名
      */
-    @TableField("ALIAS_NAME")
+    @ApiModelProperty("ALIAS_NAME")
     private String aliasName;
 
     /**
      * 是否隐藏
      */
-    @TableField("IS_HIDDEN")
+    @ApiModelProperty("IS_HIDDEN")
     private String isHidden;
 
     /**
      * 排序
      */
-    @TableField("SORT_ORDER")
+    @ApiModelProperty("SORT_ORDER")
     private String sortOrder;
 
     /**
      * 是否维度
      */
-    @TableField("IS_DIMENTION")
+    @ApiModelProperty("IS_DIMENTION")
     private String isDimention;
 
     /**
      * 是否度量
      */
-    @TableField("IS_MENSURE")
+    @ApiModelProperty("IS_MENSURE")
     private String isMensure;
 
     /**
      * 地理信息类型
      */
-    @TableField("GEO_INFO_TYPE")
+    @ApiModelProperty("GEO_INFO_TYPE")
     private String geoInfoType;
+
+    /**
+     * 数据模型id
+     */
+    @ApiModelProperty(value = "数据模型id", example = "")
+    private String modelId;
+
+    /**
+     * 类型
+     */
+    @ApiModelProperty(value = "类型", example = "")
+    private String childrenType;
+
     /**
      * 树状展开需要字段
      */
     @ApiModelProperty(value = "下级数据")
-    List<AnalyseFieldTree> children;
+    List<AnalyseDataModelTree> children;
 }

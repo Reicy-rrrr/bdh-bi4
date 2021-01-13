@@ -22,7 +22,6 @@ import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -112,21 +111,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
         //设置文件夹权限
         userResourceService.setCategoryPermission(categoryList);
-        //查询page
-//        List<BiUiAnalysePage> pageList = new ArrayList<>();
-//        LambdaQueryWrapper<BiUiAnalysePage> pageLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        //模糊查询pageName或者在文件夹下的page都符合条件
-//        if (CollectionUtils.isNotEmpty(categoryList)) {
-//            List<String> categoryIds = new ArrayList<>();
-//            categoryList.forEach(category -> categoryIds.add(category.getId()));
-//            pageLambdaQueryWrapper.or(wrapper -> wrapper.in(BiUiAnalysePage::getParentId, categoryIds)
-//                    .or().like(BiUiAnalysePage::getName, request.getData().getName()));
-//        } else {
-//            pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
-//        }
-//        pageLambdaQueryWrapper.isNotNull(BiUiAnalysePage::getPublishId);
-//        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode());
-//        pageList = pageService.list(pageLambdaQueryWrapper);
 
         //查询page
         SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
@@ -161,7 +145,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         for (AnalyseCategoryDto categoryDto : categoryList) {
             AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
             BeanUtils.copyProperties(categoryDto, categoryTree);
-            categoryTree.setChildrenType(CategoryTreeChildrenTypeEnum.CATEGORY.getCode());
+            categoryTree.setChildrenType(TreeChildrenTypeEnum.CATEGORY.getCode());
             //将页面和文件夹放到同一个children，通过children type区分
             List<AnalysePageDto> pageDtoList = pageDtoMapTmp.get(categoryDto.getId());
             List<AnalyseCategoryTree> childrenPageList = Lists.newArrayList();
@@ -169,7 +153,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                 for (AnalysePageDto dto : pageDtoList) {
                     AnalyseCategoryTree tree = new AnalyseCategoryTree();
                     BeanUtils.copyProperties(dto, tree);
-                    tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
+                    tree.setChildrenType(TreeChildrenTypeEnum.PAGE.getCode());
                     childrenPageList.add(tree);
                 }
                 categoryTree.setChildren(childrenPageList);
@@ -249,7 +233,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
             if (parentId.equals(categoryTree.getParentId())) {
                 categoryTree.setChildren(buildCategoryTree(categoryList, pageDtoMap, categoryTree.getId()));
-                categoryTree.setChildrenType(CategoryTreeChildrenTypeEnum.CATEGORY.getCode());
+                categoryTree.setChildrenType(TreeChildrenTypeEnum.CATEGORY.getCode());
                 treeDataModels.add(categoryTree);
 
                 //将页面和文件夹放到同一个children，通过children type区分
@@ -259,7 +243,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                     for (AnalysePageDto dto : pageDtoList) {
                         AnalyseCategoryTree tree = new AnalyseCategoryTree();
                         BeanUtils.copyProperties(dto, tree);
-                        tree.setChildrenType(CategoryTreeChildrenTypeEnum.PAGE.getCode());
+                        tree.setChildrenType(TreeChildrenTypeEnum.PAGE.getCode());
                         pageList.add(tree);
                     }
                     if (CollectionUtils.isEmpty(categoryTree.getChildren())) {

@@ -6,15 +6,11 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
-import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
-import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
-import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.*;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -22,8 +18,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
-import com.deloitte.bdh.data.analyse.model.resp.AnalyseFieldTree;
-import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
+import com.deloitte.bdh.data.analyse.model.resp.*;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
@@ -82,50 +77,85 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     }
 
     @Override
-    public void saveDataTree(RetRequest<List<AnalyseFolderTree>> request) {
-        List<AnalyseFolderTree> folderTreeList = request.getData();
+    public void saveDataTree(RetRequest<List<AnalyseDataModelTree>> request) {
+        List<AnalyseDataModelTree> dataModelTreeList = request.getData();
         List<BiUiModelFolder> folderList = Lists.newArrayList();
         List<BiUiModelField> fieldList = Lists.newArrayList();
-        for (AnalyseFolderTree folderTree : folderTreeList) {
-            BiUiModelFolder folder = new BiUiModelFolder();
-            BeanUtils.copyProperties(folderTree, folder);
-            folderList.add(folder);
-            List<BiUiModelField> stepFieldList = fieldTreeToList(folderTree.getChildren());
-            fieldList.addAll(stepFieldList);
+        List<AnalyseDataModelTree> dataModelList = dataModelTreeToList(dataModelTreeList);
+        String modelId = "";
+        for (AnalyseDataModelTree dataModel : dataModelList) {
+            if (StringUtils.equals(dataModel.getChildrenType(), TreeChildrenTypeEnum.FOLDER.getCode())) {
+                BiUiModelFolder folder = new BiUiModelFolder();
+                modelId = dataModel.getModelId();
+                BeanUtils.copyProperties(dataModel, folder);
+                folderList.add(folder);
+            }
+            if (StringUtils.equals(dataModel.getChildrenType(), TreeChildrenTypeEnum.FIELD.getCode())) {
+                BiUiModelField field = new BiUiModelField();
+                BeanUtils.copyProperties(dataModel, field);
+                fieldList.add(field);
+            }
+        }
+        //如果做了删除操作先删除文件夹
+        List<BiUiModelFolder> oldFolderList = folderService.list(new LambdaQueryWrapper<BiUiModelFolder>()
+                .eq(BiUiModelFolder::getModelId, modelId));
+        if (CollectionUtils.isNotEmpty(oldFolderList)) {
+            //求差集
+            List<String> oldFolderIdList = Lists.newArrayList();
+            oldFolderList.forEach(folder -> oldFolderIdList.add(folder.getId()));
+
+            List<String> folderIdList = Lists.newArrayList();
+            folderList.forEach(folder -> folderIdList.add(folder.getId()));
+
+            oldFolderIdList.removeAll(folderIdList);
+            if (CollectionUtils.isNotEmpty(oldFolderIdList)) {
+                folderService.removeByIds(oldFolderList);
+            }
         }
         //更新
         folderService.updateBatchById(folderList);
         fieldService.updateBatchById(fieldList);
     }
 
+    public static void main(String[] args) {
+        List<String> a = Lists.newArrayList("1", "2");
+        List<String> b = Lists.newArrayList("1", "2");
+        a.removeAll(b);
+        System.out.println(a);
+    }
+
+    @Override
+    public void saveOrUpdateFolder(RetRequest<SaveOrUpdateFolderDto> request) {
+        BiUiModelFolder folder = new BiUiModelFolder();
+        BeanUtils.copyProperties(request.getData(), folder);
+        folder.setCreateUser(ThreadLocalHolder.getOperator());
+        folder.setTenantId(ThreadLocalHolder.getTenantId());
+        folderService.saveOrUpdate(folder);
+    }
+
     @Transactional
     @Override
-    public List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
+    public List<AnalyseDataModelTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
         Map<String, Object> result = getHistoryData(request);
 
         List<BiUiModelFolder> folderList = (List<BiUiModelFolder>) result.get("folder");
 
         List<BiUiModelField> fieldList = (List<BiUiModelField>) result.get("field");
 
-        List<AnalyseFolderTree> dataTree = Lists.newArrayList();
-        for (BiUiModelFolder folder : folderList) {
-            AnalyseFolderTree folderTree = new AnalyseFolderTree();
-            BeanUtils.copyProperties(folder, folderTree);
-
-            //适配每个文件夹下的字段
-            List<BiUiModelField> stepFieldList = Lists.newArrayList();
-            for (BiUiModelField field : fieldList) {
-                if (StringUtils.equals(field.getFolderId(), folder.getId())) {
-                    stepFieldList.add(field);
-                }
+        Map<String, List<BiUiModelField>> fieldMap = Maps.newHashMap();
+        for (BiUiModelField field : fieldList) {
+            List<BiUiModelField> stepFieldList = fieldMap.get(field.getFolderId());
+            if (CollectionUtils.isNotEmpty(stepFieldList)) {
+                stepFieldList.add(field);
+            } else {
+                stepFieldList = Lists.newArrayList();
+                stepFieldList.add(field);
+                fieldMap.put(field.getFolderId(), stepFieldList);
             }
-
-            //递归字段树
-            List<AnalyseFieldTree> fieldTree = buildFieldTree(stepFieldList, "0");
-
-            folderTree.setChildren(fieldTree);
-            dataTree.add(folderTree);
         }
+
+        //递归字段树
+        List<AnalyseDataModelTree> dataTree = buildFieldTree(folderList, fieldMap, "0");
         return dataTree;
     }
 
@@ -276,19 +306,38 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     /**
      * 递归转换成树
      *
-     * @param fieldList
+     * @param folderList
+     * @param fieldMap
      * @param parentId
      * @return
      */
-    private List<AnalyseFieldTree> buildFieldTree(List<BiUiModelField> fieldList, String parentId) {
-        List<AnalyseFieldTree> treeDataModels = Lists.newArrayList();
-        for (BiUiModelField field : fieldList) {
-            AnalyseFieldTree analyseFieldTree = new AnalyseFieldTree();
-            BeanUtils.copyProperties(field, analyseFieldTree);
-            analyseFieldTree.setDesc(field.getFieldDesc());
-            if (parentId.equals(analyseFieldTree.getParentId())) {
-                analyseFieldTree.setChildren(buildFieldTree(fieldList, analyseFieldTree.getId()));
-                treeDataModels.add(analyseFieldTree);
+    private List<AnalyseDataModelTree> buildFieldTree(List<BiUiModelFolder> folderList, Map<String, List<BiUiModelField>> fieldMap, String parentId) {
+        List<AnalyseDataModelTree> treeDataModels = Lists.newArrayList();
+        for (BiUiModelFolder folder : folderList) {
+            AnalyseDataModelTree dataModelTree = new AnalyseDataModelTree();
+            BeanUtils.copyProperties(folder, dataModelTree);
+
+            if (parentId.equals(dataModelTree.getParentId())) {
+                dataModelTree.setChildren(buildFieldTree(folderList, fieldMap, dataModelTree.getId()));
+                dataModelTree.setChildrenType(TreeChildrenTypeEnum.FOLDER.getCode());
+                treeDataModels.add(dataModelTree);
+
+                //将字段和文件夹放到同一个children，通过children type区分
+                List<BiUiModelField> fieldList = fieldMap.get(folder.getId());
+                List<AnalyseDataModelTree> fieldTreeList = Lists.newArrayList();
+                if (CollectionUtils.isNotEmpty(fieldList)) {
+                    for (BiUiModelField field : fieldList) {
+                        AnalyseDataModelTree tree = new AnalyseDataModelTree();
+                        BeanUtils.copyProperties(field, tree);
+                        tree.setChildrenType(TreeChildrenTypeEnum.FIELD.getCode());
+                        fieldTreeList.add(tree);
+                    }
+                    if (CollectionUtils.isEmpty(dataModelTree.getChildren())) {
+                        List<AnalyseDataModelTree> children = Lists.newArrayList();
+                        dataModelTree.setChildren(children);
+                    }
+                    dataModelTree.getChildren().addAll(fieldTreeList);
+                }
             }
         }
         return treeDataModels;
@@ -297,19 +346,20 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     /**
      * 逆向递归树转List
      *
-     * @param fieldTreeList
+     * @param dataModelTreeList
      * @return
      */
-    private List<BiUiModelField> fieldTreeToList(List<AnalyseFieldTree> fieldTreeList) {
-        List<BiUiModelField> result = Lists.newArrayList();
-        for (AnalyseFieldTree tree : fieldTreeList) {
-            BiUiModelField field = new BiUiModelField();
-            BeanUtils.copyProperties(tree, field);
-            result.add(field);
-            List<AnalyseFieldTree> child = tree.getChildren();
+    private List<AnalyseDataModelTree> dataModelTreeToList(List<AnalyseDataModelTree> dataModelTreeList) {
+        List<AnalyseDataModelTree> result = Lists.newArrayList();
+        for (AnalyseDataModelTree tree : dataModelTreeList) {
+            AnalyseDataModelTree dataModel = new AnalyseDataModelTree();
+            BeanUtils.copyProperties(tree, dataModel);
+            dataModel.setChildren(null);
+            result.add(dataModel);
+            List<AnalyseDataModelTree> child = tree.getChildren();
             if (CollectionUtils.isNotEmpty(child)) {
-                List<BiUiModelField> fieldList = fieldTreeToList(child);
-                result.addAll(fieldList);
+                List<AnalyseDataModelTree> dataModelList = dataModelTreeToList(child);
+                result.addAll(dataModelList);
             }
         }
         return result;

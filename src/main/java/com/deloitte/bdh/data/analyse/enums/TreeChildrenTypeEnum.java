@@ -7,16 +7,18 @@ import com.deloitte.bdh.common.exception.BizException;
  * Date:11/11/2020
  * Description:
  */
-public enum CategoryTreeChildrenTypeEnum {
+public enum TreeChildrenTypeEnum {
     PAGE("PAGE", "页面"),
     CATEGORY("CATEGORY", "文件夹"),
+    FOLDER("FOLDER", "文件夹"),
+    FIELD("FIELD", "字段"),
     ;
 
     private final String code;
 
     private final String desc;
 
-    CategoryTreeChildrenTypeEnum(String code, String desc) {
+    TreeChildrenTypeEnum(String code, String desc) {
         this.code = code;
         this.desc = desc;
     }
@@ -28,7 +30,7 @@ public enum CategoryTreeChildrenTypeEnum {
      * @return String
      */
     public static String getDesc(String name) {
-        CategoryTreeChildrenTypeEnum[] enums = CategoryTreeChildrenTypeEnum.values();
+        TreeChildrenTypeEnum[] enums = TreeChildrenTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getCode().equals(name)) {
                 return enums[i].getDesc();
@@ -43,8 +45,8 @@ public enum CategoryTreeChildrenTypeEnum {
      * @param type
      * @return
      */
-    public static CategoryTreeChildrenTypeEnum values(String type) {
-        CategoryTreeChildrenTypeEnum[] enums = CategoryTreeChildrenTypeEnum.values();
+    public static TreeChildrenTypeEnum values(String type) {
+        TreeChildrenTypeEnum[] enums = TreeChildrenTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
             if (enums[i].getCode().equals(type)) {
                 return enums[i];

@@ -225,7 +225,6 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     } catch (Exception e) {
                         subscribeLog.setExecuteStatus("0");
                         subscribeLog.setFailMessage(e.getMessage());
-                        throw new BizException("执行失败，失败原因：" + e.getMessage());
                     } finally {
                         subscribeLogService.save(subscribeLog);
                     }

@@ -1,6 +1,6 @@
 package com.deloitte.bdh.data.analyse.model.request;
 
-import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
+import com.deloitte.bdh.data.analyse.model.resp.SaveOrUpdateFolderDto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -18,6 +18,6 @@ public class SaveAnalyseDataTreeDto implements Serializable {
 
     @ApiModelProperty(value = "树状结构", required = true)
     @NotEmpty(message = "树不能为空")
-    private List<AnalyseFolderTree> treeList;
+    private List<SaveOrUpdateFolderDto> treeList;
 
 }

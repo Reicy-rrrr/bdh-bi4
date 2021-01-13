@@ -4,7 +4,8 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
-import com.deloitte.bdh.data.analyse.model.resp.AnalyseFolderTree;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseDataModelTree;
+import com.deloitte.bdh.data.analyse.model.resp.SaveOrUpdateFolderDto;
 import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public interface AnalyseModelService {
      * @param request
      * @return
      */
-    List<AnalyseFolderTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) throws Exception;
+    List<AnalyseDataModelTree> getDataTree(RetRequest<GetAnalyseDataTreeDto> request) throws Exception;
 
     /**
      * 保存数据模型树
@@ -37,7 +38,15 @@ public interface AnalyseModelService {
      * @param request
      * @return
      */
-    void saveDataTree(RetRequest<List<AnalyseFolderTree>> request);
+    void saveDataTree(RetRequest<List<AnalyseDataModelTree>> request);
+
+    /**
+     * 保存或者更新层级
+     *
+     * @param request
+     * @return
+     */
+    void saveOrUpdateFolder(RetRequest<SaveOrUpdateFolderDto> request);
 
     /**
      * 获取组件数据
