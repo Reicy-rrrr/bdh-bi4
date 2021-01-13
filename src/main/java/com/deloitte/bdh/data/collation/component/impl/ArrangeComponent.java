@@ -289,6 +289,19 @@ public class ArrangeComponent implements ComponentHandler {
         ComponentTypeEnum fromType = fromComponent.getTypeEnum();
         List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
 
+        for (ArrangeSplitModel model : splitCases) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromMappings) {
+                if (model.getName().equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         Map<String, FieldMappingModel> fromMappingMap = fromMappings.stream()
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
         List<ArrangeResultModel> resultModels = Lists.newArrayList();
@@ -322,6 +335,19 @@ public class ArrangeComponent implements ComponentHandler {
 
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
+        for (ArrangeReplaceModel args : replaceCases) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.getName().equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         String fromTableName = fromComponent.getTableName();
         ComponentTypeEnum fromType = fromComponent.getTypeEnum();
         List<FieldMappingModel> fromMappings = fromComponent.getFieldMappings();
@@ -355,6 +381,25 @@ public class ArrangeComponent implements ComponentHandler {
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
         Map<String, FieldMappingModel> mappings = fromComponent.getFieldMappings().stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
+
+        for (ArrangeCombineModel model : combineFields) {
+            String rightKey = model.getRight();
+            String leftKey = model.getLeft();
+            boolean rightKeyExist = false;
+            boolean leftKeyExist = false;
+
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (rightKey.equals(args1.getTempFieldName())) {
+                    rightKeyExist = true;
+                }
+                if (leftKey.equals(args1.getTempFieldName())) {
+                    leftKeyExist = true;
+                }
+            }
+            if (!rightKeyExist || !leftKeyExist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
 
         List<ArrangeResultModel> resultModels = Lists.newArrayList();
         combineFields.forEach(combineModel -> {
@@ -391,6 +436,19 @@ public class ArrangeComponent implements ComponentHandler {
 
         // 排空字段
         List<String> nonNullFields = nullModel.getNonNullFields();
+        for (String args : nonNullFields) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         if (!CollectionUtils.isEmpty(nonNullFields)) {
             List<FieldMappingModel> nonNullMappings = Lists.newArrayList();
             for (String nullField : nonNullFields) {
@@ -439,6 +497,19 @@ public class ArrangeComponent implements ComponentHandler {
         Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
 
+        for (ArrangeCaseConvertModel args : convertCases) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.getName().equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         // 转大写字段
         List<FieldMappingModel> toUpperCaseMappings = Lists.newArrayList();
         // 转小写字段
@@ -477,6 +548,19 @@ public class ArrangeComponent implements ComponentHandler {
         }
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
+        for (String args : trimFields) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         List<FieldMappingModel> trimMappings = fromComponent.getFieldMappings().stream()
                 .filter(mappingModel -> trimFields.contains(mappingModel.getTempFieldName())).collect(Collectors.toList());
 
@@ -498,6 +582,19 @@ public class ArrangeComponent implements ComponentHandler {
         }
         // 从组件信息
         ComponentModel fromComponent = component.getFrom().get(0);
+        for (ArrangeBlankModel args : blankModels) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.getName().equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         Map<String, FieldMappingModel> fromMappingMap = fromComponent.getFieldMappings().stream()
                 .collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
 
@@ -533,6 +630,35 @@ public class ArrangeComponent implements ComponentHandler {
         List<ArrangeResultModel> resultModels = Lists.newArrayList();
         // 字符类型的分组字段
         List<ArrangeGroupEnumModel> stringGroups = groupModel.getEnumFields();
+        // 数字类型的分组字段
+        List<ArrangeGroupSectModel> numberGroups = groupModel.getSectFields();
+
+        for (ArrangeGroupEnumModel args : stringGroups) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.getName().equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
+        for (ArrangeGroupSectModel args : numberGroups) {
+            boolean exist = false;
+            for (FieldMappingModel args1 : fromComponent.getFieldMappings()) {
+                if (args.getName().equals(args1.getTempFieldName())) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                throw new BizException("字段列表发生变化，请重新设置");
+            }
+        }
+
         stringGroups.forEach(stringModel -> {
             String fieldName = stringModel.getName();
             FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
@@ -540,8 +666,6 @@ public class ArrangeComponent implements ComponentHandler {
             resultModels.add(resultModel);
         });
 
-        // 数字类型的分组字段
-        List<ArrangeGroupSectModel> numberGroups = groupModel.getSectFields();
         numberGroups.forEach(numberModel -> {
             String fieldName = numberModel.getName();
             FieldMappingModel mapping = MapUtils.getObject(fromMappingMap, fieldName);
