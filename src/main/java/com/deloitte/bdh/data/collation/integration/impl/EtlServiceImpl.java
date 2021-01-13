@@ -34,6 +34,7 @@ import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.*;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -52,6 +53,7 @@ import java.util.stream.Collectors;
 
 @Service
 @DS(DSConstant.BI_DB)
+@Slf4j
 public class EtlServiceImpl implements EtlService {
 
     @Autowired
@@ -625,6 +627,24 @@ public class EtlServiceImpl implements EtlService {
         params.put(ComponentCons.ARRANGE_PARAM_KEY_CONTEXT, JSON.toJSONString(dto.getFields()));
         List<BiComponentParams> biComponentParams = transferToParams(component.getCode(), component.getRefModelCode(), params);
         componentParamsService.saveBatch(biComponentParams);
+
+
+        try {
+            //handle最后一个节点
+            List<BiComponentConnection> connections = connectionService.list(new LambdaQueryWrapper<BiComponentConnection>()
+                    .eq(BiComponentConnection::getRefModelCode, component.getRefModelCode()));
+            String endCode = currentEndCode(connections, component.getCode());
+            BiComponent endComponent = componentService.getOne(new LambdaQueryWrapper<BiComponent>().eq(BiComponent::getCode, endCode));
+            BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, endComponent.getRefModelCode()));
+
+            ComponentPreviewDto previewDto = new ComponentPreviewDto();
+            previewDto.setModelId(model.getId());
+            previewDto.setComponentId(endComponent.getId());
+            this.handle(previewDto);
+        } catch (Exception e) {
+            log.error("arrangeUpdate.error: ", e);
+            throw new RuntimeException("编辑失败，当前操作影响后续组件，请检查后再修改");
+        }
         return component;
     }
 
@@ -1219,4 +1239,16 @@ public class EtlServiceImpl implements EtlService {
         return true;
     }
 
+    private String currentEndCode(List<BiComponentConnection> connections, String code) {
+        String nextCode = code;
+        if (CollectionUtils.isNotEmpty(connections)) {
+            for (BiComponentConnection con : connections) {
+                if (con.getFromComponentCode().equals(code)) {
+                    nextCode = currentEndCode(connections, con.getToComponentCode());
+                    break;
+                }
+            }
+        }
+        return nextCode;
+    }
 }
