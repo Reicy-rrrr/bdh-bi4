@@ -47,9 +47,6 @@ public class BiUiModelFolder implements Serializable {
     @TableField("TYPE")
     private String type;
 
-    @TableField("SORT_ORDER")
-    private Integer sortOrder;
-
     @TableField("IP")
     private String ip;
 

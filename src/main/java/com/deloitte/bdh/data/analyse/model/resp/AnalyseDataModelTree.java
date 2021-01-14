@@ -69,12 +69,6 @@ public class AnalyseDataModelTree {
     private String isHidden;
 
     /**
-     * 排序
-     */
-    @ApiModelProperty("SORT_ORDER")
-    private String sortOrder;
-
-    /**
      * 是否维度
      */
     @ApiModelProperty("IS_DIMENTION")

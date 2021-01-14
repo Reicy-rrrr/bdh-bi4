@@ -13,7 +13,6 @@
         <result column="TYPE" property="type"/>
         <result column="FIELD_DESC" property="fieldDesc"/>
         <result column="DATA_TYPE" property="dataType"/>
-        <result column="SORT_ORDER" property="sortOrder"/>
         <result column="IS_HIDDEN" property="isHidden"/>
         <result column="IS_DIMENTION" property="isDimention"/>
         <result column="IS_MENSURE" property="isMensure"/>
