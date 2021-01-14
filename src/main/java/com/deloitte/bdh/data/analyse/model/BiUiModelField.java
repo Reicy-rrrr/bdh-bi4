@@ -75,12 +75,6 @@ public class BiUiModelField implements Serializable {
     private String isHidden;
 
     /**
-     * 排序
-     */
-    @TableField("SORT_ORDER")
-    private String sortOrder;
-
-    /**
      * 是否维度
      */
     @TableField("IS_DIMENTION")

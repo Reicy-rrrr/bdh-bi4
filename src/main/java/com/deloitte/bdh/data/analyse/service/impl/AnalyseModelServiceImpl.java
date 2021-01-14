@@ -109,7 +109,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
             oldFolderIdList.removeAll(folderIdList);
             if (CollectionUtils.isNotEmpty(oldFolderIdList)) {
-                folderService.removeByIds(oldFolderList);
+                folderService.removeByIds(oldFolderIdList);
             }
         }
         //更新
@@ -237,7 +237,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     private Map<String, Object> getHistoryData(RetRequest<GetAnalyseDataTreeDto> request) throws Exception {
         LambdaQueryWrapper<BiUiModelFolder> folderQueryWrapper = new LambdaQueryWrapper<>();
         folderQueryWrapper.eq(BiUiModelFolder::getModelId, request.getData().getModelId());
-        folderQueryWrapper.orderByAsc(BiUiModelFolder::getSortOrder);
         List<BiUiModelFolder> folderList = folderService.list(folderQueryWrapper);
         String wdId = null;
         String dlId = null;
@@ -272,7 +271,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
         LambdaQueryWrapper<BiUiModelField> fieldQueryWrapper = new LambdaQueryWrapper<>();
         fieldQueryWrapper.eq(BiUiModelField::getModelId, request.getData().getModelId());
-        fieldQueryWrapper.orderByAsc(BiUiModelField::getSortOrder);
         List<BiUiModelField> fieldList = fieldService.list(fieldQueryWrapper);
         if (CollectionUtils.isEmpty(fieldList)) {
             // 引入数据集
