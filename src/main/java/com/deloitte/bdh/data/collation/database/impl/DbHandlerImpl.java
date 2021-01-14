@@ -84,7 +84,7 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
-    public void createTable(String dbId, String targetTableName, List<TableField> targetFields) throws Exception {
+    public void createTable(String dbId, String targetTableName, List<TableField> targetFields) {
         DbContext context = getDbContext(dbId);
         // 转换表字段
         dbConvertor.convertFieldType(targetFields, context);

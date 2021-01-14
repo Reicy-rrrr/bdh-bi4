@@ -86,7 +86,22 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiDataSetService dataSetService;
 
     @Override
+    public BiEtlDatabaseInf initDatabaseInfo() {
+        if (0 == this.count()) {
+            //增加初始化数据源
+            CreateResourcesDto resourcesDto = new CreateResourcesDto();
+            resourcesDto.setName("文件型测试数据源");
+            resourcesDto.setComments("默认数据源");
+            resourcesDto.setType(SourceTypeEnum.File_Excel.getType());
+            resourcesDto.setDbName("ORDERS_USCA_BI");
+            return this.createResource(resourcesDto);
+        }
+        return this.getOne(new LambdaQueryWrapper<BiEtlDatabaseInf>().orderByAsc(BiEtlDatabaseInf::getCreateDate).last("limit 1"));
+    }
+
+    @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
+        initDatabaseInfo();
         LambdaQueryWrapper<BiEtlDatabaseInf> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(dto.getName())) {
@@ -103,7 +118,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Override
     @Transactional
-    public BiEtlDatabaseInf createResource(CreateResourcesDto dto) throws Exception {
+    public BiEtlDatabaseInf createResource(CreateResourcesDto dto) {
         BiEtlDatabaseInf inf = null;
         SourceTypeEnum typeEnum = SourceTypeEnum.values(dto.getType());
         switch (typeEnum) {
@@ -129,7 +144,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public BiEtlDatabaseInf createFileResource(CreateFileResourcesDto dto) throws Exception {
+    public BiEtlDatabaseInf createFileResource(CreateFileResourcesDto dto) {
         // 文件信息id
         String fileId = dto.getFileId();
         if (StringUtils.isBlank(fileId)) {
@@ -349,7 +364,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public BiEtlDatabaseInf runResource(String id, String effect) throws Exception {
+    public BiEtlDatabaseInf runResource(String id, String effect) {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (!effect.equals(inf.getEffect())) {
             if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
@@ -571,7 +586,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return updateObj;
     }
 
-    private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) throws Exception {
+    private BiEtlDatabaseInf createResourceFromFile(CreateResourcesDto dto) {
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();
         BeanUtils.copyProperties(dto, inf);
         inf.setTypeName(SourceTypeEnum.getNameByType(inf.getType()));
@@ -586,7 +601,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return inf;
     }
 
-    private BiEtlDatabaseInf createResourceFromDB(CreateResourcesDto dto) throws Exception {
+    private BiEtlDatabaseInf createResourceFromDB(CreateResourcesDto dto) {
         if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }
@@ -639,7 +654,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         return inf;
     }
 
-    private BiEtlDatabaseInf createResourceFromHive(CreateResourcesDto dto) throws Exception {
+    private BiEtlDatabaseInf createResourceFromHive(CreateResourcesDto dto) {
         if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
             throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
         }

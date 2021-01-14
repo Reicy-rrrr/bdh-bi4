@@ -36,7 +36,7 @@ public interface DbHandler {
      * @return
      * @throws Exception
      */
-    void createTable(String dbId, String targetTableName, List<TableField> targetFields) throws Exception;
+    void createTable(String dbId, String targetTableName, List<TableField> targetFields);
 
     /**
      * 创建表（如果表已存在，先删除）

@@ -19,6 +19,8 @@ import java.util.List;
  */
 public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
 
+    BiEtlDatabaseInf initDatabaseInfo();
+
     /**
      * 基于租户获取数据源列表
      *
@@ -33,7 +35,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dto
      * @return
      */
-    BiEtlDatabaseInf createResource(CreateResourcesDto dto) throws Exception;
+    BiEtlDatabaseInf createResource(CreateResourcesDto dto);
 
     /**
      * 创建文件数据源
@@ -41,7 +43,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dto
      * @return
      */
-    BiEtlDatabaseInf createFileResource(CreateFileResourcesDto dto) throws Exception;
+    BiEtlDatabaseInf createFileResource(CreateFileResourcesDto dto);
 
     /**
      * 追加文件数据源

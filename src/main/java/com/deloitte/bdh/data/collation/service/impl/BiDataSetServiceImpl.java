@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
+
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
@@ -10,8 +12,10 @@ import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
+import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.SelectDataSetDto;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
+import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.google.common.collect.Lists;
 
 
@@ -74,6 +78,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     private BiDataSetMapper setMapper;
     @Resource
     private BiEtlModelService modelService;
+    @Resource
+    private BiEtlDatabaseInfService databaseInfService;
     @Autowired
     private BiComponentParamsService componentParamsService;
     @Autowired
@@ -87,7 +93,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Resource
     private AnalyseModelFieldService fieldService;
     @Resource
-    AnalyseUserResourceService userResourceService;
+    private AnalyseUserResourceService userResourceService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -405,6 +411,18 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     private void initDataSet(String parentId) {
+        //初始化默认数据源的表作为数据集
+        BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.initDatabaseInfo();
+
+        CreateDataSetDto dataSetDto = new CreateDataSetDto();
+        dataSetDto.setFolderId(parentId);
+        dataSetDto.setRefSourceId(biEtlDatabaseInf.getId());
+        dataSetDto.setTableName(biEtlDatabaseInf.getDbName());
+        dataSetDto.setTableNameDesc(biEtlDatabaseInf.getName());
+        dataSetDto.setPermissionDto(null);
+        dataSetDto.setComments("默认数据集");
+        create(dataSetDto);
+
         BiDataSet defaultTable = new BiDataSet();
         defaultTable.setCode(GenerateCodeUtil.generate());
         defaultTable.setType(DataSetTypeEnum.DEFAULT.getKey());
