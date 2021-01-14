@@ -24,6 +24,8 @@ import java.util.List;
  */
 public interface BiDataSetService extends Service<BiDataSet> {
 
+    void initDataSet();
+
     List<DataSetResp> getFiles();
 
     PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto);

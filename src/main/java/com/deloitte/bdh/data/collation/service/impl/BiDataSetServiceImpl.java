@@ -97,17 +97,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<DataSetResp> getFiles() {
-
-        SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
-        selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
-        selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
-        selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
-        selectDataSetDto.setParentId("0");
-        selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
-        List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
-        if (CollectionUtils.isEmpty(setList)) {
+    public void initDataSet() {
+        if (0 == this.count()) {
             BiDataSet set = new BiDataSet();
             set.setTableName("默认文件夹");
             set.setTableDesc("默认文件夹");
@@ -116,18 +107,31 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             set.setIsFile(YesOrNoEnum.YES.getKey());
             set.setTenantId(ThreadLocalHolder.getTenantId());
             setMapper.insert(set);
-            setList.add(set);
-
             //设置初始数据
             initDataSet(set.getId());
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<DataSetResp> getFiles() {
         List<DataSetResp> respList = Lists.newArrayList();
-        for (BiDataSet dataSet : setList) {
-            DataSetResp resp = new DataSetResp();
-            BeanUtils.copyProperties(dataSet, resp);
-            respList.add(resp);
+        SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+        selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+        selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
+        selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+        selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+        selectDataSetDto.setParentId("0");
+        selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
+        List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
+        if (CollectionUtils.isNotEmpty(setList)) {
+            for (BiDataSet dataSet : setList) {
+                DataSetResp resp = new DataSetResp();
+                BeanUtils.copyProperties(dataSet, resp);
+                respList.add(resp);
+            }
+            userResourceService.setDataSetCategoryPermission(respList);
         }
-        userResourceService.setDataSetCategoryPermission(respList);
         return respList;
     }
 

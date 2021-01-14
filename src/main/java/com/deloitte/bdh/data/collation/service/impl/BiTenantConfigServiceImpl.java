@@ -89,7 +89,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         initBiTask();
         initEtlTask();
         //初始化数据源与数据集文件夹与数据
-        dataSetService.getFiles();
+        dataSetService.initDataSet();
         config.setEffect(EffectEnum.ENABLE.getKey());
         configMapper.updateById(config);
     }
