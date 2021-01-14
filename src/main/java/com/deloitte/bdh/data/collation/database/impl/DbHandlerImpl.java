@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.convertor.DbConvertor;
+import com.deloitte.bdh.data.collation.database.convertor.impl.DbConvertorImpl;
 import com.deloitte.bdh.data.collation.database.dto.CreateTableDto;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
@@ -323,10 +324,21 @@ public class DbHandlerImpl implements DbHandler {
      * @return
      */
     private String buildCreateTableSql(String tableName, List<TableField> allFields, List<String> targetColumns) {
+        if (CollectionUtils.isEmpty(allFields)) {
+            throw new RuntimeException("建表字段不能为空");
+        }
+        List<TableField> newTableField = Lists.newArrayList();
+        for (TableField tableField : allFields) {
+            newTableField.add(tableField.clone());
+        }
+
+        DbConvertor convertor = new DbConvertorImpl();
+        convertor.mysqlSchemaAdapter(newTableField);
+
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append("(");
-        for (int index = 0; index < allFields.size(); index++) {
-            TableField field = allFields.get(index);
+        for (int index = 0; index < newTableField.size(); index++) {
+            TableField field = newTableField.get(index);
             String fieldName = field.getName();
             String columnType = field.getColumnType();
 

@@ -96,7 +96,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             resourcesDto.setDbName("ORDERS_USCA_BI");
             return this.createResource(resourcesDto);
         }
-        return this.getOne(new LambdaQueryWrapper<BiEtlDatabaseInf>().orderByAsc(BiEtlDatabaseInf::getCreateDate).last("limit 1"));
+        return this.getOne(new LambdaQueryWrapper<BiEtlDatabaseInf>().orderByAsc(BiEtlDatabaseInf::getId).last("limit 1"));
     }
 
     @Override
