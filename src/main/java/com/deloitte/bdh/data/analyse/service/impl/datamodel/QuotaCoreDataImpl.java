@@ -566,6 +566,20 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
     private List<Map<String, Object>> decoration(DataModel dataModel, List<Map<String, Object>> args) {
         List<Map<String, Object>> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(args)) {
+            Map<String, String> precisionMap = Maps.newHashMap();
+            Map<String, String> dataUnitMap = Maps.newHashMap();
+            for (DataModelField x : dataModel.getX()) {
+                String colName = x.getId();
+                if (StringUtils.isNotBlank(x.getAlias())) {
+                    colName = x.getAlias();
+                }
+                if (null != x.getPrecision()) {
+                    precisionMap.put(colName, x.getPrecision().toString());
+                }
+                if (StringUtils.isNotBlank(x.getDataUnit())) {
+                    dataUnitMap.put(colName, x.getDataUnit());
+                }
+            }
             for (Map<String, Object> args0 : args) {
                 Map<String, Object> newMap = Maps.newHashMap();
                 for (Map.Entry<String, Object> var : args0.entrySet()) {
@@ -575,14 +589,13 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                         newMap.put("name", var.getKey());
                         newMap.put("value", var.getValue());
                     }
-                }
-                DataModelField field = dataModel.getX().get(0);
-                //设置精度和数据单位
-                if (null != field.getPrecision()) {
-                    newMap.put("precision", field.getPrecision());
-                }
-                if (StringUtils.isNotBlank(field.getDataUnit())) {
-                    newMap.put("dataUnit", DataUnitEnum.getDesc(field.getDataUnit()));
+                    //设置精度和数据单位
+                    if (null != MapUtils.getObject(precisionMap, var.getKey())) {
+                        newMap.put("precision", MapUtils.getObject(precisionMap, var.getKey()));
+                    }
+                    if (null != MapUtils.getObject(dataUnitMap, var.getKey())) {
+                        newMap.put("dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, var.getKey())));
+                    }
                 }
                 list.add(newMap);
             }
