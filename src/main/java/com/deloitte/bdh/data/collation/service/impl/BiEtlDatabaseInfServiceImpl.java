@@ -12,6 +12,7 @@ import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
@@ -101,7 +102,6 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Override
     public PageResult<BiEtlDatabaseInf> getResources(GetResourcesDto dto) {
-        initDatabaseInfo();
         LambdaQueryWrapper<BiEtlDatabaseInf> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         // 根据数据源名称模糊查询
         if (StringUtils.isNotBlank(dto.getName())) {
@@ -110,7 +110,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtils.isNotBlank(dto.getEffect())) {
             lambdaQueryWrapper.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
         }
-        lambdaQueryWrapper.eq(BiEtlDatabaseInf::getCreateUser, ThreadLocalHolder.getOperator());
+        lambdaQueryWrapper.in(BiEtlDatabaseInf::getCreateUser, ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
         lambdaQueryWrapper.orderByDesc(BiEtlDatabaseInf::getCreateDate);
         PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo<>(this.list(lambdaQueryWrapper));
         return new PageResult<>(pageInfo);

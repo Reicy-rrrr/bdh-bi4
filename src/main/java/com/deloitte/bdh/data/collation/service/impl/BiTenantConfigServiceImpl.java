@@ -17,6 +17,7 @@ import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiTenantConfig;
 import com.deloitte.bdh.data.collation.dao.bi.BiTenantConfigMapper;
+import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Maps;
@@ -50,6 +51,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
     private XxJobService jobService;
     @Resource
     private BiProperties biProperties;
+    @Resource
+    private BiDataSetService dataSetService;
 
     @Override
     public void init() throws Exception {
@@ -61,7 +64,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             insert = true;
             config = new BiTenantConfig();
             config.setCreateDate(LocalDateTime.now());
-            config.setCreateUser("system");
+            config.setCreateUser(ThreadLocalHolder.getOperator());
             config.setType(SourceTypeEnum.Mysql.getType());
             config.setEffect(EffectEnum.DISABLE.getKey());
             config.setTenantId(ThreadLocalHolder.getTenantId());
@@ -85,9 +88,10 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         checkTaskGroup();
         initBiTask();
         initEtlTask();
+        //初始化数据源与数据集文件夹与数据
+        dataSetService.getFiles();
         config.setEffect(EffectEnum.ENABLE.getKey());
         configMapper.updateById(config);
-
     }
 
     @Override

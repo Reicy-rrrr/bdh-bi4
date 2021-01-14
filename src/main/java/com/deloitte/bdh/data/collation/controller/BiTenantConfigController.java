@@ -4,6 +4,7 @@ package com.deloitte.bdh.data.collation.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,6 +29,7 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/biTenantConfig")
 public class BiTenantConfigController {
+    public final static String OPERATOR = "admin";
     @Resource
     private BiTenantConfigService configService;
 
@@ -35,6 +37,7 @@ public class BiTenantConfigController {
     @ApiOperation(value = "基于租户初始化BI相关配置", notes = "基于租户初始化BI相关配置")
     @PostMapping("/init")
     public RetResult<Void> init(@RequestBody @Validated RetRequest<Void> request) throws Exception {
+        ThreadLocalHolder.set("operator", OPERATOR);
         configService.init();
         return RetResponse.makeOKRsp();
     }
