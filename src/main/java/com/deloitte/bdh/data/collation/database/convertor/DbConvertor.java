@@ -39,10 +39,10 @@ public interface DbConvertor {
      * @return
      */
     default void mysqlSchemaAdapter(List<TableField> fields) {
-        // 限制最多100个字段
-        if (fields.size() > CommonConstant.MAX_COLUMN_SIZE) {
-            throw new BizException("所选字段超出100个，请重新选择！");
-        }
+//        // 限制最多100个字段
+//        if (fields.size() > CommonConstant.MAX_COLUMN_SIZE) {
+//            throw new BizException("所选字段超出100个，请重新选择！");
+//        }
         int totalLength = 0;
         for (TableField field : fields) {
             String length = field.getLength();
