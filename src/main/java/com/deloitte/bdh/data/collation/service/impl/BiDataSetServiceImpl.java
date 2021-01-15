@@ -185,11 +185,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         if (null == dataSet) {
             throw new RuntimeException("未找到目标对象");
         }
-        String newTableDesc = dto.getToTableDesc() + DataSetTypeEnum.DIRECT.getSuffix();
-        if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
-            newTableDesc = dto.getToTableDesc() + DataSetTypeEnum.MODEL.getSuffix();
-        }
-
+        String newTableDesc = dto.getToTableDesc();
         //别名有变化
         if (!dataSet.getTableDesc().equals(newTableDesc)) {
             dataSet.setTableDesc(newTableDesc);
@@ -254,7 +250,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     public void create(CreateDataSetDto dto) {
-        String tableDesc = dto.getTableNameDesc() + DataSetTypeEnum.DIRECT.getSuffix();
+        String tableDesc = dto.getTableNameDesc();
         BiDataSet dataSet = new BiDataSet();
         dataSet.setCode(GenerateCodeUtil.generate());
         // 数据集合类型（0, "数据直连"，1, "数据整理"）

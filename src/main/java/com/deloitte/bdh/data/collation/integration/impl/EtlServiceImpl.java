@@ -423,7 +423,6 @@ public class EtlServiceImpl implements EtlService {
 
         // 设置组件参数：创建最终表,表名默认为 模板名称_组件名称
         String tableDesc = StringUtils.isBlank(dto.getTableName()) ? (biEtlModel.getName() + "_" + component.getName()) : dto.getTableName();
-        tableDesc = tableDesc + DataSetTypeEnum.MODEL.getSuffix();
 
         String folderId = dto.getFolderId();
         if (StringUtils.isBlank(folderId)) {
@@ -473,7 +472,7 @@ public class EtlServiceImpl implements EtlService {
             dataSetService.delete(dto.getComponentCode(), true);
         }
         // 如果未传递新表名，就使用原始表名
-        String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName() + DataSetTypeEnum.MODEL.getSuffix();
+        String tableDesc = StringUtils.isBlank(dto.getTableName()) ? originalTableDesc : dto.getTableName();
 
         // 如果未传递新文件夹id，使用原始文件夹id
         String folderId = StringUtils.isBlank(dto.getFolderId()) ? originalFolderId : dto.getFolderId();
