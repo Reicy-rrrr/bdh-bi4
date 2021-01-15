@@ -55,8 +55,11 @@
         <if test="queryDto.tenantId != null and queryDto.tenantId != ''">
             AND t1.TENANT_ID = #{queryDto.tenantId,jdbcType=VARCHAR}
         </if>
-        <if test="queryDto.createUser != null">
-            AND t1.CREATE_USER = #{queryDto.createUser,jdbcType=VARCHAR}
+        <if test="queryDto.createUserList != null and queryDto.createUserList.size() > 0">
+            AND t1.CREATE_USER IN
+            <foreach collection="queryDto.createUserList" index="index" item="item" open="(" close=")" separator=",">
+                #{item, jdbcType=VARCHAR}
+            </foreach>
         </if>
     </select>
 

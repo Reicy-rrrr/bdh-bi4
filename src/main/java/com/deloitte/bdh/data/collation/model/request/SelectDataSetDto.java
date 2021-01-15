@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.model.request;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -25,5 +26,7 @@ public class SelectDataSetDto implements Serializable {
     private String parentId;
 
     private String isFile;
+
+    private List<String> createUserList;
 
 }

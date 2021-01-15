@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.PoolTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
@@ -53,6 +54,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
     private BiProperties biProperties;
     @Resource
     private BiDataSetService dataSetService;
+    @Resource
+    private AnalyseModelService analyseModelService;
 
     @Override
     public void init() throws Exception {
@@ -90,6 +93,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         initEtlTask();
         //初始化数据源与数据集文件夹与数据
         dataSetService.initDataSet();
+        //初始化分析默认文件夹与数据
+        analyseModelService.initDefaultData();
         config.setEffect(EffectEnum.ENABLE.getKey());
         configMapper.updateById(config);
     }

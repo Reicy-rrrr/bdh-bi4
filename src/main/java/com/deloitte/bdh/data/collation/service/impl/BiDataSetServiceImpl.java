@@ -11,6 +11,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.SelectDataSetDto;
@@ -123,6 +124,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
         selectDataSetDto.setParentId("0");
         selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
+        List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        selectDataSetDto.setCreateUserList(userList);
         List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
         if (CollectionUtils.isNotEmpty(setList)) {
             for (BiDataSet dataSet : setList) {

@@ -64,7 +64,7 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      * @param request
      * @return
      */
-    AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request);
+    AnalysePageConfigDto publishAnalysePage(PublishAnalysePageDto request);
 
     /**
      * 获取草稿数据

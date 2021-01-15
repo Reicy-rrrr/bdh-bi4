@@ -251,29 +251,28 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Transactional
     @Override
-    public AnalysePageConfigDto publishAnalysePage(RetRequest<PublishAnalysePageDto> request) {
+    public AnalysePageConfigDto publishAnalysePage(PublishAnalysePageDto request) {
 
-        PublishAnalysePageDto publishDto = request.getData();
-        String categoryId = publishDto.getCategoryId();
-        SaveResourcePermissionDto dto = publishDto.getSaveResourcePermissionDto();
-        BiUiAnalysePageConfig originConfig = configService.getById(publishDto.getConfigId());
-        BiUiAnalysePage originPage = getById(publishDto.getPageId());
+        String categoryId = request.getCategoryId();
+        SaveResourcePermissionDto dto = request.getSaveResourcePermissionDto();
+        BiUiAnalysePageConfig originConfig = configService.getById(request.getConfigId());
+        BiUiAnalysePage originPage = getById(request.getPageId());
         if (originPage == null) {
             throw new BizException("报表已经不存在了。");
         }
 
-        if (StringUtils.equals(publishDto.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
-            updatePage(publishDto, originPage, originConfig, "false");
+        if (StringUtils.equals(request.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
+            updatePage(request, originPage, originConfig, "false");
         } else {
-            String password = publishDto.getPassword();
+            String password = request.getPassword();
 
             //获取公开状态
-            String isPublic = publishDto.getIsPublic();
+            String isPublic = request.getIsPublic();
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                updatePage(publishDto, originPage, originConfig, isPublic);
+                updatePage(request, originPage, originConfig, isPublic);
             } else {
                 if (originPage.getParentId().equals(categoryId)) {
-                    updatePage(publishDto, originPage, originConfig, isPublic);
+                    updatePage(request, originPage, originConfig, isPublic);
                 } else {
                     List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
                             .eq(BiUiAnalysePage::getParentId, categoryId)
@@ -286,7 +285,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         }
                         newConfig.setId(null);
                         newConfig.setPageId(null);
-                        newConfig.setContent(publishDto.getContent());
+                        newConfig.setContent(request.getContent());
                         newConfig.setTenantId(ThreadLocalHolder.getTenantId());
                         configService.save(newConfig);
                         //新建page
@@ -305,7 +304,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         //把新的pageId传给权限操作
                         dto.setId(newPageId);
                     } else {
-                        updatePage(publishDto, originPage, originConfig, isPublic);
+                        updatePage(request, originPage, originConfig, isPublic);
                     }
                 }
             }
@@ -315,7 +314,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             //生成链接
             setAccessUrl(dto.getId(), password, isPublic);
             //数据权限
-            userDataService.saveDataPermission(publishDto.getPermissionItemDtoList(), publishDto.getPageId());
+            userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
         }
 
         return null;

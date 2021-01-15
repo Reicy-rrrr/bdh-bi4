@@ -56,4 +56,6 @@ public interface AnalyseModelService {
      */
     BaseComponentDataResponse getComponentData(ComponentDataRequest data) throws Exception;
 
+    void initDefaultData();
+
 }

@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.model.request;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -26,5 +27,5 @@ public class SelectCategoryDto implements Serializable {
 
     private String type;
 
-    private String createUser;
+    private List<String> createUserList;
 }

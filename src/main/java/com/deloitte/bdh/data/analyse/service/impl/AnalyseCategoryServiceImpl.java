@@ -21,6 +21,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -102,7 +103,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         selectCategoryDto.setName(request.getData().getName());
         selectCategoryDto.setType(request.getData().getType());
         if (StringUtils.equals(request.getData().getType(), CategoryTypeEnum.COMPONENT.getCode())) {
-            selectCategoryDto.setCreateUser(ThreadLocalHolder.getOperator());
+            List<String> createUserList = Lists.newArrayList(BiTenantConfigController.OPERATOR, ThreadLocalHolder.getOperator());
+            selectCategoryDto.setCreateUserList(createUserList);
         }
         List<AnalyseCategoryDto> categoryList = categoryMapper.selectCategory(selectCategoryDto);
 

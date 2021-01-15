@@ -11,6 +11,8 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.*;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -18,11 +20,9 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
+import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.resp.*;
-import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
-import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
+import com.deloitte.bdh.data.analyse.service.*;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
@@ -58,6 +58,10 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     private AnalyseModelFieldService fieldService;
     @Resource
     private BiDataSetService dataSetService;
+    @Resource
+    private AnalyseCategoryService categoryService;
+    @Resource
+    private AnalysePageService pageService;
 
     @Override
     public List<DataSetTableInfo> getAllTable() {
@@ -117,13 +121,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         fieldService.updateBatchById(fieldList);
     }
 
-    public static void main(String[] args) {
-        List<String> a = Lists.newArrayList("1", "2");
-        List<String> b = Lists.newArrayList("1", "2");
-        a.removeAll(b);
-        System.out.println(a);
-    }
-
     @Override
     public void saveOrUpdateFolder(RetRequest<SaveOrUpdateFolderDto> request) {
         BiUiModelFolder folder = new BiUiModelFolder();
@@ -178,6 +175,36 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
             response.setRows(null);
         }
             return response;
+    }
+
+    @Override
+    public void initDefaultData() {
+        BiUiAnalyseCategory myAnalyse = new BiUiAnalyseCategory();
+        myAnalyse.setParentId("0");
+        myAnalyse.setName("默认文件夹");
+        myAnalyse.setType(CategoryTypeEnum.CUSTOMER.getCode());
+        myAnalyse.setDes("默认文件夹");
+        myAnalyse.setTenantId(ThreadLocalHolder.getTenantId());
+        categoryService.save(myAnalyse);
+
+        BiUiAnalyseCategory component = new BiUiAnalyseCategory();
+        component.setParentId("0");
+        component.setName("默认文件夹");
+        component.setType(CategoryTypeEnum.COMPONENT.getCode());
+        component.setDes("默认文件夹");
+        component.setTenantId(ThreadLocalHolder.getTenantId());
+        categoryService.save(component);
+
+        BiUiAnalysePage page = new BiUiAnalysePage();
+        page.setName("默认仪表板");
+        page.setDes("默认仪表板");
+        page.setType("dashboard");
+        page.setParentId(myAnalyse.getId());
+        page.setIsEdit(YnTypeEnum.NO.getCode());
+        page.setDeloitteFlag("0");
+        page.setTenantId(ThreadLocalHolder.getTenantId());
+        pageService.save(page);
+
     }
 
     /*

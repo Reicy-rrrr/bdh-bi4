@@ -92,7 +92,7 @@ public class AnalysePageController {
     @ApiOperation(value = "发布页面", notes = "发布页面")
     @PostMapping("/publishAnalysePage")
     public RetResult<AnalysePageConfigDto> publishAnalysePageConfig(@RequestBody @Validated RetRequest<PublishAnalysePageDto> request) {
-        return RetResponse.makeOKRsp(analysePageService.publishAnalysePage(request));
+        return RetResponse.makeOKRsp(analysePageService.publishAnalysePage(request.getData()));
     }
 
     @ApiOperation(value = "查询草稿", notes = "查询草稿")

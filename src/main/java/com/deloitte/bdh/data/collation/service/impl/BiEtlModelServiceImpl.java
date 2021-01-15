@@ -15,6 +15,7 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
@@ -93,30 +94,31 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public List<BiEtlModel> getModelTree() {
+        List<String> userList = com.google.common.collect.Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
         List<BiEtlModel> models = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getParentCode, "0")
                 .eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey())
-                .eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator())
+                .in(BiEtlModel::getCreateUser, userList)
                 .orderByDesc(BiEtlModel::getCreateDate)
         );
 
-        if (CollectionUtils.isEmpty(models)) {
-            //创建初始化模板
-            BiEtlModel model = new BiEtlModel();
-            String code = GenerateCodeUtil.generate();
-            model.setCode(code);
-            model.setName("默认文件夹");
-            model.setComments("默认文件夹");
-            model.setVersion("0");
-            model.setParentCode("0");
-            model.setRootCode(code);
-            model.setIsFile(YesOrNoEnum.YES.getKey());
-            model.setEffect(EffectEnum.ENABLE.getKey());
-            model.setTenantId(ThreadLocalHolder.getTenantId());
-            model.setProcessGroupId(code);
-            biEtlModelMapper.insert(model);
-            models.add(model);
-        }
+//        if (CollectionUtils.isEmpty(models)) {
+//            //创建初始化模板
+//            BiEtlModel model = new BiEtlModel();
+//            String code = GenerateCodeUtil.generate();
+//            model.setCode(code);
+//            model.setName("默认文件夹");
+//            model.setComments("默认文件夹");
+//            model.setVersion("0");
+//            model.setParentCode("0");
+//            model.setRootCode(code);
+//            model.setIsFile(YesOrNoEnum.YES.getKey());
+//            model.setEffect(EffectEnum.ENABLE.getKey());
+//            model.setTenantId(ThreadLocalHolder.getTenantId());
+//            model.setProcessGroupId(code);
+//            biEtlModelMapper.insert(model);
+//            models.add(model);
+//        }
         return models;
     }
 
