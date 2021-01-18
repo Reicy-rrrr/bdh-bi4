@@ -348,16 +348,8 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
                 //将字段和文件夹放到同一个children，通过children type区分
                 List<BiUiModelField> fieldList = fieldMap.get(folder.getId());
-//                List<AnalyseDataModelTree> fieldTreeList = buildFieldTree(fieldList, "0");
-                List<AnalyseDataModelTree> fieldTreeList = Lists.newArrayList();
+                List<AnalyseDataModelTree> fieldTreeList = buildFieldTree(fieldList, "0");
                 if (CollectionUtils.isNotEmpty(fieldTreeList)) {
-                    for (BiUiModelField field : fieldList) {
-                        AnalyseDataModelTree tree = new AnalyseDataModelTree();
-                        BeanUtils.copyProperties(field, tree);
-                        tree.setDesc(field.getFieldDesc());
-                        tree.setChildrenType(TreeChildrenTypeEnum.FIELD.getCode());
-                        fieldTreeList.add(tree);
-                    }
                     if (CollectionUtils.isEmpty(dataModelTree.getChildren())) {
                         List<AnalyseDataModelTree> children = Lists.newArrayList();
                         dataModelTree.setChildren(children);
