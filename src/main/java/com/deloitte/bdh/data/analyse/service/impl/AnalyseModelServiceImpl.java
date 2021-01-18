@@ -20,7 +20,6 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
-import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.resp.*;
 import com.deloitte.bdh.data.analyse.service.*;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
@@ -152,7 +151,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
         }
 
         //递归字段树
-        List<AnalyseDataModelTree> dataTree = buildFieldTree(folderList, fieldMap, "0");
+        List<AnalyseDataModelTree> dataTree = buildTree(folderList, fieldMap, "0");
         return dataTree;
     }
 
@@ -336,32 +335,52 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
      * @param parentId
      * @return
      */
-    private List<AnalyseDataModelTree> buildFieldTree(List<BiUiModelFolder> folderList, Map<String, List<BiUiModelField>> fieldMap, String parentId) {
+    private List<AnalyseDataModelTree> buildTree(List<BiUiModelFolder> folderList, Map<String, List<BiUiModelField>> fieldMap, String parentId) {
         List<AnalyseDataModelTree> treeDataModels = Lists.newArrayList();
         for (BiUiModelFolder folder : folderList) {
             AnalyseDataModelTree dataModelTree = new AnalyseDataModelTree();
             BeanUtils.copyProperties(folder, dataModelTree);
 
             if (parentId.equals(dataModelTree.getParentId())) {
-                dataModelTree.setChildren(buildFieldTree(folderList, fieldMap, dataModelTree.getId()));
+                dataModelTree.setChildren(buildTree(folderList, fieldMap, dataModelTree.getId()));
                 dataModelTree.setChildrenType(TreeChildrenTypeEnum.FOLDER.getCode());
                 treeDataModels.add(dataModelTree);
 
                 //将字段和文件夹放到同一个children，通过children type区分
                 List<BiUiModelField> fieldList = fieldMap.get(folder.getId());
-                List<AnalyseDataModelTree> fieldTreeList = Lists.newArrayList();
-                if (CollectionUtils.isNotEmpty(fieldList)) {
-                    for (BiUiModelField field : fieldList) {
-                        AnalyseDataModelTree tree = new AnalyseDataModelTree();
-                        BeanUtils.copyProperties(field, tree);
-                        tree.setChildrenType(TreeChildrenTypeEnum.FIELD.getCode());
-                        fieldTreeList.add(tree);
-                    }
+                List<AnalyseDataModelTree> fieldTreeList = buildFieldTree(fieldList, "0");
+//                List<AnalyseDataModelTree> fieldTreeList = Lists.newArrayList();
+                if (CollectionUtils.isNotEmpty(fieldTreeList)) {
+//                    for (BiUiModelField field : fieldList) {
+//                        AnalyseDataModelTree tree = new AnalyseDataModelTree();
+//                        BeanUtils.copyProperties(field, tree);
+//                        tree.setChildrenType(TreeChildrenTypeEnum.FIELD.getCode());
+//                        fieldTreeList.add(tree);
+//                    }
                     if (CollectionUtils.isEmpty(dataModelTree.getChildren())) {
                         List<AnalyseDataModelTree> children = Lists.newArrayList();
                         dataModelTree.setChildren(children);
                     }
                     dataModelTree.getChildren().addAll(fieldTreeList);
+                }
+            }
+        }
+        return treeDataModels;
+    }
+
+    private List<AnalyseDataModelTree> buildFieldTree(List<BiUiModelField> fieldList, String parentId) {
+        List<AnalyseDataModelTree> treeDataModels = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(fieldList)) {
+            for (BiUiModelField field : fieldList) {
+                AnalyseDataModelTree dataModelTree = new AnalyseDataModelTree();
+                BeanUtils.copyProperties(field, dataModelTree);
+                dataModelTree.setDesc(field.getFieldDesc());
+                dataModelTree.setChildrenType(TreeChildrenTypeEnum.FIELD.getCode());
+
+                if (parentId.equals(dataModelTree.getParentId())) {
+                    dataModelTree.setChildren(buildFieldTree(fieldList, dataModelTree.getId()));
+                    treeDataModels.add(dataModelTree);
+
                 }
             }
         }
