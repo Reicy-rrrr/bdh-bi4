@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: uat
   application:
     name: bi
   cloud:
@@ -47,9 +47,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        namespace: df9e72bd-966d-4673-9e4f-12a4b08b74ca
+        namespace: 6d41181e-8267-4fc4-9c84-b0df4f4cd767
       config:
-        namespace: df9e72bd-966d-4673-9e4f-12a4b08b74ca
+        namespace: 6d41181e-8267-4fc4-9c84-b0df4f4cd767
 
 ---
 # demo
