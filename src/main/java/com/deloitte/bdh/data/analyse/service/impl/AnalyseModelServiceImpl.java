@@ -63,9 +63,9 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     private AnalysePageService pageService;
 
     @Override
-    public List<DataSetTableInfo> getAllTable() {
+    public List<DataSetTableInfo> getAllTable(String userFlag) {
         List<DataSetTableInfo> tableInfos = Lists.newArrayList();
-        List<BiDataSet> dataSetList = dataSetService.getTableList();
+        List<BiDataSet> dataSetList = dataSetService.getTableList(userFlag);
         if (CollectionUtils.isNotEmpty(dataSetList)) {
             for (BiDataSet dataSet : dataSetList) {
                 DataSetTableInfo tableInfo = new DataSetTableInfo();

@@ -35,8 +35,8 @@ public class AnalyseModelController {
 
     @ApiOperation(value = "获取所有表", notes = "获取所有表")
     @PostMapping("/getAllTable")
-    public RetResult<List<DataSetTableInfo>> getAllTable(@RequestBody @Validated RetRequest<Void> request) {
-        return RetResponse.makeOKRsp(analyseModelService.getAllTable());
+    public RetResult<List<DataSetTableInfo>> getAllTable(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(analyseModelService.getAllTable(request.getData()));
     }
 
     @ApiOperation(value = "获取数据树状结构", notes = "获取数据树状结构")

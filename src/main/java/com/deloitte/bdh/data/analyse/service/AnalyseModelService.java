@@ -22,7 +22,7 @@ public interface AnalyseModelService {
      *
      * @return
      */
-    List<DataSetTableInfo> getAllTable();
+    List<DataSetTableInfo> getAllTable(String userFlag);
 
     /**
      * 获取数据模型树
