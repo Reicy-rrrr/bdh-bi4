@@ -294,9 +294,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         LambdaQueryWrapper<BiDataSet> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO);
         lambdaQueryWrapper.orderByDesc(BiDataSet::getCreateDate);
-        if (!org.apache.commons.lang3.StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
-            lambdaQueryWrapper.in(BiDataSet::getCreateUser, userList);
-        }
+//        if (!org.apache.commons.lang3.StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+//            lambdaQueryWrapper.in(BiDataSet::getCreateUser, userList);
+//        }
         List<BiDataSet> dataSetList = setMapper.selectList(lambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(dataSetList)) {
             results.addAll(dataSetList);
