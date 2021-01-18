@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto">
+        <id column="ID" property="id"/>
+        <result column="CODE" property="code"/>
+        <result column="NAME" property="name"/>
+        <result column="DES" property="des"/>
+        <result column="TYPE" property="type"/>
+        <result column="CATEGORY_ID" property="parentId"/>
+        <result column="ICON" property="icon"/>
+        <result column="ORIGIN_PAGE_ID" property="originPageId"/>
+        <result column="DELOITTE_FLAG" property="deloitteFlag"/>
+        <result column="IS_PUBLIC" property="isPublic"/>
+    </resultMap>
+
+    <select id="selectPublishedPage" resultMap="BaseResultMap">
+        SELECT
+        t1.ID,
+        t1.`CODE`,
+        t1.`NAME`,
+        t1.DES,
+        t1.TYPE,
+        t1.ICON,
+        t1.CATEGORY_ID,
+        t1.EDIT_ID,
+        t1.PUBLISH_ID,
+        t1.IS_PUBLIC
+        FROM
+        BI_UI_ANALYSE_PAGE t1
+        LEFT JOIN (
+        SELECT
+        t2.RESOURCE_ID
+        FROM
+        BI_UI_ANALYSE_USER_RESOURCE t2
+        LEFT JOIN (
+        SELECT
+        t3.RESOURCE_ID
+        FROM
+        BI_UI_ANALYSE_USER_RESOURCE t3
+        WHERE
+        t3.USER_ID = #{queryDto.userId,jdbcType=VARCHAR}
+        AND t3.RESOURCE_TYPE = #{queryDto.resourceType,jdbcType=VARCHAR}
+        AND LOCATE( #{queryDto.permittedAction,jdbcType=VARCHAR}, t3.PERMITTED_ACTION ) > 0
+        GROUP BY
+        t3.RESOURCE_ID
+        ) t4 ON t2.RESOURCE_ID = t4.RESOURCE_ID
+        WHERE
+        t4.RESOURCE_ID IS NULL GROUP BY t2.RESOURCE_ID
+        ) t5 ON t1.ID = t5.RESOURCE_ID
+        WHERE
+        t5.RESOURCE_ID IS NULL
+        AND t1.PUBLISH_ID IS NOT NULL
+        <if test="queryDto.name != null and queryDto.name != ''">
+            AND t1.`NAME` LIKE concat('%', #{queryDto.name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="queryDto.resourcesIds != null and queryDto.resourcesIds.size() > 0">
+            AND t1.CATEGORY_ID IN
+            <foreach collection="queryDto.resourcesIds" index="index" item="item" open="(" close=")" separator=",">
+                #{item, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="queryDto.isEdit != null and queryDto.isEdit != ''">
+            AND t1.IS_EDIT = #{queryDto.isEdit,jdbcType=VARCHAR}
+        </if>
+        <if test="queryDto.tenantId != null and queryDto.tenantId != ''">
+            AND t1.TENANT_ID = #{queryDto.tenantId,jdbcType=VARCHAR}
+        </if>
+        ORDER BY t1.CREATE_DATE DESC
+    </select>
+
+</mapper>

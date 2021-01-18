@@ -1,0 +1,98 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: bi
+  cloud:
+    nacos:
+      server-addr: 10.81.128.50:8848
+      config:
+        refresh-enabled: true
+        group: bi
+        shared-configs[0]:
+          data-id: custom-common.properties
+          refresh: true
+server:
+  port: 9002
+  servlet:
+    context-path: /bi
+logging:
+  config: classpath:log4j2.xml
+
+#health endpoint\u662F\u5426\u5FC5\u987B\u663E\u793A\u5168\u90E8\u7EC6\u8282\u3002\u9ED8\u8BA4\u60C5\u51B5\u4E0B, /actuator/health \u662F\u516C\u5F00\u7684\uFF0C\u5E76\u4E14\u4E0D\u663E\u793A\u7EC6\u8282\u3002
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: env,configprops
+---
+# dev
+spring:
+  profiles: dev
+  cloud:
+    nacos:
+      discovery:
+        namespace: 4ca94aea-b5b1-486f-80da-debf7d622bdc
+      config:
+        namespace: 4ca94aea-b5b1-486f-80da-debf7d622bdc
+
+---
+# uat
+spring:
+  profiles: uat
+  cloud:
+    nacos:
+      discovery:
+        namespace: df9e72bd-966d-4673-9e4f-12a4b08b74ca
+      config:
+        namespace: df9e72bd-966d-4673-9e4f-12a4b08b74ca
+
+---
+# demo
+spring:
+  profiles: demo
+  cloud:
+    nacos:
+      discovery:
+        namespace: f8b196e0-5ce5-41dc-abe8-e05973684c98
+      config:
+        namespace: f8b196e0-5ce5-41dc-abe8-e05973684c98
+
+---
+# prod
+spring:
+  profiles: prod
+  cloud:
+    nacos:
+      discovery:
+        namespace: a7dc2813-4e2f-485d-b629-689ced735a24
+      config:
+        namespace: a7dc2813-4e2f-485d-b629-689ced735a24
+
+---
+# hktest
+spring:
+  profiles: hktest
+  cloud:
+    nacos:
+      server-addr: 10.240.32.68:8848
+      discovery:
+        namespace: c2b05136-7923-46db-bebb-b3bc8690464c
+      config:
+        namespace: c2b05136-7923-46db-bebb-b3bc8690464c
+
+---
+# hkprod
+spring:
+  profiles: hkprod
+  cloud:
+    nacos:
+      server-addr: 10.240.32.68:8848
+      discovery:
+        namespace: ea321df0-d151-42d4-a566-31fa9844074b
+      config:
+        namespace: ea321df0-d151-42d4-a566-31fa9844074b

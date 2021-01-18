@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.collation.dao.bi.BiEtlMappingConfigMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlMappingConfig">
+        <id column="id" property="id" />
+        <result column="CODE" property="code" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
+        <result column="REF_COMPONENT_CODE" property="refComponentCode" />
+        <result column="TYPE" property="type" />
+        <result column="OFFSET_FIELD" property="offsetField" />
+        <result column="OFFSET_VALUE" property="offsetValue" />
+        <result column="LOCAL_COUNT" property="localCount" />
+        <result column="REF_SOURCE_ID" property="refSourceId" />
+        <result column="FROM_TABLE_NAME" property="fromTableName" />
+        <result column="TO_TABLE_NAME" property="toTableName" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
+    </resultMap>
+
+</mapper>

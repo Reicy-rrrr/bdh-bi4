@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper">
+
+    <!-- 创建表 -->
+    <update id="createTable" parameterType="String">
+        ${createSql}
+    </update>
+
+    <!-- 查询表字段 -->
+    <select id="selectColumns" parameterType="String" resultType="Map">
+        ${querySql}
+    </select>
+
+    <!-- 查询表数据量 -->
+    <select id="selectCount" parameterType="String" resultType="long">
+        ${querySql}
+    </select>
+
+    <!-- 清空表数据 -->
+    <update id="truncateTable" parameterType="String">
+        ${truncateSql}
+    </update>
+
+    <!-- 执行删除语句 -->
+    <update id="delete" parameterType="String">
+        ${deleteSql}
+    </update>
+
+    <!-- 执行批量sql查询语句 -->
+    <select id="checkTableExists" parameterType="String" resultType="String">
+        show tables like #{tableName}
+    </select>
+
+    <!-- 执行批量sql查询语句 -->
+    <select id="executeQuery" parameterType="String" resultType="Map">
+        ${querySql}
+    </select>
+
+    <!-- 执行批量插入 -->
+    <insert id="executeInsert">
+        insert into ${tableName}
+        <foreach item="value" collection="rows[0]" index="key" open="(" separator="," close=")">
+            ${key}
+        </foreach>
+        values
+        <foreach collection="rows" item="rowMap" separator=",">
+            <foreach collection="rowMap" item="value" index="key" open="(" separator="," close=")">
+                #{value}
+            </foreach>
+        </foreach>
+    </insert>
+</mapper>

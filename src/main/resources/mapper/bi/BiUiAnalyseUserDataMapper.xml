@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserDataMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData">
+        <id column="USER_DATA_ID" property="userDataId" />
+        <result column="USER_ID" property="userId" />
+        <result column="PAGE_ID" property="pageId" />
+        <result column="COMPONENT_ID" property="componentId" />
+        <result column="TABLE_NAME" property="tableName" />
+        <result column="TABLE_FIELD" property="tableField" />
+        <result column="FIELD_VALUE" property="fieldValue" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+    </resultMap>
+
+</mapper>

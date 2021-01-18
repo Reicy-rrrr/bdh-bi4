@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.collation.dao.bi.BiDataSetMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiDataSet">
+        <id column="ID" property="id" />
+        <result column="TYPE" property="type" />
+        <result column="REF_SOURCE_ID" property="refSourceId" />
+        <result column="TABLE_NAME" property="tableName" />
+        <result column="TABLE_DESC" property="tableDesc" />
+        <result column="REF_MODEL_CODE" property="refModelCode" />
+        <result column="PARENT_ID" property="parentId" />
+        <result column="COMMENTS" property="comments" />
+        <result column="IS_FILE" property="isFile" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CODE" property="code" />
+    </resultMap>
+
+
+    <select id="selectDataSetCategory" resultMap="BaseResultMap">
+        SELECT
+        t1.*
+        FROM
+        BI_DATA_SET t1
+        LEFT JOIN (
+        SELECT
+        t2.RESOURCE_ID
+        FROM
+        BI_UI_ANALYSE_USER_RESOURCE t2
+        LEFT JOIN (
+        SELECT
+        t3.RESOURCE_ID
+        FROM
+        BI_UI_ANALYSE_USER_RESOURCE t3
+        WHERE
+        t3.USER_ID = #{queryDto.userId,jdbcType=VARCHAR}
+        AND t3.RESOURCE_TYPE = #{queryDto.resourceType,jdbcType=VARCHAR}
+        AND LOCATE( #{queryDto.permittedAction,jdbcType=VARCHAR}, t3.PERMITTED_ACTION ) > 0
+        GROUP BY
+        t3.RESOURCE_ID
+        ) t4 ON t2.RESOURCE_ID = t4.RESOURCE_ID
+        WHERE
+        t4.RESOURCE_ID IS NULL GROUP BY t2.RESOURCE_ID
+        ) t5 ON t1.ID = t5.RESOURCE_ID
+        WHERE
+        t5.RESOURCE_ID IS NULL
+        <if test="queryDto.tenantId != null and queryDto.tenantId != ''">
+            AND t1.TENANT_ID = #{queryDto.tenantId,jdbcType=VARCHAR}
+        </if>
+        <if test="queryDto.parentId != null and queryDto.parentId != ''">
+            AND t1.PARENT_ID = #{queryDto.parentId,jdbcType=VARCHAR}
+        </if>
+        <if test="queryDto.isFile != null and queryDto.isFile != ''">
+            AND t1.IS_FILE = #{queryDto.isFile,jdbcType=VARCHAR}
+        </if>
+        <if test="queryDto.createUserList != null and queryDto.createUserList.size() > 0">
+            AND t1.CREATE_USER IN
+            <foreach collection="queryDto.createUserList" index="index" item="item" open="(" close=")" separator=",">
+                #{item, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        ORDER BY t1.CREATE_DATE DESC
+    </select>
+
+
+</mapper>

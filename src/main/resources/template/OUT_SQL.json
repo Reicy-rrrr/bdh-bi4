@@ -1,0 +1,283 @@
+{"originX":1,
+    "originY":2,
+    "templateId":"dttTemplateId",
+    "snippet":{
+        "processGroups":[
+            {
+                "id":"dttProcessGroupsId",
+                "parentGroupId":"dttModelGroupId",
+                "name":"dttComponentName",
+                "position":{
+                    "x":0,
+                    "y":0
+                },
+                "contents":{
+                    "processors":[
+                        {
+                            "id":"dttFirstProcessorId",
+                            "versionedComponentId":"",
+                            "parentGroupId":"dttProcessGroupsId",
+                            "position":{
+                                "x":752,
+                                "y":360
+                            },
+                            "name":"ExecuteSQL",
+                            "type":"org.apache.nifi.processors.standard.ExecuteSQL",
+                            "bundle":{
+                                "group":"org.apache.nifi",
+                                "artifact":"nifi-standard-nar",
+                                "version":"1.11.4"
+                            },
+                            "state":"STOPPED",
+                            "style":{
+
+                            },
+                            "relationships":[
+                                {
+                                    "name": "failure",
+                                    "description": "SQL query execution failed. Incoming FlowFile will be penalized and routed to this relationship",
+                                    "autoTerminate": false
+                                },
+                                {
+                                    "name": "success",
+                                    "description": "Successfully created FlowFile from SQL query result set.",
+                                    "autoTerminate": false
+                                }
+                            ],
+                            "supportsParallelProcessing":true,
+                            "supportsEventDriven":true,
+                            "supportsBatching":false,
+                            "persistsState":true,
+                            "restricted":false,
+                            "deprecated":false,
+                            "executionNodeRestricted":true,
+                            "multipleVersionsAvailable":false,
+                            "inputRequirement":"INPUT_ALLOWED",
+                            "config":{
+                                "properties":{
+                                    "Database Connection Pooling Service": "dttDatabaseServieId",
+                                    "sql-pre-query": null,
+                                    "SQL select query": "dttSqlQuery",
+                                    "sql-post-query": null,
+                                    "Max Wait Time": "0 seconds",
+                                    "dbf-normalize": "false",
+                                    "dbf-user-logical-types": "false",
+                                    "compression-format": "NONE",
+                                    "dbf-default-precision": "10",
+                                    "dbf-default-scale": "0",
+                                    "esql-max-rows": "0",
+                                    "esql-output-batch-size": "0",
+                                    "esql-fetch-size": "0"
+                                },
+                                "schedulingPeriod":"129600 min",
+                                "schedulingStrategy":"TIMER_DRIVEN",
+                                "executionNode":"PRIMARY",
+                                "penaltyDuration":"30 sec",
+                                "yieldDuration":"36000 sec",
+                                "bulletinLevel":"WARN",
+                                "runDurationMillis":0,
+                                "concurrentlySchedulableTaskCount":1,
+                                "comments":"",
+                                "lossTolerant":false
+                            },
+                            "validationErrors":[
+
+                            ],
+                            "validationStatus":"",
+                            "extensionMissing":false
+                        },
+                        {
+                            "id":"dttSecondProcessorId",
+                            "versionedComponentId":"",
+                            "parentGroupId":"dttProcessGroupsId",
+                            "position":{
+                                "x":1344,
+                                "y":352
+                            },
+                            "name":"PutDatabaseRecord",
+                            "type":"org.apache.nifi.processors.standard.PutDatabaseRecord",
+                            "bundle":{
+                                "group":"org.apache.nifi",
+                                "artifact":"nifi-standard-nar",
+                                "version":"1.11.4"
+                            },
+                            "state":"STOPPED",
+                            "style":{
+
+                            },
+                            "relationships":[
+                                {
+                                    "name":"failure",
+                                    "description":"A FlowFile is routed to this relationship if the database cannot be updated and retrying the operation will also fail, such as an invalid query or an integrity constraint violation",
+                                    "autoTerminate":false
+                                },
+                                {
+                                    "name":"retry",
+                                    "description":"A FlowFile is routed to this relationship if the database cannot be updated but attempting the operation again may succeed",
+                                    "autoTerminate":false
+                                },
+                                {
+                                    "name":"success",
+                                    "description":"Successfully created FlowFile from SQL query result set.",
+                                    "autoTerminate":true
+                                }
+                            ],
+                            "supportsParallelProcessing":true,
+                            "supportsEventDriven":true,
+                            "supportsBatching":false,
+                            "persistsState":false,
+                            "restricted":false,
+                            "deprecated":false,
+                            "executionNodeRestricted":false,
+                            "multipleVersionsAvailable":false,
+                            "inputRequirement":"INPUT_FORBIDDEN",
+                            "config":{
+                                "properties":{
+                                    "put-db-record-record-reader":"dttPutReader",
+                                    "put-db-record-statement-type":"INSERT",
+                                    "put-db-record-dcbp-service":"dttPutServiceId",
+                                    "put-db-record-catalog-name":null,
+                                    "put-db-record-schema-name":null,
+                                    "put-db-record-table-name":"dttPutTableName",
+                                    "put-db-record-translate-field-names":"true",
+                                    "put-db-record-unmatched-field-behavior":"Ignore Unmatched Fields",
+                                    "put-db-record-unmatched-column-behavior":"Fail on Unmatched Columns",
+                                    "put-db-record-update-keys":null,
+                                    "put-db-record-field-containing-sql":null,
+                                    "put-db-record-allow-multiple-statements":"true",
+                                    "put-db-record-quoted-identifiers":"true",
+                                    "put-db-record-quoted-table-identifiers":"false",
+                                    "put-db-record-query-timeout":"0 seconds",
+                                    "rollback-on-failure":"false",
+                                    "table-schema-cache-size":"10000",
+                                    "put-db-record-max-batch-size":"0"
+                                },
+                                "schedulingPeriod":"0 sec",
+                                "schedulingStrategy":"TIMER_DRIVEN",
+                                "executionNode":"PRIMARY",
+                                "penaltyDuration":"30 sec",
+                                "yieldDuration":"1 sec",
+                                "bulletinLevel":"WARN",
+                                "runDurationMillis":0,
+                                "concurrentlySchedulableTaskCount":8,
+                                "comments":"",
+                                "lossTolerant":false
+                            },
+                            "validationErrors":[
+
+                            ],
+                            "validationStatus":"",
+                            "extensionMissing":false
+                        }
+                    ],
+                    "connections":[
+                        {
+                            "id":"dttFirstConnectionId",
+                            "versionedComponentId":"",
+                            "parentGroupId":"dttProcessGroupsId",
+                            "source":{
+                                "id":"dttFirstProcessorId",
+                                "versionedComponentId":"",
+                                "type":"PROCESSOR",
+                                "groupId":"dttProcessGroupsId",
+                                "name":"ExecuteSQL",
+                                "running":false,
+                                "transmitting":true,
+                                "exists":true,
+                                "comments":""
+                            },
+                            "destination":{
+                                "id":"dttSecondProcessorId",
+                                "versionedComponentId":"",
+                                "type":"PROCESSOR",
+                                "groupId":"dttProcessGroupsId",
+                                "name":"PutDatabaseRecord",
+                                "running":false,
+                                "transmitting":true,
+                                "exists":true,
+                                "comments":""
+                            },
+                            "name":"",
+                            "labelIndex":1,
+                            "zIndex":0,
+                            "selectedRelationships":[
+                                "success",
+                                "failure"
+                            ],
+                            "availableRelationships":[
+                                "success",
+                                "failure"
+                            ],
+                            "backPressureObjectThreshold":10000,
+                            "backPressureDataSizeThreshold":"3 GB",
+                            "flowFileExpiration":"0 sec",
+                            "prioritizers":[
+
+                            ],
+                            "bends":[
+
+                            ],
+                            "loadBalanceStrategy":"DO_NOT_LOAD_BALANCE",
+                            "loadBalancePartitionAttribute":"",
+                            "loadBalanceCompression":"DO_NOT_COMPRESS",
+                            "loadBalanceStatus":"LOAD_BALANCE_NOT_CONFIGURED"
+                        },
+                        {
+                            "id":"dttSecondConnectionId",
+                            "versionedComponentId":"",
+                            "parentGroupId":"dttProcessGroupsId",
+                            "source":{
+                                "id":"dttSecondProcessorId",
+                                "versionedComponentId":"",
+                                "type":"PROCESSOR",
+                                "groupId":"dttProcessGroupsId",
+                                "name":"QueryDatabaseTable",
+                                "running":false,
+                                "transmitting":true,
+                                "exists":true,
+                                "comments":""
+                            },
+                            "destination":{
+                                "id":"dttSecondProcessorId",
+                                "versionedComponentId":"",
+                                "type":"PROCESSOR",
+                                "groupId":"dttProcessGroupsId",
+                                "name":"PutDatabaseRecord",
+                                "running":false,
+                                "transmitting":true,
+                                "exists":true,
+                                "comments":""
+                            },
+                            "name":"",
+                            "labelIndex":1,
+                            "zIndex":0,
+                            "selectedRelationships":[
+                                "failure",
+                                "retry"
+                            ],
+                            "availableRelationships":[
+                                "failure",
+                                "retry",
+                                "success"
+                            ],
+                            "backPressureObjectThreshold":10000,
+                            "backPressureDataSizeThreshold":"3 GB",
+                            "flowFileExpiration":"0 sec",
+                            "prioritizers":[
+
+                            ],
+                            "bends":[
+
+                            ],
+                            "loadBalanceStrategy":"DO_NOT_LOAD_BALANCE",
+                            "loadBalancePartitionAttribute":"",
+                            "loadBalanceCompression":"DO_NOT_COMPRESS",
+                            "loadBalanceStatus":"LOAD_BALANCE_NOT_CONFIGURED"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "disconnectedNodeAcknowledged":true
+}

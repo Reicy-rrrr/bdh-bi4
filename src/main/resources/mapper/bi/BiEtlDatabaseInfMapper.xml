@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf">
+        <id column="id" property="id" />
+        <result column="NAME" property="name" />
+        <result column="COMMENTS" property="comments" />
+        <result column="TYPE" property="type" />
+        <result column="TYPE_NAME" property="typeName" />
+        <result column="POOL_TYPE" property="poolType" />
+        <result column="DB_NAME" property="dbName" />
+        <result column="DB_USER" property="dbUser" />
+        <result column="DB_PASSWORD" property="dbPassword" />
+        <result column="ADDRESS" property="address" />
+        <result column="PORT" property="port" />
+        <result column="DRIVER_NAME" property="driverName" />
+        <result column="DRIVER_LOCATIONS" property="driverLocations" />
+        <result column="EFFECT" property="effect" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATE_USER" property="createUser" />
+        <result column="MODIFIED_DATE" property="modifiedDate" />
+        <result column="MODIFIED_USER" property="modifiedUser" />
+        <result column="IP" property="ip" />
+        <result column="TENANT_ID" property="tenantId" />
+        <result column="CONTROLLER_SERVICE_ID" property="controllerServiceId" />
+        <result column="ROOT_GROUP_ID" property="rootGroupId" />
+        <result column="VERSION" property="version" />
+    </resultMap>
+
+</mapper>
