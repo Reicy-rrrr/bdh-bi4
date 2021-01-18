@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
@@ -359,7 +360,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
         }
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getCode());
-        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
+        if (!StringUtils.equals(CommonConstant.SUPER_USER_FLAG, request.getData().getUserFlag())) {
+            pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
+        }
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList);

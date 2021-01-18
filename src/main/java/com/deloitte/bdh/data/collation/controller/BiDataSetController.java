@@ -45,8 +45,8 @@ public class BiDataSetController {
 
     @ApiOperation(value = "获取数据集文件夹", notes = "获取数据集文件夹")
     @PostMapping("/getFiles")
-    public RetResult<List<DataSetResp>> getFiles(@RequestBody @Validated RetRequest request) {
-        return RetResponse.makeOKRsp(dataSetService.getFiles());
+    public RetResult<List<DataSetResp>> getFiles(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(dataSetService.getFiles(request.getData()));
     }
 
     @ApiOperation(value = "基于文件夹户获取数据集列表", notes = "基于文件夹户获取数据集列表")

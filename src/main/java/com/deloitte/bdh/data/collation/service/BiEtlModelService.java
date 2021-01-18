@@ -27,7 +27,7 @@ public interface BiEtlModelService extends Service<BiEtlModel> {
      * @param
      * @return
      */
-    List<BiEtlModel> getModelTree();
+    List<BiEtlModel> getModelTree(String userFlag);
 
 
     /**
