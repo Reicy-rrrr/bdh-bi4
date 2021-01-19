@@ -283,6 +283,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
                         if (originConfig != null) {
                             BeanUtils.copyProperties(originConfig, newConfig);
+                            originConfig.setContent(request.getContent());
+                            configService.updateById(originConfig);
                         }
                         newConfig.setId(null);
                         newConfig.setPageId(null);
@@ -327,6 +329,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
         if (originConfig != null) {
             BeanUtils.copyProperties(originConfig, newConfig);
+            originConfig.setContent(dto.getContent());
+            configService.updateById(originConfig);
         }
         newConfig.setId(null);
         newConfig.setPageId(dto.getPageId());

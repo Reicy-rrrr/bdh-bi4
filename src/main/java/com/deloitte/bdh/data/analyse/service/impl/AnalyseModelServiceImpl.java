@@ -6,6 +6,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -38,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -169,11 +171,13 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 extraMap.putAll(joinDataUnit(request, response));
             }
             response.setExtra(extraMap);
+        } catch (SQLSyntaxErrorException e) {
+            throw new BizException("表或者字段有变动，请重新配置报表");
         } catch (SQLException e) {
             log.error(e.getMessage());
             response.setRows(null);
         }
-            return response;
+        return response;
     }
 
     @Override
