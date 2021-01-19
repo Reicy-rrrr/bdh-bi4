@@ -211,7 +211,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-
+        List<RunPlan> planList = new ArrayList<RunPlan>();
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             //设置过滤条件
@@ -240,6 +240,7 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setToTableName(dto.getTableName());
             mappingConfig.setTenantId(ThreadLocalHolder.getTenantId());
 
+            
             //非直连且非本地
             if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
                     && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
@@ -287,8 +288,7 @@ public class EtlServiceImpl implements EtlService {
 
                 //step2.1.4 生成同步的第一次的调度计划
                 syncPlanService.createPlan(runPlan);
-                
-                KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(new ArrayList<>().add(runPlan)));
+                planList.add(runPlan);
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
             }
@@ -308,6 +308,12 @@ public class EtlServiceImpl implements EtlService {
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
+//        if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
+//                && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
+//        	KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(planList));
+//        }
+        
+        
         return component;
     }
 

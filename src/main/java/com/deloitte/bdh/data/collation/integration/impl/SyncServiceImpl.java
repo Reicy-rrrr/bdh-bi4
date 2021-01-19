@@ -568,9 +568,10 @@ public class SyncServiceImpl implements SyncService {
         //执行
         runPlans.forEach(s -> syncPlanService.createPlan(s));
 
-        KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(runPlans));
+        
         //状态变为正在同步中
         model.setSyncStatus(YesOrNoEnum.YES.getKey());
         modelService.updateById(model);
+//        KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(runPlans));
     }
 }
