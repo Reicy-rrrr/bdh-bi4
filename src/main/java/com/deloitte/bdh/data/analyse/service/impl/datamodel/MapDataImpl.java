@@ -103,7 +103,14 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         for (Map<String, Object> row : rows) {
 
             //x轴名称
-            List<String> xList = Lists.newArrayList(xName);
+            List<String> xList = Lists.newArrayList();
+            for (DataModelField x : dataModel.getX()) {
+                String colName = x.getId();
+                if (StringUtils.isNotBlank(x.getAlias())) {
+                    colName = x.getAlias();
+                }
+                xList.add(MapUtils.getString(row, colName));
+            }
             //其他参数
             String symbolSizeName = getColName(symbolSizeField);
 
@@ -213,14 +220,5 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
 
     @Override
     protected void validate(DataModel dataModel) {
-        if (CollectionUtils.isEmpty(dataModel.getX())) {
-            throw new BizException("维度不能为空");
-        }
-        if (dataModel.getX().size() > 1) {
-            throw new BizException("维度数量只能为1");
-        }
-        if (dataModel.getY().size() > 1) {
-            throw new BizException("度量数量只能为1");
-        }
     }
 }
