@@ -24,7 +24,6 @@ import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.google.common.collect.Lists;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QEncoderStream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
