@@ -1,9 +1,7 @@
-package com.deloitte.bdh.data.collation.integration.impl;
+package com.deloitte.bdh.data.collation.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -15,51 +13,45 @@ import org.springframework.util.CollectionUtils;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.collation.component.constant.ComponentCons;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.database.DbHandler;
-import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
-import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.enums.PlanResultEnum;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
-import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
-import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
-import com.deloitte.bdh.data.collation.integration.SyncService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiComponentParams;
-import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.BiEtlMappingConfig;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
 import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.RunPlan;
-import com.deloitte.bdh.data.collation.model.request.ConditionDto;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.mq.consumer.KafkaProducter;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
-import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
-import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
+import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
 
 import lombok.extern.slf4j.Slf4j;
 
+
 @Service
-@DS(DSConstant.BI_DB)
 @Slf4j
-public class SyncServiceImpl implements SyncService {
-    @Resource
+@SuppressWarnings("rawtypes")
+@DS(DSConstant.BI_DB)
+public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
+
+	
+	
+	@Resource
     private BiEtlSyncPlanService syncPlanService;
     @Autowired
     private BiEtlMappingConfigService configService;
@@ -70,32 +62,73 @@ public class SyncServiceImpl implements SyncService {
     @Autowired
     private BiComponentService componentService;
     @Autowired
-    private BiComponentParamsService paramsService;
-    @Autowired
-    private BiEtlDatabaseInfService biEtlDatabaseInfService;
-    @Autowired
     private BiEtlModelService modelService;
     @Autowired
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
     @Autowired
-    private KafkaProducter KafkaProducter;
+    private KafkaProducter Producter;
+	
+	@Override
+	public void BiEtlSyncPlan(KafkaMessage message) {
+		log.info("kafka 启动调用更新数据库表变成执行中");
+		//改变执行计划变成已经开始执行
+		String body = message.getBody();
+		List<RunPlan> list = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
+        });
+		if(!CollectionUtils.isEmpty(list)) {
+			syncToExecute(list,message);
+			//发送kafka topic 消息 准备查询是否已执行完成
+			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
+			Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+		}
+		
+	}
 
-    @Override
-    public void sync() {
-        syncToExecute();
-        syncExecuting();
-    }
+	@Override
+	public void BiEtlSyncManyPlan(KafkaMessage message) {
+		log.info("kafka 启动调用更新数据库表查询是否结束，如果已结束 更新标志位");
+		String body = message.getBody();
+		List<RunPlan> list = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
+        });
+		if(!CollectionUtils.isEmpty(list)) {
+			//检查执行计划是否已经完成 未完成发送第二次请求使用延迟消费  如果多条请求全部完成发送topic 请求多条验证完成
+			syncExecuting(message,list);
+		}
+		
+	}
 
-    private void syncToExecute() {
+	@Override
+	public void BiEtlSyncManyEndPlan(KafkaMessage message) {
+		log.info("kafka 启动调用更新数据库表多条数据全部结束，查询当前tyep 为1 标志位是否同步结束 如已结束更新标志位");
+		String body = message.getBody();
+		List<RunPlan> planList = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
+        });
+		if(org.apache.commons.collections4.CollectionUtils.isEmpty(planList)) {
+			return;
+		}
+		try {
+			etlToExecute(planList,message);
+			etlExecuting(planList , message);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		
+	}
+	
+	//启动
+	private void syncToExecute(List<RunPlan> planList, KafkaMessage message) {
         //寻找类型为同步，状态为待执行的计划
+		RunPlan plan = planList.get(0);
         List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "0")
                 .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
+                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
                 .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
-                .last("limit 50")
         );
 
         list.forEach(s -> {
@@ -107,21 +140,8 @@ public class SyncServiceImpl implements SyncService {
         });
 
     }
-
-    private void syncExecuting() {
-        //寻找类型为同步，状态为待执行的计划
-        List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
-                .isNull(BiEtlSyncPlan::getPlanResult)
-                .orderByAsc(BiEtlSyncPlan::getCreateDate)
-                .last("limit 50")
-        );
-        list.forEach(this::syncExecutingTask);
-
-    }
-
-    private void syncToExecuteNonTask(BiEtlSyncPlan plan) {
+	
+	private void syncToExecuteNonTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
             if (5 < count) {
@@ -203,7 +223,48 @@ public class SyncServiceImpl implements SyncService {
         }
     }
 
-    private void syncExecutingTask(BiEtlSyncPlan plan) {
+    private void syncExecuting(KafkaMessage message, List<RunPlan> planList) {
+    	
+    	RunPlan plan = planList.get(0);
+        //寻找类型为同步，状态为待执行的计划
+        List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                .eq(BiEtlSyncPlan::getPlanType, "0")
+                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+                .isNull(BiEtlSyncPlan::getPlanResult)
+                .orderByAsc(BiEtlSyncPlan::getCreateDate)
+              
+        );
+        if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(list)) {
+        	if(list.size() == 1) {
+        		if(!syncExecutingTask(list.get(0),message)) {
+        			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
+            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+        		}
+        	}else {
+        		int num = 0;
+        		for (BiEtlSyncPlan s : list) {
+        			if(syncExecutingTask(s,message)) {
+        				num = num+1;
+        			}
+				}
+        		if(list.size() == num) {
+        			message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
+            		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+        		}else {
+        			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
+            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+        		}
+        	}
+        }
+        
+
+    }
+
+    
+
+    private boolean syncExecutingTask(BiEtlSyncPlan plan, KafkaMessage message) {
         int count = Integer.parseInt(plan.getProcessCount());
         BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                 .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
@@ -228,6 +289,8 @@ public class SyncServiceImpl implements SyncService {
                 retry = true;
                 // 等待下次再查询
                 plan.setSqlLocalCount(localCount);
+                
+        		return false;
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
@@ -251,6 +314,7 @@ public class SyncServiceImpl implements SyncService {
                 );
                 component.setEffect(EffectEnum.ENABLE.getKey());
                 componentService.updateById(component);
+                return true;
             }
         } catch (Exception e) {
             log.error("sync.syncExecutingTask:", e);
@@ -271,6 +335,7 @@ public class SyncServiceImpl implements SyncService {
                 }
             }
         }
+		return retry;
     }
 
     @Deprecated
@@ -290,20 +355,18 @@ public class SyncServiceImpl implements SyncService {
         return condition;
     }
 
-    @Override
-    public void etl() throws Exception {
-        etlToExecute();
-        etlExecuting();
-    }
 
-    private void etlToExecute() throws Exception {
-        //寻找类型为同步，状态为待执行的计划
+    private void etlToExecute(List<RunPlan> planList, KafkaMessage message) throws Exception {
+    	RunPlan plan = planList.get(0);
+        //寻找类型为同步，状态为待执行的计划s
         List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "1")
                 .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
+                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
                 .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
-                .last("limit 50")
+
         );
         for (BiEtlSyncPlan syncPlan : list) {
             etlToExecuteTask(syncPlan);
@@ -369,20 +432,24 @@ public class SyncServiceImpl implements SyncService {
 
     }
 
-    private void etlExecuting() {
+    private void etlExecuting(List<RunPlan> planList, KafkaMessage message) {
+    	RunPlan plan = planList.get(0);
         //寻找类型为同步，状态为待执行的计划
         List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "1")
                 .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
                 .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
-                .last("limit 50")
         );
-        list.forEach(this::etlExecutingTask);
+        list.forEach( s ->{
+        	etlExecutingTask(s,message);
+        });
 
     }
 
-    private void etlExecutingTask(BiEtlSyncPlan plan) {
+    private void etlExecutingTask(BiEtlSyncPlan plan, KafkaMessage message) {
         int count = Integer.parseInt(plan.getProcessCount());
         ComponentModel componentModel = modelHandleService.handleModel(plan.getRefModelCode());
         String processorsCode = plan.getRefMappingCode();
@@ -414,6 +481,8 @@ public class SyncServiceImpl implements SyncService {
                 retry = true;
                 // 等待下次再查询
                 plan.setSqlLocalCount(localCount);
+                message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
+        		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
@@ -457,120 +526,4 @@ public class SyncServiceImpl implements SyncService {
         }
     }
 
-    @Override
-    public void model(String modelCode, String isTrigger) throws Exception {
-        //查询model信息，生成执行计划集
-        BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
-                .eq(BiEtlModel::getCode, modelCode)
-        );
-
-        if (null == model) {
-            log.error("Etl调度验证失败,模板不存在, 调度模板编码:{}", modelCode);
-            return;
-        }
-
-        if (YesOrNoEnum.NO.getKey().equals(model.getValidate()) || EffectEnum.DISABLE.getKey().equals(model.getEffect())
-                || RunStatusEnum.STOP.getKey().equals(model.getStatus()) || YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
-            log.error("Etl调度验证失败,模板状态不正常, 调度模板编码:{}", modelCode);
-            //todo 抛出事件修改model validate
-            return;
-        }
-        //首先获取模板下的数据源组件
-        List<BiComponent> components = componentService.list(new LambdaQueryWrapper<BiComponent>()
-                .eq(BiComponent::getRefModelCode, modelCode)
-                .eq(BiComponent::getType, ComponentTypeEnum.DATASOURCE.getKey())
-        );
-        List<BiComponentParams> componentParams = paramsService.list(new LambdaQueryWrapper<BiComponentParams>()
-                .eq(BiComponentParams::getRefModelCode, modelCode)
-                .eq(BiComponentParams::getParamKey, ComponentCons.CONDITION)
-        );
-        BiProcessors out = processorsService.getOne(new LambdaQueryWrapper<BiProcessors>()
-                .eq(BiProcessors::getRelModelCode, modelCode)
-                .eq(BiProcessors::getType, BiProcessorsTypeEnum.ETL_SOURCE.getType())
-        );
-
-        final String groupCode = GenerateCodeUtil.generate();
-        List<RunPlan> runPlans = Lists.newArrayList();
-
-        //不是触发的则同步数据源
-        if (YesOrNoEnum.NO.getKey().equals(isTrigger)) {
-            //database
-            List<BiComponent> dbComponents = components.stream()
-                    .filter(s -> s.getType().equals(ComponentTypeEnum.DATASOURCE.getKey())).collect(Collectors.toList());
-            for (BiComponent component : dbComponents) {
-                BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
-                        .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode())
-                        .eq(BiEtlMappingConfig::getRefComponentCode, component.getCode()));
-
-                //判断是否归属当前模板
-                if (null == config) {
-                    continue;
-                }
-
-                //校验表结构
-                String result = configService.validateSource(config);
-                if (null != result) {
-                    log.error("Etl调度验证失败:{}", result);
-                    //todo 抛出事件修改model validate
-                    return;
-                }
-
-                // 判断数据源是否被禁用，若有一个被禁用，则不生成调度计划
-                BiEtlDatabaseInf biEtlDatabaseInf = biEtlDatabaseInfService.getById(config.getRefSourceId());
-
-                if (SourceTypeEnum.File_Csv.getType().equals(biEtlDatabaseInf.getType())
-                        || SourceTypeEnum.File_Excel.getType().equals(biEtlDatabaseInf.getType())) {
-                    log.warn("文件型数据源,不需要同步, 组件编码:{}", component.getCode());
-                    continue;
-                }
-
-                //直连 &本地则返回
-                if (config.getType().equals(SyncTypeEnum.DIRECT.getValue())
-                        || config.getType().equals(SyncTypeEnum.LOCAL.getValue())) {
-                    continue;
-                }
-
-                //设置filter
-                List<ConditionDto> conditionDtos = Lists.newArrayList();
-                Optional<BiComponentParams> optional = componentParams.stream()
-                        .filter(s -> s.getRefComponentCode().equals(component.getCode())).findAny();
-                if (optional.isPresent()) {
-                    String paramValue = optional.get().getParamValue();
-                    if (StringUtils.isNotBlank(paramValue)) {
-                        conditionDtos = JsonUtil.string2Obj(paramValue, new TypeReference<List<ConditionDto>>() {
-                        });
-                    }
-                }
-                RunPlan runPlan = RunPlan.builder()
-                        .groupCode(groupCode)
-                        .planType("0")
-                        .planName(component.getName())
-                        .first(YesOrNoEnum.NO.getKey())
-                        .modelCode(modelCode)
-                        .cronExpression(model.getCronExpression())
-                        .mappingConfigCode(config)
-                        .synCount(conditionDtos);
-                runPlans.add(runPlan);
-            }
-        }
-
-        //out 当前未count
-        RunPlan outPlan = RunPlan.builder()
-                .groupCode(groupCode)
-                .planName(model.getName())
-                .planType("1")
-                .first(YesOrNoEnum.NO.getKey())
-                .modelCode(modelCode)
-                .cronExpression(model.getCronExpression())
-                .refCode(out.getCode());
-        runPlans.add(outPlan);
-
-        //执行
-        runPlans.forEach(s -> syncPlanService.createPlan(s));
-
-        KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(runPlans));
-        //状态变为正在同步中
-        model.setSyncStatus(YesOrNoEnum.YES.getKey());
-        modelService.updateById(model);
-    }
 }

@@ -1,47 +1,47 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
-import com.deloitte.bdh.common.properties.BiProperties;
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.data.collation.mq.KafkaMessage;
-import com.deloitte.bdh.data.collation.service.Producter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.stereotype.Service;
+import java.util.Properties;
 
 import javax.annotation.Resource;
-import java.util.Properties;
-import java.util.concurrent.Future;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.stereotype.Service;
+
+import com.deloitte.bdh.common.properties.BiProperties;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+import com.deloitte.bdh.data.collation.service.Producter;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class KafkaProducter implements Producter {
+public class KafkaProducterImpl implements Producter {
     @Resource
     private BiProperties properties;
+    
 
     @Override
     public void send(KafkaMessage message) {
-        try {
-            KafkaProducer<String, String> producer = init();
-            String key = message.getKey();
-            ProducerRecord<String, String> kafkaMessage = new ProducerRecord<>(properties.getKafkaTopic(), key, JsonUtil.obj2String(message));
-            Future<RecordMetadata> future = producer.send(kafkaMessage);
-            producer.flush();
-            //同步获得Future对象的结果。
-            try {
-                RecordMetadata recordMetadata = future.get();
-                log.info(recordMetadata.toString());
-            } catch (Throwable t) {
-                log.error("error occurred");
-                t.printStackTrace();
-            }
-        } catch (Exception e) {
-            //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
-            log.error("error occurred", e);
-            throw new RuntimeException("error occurred");
-        }
+//        try {
+//            KafkaProducer<String, String> producer = init();
+//            String key = message.getKey();
+//            ProducerRecord<String, String> kafkaMessage = new ProducerRecord<>(properties.getKafkaTopic(), key, JsonUtil.obj2String(message));
+//            Future<RecordMetadata> future = producer.send(kafkaMessage);
+//            producer.flush();
+//            //同步获得Future对象的结果。
+//            try {
+//                RecordMetadata recordMetadata = future.get();
+//                log.info(recordMetadata.toString());
+//            } catch (Throwable t) {
+//                log.error("error occurred");
+//                t.printStackTrace();
+//            }
+//        } catch (Exception e) {
+//            //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
+//            log.error("error occurred", e);
+//            throw new RuntimeException("error occurred");
+//        }
     }
 
 
