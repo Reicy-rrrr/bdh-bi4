@@ -59,6 +59,12 @@
         <if test="queryDto.isFile != null and queryDto.isFile != ''">
             AND t1.IS_FILE = #{queryDto.isFile,jdbcType=VARCHAR}
         </if>
+        <if test="queryDto.createUserList != null and queryDto.createUserList.size() > 0">
+            AND t1.CREATE_USER IN
+            <foreach collection="queryDto.createUserList" index="index" item="item" open="(" close=")" separator=",">
+                #{item, jdbcType=VARCHAR}
+            </foreach>
+        </if>
         ORDER BY t1.CREATE_DATE DESC
     </select>
 

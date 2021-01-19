@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.json.JsonUtil;
@@ -15,6 +16,7 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlModelMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
@@ -25,10 +27,7 @@ import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
-import com.deloitte.bdh.data.collation.model.BiComponent;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
-import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
+import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
 import com.deloitte.bdh.data.collation.model.request.GetModelPageDto;
@@ -45,6 +44,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -92,32 +92,33 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
 
     @Override
-    public List<BiEtlModel> getModelTree() {
-        List<BiEtlModel> models = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
-                .eq(BiEtlModel::getParentCode, "0")
-                .eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey())
-                .eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator())
-                .orderByDesc(BiEtlModel::getCreateDate)
-        );
-
-        if (CollectionUtils.isEmpty(models)) {
-            //创建初始化模板
-            BiEtlModel model = new BiEtlModel();
-            String code = GenerateCodeUtil.generate();
-            model.setCode(code);
-            model.setName("默认文件夹");
-            model.setComments("默认文件夹");
-            model.setVersion("0");
-            model.setParentCode("0");
-            model.setRootCode(code);
-            model.setIsFile(YesOrNoEnum.YES.getKey());
-            model.setEffect(EffectEnum.ENABLE.getKey());
-            model.setTenantId(ThreadLocalHolder.getTenantId());
-            model.setProcessGroupId(code);
-            biEtlModelMapper.insert(model);
-            models.add(model);
+    public List<BiEtlModel> getModelTree(String userFlag) {
+        List<String> userList = com.google.common.collect.Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        LambdaQueryWrapper<BiEtlModel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiEtlModel::getParentCode, "0");
+        lambdaQueryWrapper.eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey());
+        if (!StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+            lambdaQueryWrapper.in(BiEtlModel::getCreateUser, userList);
         }
-        return models;
+        lambdaQueryWrapper.orderByDesc(BiEtlModel::getCreateDate);
+        return list(lambdaQueryWrapper);
+//        if (CollectionUtils.isEmpty(models)) {
+//            //创建初始化模板
+//            BiEtlModel model = new BiEtlModel();
+//            String code = GenerateCodeUtil.generate();
+//            model.setCode(code);
+//            model.setName("默认文件夹");
+//            model.setComments("默认文件夹");
+//            model.setVersion("0");
+//            model.setParentCode("0");
+//            model.setRootCode(code);
+//            model.setIsFile(YesOrNoEnum.YES.getKey());
+//            model.setEffect(EffectEnum.ENABLE.getKey());
+//            model.setTenantId(ThreadLocalHolder.getTenantId());
+//            model.setProcessGroupId(code);
+//            biEtlModelMapper.insert(model);
+//            models.add(model);
+//        }
     }
 
     @Override

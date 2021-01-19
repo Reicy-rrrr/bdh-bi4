@@ -26,7 +26,7 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     void initDataSet();
 
-    List<DataSetResp> getFiles();
+    List<DataSetResp> getFiles(String userFlag);
 
     PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto);
 
@@ -36,7 +36,7 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     void create(CreateDataSetDto dto);
 
-    List<BiDataSet> getTableList();
+    List<BiDataSet> getTableList(String userFlag);
 
     List<TableColumn> getColumns(String code) throws Exception;
 

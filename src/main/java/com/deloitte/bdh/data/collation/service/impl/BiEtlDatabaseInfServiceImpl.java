@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
@@ -110,7 +111,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtils.isNotBlank(dto.getEffect())) {
             lambdaQueryWrapper.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
         }
-        lambdaQueryWrapper.in(BiEtlDatabaseInf::getCreateUser, ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        if (!StringUtils.equals(dto.getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+            lambdaQueryWrapper.in(BiEtlDatabaseInf::getCreateUser, ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        }
         lambdaQueryWrapper.orderByDesc(BiEtlDatabaseInf::getCreateDate);
         PageInfo<BiEtlDatabaseInf> pageInfo = new PageInfo<>(this.list(lambdaQueryWrapper));
         return new PageResult<>(pageInfo);
