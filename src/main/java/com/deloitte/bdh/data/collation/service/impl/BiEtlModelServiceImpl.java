@@ -92,8 +92,28 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
 
     @Override
+    public void initModelTree() {
+        if (0 == this.count()) {
+            //创建初始化模板
+            BiEtlModel model = new BiEtlModel();
+            String code = GenerateCodeUtil.generate();
+            model.setCode(code);
+            model.setName("默认文件夹");
+            model.setComments("默认文件夹");
+            model.setVersion("0");
+            model.setParentCode("0");
+            model.setRootCode(code);
+            model.setIsFile(YesOrNoEnum.YES.getKey());
+            model.setEffect(EffectEnum.ENABLE.getKey());
+            model.setTenantId(ThreadLocalHolder.getTenantId());
+            model.setProcessGroupId(code);
+            biEtlModelMapper.insert(model);
+        }
+    }
+
+    @Override
     public List<BiEtlModel> getModelTree(String userFlag) {
-        List<String> userList = com.google.common.collect.Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
         LambdaQueryWrapper<BiEtlModel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiEtlModel::getParentCode, "0");
         lambdaQueryWrapper.eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey());
@@ -102,23 +122,6 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
         lambdaQueryWrapper.orderByDesc(BiEtlModel::getCreateDate);
         return list(lambdaQueryWrapper);
-//        if (CollectionUtils.isEmpty(models)) {
-//            //创建初始化模板
-//            BiEtlModel model = new BiEtlModel();
-//            String code = GenerateCodeUtil.generate();
-//            model.setCode(code);
-//            model.setName("默认文件夹");
-//            model.setComments("默认文件夹");
-//            model.setVersion("0");
-//            model.setParentCode("0");
-//            model.setRootCode(code);
-//            model.setIsFile(YesOrNoEnum.YES.getKey());
-//            model.setEffect(EffectEnum.ENABLE.getKey());
-//            model.setTenantId(ThreadLocalHolder.getTenantId());
-//            model.setProcessGroupId(code);
-//            biEtlModelMapper.insert(model);
-//            models.add(model);
-//        }
     }
 
     @Override

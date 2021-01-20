@@ -21,6 +21,8 @@ import java.util.List;
  */
 public interface BiEtlModelService extends Service<BiEtlModel> {
 
+    void initModelTree();
+
     /**
      * 基于租户获取Model列表
      *
