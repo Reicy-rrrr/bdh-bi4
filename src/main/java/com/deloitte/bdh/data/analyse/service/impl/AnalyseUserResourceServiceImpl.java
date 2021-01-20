@@ -10,22 +10,24 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
-import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
-import com.deloitte.bdh.data.analyse.model.request.ResourcePermissionDto;
-import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,9 @@ import java.util.stream.Collectors;
 @Service
 @DS(DSConstant.BI_DB)
 public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseUserResourceMapper, BiUiAnalyseUserResource> implements AnalyseUserResourceService {
+
+    @Resource
+    private AnalyseUserDataService userDataService;
 
     @Override
     public void saveResourcePermission(SaveResourcePermissionDto dto) {
@@ -124,6 +129,40 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         result.setViewUserList(viewUserList);
         result.setEditUserList(editUserList);
         return result;
+    }
+
+    @Override
+    public List<PermissionItemDto> getDataPermission(String pageId) {
+        LambdaQueryWrapper<BiUiAnalyseUserData> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalyseUserData::getPageId, pageId);
+        List<BiUiAnalyseUserData> userDataList = userDataService.list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(userDataList)) {
+            //已componentId和field分组
+            Map<String, List<BiUiAnalyseUserData>> componentMap = userDataList.stream().collect(Collectors.groupingBy(
+                    userData -> userData.getComponentId() + ',' + userData.getTableName() + ',' + userData.getTableField()));
+            List<PermissionItemDto> result = Lists.newArrayList();
+            for (Map.Entry<String, List<BiUiAnalyseUserData>> componentEntry : componentMap.entrySet()) {
+                PermissionItemDto permissionItemDto = new PermissionItemDto();
+                permissionItemDto.setComponentId(StringUtils.split(componentEntry.getKey(), ",")[0]);
+                permissionItemDto.setTableName(StringUtils.split(componentEntry.getKey(), ",")[1]);
+                permissionItemDto.setTableField(StringUtils.split(componentEntry.getKey(), ",")[2]);
+                //已userId分组
+                Map<String, List<BiUiAnalyseUserData>> userIdMap = componentEntry.getValue().stream().collect(Collectors.groupingBy(BiUiAnalyseUserData::getUserId));
+                List<PermissionUserDto> permissionUserList = Lists.newArrayList();
+                for (Map.Entry<String, List<BiUiAnalyseUserData>> valueEntry : userIdMap.entrySet()) {
+                    PermissionUserDto permissionUserDto = new PermissionUserDto();
+                    permissionUserDto.setUserId(valueEntry.getKey());
+                    List<String> valueList = Lists.newArrayList();
+                    valueEntry.getValue().forEach(value -> valueList.add(value.getFieldValue()));
+                    permissionUserDto.setFieldValueList(valueList);
+                    permissionUserList.add(permissionUserDto);
+                }
+                permissionItemDto.setPermissionUserList(permissionUserList);
+                result.add(permissionItemDto);
+            }
+            return result;
+        }
+        return null;
     }
 
     @Override

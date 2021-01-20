@@ -253,11 +253,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Transactional
     @Override
     public AnalysePageConfigDto publishAnalysePage(PublishAnalysePageDto request) {
-
+        String pageId = request.getPageId();
         String categoryId = request.getCategoryId();
-        SaveResourcePermissionDto dto = request.getSaveResourcePermissionDto();
-        dto.setId(request.getPageId());
-        dto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+        SaveResourcePermissionDto permissionDto = request.getSaveResourcePermissionDto();
         BiUiAnalysePageConfig originConfig = configService.getById(request.getConfigId());
         BiUiAnalysePage originPage = getById(request.getPageId());
         if (originPage == null) {
@@ -307,7 +305,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         newConfig.setPageId(newPageId);
                         configService.updateById(newConfig);
                         //把新的pageId传给权限操作
-                        dto.setId(newPageId);
+                        if (null != permissionDto) {
+                            pageId = newPageId;
+                            permissionDto.setId(newPageId);
+                        }
                     } else {
                         updatePage(request, originPage, originConfig, isPublic);
                     }
@@ -315,13 +316,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             }
 
             //可见编辑权限
-            userResourceService.saveResourcePermission(dto);
+            userResourceService.saveResourcePermission(permissionDto);
             //生成链接
-            setAccessUrl(dto.getId(), password, isPublic);
+            setAccessUrl(pageId, password, isPublic);
             //数据权限
             userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
         }
-
         return null;
     }
 

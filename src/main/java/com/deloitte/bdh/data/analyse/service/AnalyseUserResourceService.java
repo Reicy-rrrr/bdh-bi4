@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.analyse.service;
 import com.deloitte.bdh.common.base.Service;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.PermissionItemDto;
 import com.deloitte.bdh.data.analyse.model.request.ResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
@@ -23,6 +24,8 @@ public interface AnalyseUserResourceService extends Service<BiUiAnalyseUserResou
     void saveResourcePermission(SaveResourcePermissionDto dto);
 
     ResourcePermissionDto getResourcePermission(GetResourcePermissionDto dto);
+
+    List<PermissionItemDto> getDataPermission(String pageId);
 
     void setCategoryPermission(List<AnalyseCategoryDto> categoryList);
 
