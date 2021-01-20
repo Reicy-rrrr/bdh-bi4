@@ -37,6 +37,13 @@ public class Mysql extends AbstractProcess implements DbSelector {
         while (result.next()) {
             list.add(result.getString("TABLE_NAME"));
         }
+
+        //get views
+        statement = con.prepareStatement("show table status where comment='view' ");
+        result = statement.executeQuery();
+        while (result.next()) {
+            list.add(result.getString("Name"));
+        }
         super.close(con);
         return list;
     }
