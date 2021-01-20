@@ -182,32 +182,33 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Override
     public void initDefaultData() {
-        BiUiAnalyseCategory myAnalyse = new BiUiAnalyseCategory();
-        myAnalyse.setParentId("0");
-        myAnalyse.setName("默认文件夹");
-        myAnalyse.setType(CategoryTypeEnum.CUSTOMER.getCode());
-        myAnalyse.setDes("默认文件夹");
-        myAnalyse.setTenantId(ThreadLocalHolder.getTenantId());
-        categoryService.save(myAnalyse);
+        if (0 == categoryService.count()) {
+            BiUiAnalyseCategory myAnalyse = new BiUiAnalyseCategory();
+            myAnalyse.setParentId("0");
+            myAnalyse.setName("默认文件夹");
+            myAnalyse.setType(CategoryTypeEnum.CUSTOMER.getCode());
+            myAnalyse.setDes("默认文件夹");
+            myAnalyse.setTenantId(ThreadLocalHolder.getTenantId());
+            categoryService.save(myAnalyse);
 
-        BiUiAnalyseCategory component = new BiUiAnalyseCategory();
-        component.setParentId("0");
-        component.setName("默认文件夹");
-        component.setType(CategoryTypeEnum.COMPONENT.getCode());
-        component.setDes("默认文件夹");
-        component.setTenantId(ThreadLocalHolder.getTenantId());
-        categoryService.save(component);
+            BiUiAnalyseCategory component = new BiUiAnalyseCategory();
+            component.setParentId("0");
+            component.setName("默认文件夹");
+            component.setType(CategoryTypeEnum.COMPONENT.getCode());
+            component.setDes("默认文件夹");
+            component.setTenantId(ThreadLocalHolder.getTenantId());
+            categoryService.save(component);
 
-        BiUiAnalysePage page = new BiUiAnalysePage();
-        page.setName("默认仪表板");
-        page.setDes("默认仪表板");
-        page.setType("dashboard");
-        page.setParentId(myAnalyse.getId());
-        page.setIsEdit(YnTypeEnum.NO.getCode());
-        page.setDeloitteFlag("0");
-        page.setTenantId(ThreadLocalHolder.getTenantId());
-        pageService.save(page);
-
+            BiUiAnalysePage page = new BiUiAnalysePage();
+            page.setName("默认仪表板");
+            page.setDes("默认仪表板");
+            page.setType("dashboard");
+            page.setParentId(myAnalyse.getId());
+            page.setIsEdit(YnTypeEnum.NO.getCode());
+            page.setDeloitteFlag("0");
+            page.setTenantId(ThreadLocalHolder.getTenantId());
+            pageService.save(page);
+        }
     }
 
     /*
