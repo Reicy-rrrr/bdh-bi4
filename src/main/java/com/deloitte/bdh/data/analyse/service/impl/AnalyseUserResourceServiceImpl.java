@@ -87,6 +87,14 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 resource.setUserId(userId);
                 resourceList.add(resource);
             }
+            //添加当前用户
+            BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
+            resource.setResourceId(dto.getId());
+            resource.setResourceType(dto.getResourceType());
+            resource.setPermittedAction(PermittedActionEnum.VIEW.getCode() + "," + PermittedActionEnum.EDIT.getCode());
+            resource.setTenantId(ThreadLocalHolder.getTenantId());
+            resource.setUserId(ThreadLocalHolder.getOperator());
+            resourceList.add(resource);
             if (CollectionUtils.isNotEmpty(resourceList)) {
                 this.saveBatch(resourceList);
             }
