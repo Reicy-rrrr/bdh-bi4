@@ -255,11 +255,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(dataSet);
 
         //保存权限
-        if (null != dto.getPermissionDto()) {
-            dto.getPermissionDto().setId(dataSet.getId());
-            dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
-            userResourceService.saveResourcePermission(dto.getPermissionDto());
-        }
+        dto.getPermissionDto().setId(dataSet.getId());
+        dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
+        userResourceService.saveResourcePermission(dto.getPermissionDto());
     }
 
     @Override
@@ -279,11 +277,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(dataSet);
 
         //保存权限
-        if (null != dto.getPermissionDto()) {
-            dto.getPermissionDto().setId(dataSet.getId());
-            dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
-            userResourceService.saveResourcePermission(dto.getPermissionDto());
-        }
+        dto.getPermissionDto().setId(dataSet.getId());
+        dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+        userResourceService.saveResourcePermission(dto.getPermissionDto());
     }
 
     @Override

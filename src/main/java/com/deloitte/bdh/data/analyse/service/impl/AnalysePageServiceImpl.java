@@ -256,6 +256,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
         String categoryId = request.getCategoryId();
         SaveResourcePermissionDto dto = request.getSaveResourcePermissionDto();
+        dto.setId(request.getPageId());
+        dto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
         BiUiAnalysePageConfig originConfig = configService.getById(request.getConfigId());
         BiUiAnalysePage originPage = getById(request.getPageId());
         if (originPage == null) {
