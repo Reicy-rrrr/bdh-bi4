@@ -51,6 +51,7 @@ import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -60,6 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -346,23 +348,40 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             throw new RuntimeException("未找到目标对象");
         }
 
+        TableData tableData = new TableData();
         if (DataSetTypeEnum.DIRECT.getKey().equals(dataSet.getType())) {
             DbContext context = new DbContext();
             context.setDbId(dataSet.getRefSourceId());
             context.setTableName(dataSet.getTableName());
             context.setPage(dto.getPage());
             context.setSize(dto.getSize());
-            return dbSelector.getTableData(context);
+            tableData = dbSelector.getTableData(context);
+        } else {
+            String querySql = "SELECT * FROM " + dataSet.getTableName();
+            PageInfo<Map<String, Object>> pageInfo = dbHandler.executePageQuery(querySql, dto.getPage(), dto.getSize());
+            if (null != pageInfo) {
+                tableData.setTotal(pageInfo.getTotal());
+                tableData.setMore(pageInfo.isHasNextPage());
+                tableData.setRows(pageInfo.getList());
+            }
         }
 
-        //本地或初始化
-        TableData tableData = new TableData();
-        String querySql = "SELECT * FROM " + dataSet.getTableName();
-        PageInfo<Map<String, Object>> pageInfo = dbHandler.executePageQuery(querySql, dto.getPage(), dto.getSize());
-        if (null != pageInfo) {
-            tableData.setTotal(pageInfo.getTotal());
-            tableData.setMore(pageInfo.isHasNextPage());
-            tableData.setRows(pageInfo.getList());
+        if (CollectionUtils.isNotEmpty(tableData.getRows())) {
+            List<TableColumn> columns = this.getColumns(dataSet.getCode());
+            if (CollectionUtils.isNotEmpty(columns)) {
+                Map<String, String> columnMap = this.getColumnMap(columns);
+                List<Map<String, Object>> list = Lists.newArrayList();
+                for (Map<String, Object> args : tableData.getRows()) {
+                    LinkedHashMap<String, Object> var = Maps.newLinkedHashMap();
+                    for (Map.Entry<String, Object> args1 : args.entrySet()) {
+                        var.put(columnMap.get(args1.getKey()), args1.getValue());
+                    }
+                    list.add(var);
+                }
+                if (CollectionUtils.isNotEmpty(list)) {
+                    tableData.setRows(list);
+                }
+            }
         }
         return tableData;
     }
@@ -488,5 +507,13 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         globalOrder.setIsFile(YesOrNoEnum.NO.getKey());
         globalOrder.setTenantId(ThreadLocalHolder.getTenantId());
         setMapper.insert(globalOrder);
+    }
+
+    private Map<String, String> getColumnMap(List<TableColumn> columns) {
+        Map<String, String> map = Maps.newHashMap();
+        for (TableColumn column : columns) {
+            map.put(column.getName(), column.getDesc());
+        }
+        return map;
     }
 }
