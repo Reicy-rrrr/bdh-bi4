@@ -292,10 +292,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
     //删除文件夹和批量删除文件夹公用方法
     private void delAnalyseCategories(List<String> ids, String tenantId) {
-
-        if (null == tenantId || tenantId.isEmpty()) {
-            throw new BizException("请选择租户");
-        }
         if (CollectionUtils.isEmpty(ids)) {
             throw new BizException("请选择要删除的文件夹");
         }

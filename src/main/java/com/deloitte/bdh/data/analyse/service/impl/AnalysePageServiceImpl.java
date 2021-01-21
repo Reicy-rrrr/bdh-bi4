@@ -176,11 +176,24 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (CollectionUtils.isEmpty(pageIds)) {
             throw new BizException("请选择要删除的报表");
         }
-        //如果删除草稿箱的报表，不会直接删除page，而是删除config
+        //如果删除草稿箱的报表
         if (request.getType().equals(AnalyseConstants.PAGE_CONFIG_EDIT)) {
             List<BiUiAnalysePage> pages = this.listByIds(pageIds);
-            pages.forEach(p -> p.setIsEdit(YnTypeEnum.NO.getCode()));
-            updateBatchById(pages);
+            for (BiUiAnalysePage page : pages) {
+                //如果发布过
+                if (StringUtils.isNotBlank(page.getPublishId())) {
+                    BiUiAnalysePageConfig publishConfig = configService.getById(page.getPublishId());
+                    BiUiAnalysePageConfig editConfig = configService.getById(page.getEditId());
+                    editConfig.setContent(publishConfig.getContent());
+                    configService.updateById(editConfig);
+                    page.setIsEdit(YnTypeEnum.NO.getCode());
+                    updateById(page);
+                } else {
+                    removeById(page.getId());
+                    //删除config
+                    configService.removeById(page.getEditId());
+                }
+            }
             return;
         }
 
