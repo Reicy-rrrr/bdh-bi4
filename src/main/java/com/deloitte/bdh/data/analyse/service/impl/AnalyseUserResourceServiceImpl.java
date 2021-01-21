@@ -50,6 +50,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         if (null != dto) {
             //删除之前的配置
             LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, dto.getResourceType());
             queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
             this.remove(queryWrapper);
 
