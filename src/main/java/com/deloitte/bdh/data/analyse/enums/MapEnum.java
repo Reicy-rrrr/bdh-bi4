@@ -4,9 +4,8 @@ import com.deloitte.bdh.common.exception.BizException;
 
 public enum MapEnum {
 
-    LONGITUDE("longitude", "经度"),
-    LANTITUDE("lantitude", "纬度"),
-    PLACECODE("place_code", "地方code"),
+    LONGITUDE("LONGITUDE", "经度"),
+    LATITUDE("LATITUDE", "纬度"),
     ;
 
     private String code;

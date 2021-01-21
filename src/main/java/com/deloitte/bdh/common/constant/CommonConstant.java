@@ -76,4 +76,9 @@ public class CommonConstant {
      * 最大列数（字段数，文件列数）
      */
     public static final Integer MAX_COLUMN_SIZE = 100;
+
+    /**
+     * 超级用户标签
+     */
+    public static final String SUPER_USER_FLAG = "super";
 }

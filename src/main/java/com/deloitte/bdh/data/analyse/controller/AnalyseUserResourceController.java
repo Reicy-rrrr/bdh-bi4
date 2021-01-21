@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.PermissionItemDto;
 import com.deloitte.bdh.data.analyse.model.request.ResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -42,4 +44,12 @@ public class AnalyseUserResourceController {
     public RetResult<ResourcePermissionDto> getResourcePermission(@RequestBody @Valid RetRequest<GetResourcePermissionDto> request) {
         return RetResponse.makeOKRsp(userResourceService.getResourcePermission(request.getData()));
     }
+
+    @ApiOperation(value = "查询数据权限", notes = "查询数据权限")
+    @PostMapping("/getDataPermission")
+    public RetResult<List<PermissionItemDto>> getDataPermission(@RequestBody @Valid RetRequest<String> request) {
+        return RetResponse.makeOKRsp(userResourceService.getDataPermission(request.getData()));
+    }
+
+
 }

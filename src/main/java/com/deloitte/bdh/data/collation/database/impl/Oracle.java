@@ -37,6 +37,14 @@ public class Oracle extends AbstractProcess implements DbSelector {
         while (result.next()) {
             list.add(result.getString("TABLE_NAME"));
         }
+
+        //get views
+        statement = con.prepareStatement("select t.VIEW_NAME from user_views t");
+        result = statement.executeQuery();
+        while (result.next()) {
+            list.add(result.getString("VIEW_NAME"));
+        }
+
         super.close(con);
         return list;
     }

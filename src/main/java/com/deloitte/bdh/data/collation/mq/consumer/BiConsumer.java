@@ -1,23 +1,28 @@
 package com.deloitte.bdh.data.collation.mq.consumer;
 
-import com.deloitte.bdh.common.properties.BiProperties;
-import com.deloitte.bdh.common.util.JsonUtil;
-import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.mq.KafkaMessage;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.annotation.Resource;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import com.deloitte.bdh.common.properties.BiProperties;
+import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
+
+import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
@@ -25,6 +30,9 @@ import java.util.Properties;
 public class BiConsumer implements ApplicationRunner {
     @Resource
     private BiProperties properties;
+    
+    @Autowired
+    private KafkaBiPlanService kafkaBiPlanService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -39,8 +47,26 @@ public class BiConsumer implements ApplicationRunner {
                     KafkaMessage message = JsonUtil.string2Obj(record.value(), KafkaMessage.class);
                     if (null != message) {
                         ThreadLocalHolder.async(message.getTenantCode(), message.getTenantId(), message.getOperator(), message::process);
+                        String beanName = message.getBeanName();
+                        switch (beanName) {
+    					case "Plan_start":
+    						kafkaBiPlanService.BiEtlSyncPlan(message);
+    						break;
+    					case "Plan_check_end":
+    						kafkaBiPlanService.BiEtlSyncManyPlan(message);
+    						break;
+    					case "Plan_checkMany_end":
+    						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
+    						break;
+
+    					default:
+    						break;
+    					}
                     }
-                }
+                    
+                    
+                    
+                } 
             } catch (Exception e) {
                 try {
                     Thread.sleep(1000);

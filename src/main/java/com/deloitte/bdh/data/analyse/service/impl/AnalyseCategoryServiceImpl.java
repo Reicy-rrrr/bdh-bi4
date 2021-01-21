@@ -4,6 +4,7 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -94,25 +95,40 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
     @Override
     public List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request) {
+        List<AnalyseCategoryDto> categoryDtoList = Lists.newArrayList();
+        List<String> categoryIds = Lists.newArrayList();
         //查询文件夹
-        SelectCategoryDto selectCategoryDto = new SelectCategoryDto();
-        selectCategoryDto.setUserId(ThreadLocalHolder.getOperator());
-        selectCategoryDto.setResourceType(ResourcesTypeEnum.CATEGORY.getCode());
-        selectCategoryDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        selectCategoryDto.setTenantId(ThreadLocalHolder.getTenantId());
-        selectCategoryDto.setName(request.getData().getName());
-        selectCategoryDto.setType(request.getData().getType());
-        if (StringUtils.equals(request.getData().getType(), CategoryTypeEnum.COMPONENT.getCode())) {
-            List<String> createUserList = Lists.newArrayList(BiTenantConfigController.OPERATOR, ThreadLocalHolder.getOperator());
-            selectCategoryDto.setCreateUserList(createUserList);
+        if (StringUtils.equals(CommonConstant.SUPER_USER_FLAG, request.getData().getUserFlag())) {
+            LambdaQueryWrapper<BiUiAnalyseCategory> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiUiAnalyseCategory::getType, request.getData().getType());
+            if (StringUtils.isNotBlank(request.getData().getName())) {
+                queryWrapper.like(BiUiAnalyseCategory::getName, request.getData().getName());
+            }
+            List<BiUiAnalyseCategory> categoryList = list(queryWrapper);
+            for (BiUiAnalyseCategory category : categoryList) {
+                AnalyseCategoryDto dto = new AnalyseCategoryDto();
+                BeanUtils.copyProperties(category, dto);
+                categoryDtoList.add(dto);
+            }
+        } else {
+            SelectCategoryDto selectCategoryDto = new SelectCategoryDto();
+            selectCategoryDto.setUserId(ThreadLocalHolder.getOperator());
+            selectCategoryDto.setResourceType(ResourcesTypeEnum.CATEGORY.getCode());
+            selectCategoryDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectCategoryDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectCategoryDto.setName(request.getData().getName());
+            selectCategoryDto.setType(request.getData().getType());
+            if (StringUtils.equals(request.getData().getType(), CategoryTypeEnum.COMPONENT.getCode())) {
+                List<String> createUserList = Lists.newArrayList(BiTenantConfigController.OPERATOR, ThreadLocalHolder.getOperator());
+                selectCategoryDto.setCreateUserList(createUserList);
+            }
+            categoryDtoList = categoryMapper.selectCategory(selectCategoryDto);
+
+
+            categoryDtoList.forEach(category -> categoryIds.add(category.getId()));
         }
-        List<AnalyseCategoryDto> categoryList = categoryMapper.selectCategory(selectCategoryDto);
-
-        List<String> categoryIds = new ArrayList<>();
-        categoryList.forEach(category -> categoryIds.add(category.getId()));
-
         //设置文件夹权限
-        userResourceService.setCategoryPermission(categoryList);
+        userResourceService.setCategoryPermission(categoryDtoList);
 
         //查询page
         SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
@@ -144,7 +160,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
         //整理数据
         List<AnalyseCategoryTree> treeDataModels = Lists.newArrayList();
-        for (AnalyseCategoryDto categoryDto : categoryList) {
+        for (AnalyseCategoryDto categoryDto : categoryDtoList) {
             AnalyseCategoryTree categoryTree = new AnalyseCategoryTree();
             BeanUtils.copyProperties(categoryDto, categoryTree);
             categoryTree.setChildrenType(TreeChildrenTypeEnum.CATEGORY.getCode());

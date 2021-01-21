@@ -19,6 +19,7 @@ import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.model.BiTenantConfig;
 import com.deloitte.bdh.data.collation.dao.bi.BiTenantConfigMapper;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
+import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.google.common.collect.Maps;
@@ -56,6 +57,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
     private BiDataSetService dataSetService;
     @Resource
     private AnalyseModelService analyseModelService;
+    @Resource
+    private BiEtlModelService modelService;
 
     @Override
     public void init() throws Exception {
@@ -91,6 +94,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         checkTaskGroup();
         initBiTask();
         initEtlTask();
+        modelService.initModelTree();
         //初始化数据源与数据集文件夹与数据
         dataSetService.initDataSet();
         //初始化分析默认文件夹与数据

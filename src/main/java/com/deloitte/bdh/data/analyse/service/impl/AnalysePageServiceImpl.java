@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
@@ -252,9 +253,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Transactional
     @Override
     public AnalysePageConfigDto publishAnalysePage(PublishAnalysePageDto request) {
-
+        String pageId = request.getPageId();
         String categoryId = request.getCategoryId();
-        SaveResourcePermissionDto dto = request.getSaveResourcePermissionDto();
+        SaveResourcePermissionDto permissionDto = request.getSaveResourcePermissionDto();
         BiUiAnalysePageConfig originConfig = configService.getById(request.getConfigId());
         BiUiAnalysePage originPage = getById(request.getPageId());
         if (originPage == null) {
@@ -282,6 +283,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
                         if (originConfig != null) {
                             BeanUtils.copyProperties(originConfig, newConfig);
+                            originConfig.setContent(request.getContent());
+                            configService.updateById(originConfig);
                         }
                         newConfig.setId(null);
                         newConfig.setPageId(null);
@@ -302,7 +305,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         newConfig.setPageId(newPageId);
                         configService.updateById(newConfig);
                         //把新的pageId传给权限操作
-                        dto.setId(newPageId);
+                        if (null != permissionDto) {
+                            pageId = newPageId;
+                            permissionDto.setId(newPageId);
+                        }
                     } else {
                         updatePage(request, originPage, originConfig, isPublic);
                     }
@@ -310,13 +316,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             }
 
             //可见编辑权限
-            userResourceService.saveResourcePermission(dto);
+            userResourceService.saveResourcePermission(permissionDto);
             //生成链接
-            setAccessUrl(dto.getId(), password, isPublic);
+            setAccessUrl(pageId, password, isPublic);
             //数据权限
             userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
         }
-
         return null;
     }
 
@@ -326,6 +331,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
         if (originConfig != null) {
             BeanUtils.copyProperties(originConfig, newConfig);
+            originConfig.setContent(dto.getContent());
+            configService.updateById(originConfig);
         }
         newConfig.setId(null);
         newConfig.setPageId(dto.getPageId());
@@ -359,7 +366,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
         }
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getCode());
-        pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
+        if (!StringUtils.equals(CommonConstant.SUPER_USER_FLAG, request.getData().getUserFlag())) {
+            pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
+        }
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList);

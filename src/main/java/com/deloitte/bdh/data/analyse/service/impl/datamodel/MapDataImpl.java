@@ -2,9 +2,9 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataImplEnum;
-import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.enums.MapEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataConfig;
@@ -13,7 +13,6 @@ import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
-import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,17 +38,6 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         //会发生深拷贝现象，导致下方赋值的时候也会跟着变化
         List<DataModelField> originalX = Lists.newArrayList();
         originalX.addAll(dataModel.getX());
-        //符号地图增加经纬度
-        if (dataConfig.getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
-            //查询出地方CODE,方便查出经纬度
-            DataModelField placeCode = new DataModelField();
-            placeCode.setType(DataTypeEnum.Text.getType());
-            placeCode.setQuota(DataModelTypeEnum.WD.getCode());
-            placeCode.setDataType(DataTypeEnum.Text.getValue());
-            placeCode.setId(MapEnum.PLACECODE.getCode());
-            placeCode.setAlias(MapEnum.PLACECODE.getDesc());
-            dataModel.getX().add(placeCode);
-        }
         if (CollectionUtils.isNotEmpty(dataModel.getX()) && CollectionUtils.isNotEmpty(dataModel.getY())) {
             dataModel.getY().forEach(field -> dataModel.getX().add(field));
         }
@@ -85,7 +73,7 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         List<Map<String, Object>> newRows = Lists.newArrayList();
         DataModel dataModel = request.getDataConfig().getDataModel();
         //查询出所有的经纬度数据
-        Map<String, Map<String, String>> queryLongitudeLantitude = queryLongitudeLantitude(dataModel);
+        Map<String, Map<String, String>> longitudeLatitudeMap = queryLongitudeLatitude(dataModel);
 
         Map<String, Object> customParams = dataModel.getCustomParams();
         DataModelField symbolSizeField = null;
@@ -110,6 +98,8 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
             }
         }
 
+        DataModelField xField = dataModel.getX().get(0);
+        String xName = StringUtils.isBlank(xField.getAlias()) ? xField.getId() : xField.getAlias();
         for (Map<String, Object> row : rows) {
 
             //x轴名称
@@ -149,13 +139,13 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
                 if (request.getDataConfig().getTableType().equals(DataImplEnum.MAP_SYMBOL.getTableType())) {
                     List<Object> valueList = Lists.newArrayList();
                     //获取当前地方CODE
-                    String placeCode = MapUtils.getString(row, MapEnum.PLACECODE.getDesc());
-                    if (StringUtils.isNotEmpty(placeCode)) {
+                    String place = MapUtils.getString(row, xName);
+                    if (StringUtils.isNotEmpty(place)) {
                         //获取当前地方的经纬度数据
-                        Map<String, String> longLanMap = queryLongitudeLantitude.get(placeCode);
+                        Map<String, String> longLanMap = longitudeLatitudeMap.get(place);
                         if (Objects.nonNull(longLanMap)) {
                             valueList.add(longLanMap.get(MapEnum.LONGITUDE.getCode()));//经度
-                            valueList.add(longLanMap.get(MapEnum.LANTITUDE.getCode()));//纬度
+                            valueList.add(longLanMap.get(MapEnum.LATITUDE.getCode()));//纬度
                         } else {
                             valueList.add("");//经度
                             valueList.add("");//纬度
@@ -189,15 +179,15 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
         return newRows;
     }
 
-    private Map<String, Map<String, String>> queryLongitudeLantitude(DataModel dataModel) {
-        String sql = "select * from LONGITUDE_LANTITUDE";
+    private Map<String, Map<String, String>> queryLongitudeLatitude(DataModel dataModel) {
+        String sql = "select * from LONGITUDE_LATITUDE";
         List<Map<String, Object>> rows = execute(dataModel, sql).getRows();
         Map<String, Map<String, String>> returnMap = Maps.newHashMap();
         for (Map<String, Object> row : rows) {
-            Map<String, String> longLantitude = Maps.newHashMap();
-            longLantitude.put(MapEnum.LONGITUDE.getCode(), MapUtils.getString(row, MapEnum.LONGITUDE.getCode()));
-            longLantitude.put(MapEnum.LANTITUDE.getCode(), MapUtils.getString(row, MapEnum.LANTITUDE.getCode()));
-            returnMap.put(MapUtils.getString(row, MapEnum.PLACECODE.getCode()), longLantitude);
+            Map<String, String> longLatitude = Maps.newHashMap();
+            longLatitude.put(MapEnum.LONGITUDE.getCode(), MapUtils.getString(row, MapEnum.LONGITUDE.getCode()));
+            longLatitude.put(MapEnum.LATITUDE.getCode(), MapUtils.getString(row, MapEnum.LATITUDE.getCode()));
+            returnMap.put(MapUtils.getString(row, "PLACE_CODE"), longLatitude);
         }
         return returnMap;
     }
@@ -230,6 +220,5 @@ public class MapDataImpl extends AbstractDataService implements AnalyseDataServi
 
     @Override
     protected void validate(DataModel dataModel) {
-
     }
 }

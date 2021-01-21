@@ -36,6 +36,14 @@ public class Sqlserver extends AbstractProcess implements DbSelector {
         while (result.next()) {
             list.add(result.getString("name"));
         }
+
+        //get views
+        statement = con.prepareStatement(" SELECT Name FROM sys.sql_modules AS m INNER JOIN sys.all_objects AS o ON m.object_id = o.object_id WHERE o.[type] = 'v' ");
+        result = statement.executeQuery();
+        while (result.next()) {
+            list.add(result.getString("Name"));
+        }
+
         super.close(con);
         return list;
     }

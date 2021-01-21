@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
 
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
@@ -115,18 +116,28 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<DataSetResp> getFiles() {
+    public List<DataSetResp> getFiles(String userFlag) {
+        List<BiDataSet> setList;
         List<DataSetResp> respList = Lists.newArrayList();
-        SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
-        selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
-        selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
-        selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
-        selectDataSetDto.setParentId("0");
-        selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
-        List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
-        selectDataSetDto.setCreateUserList(userList);
-        List<BiDataSet> setList = setMapper.selectDataSetCategory(selectDataSetDto);
+        if (StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+            setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
+                    .eq(BiDataSet::getParentId, "0")
+                    .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
+                    .orderByDesc(BiDataSet::getCreateDate)
+            );
+        } else {
+            SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+            selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+            selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
+            selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectDataSetDto.setParentId("0");
+            selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
+            List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+            selectDataSetDto.setCreateUserList(userList);
+            setList = setMapper.selectDataSetCategory(selectDataSetDto);
+        }
+
         if (CollectionUtils.isNotEmpty(setList)) {
             for (BiDataSet dataSet : setList) {
                 DataSetResp resp = new DataSetResp();
@@ -244,11 +255,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         setMapper.insert(dataSet);
 
         //保存权限
-        if (null != dto.getPermissionDto()) {
-            dto.getPermissionDto().setId(dataSet.getId());
-            dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
-            userResourceService.saveResourcePermission(dto.getPermissionDto());
-        }
+        dto.getPermissionDto().setId(dataSet.getId());
+        dto.getPermissionDto().setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
+        userResourceService.saveResourcePermission(dto.getPermissionDto());
     }
 
     @Override
@@ -276,13 +285,17 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
-    public List<BiDataSet> getTableList() {
+    public List<BiDataSet> getTableList(String userFlag) {
         List<BiDataSet> results = Lists.newArrayList();
         // 查询所有数据集
-        List<BiDataSet> dataSetList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
-                .eq(BiDataSet::getIsFile, YesOrNoEnum.NO)
-                .orderByDesc(BiDataSet::getCreateDate)
-        );
+        List<String> userList = com.google.common.collect.Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        LambdaQueryWrapper<BiDataSet> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO);
+        lambdaQueryWrapper.orderByDesc(BiDataSet::getCreateDate);
+//        if (!org.apache.commons.lang3.StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+//            lambdaQueryWrapper.in(BiDataSet::getCreateUser, userList);
+//        }
+        List<BiDataSet> dataSetList = setMapper.selectList(lambdaQueryWrapper);
         if (CollectionUtils.isNotEmpty(dataSetList)) {
             results.addAll(dataSetList);
         }

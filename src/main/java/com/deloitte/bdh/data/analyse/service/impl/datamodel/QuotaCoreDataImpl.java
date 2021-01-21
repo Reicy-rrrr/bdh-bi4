@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -77,59 +78,62 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
 
             List<Map<String, Object>> chainSqlList = Lists.newArrayList();
             if (isOpenChain(dataModel)) {
+                String newSql = rebuild(dataModel);
                 chainSqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
                     @Override
                     public String local(DataModel model, String tableName) {
-                        return chainMysql(sql, dataModel);
+                        return chainMysql(newSql, dataModel);
                     }
 
                     @Override
                     public String mysql(DataModel model, String tableName) {
-                        return chainMysql(sql, dataModel);
+                        return chainMysql(newSql, dataModel);
                     }
 
                     @Override
                     public String oracle(DataModel model, String tableName) {
-                        return chainOracle(sql, dataModel);
+                        return chainOracle(newSql, dataModel);
                     }
 
                     @Override
                     public String sqlServer(DataModel model, String tableName) {
-                        return chainSqlserver(sql, dataModel);
+                        return chainSqlserver(newSql, dataModel);
                     }
 
                     @Override
                     public String hana(DataModel model, String tableName) {
-                        return chainHana(sql, dataModel);
+                        return chainHana(newSql, dataModel);
                     }
                 }));
             }
             List<Map<String, Object>> yoySqlList = Lists.newArrayList();
             if (isOpenYoy(dataModel)) {
+                String newSql = rebuild(dataModel);
                 yoySqlList = setDefalut(dataModel, sourceSelection.expandExecute(dataModel, new DataSourceSelection.Type() {
+                    //移除param 里面的 条件
                     @Override
                     public String local(DataModel model, String tableName) {
-                        return yoyMysql(sql, dataModel);
+                        return yoyMysql(newSql, dataModel);
                     }
 
                     @Override
                     public String mysql(DataModel model, String tableName) {
-                        return yoyMysql(sql, dataModel);
+                        return yoyMysql(newSql, dataModel);
                     }
 
                     @Override
                     public String oracle(DataModel model, String tableName) {
-                        return yoyOracle(sql, dataModel);
+                        return yoyOracle(newSql, dataModel);
                     }
 
                     @Override
                     public String sqlServer(DataModel model, String tableName) {
-                        return yoySqlserver(sql, dataModel);
+                        return yoySqlserver(newSql, dataModel);
                     }
 
                     @Override
                     public String hana(DataModel model, String tableName) {
-                        return yoyHana(sql, dataModel);
+                        return yoyHana(newSql, dataModel);
                     }
                 }));
             }
@@ -692,6 +696,22 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String rebuild(DataModel dataModel) {
+        String coreDateKey = MapUtils.getString(dataModel.getCustomParams(), "coreDateKey");
+        if (null != coreDateKey) {
+            if (CollectionUtils.isNotEmpty(dataModel.getConditions())) {
+                Iterator iterator = dataModel.getConditions().iterator();
+                while (iterator.hasNext()) {
+                    DataCondition data = (DataCondition) iterator.next();
+                    if (coreDateKey.equals(data.getId().get(0))) {
+                        iterator.remove();
+                    }
+                }
+            }
+        }
+        return buildSql(dataModel);
     }
 
 }
