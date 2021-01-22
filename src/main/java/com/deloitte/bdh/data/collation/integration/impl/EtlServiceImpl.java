@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -47,7 +48,6 @@ import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.collation.enums.CalculateOperatorEnum;
 import com.deloitte.bdh.data.collation.enums.CalculateTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
-import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.enums.PlanResultEnum;
@@ -89,7 +89,7 @@ import com.deloitte.bdh.data.collation.model.resp.CalculateOperatorResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
-import com.deloitte.bdh.data.collation.mq.consumer.KafkaProducter;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentConnectionService;
@@ -104,6 +104,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
+import com.deloitte.bdh.data.collation.service.Producter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -153,8 +154,10 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiDataSetService dataSetService;
     
-    @Autowired
-    private KafkaProducter KafkaProducter;
+//    @Autowired
+//    private KafkaProducter KafkaProducter;
+    private Producter KafkaProducter;
+    
 
 
     @Override
@@ -308,10 +311,11 @@ public class EtlServiceImpl implements EtlService {
         List<BiComponentParams> biComponentParams = transferToParams(componentCode, biEtlModel.getCode(), params);
         componentParamsService.saveBatch(biComponentParams);
         componentService.save(component);
-//        if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
-//                && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
-//        	KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(planList));
-//        }
+        if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
+                && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
+        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planList,KafkaTypeEnum.Plan_start.getType());
+        	KafkaProducter.send(message);
+        }
         
         
         return component;

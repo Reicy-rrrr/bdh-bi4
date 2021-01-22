@@ -30,7 +30,6 @@ import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
-import com.deloitte.bdh.data.collation.mq.consumer.KafkaProducter;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -39,6 +38,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
+import com.deloitte.bdh.data.collation.service.Producter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,8 +67,10 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
+//    @Autowired
+//    private KafkaProducter Producter;
     @Autowired
-    private KafkaProducter Producter;
+    private Producter producter;
 	
 	@Override
 	public void BiEtlSyncPlan(KafkaMessage message) {
@@ -81,7 +83,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 			syncToExecute(list,message);
 			//发送kafka topic 消息 准备查询是否已执行完成
 			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
-			Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+//			producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+			producter.send(message);
 		}
 		
 	}
@@ -240,7 +243,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
         	if(list.size() == 1) {
         		if(!syncExecutingTask(list.get(0),message)) {
         			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
-            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+//            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+            		producter.send(message);
         		}
         	}else {
         		int num = 0;
@@ -251,10 +255,12 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 				}
         		if(list.size() == num) {
         			message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
-            		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+//            		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+        			producter.send(message);
         		}else {
         			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
-            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+//            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+        			producter.send(message);
         		}
         	}
         }
@@ -482,7 +488,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
                 // 等待下次再查询
                 plan.setSqlLocalCount(localCount);
                 message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
-        		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+//        		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+                producter.send(message);
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
