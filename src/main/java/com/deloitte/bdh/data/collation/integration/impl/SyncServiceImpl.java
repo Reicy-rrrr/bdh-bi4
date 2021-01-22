@@ -25,7 +25,6 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.enums.PlanResultEnum;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
@@ -42,7 +41,6 @@ import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.model.request.ConditionDto;
-import com.deloitte.bdh.data.collation.mq.consumer.KafkaProducter;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
@@ -52,6 +50,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
+import com.deloitte.bdh.data.collation.service.Producter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,8 +78,10 @@ public class SyncServiceImpl implements SyncService {
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
+//    @Autowired
+//    private KafkaProducter KafkaProducter;
     @Autowired
-    private KafkaProducter KafkaProducter;
+    private Producter KafkaProducter;
 
     @Override
     public void sync() {
