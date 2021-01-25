@@ -47,11 +47,13 @@ public class BiConsumer implements ApplicationRunner {
                 //必须在下次Poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG。
                 //建议开一个单独的线程池来消费消息，然后异步返回结果。
                 for (ConsumerRecord<String, String> record : records) {
-                    log.info("测试消费体：" + record.toString());
+                    log.error("测试消费体：" + record.toString() + "++++++++++++++++++++++++++++++++++++++++++++++++++");
                     KafkaMessage message = JsonUtil.string2Obj(record.value(), KafkaMessage.class);
+                    log.error("message：" + message.toString() + "++++++++++++++++++++++++++++++++++++++++++++++++++");
                     if (null != message) {
                         ThreadLocalHolder.async(message.getTenantCode(), message.getTenantId(), message.getOperator(), message::process);
                         String beanName = message.getBeanName();
+                        log.error("beanname：" + beanName + "++++++++++++++++++++++++++++++++++++++++++++++++++");
                         switch (beanName) {
     					case "Plan_start":
     						kafkaBiPlanService.BiEtlSyncPlan(message);
@@ -66,6 +68,7 @@ public class BiConsumer implements ApplicationRunner {
     						emailService.kafkaSendEmail(message);
 
     					default:
+    						log.error("default：not catch beaname ++++++++++++++++++++++++++++++++++++++++++++++++++");
     						break;
     					}
                     }
@@ -77,7 +80,7 @@ public class BiConsumer implements ApplicationRunner {
                 try {
                     Thread.sleep(1000);
                 } catch (Throwable ignore) {
-
+                	log.error(e.getMessage());
                 }
                 e.printStackTrace();
             }
