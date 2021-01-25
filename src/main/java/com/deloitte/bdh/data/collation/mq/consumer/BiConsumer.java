@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.service.EmailService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
 
@@ -33,6 +34,9 @@ public class BiConsumer implements ApplicationRunner {
     
     @Autowired
     private KafkaBiPlanService kafkaBiPlanService;
+    
+    @Resource
+    private EmailService emailService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -58,6 +62,8 @@ public class BiConsumer implements ApplicationRunner {
     					case "Plan_checkMany_end":
     						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
     						break;
+    					case "Email":
+    						emailService.kafkaSendEmail(message);
 
     					default:
     						break;
