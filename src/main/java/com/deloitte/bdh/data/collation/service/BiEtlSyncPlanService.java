@@ -17,7 +17,7 @@ import com.github.pagehelper.PageInfo;
  */
 public interface BiEtlSyncPlanService extends Service<BiEtlSyncPlan> {
 
-    void createPlan(RunPlan plan);
+	BiEtlSyncPlan createPlan(RunPlan plan);
 
     /**
      * 分页查询执行计划

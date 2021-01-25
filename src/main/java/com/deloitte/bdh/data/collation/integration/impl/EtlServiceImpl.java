@@ -213,7 +213,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-        List<RunPlan> planList = new ArrayList<RunPlan>();
+        List<BiEtlSyncPlan> planList = new ArrayList<BiEtlSyncPlan>();
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             //设置过滤条件
@@ -289,10 +289,9 @@ public class EtlServiceImpl implements EtlService {
                 dbHandler.createTable(biEtlDatabaseInf.getId(), toTableName, dto.getFields());
 
                 //step2.1.4 生成同步的第一次的调度计划
-                syncPlanService.createPlan(runPlan);
-                RunPlan runPlanMessage = new RunPlan();
-                runPlanMessage.setGroupCode(runPlan.getGroupCode());
-                planList.add(runPlanMessage);
+                BiEtlSyncPlan synecPlan = syncPlanService.createPlan(runPlan);
+                
+                planList.add(synecPlan);
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
             }
