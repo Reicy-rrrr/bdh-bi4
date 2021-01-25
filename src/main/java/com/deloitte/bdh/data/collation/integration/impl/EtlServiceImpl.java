@@ -154,9 +154,8 @@ public class EtlServiceImpl implements EtlService {
     @Autowired
     private BiDataSetService dataSetService;
     
-//    @Autowired
-//    private KafkaProducter KafkaProducter;
-    private Producter KafkaProducter;
+    @Autowired
+    private Producter producter;
     
 
 
@@ -314,7 +313,7 @@ public class EtlServiceImpl implements EtlService {
         if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
                 && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
         	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planList,KafkaTypeEnum.Plan_start.getType());
-        	KafkaProducter.send(message);
+        	producter.send(message);
         }
         
         
