@@ -184,13 +184,13 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             for (AnalyseCategoryDto dto : categoryList) {
                 BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
                 if (resource != null) {
-                    if (StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                        dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+                    if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
                     } else {
-                        dto.setPermittedAction(StringUtils.join(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                     }
                 } else {
-                    dto.setPermittedAction(StringUtils.join(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                    dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                 }
             }
         }
@@ -214,17 +214,18 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             for (AnalysePageDto dto : pageDtoList) {
                 BiUiAnalyseUserResource resource = MapUtils.getObject(pageIdResourcesMap, dto.getId());
                 if (resource != null) {
-                    if (StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                        dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+                    if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
                     } else {
-                        dto.setPermittedAction(StringUtils.join(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                     }
                 } else {
-                    dto.setPermittedAction(StringUtils.join(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                    dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                 }
             }
         }
     }
+
 
     @Override
     public void setDataSetCategoryPermission(List<DataSetResp> dataSetList) {
@@ -244,13 +245,13 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             for (DataSetResp dto : dataSetList) {
                 BiUiAnalyseUserResource resource = MapUtils.getObject(dataSetCategoryIdResourcesMap, dto.getId());
                 if (resource != null) {
-                    if (StringUtils.containsOnly(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                        dto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+                    if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
                     } else {
-                        dto.setPermittedAction(StringUtils.join(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                     }
                 } else {
-                    dto.setPermittedAction(StringUtils.join(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                    dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                 }
             }
         }

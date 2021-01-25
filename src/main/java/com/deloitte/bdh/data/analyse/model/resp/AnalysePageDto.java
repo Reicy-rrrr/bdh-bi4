@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -87,7 +88,7 @@ public class AnalysePageDto implements Serializable {
     private String deloitteFlag;
 
     @ApiModelProperty(value = "permitted Action")
-    private String permittedAction;
+    private List<String> permittedAction;
 
     @ApiModelProperty(value = "CREATE_DATE")
     private LocalDateTime createDate;
