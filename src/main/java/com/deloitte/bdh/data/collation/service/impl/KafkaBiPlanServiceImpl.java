@@ -67,18 +67,18 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
-//    @Autowired
-//    private KafkaProducter Producter;
+
     @Autowired
     private Producter producter;
 	
 	@Override
 	public void BiEtlSyncPlan(KafkaMessage message) {
-		log.info("kafka 启动调用更新数据库表变成执行中");
+		log.error("kafka Plan_start 启动调用更新数据库表变成执行中++++++++++++++++++++++++++++++++");
 		//改变执行计划变成已经开始执行
 		String body = message.getBody();
 		List<RunPlan> list = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
         });
+		log.error("kafka Plan_start  List<RunPlan> list ++++++++++++++++++++++++++++++++" + list.toString());
 		if(!CollectionUtils.isEmpty(list)) {
 			syncToExecute(list,message);
 			//发送kafka topic 消息 准备查询是否已执行完成
@@ -133,11 +133,13 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
                 .isNull(BiEtlSyncPlan::getPlanResult)
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
         );
-
+        log.error("kafka Plan_start syncToExecute  List<BiEtlSyncPlan> list list ++++++++++++++++++++++++++++++++" + list.toString());
         list.forEach(s -> {
             if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst())) {
+            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.YES.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
                 syncToExecuteNonTask(s);
             } else {
+            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.no.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
                 syncToExecuteTask(s);
             }
         });
@@ -147,10 +149,10 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 	private void syncToExecuteNonTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            if (5 < count) {
-                //判断已处理次数,超过5次则动作完成。
-                throw new RuntimeException("任务处理超时");
-            }
+//            if (5 < count) {
+//                //判断已处理次数,超过5次则动作完成。
+//                throw new RuntimeException("任务处理超时");
+//            }
             //组装数据 启动nifi 改变执行状态
             BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                     .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
@@ -175,7 +177,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
-            log.error("sync.syncToExecuteNonTask:", e);
+            log.error("sync.syncToExecuteNonTask:++++++++++++++++++++++++++++++", e);
             count++;
             plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
@@ -189,10 +191,10 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     private void syncToExecuteTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            if (5 < count) {
-                //判断已处理次数,超过5次则动作完成。
-                throw new RuntimeException("任务处理超时");
-            }
+//            if (5 < count) {
+//                //判断已处理次数,超过5次则动作完成。
+//                throw new RuntimeException("任务处理超时");
+//            }
             //组装数据 启动nifi 改变执行状态
             BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                     .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
@@ -215,7 +217,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
-            log.error("sync.syncToExecuteTask:", e);
+            log.error("sync.syncToExecuteTask:++++++++++++++++++++++++++++++++++++=", e);
             count++;
             plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
