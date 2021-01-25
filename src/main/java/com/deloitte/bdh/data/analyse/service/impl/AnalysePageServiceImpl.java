@@ -92,14 +92,31 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         } else {
             PageHelper.startPage(request.getPage(), request.getSize());
         }
-        SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
-        selectPublishedPageDto.setUserId(ThreadLocalHolder.getOperator());
-        selectPublishedPageDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
-        selectPublishedPageDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
-        selectPublishedPageDto.setName(request.getData().getName());
-        selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
-        List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
+        List<AnalysePageDto> pageList = Lists.newArrayList();
+        if (StringUtils.equals(request.getData().getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+            LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
+            if (StringUtils.isNotBlank(request.getData().getName())) {
+                queryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
+            }
+            queryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
+            List<BiUiAnalysePage> list = list(queryWrapper);
+            for (BiUiAnalysePage page : list) {
+                AnalysePageDto dto = new AnalysePageDto();
+                BeanUtils.copyProperties(page, dto);
+                pageList.add(dto);
+            }
+        } else {
+            SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
+            selectPublishedPageDto.setUserId(ThreadLocalHolder.getOperator());
+            selectPublishedPageDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+            selectPublishedPageDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectPublishedPageDto.setName(request.getData().getName());
+            selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
+            pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
+        }
+
         //处理查询之后做操作返回total不正确
         PageInfo pageInfo = PageInfo.of(pageList);
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();

@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 @ApiModel(description = "数据集")
 @Data
@@ -24,5 +26,5 @@ public class DataSetResp extends BiDataSet {
     private String lastExecuteDate;
 
     @ApiModelProperty(value = "权限")
-    private String permittedAction;
+    private List<String> permittedAction;
 }

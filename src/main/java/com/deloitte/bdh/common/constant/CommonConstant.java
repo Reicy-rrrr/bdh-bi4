@@ -80,5 +80,5 @@ public class CommonConstant {
     /**
      * 超级用户标签
      */
-    public static final String SUPER_USER_FLAG = "super";
+    public static final String SUPER_USER_FLAG = "superuser";
 }
