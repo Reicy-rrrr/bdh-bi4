@@ -10,14 +10,22 @@ import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.model.request.ConditionDto;
 import com.google.common.collect.Lists;
 import lombok.Data;
+import lombok.ToString;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class RunPlan {
-    private String groupCode;
+@ToString
+public class RunPlan implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1458053651084390691L;
+	private String groupCode;
     // 任务名称
     private String planName;
     //0数据同步、1数据整理
