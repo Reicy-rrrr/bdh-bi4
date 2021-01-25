@@ -57,6 +57,8 @@ public class KafkaProducterImpl implements Producter {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         //请求的最长等待时间。
         props.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 30 * 1000);
+        
+        props.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, 5242880);
         //设置客户端内部重试次数。
         props.put(ProducerConfig.RETRIES_CONFIG, 5);
         //设置客户端内部重试间隔。
