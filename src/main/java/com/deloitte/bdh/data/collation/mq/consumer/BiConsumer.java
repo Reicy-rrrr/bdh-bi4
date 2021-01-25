@@ -82,7 +82,8 @@ public class BiConsumer implements ApplicationRunner {
                 } catch (Throwable ignore) {
                 	log.error(e.getMessage());
                 }
-                e.printStackTrace();
+                log.error(e.getMessage());
+                
             }
         }
     }

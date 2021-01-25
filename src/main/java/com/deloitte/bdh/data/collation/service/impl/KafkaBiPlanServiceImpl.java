@@ -76,6 +76,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 		log.error("kafka Plan_start 启动调用更新数据库表变成执行中++++++++++++++++++++++++++++++++");
 		//改变执行计划变成已经开始执行
 		String body = message.getBody();
+		log.error("kafka Plan_start body ++++++++++++++++++++++++++++++++" + body);
 		List<RunPlan> list = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
         });
 		log.error("kafka Plan_start  List<RunPlan> list ++++++++++++++++++++++++++++++++" + list.toString());
