@@ -509,6 +509,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             fUOLamQW.eq(BiEtlModel::getParentCode, fileCode);
         }
         fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
+        fUOLamQW.eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator());
         fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
         return biEtlModelMapper.selectList(fUOLamQW);
     }
