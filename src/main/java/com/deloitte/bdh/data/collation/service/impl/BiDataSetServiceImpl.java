@@ -201,6 +201,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         if (null == dataSet) {
             throw new RuntimeException("未找到目标对象");
         }
+        if (dataSet.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+            throw new RuntimeException("默认数据集请勿修改");
+        }
         String newTableDesc = dto.getToTableDesc();
         //别名有变化
         if (!dataSet.getTableDesc().equals(newTableDesc)) {
@@ -391,6 +394,10 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public void delete(String code, boolean canDel) {
         BiDataSet dataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getCode, code));
         if (null != dataSet) {
+            if (dataSet.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+                throw new RuntimeException("默认数据集请勿删除");
+            }
+
             if (StringUtils.isNotBlank(dataSet.getType())) {
                 if (!canDel && DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
                     throw new RuntimeException("数据整理的表，请在数据模型里面删除");
