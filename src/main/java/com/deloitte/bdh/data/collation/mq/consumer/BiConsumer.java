@@ -119,6 +119,7 @@ public class BiConsumer implements ApplicationRunner {
             subscribedTopics.add(topic.trim());
         }
         consumer.subscribe(subscribedTopics);
+        
         return consumer;
     }
 }

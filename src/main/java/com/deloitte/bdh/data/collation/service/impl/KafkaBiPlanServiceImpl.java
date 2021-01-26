@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -126,26 +127,27 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 	//启动
 	private void syncToExecute(List<com.deloitte.bdh.data.collation.model.BiEtlSyncPlan> list2, KafkaMessage message) {
         //寻找类型为同步，状态为待执行的计划
-		BiEtlSyncPlan plan = list2.get(0);
-        List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
-                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
-                .eq(BiEtlSyncPlan::getCode, plan.getCode())
-                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
-                .isNull(BiEtlSyncPlan::getPlanResult)
-                .orderByAsc(BiEtlSyncPlan::getCreateDate)
-        );
-        log.error("kafka Plan_start syncToExecute  List<BiEtlSyncPlan> list list ++++++++++++++++++++++++++++++++" + list.toString());
-        list.forEach(s -> {
-            if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst())) {
-            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.YES.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
-                syncToExecuteNonTask(s);
-            } else {
-            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.no.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
-                syncToExecuteTask(s);
-            }
-        });
+		for (BiEtlSyncPlan plan : list2) {
+			List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+	                .eq(BiEtlSyncPlan::getPlanType, "0")
+	                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
+	                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+	                .eq(BiEtlSyncPlan::getCode, plan.getCode())
+	                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+	                .isNull(BiEtlSyncPlan::getPlanResult)
+	                .orderByAsc(BiEtlSyncPlan::getCreateDate)
+	        );
+	        log.error("kafka Plan_start syncToExecute  List<BiEtlSyncPlan> list list ++++++++++++++++++++++++++++++++" + list.toString());
+	        list.forEach(s -> {
+	            if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst())) {
+	            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.YES.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
+	                syncToExecuteNonTask(s);
+	            } else {
+	            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.no.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
+	                syncToExecuteTask(s);
+	            }
+	        });
+		}
 
     }
 	
@@ -235,18 +237,32 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     	
     	BiEtlSyncPlan plan = list2.get(0);
         //寻找类型为同步，状态为待执行的计划
-        List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
-                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
-                .eq(BiEtlSyncPlan::getCode, plan.getCode())
-                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
-                .isNull(BiEtlSyncPlan::getPlanResult)
-                .orderByAsc(BiEtlSyncPlan::getCreateDate)
-              
-        );
+    	List<BiEtlSyncPlan> list = new ArrayList<>();
+    	if(list2.size() == 1) {
+    		list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                    .eq(BiEtlSyncPlan::getPlanType, "0")
+                    .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                    .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                    .eq(BiEtlSyncPlan::getCode, plan.getCode())
+                    .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+                    .isNull(BiEtlSyncPlan::getPlanResult)
+                    .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                  
+            );
+    	}else {
+    		list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                    .eq(BiEtlSyncPlan::getPlanType, "0")
+                    .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                    .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                    .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+                    .isNull(BiEtlSyncPlan::getPlanResult)
+                    .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                  
+            );
+    	}
+        
         if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(list)) {
-        	if(list.size() == 1) {
+        	if(list2.size() == 1) {
         		if(!syncExecutingTask(list.get(0),message)) {
         			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
 //            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
