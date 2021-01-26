@@ -585,9 +585,14 @@ public class SyncServiceImpl implements SyncService {
         //状态变为正在同步中
         model.setSyncStatus(YesOrNoEnum.YES.getKey());
         modelService.updateById(model);
+        if (YesOrNoEnum.NO.getKey().equals(isTrigger)) {
+        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
+            producter.send(message);
+        }else {
+        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_checkMany_end.getType());
+            producter.send(message);
+        }
         
-        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
-        producter.send(message);
         
         
     }
