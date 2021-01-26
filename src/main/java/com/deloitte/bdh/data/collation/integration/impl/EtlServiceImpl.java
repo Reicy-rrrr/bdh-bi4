@@ -290,7 +290,7 @@ public class EtlServiceImpl implements EtlService {
 
                 //step2.1.4 生成同步的第一次的调度计划
                 BiEtlSyncPlan synecPlan = syncPlanService.createPlan(runPlan);
-                
+                synecPlan.setCreateDate(null);
                 planList.add(synecPlan);
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
