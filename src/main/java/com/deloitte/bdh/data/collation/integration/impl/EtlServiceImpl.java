@@ -90,6 +90,7 @@ import com.deloitte.bdh.data.collation.model.resp.ComponentPreviewResp;
 import com.deloitte.bdh.data.collation.model.resp.ComponentResp;
 import com.deloitte.bdh.data.collation.model.resp.ResourceViewResp;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+import com.deloitte.bdh.data.collation.mq.KafkaSyncDto;
 import com.deloitte.bdh.data.collation.nifi.template.config.SyncSql;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentConnectionService;
@@ -213,7 +214,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-        List<BiEtlSyncPlan> planList = new ArrayList<BiEtlSyncPlan>();
+        List<KafkaSyncDto> planList = new ArrayList<KafkaSyncDto>();
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             //设置过滤条件
@@ -290,8 +291,14 @@ public class EtlServiceImpl implements EtlService {
 
                 //step2.1.4 生成同步的第一次的调度计划
                 BiEtlSyncPlan synecPlan = syncPlanService.createPlan(runPlan);
-                synecPlan.setCreateDate(null);
-                planList.add(synecPlan);
+                KafkaSyncDto kfs = new KafkaSyncDto();
+                
+                kfs.setCode(synecPlan.getCode());
+                kfs.setGroupCode(synecPlan.getGroupCode());
+                kfs.setType("group");
+                
+                
+                planList.add(kfs);
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
             }

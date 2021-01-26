@@ -44,6 +44,7 @@ import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.model.request.ConditionDto;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+import com.deloitte.bdh.data.collation.mq.KafkaSyncDto;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
@@ -569,12 +570,14 @@ public class SyncServiceImpl implements SyncService {
         runPlans.add(outPlan);
 
         //执行
-        List<BiEtlSyncPlan> planMessage = Lists.newArrayList();
+        List<KafkaSyncDto> planMessage = Lists.newArrayList();
         runPlans.forEach(s -> {
-        	BiEtlSyncPlan b = new BiEtlSyncPlan();
-        	b = syncPlanService.createPlan(s);
-        	b.setCreateDate(null);
-        	planMessage.add(b);
+        	KafkaSyncDto kfs = new KafkaSyncDto();
+        	BiEtlSyncPlan bsp = syncPlanService.createPlan(s);
+        	kfs.setCode(bsp.getCode());
+        	kfs.setGroupCode(bsp.getGroupCode());
+        	kfs.setType("model");
+        	planMessage.add(kfs);
         }
         );
 
@@ -582,10 +585,10 @@ public class SyncServiceImpl implements SyncService {
         //状态变为正在同步中
         model.setSyncStatus(YesOrNoEnum.YES.getKey());
         modelService.updateById(model);
-        if(YesOrNoEnum.NO.getKey().equals(isTrigger)){
-        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
-        	producter.send(message);
-        }
+        
+        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
+        producter.send(message);
+        
         
     }
 }

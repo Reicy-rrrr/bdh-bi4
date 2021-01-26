@@ -56,16 +56,24 @@ public class BiConsumer implements ApplicationRunner {
                         log.error("beanname：" + beanName + "++++++++++++++++++++++++++++++++++++++++++++++++++");
                         switch (beanName) {
     					case "Plan_start":
+    						log.error("Plan_start" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
     						kafkaBiPlanService.BiEtlSyncPlan(message);
+    						log.error("Plan_start  end++++++++++++++++++++++++++++++++++++++++++++++++++");
     						break;
     					case "Plan_check_end":
+    						log.error("Plan_check_end" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
     						kafkaBiPlanService.BiEtlSyncManyPlan(message);
+    						log.error("Plan_check_end  end++++++++++++++++++++++++++++++++++++++++++++++++++");
     						break;
     					case "Plan_checkMany_end":
+    						log.error("Plan_checkMany_end" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
     						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
+    						log.error("Plan_checkMany_end  end++++++++++++++++++++++++++++++++++++++++++++++++++");
     						break;
     					case "Email":
+    						log.error("Email" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
     						emailService.kafkaSendEmail(message);
+    						log.error("Email end++++++++++++++++++++++++++++++++++++++++++++++++++");
 
     					default:
     						log.error("default：not catch beaname ++++++++++++++++++++++++++++++++++++++++++++++++++");
