@@ -76,13 +76,13 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 	
 	@Override
 	public void BiEtlSyncPlan(KafkaMessage message) {
-		log.error("kafka Plan_start 启动调用更新数据库表变成执行中++++++++++++++++++++++++++++++++");
+		log.info("uuid:" +message.getUuid() +"kafka Plan_start 启动调用更新数据库表变成执行中++++++++++++++++++++++++++++++++");
 		//改变执行计划变成已经开始执行
 		String body = message.getBody();
-		log.error("kafka Plan_start body ++++++++++++++++++++++++++++++++" + body);
+		log.info("uuid:" +message.getUuid() +"kafka Plan_start body :" + body);
 		List<KafkaSyncDto> list = JsonUtil.string2Obj(body, new TypeReference<List<KafkaSyncDto>>() {
         });
-		log.error("kafka Plan_start  List<RunPlan> list ++++++++++++++++++++++++++++++++" + list.toString());
+		log.info("uuid:" +message.getUuid() + "kafka Plan_start list:" + list.toString());
 		if(!CollectionUtils.isEmpty(list)) {
 			syncToExecute(list,message);
 			//发送kafka topic 消息 准备查询是否已执行完成
@@ -95,7 +95,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 
 	@Override
 	public void BiEtlSyncManyPlan(KafkaMessage message) {
-		log.info("kafka 启动调用更新数据库表查询是否结束，如果已结束 更新标志位");
+		log.info("uuid:" +message.getUuid()+" kafka 启动调用更新数据库表查询是否结束，如果已结束 更新标志位");
 		String body = message.getBody();
 		List<KafkaSyncDto> list = JsonUtil.string2Obj(body, new TypeReference<List<KafkaSyncDto>>() {
         });
@@ -108,7 +108,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 
 	@Override
 	public void BiEtlSyncManyEndPlan(KafkaMessage message) {
-		log.info("kafka 启动调用更新数据库表多条数据全部结束，查询当前tyep 为1 标志位是否同步结束 如已结束更新标志位");
+		log.info("uuid:" +message.getUuid()+" kafka 启动调用更新数据库表多条数据全部结束，查询当前tyep 为1 标志位是否同步结束 如已结束更新标志位");
 		String body = message.getBody();
 		List<KafkaSyncDto> planList = JsonUtil.string2Obj(body, new TypeReference<List<KafkaSyncDto>>() {
         });
@@ -138,13 +138,13 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 	                .isNull(BiEtlSyncPlan::getPlanResult)
 	                .orderByAsc(BiEtlSyncPlan::getCreateDate)
 	        );
-	        log.error("kafka Plan_start syncToExecute  List<BiEtlSyncPlan> list list ++++++++++++++++++++++++++++++++" + list.toString());
+	        log.info("uuid:" +message.getUuid()+" kafka Plan_start syncToExecute  " + list.toString());
 	        list.forEach(s -> {
 	            if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst())) {
-	            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.YES.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
+	            	log.info("uuid:" +message.getUuid()+" kafka Plan_start syncToExecute  YesOrNoEnum.YES.getKey() ++++++++++++++++++++++++++++++++" );
 	                syncToExecuteNonTask(s);
 	            } else {
-	            	log.error("kafka Plan_start syncToExecute  YesOrNoEnum.no.getKey() ++++++++++++++++++++++++++++++++" + list.toString());
+	            	log.info("uuid:" +message.getUuid()+" kafka Plan_start syncToExecute  YesOrNoEnum.no.getKey() ++++++++++++++++++++++++++++++++");
 	                syncToExecuteTask(s);
 	            }
 	        });

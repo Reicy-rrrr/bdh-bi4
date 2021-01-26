@@ -39,6 +39,16 @@ public enum KafkaTypeEnum {
         }
         return "";
     }
+    
+    public static String getValue(String type) {
+        FileTypeEnum[] enums = FileTypeEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(type, enums[i].getType())) {
+                return enums[i].getValue();
+            }
+        }
+        return "";
+    }
 
     /**
      * 根据类型获取枚举类型

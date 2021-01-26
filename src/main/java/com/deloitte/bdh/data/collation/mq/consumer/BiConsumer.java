@@ -20,6 +20,7 @@ import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.service.EmailService;
+import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
 
@@ -47,36 +48,37 @@ public class BiConsumer implements ApplicationRunner {
                 //必须在下次Poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG。
                 //建议开一个单独的线程池来消费消息，然后异步返回结果。
                 for (ConsumerRecord<String, String> record : records) {
-                    log.error("测试消费体：" + record.toString() + "++++++++++++++++++++++++++++++++++++++++++++++++++");
+                    log.info("测试消费体：" + record.toString() );
                     KafkaMessage message = JsonUtil.string2Obj(record.value(), KafkaMessage.class);
-                    log.error("message：" + message.toString() + "++++++++++++++++++++++++++++++++++++++++++++++++++");
+                    log.info("uuid:" +message.getUuid() +"   message：" + message.toString());
                     if (null != message) {
                         ThreadLocalHolder.async(message.getTenantCode(), message.getTenantId(), message.getOperator(), message::process);
                         String beanName = message.getBeanName();
-                        log.error("beanname：" + beanName + "++++++++++++++++++++++++++++++++++++++++++++++++++");
-                        switch (beanName) {
-    					case "Plan_start":
-    						log.error("Plan_start" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
+                        log.info("uuid:" +message.getUuid() +"   beanname：" + beanName );
+                        switch (KafkaTypeEnum.valueOf(beanName)) {
+    					case Plan_start:
+    						
+    						log.info("uuid:" +message.getUuid() +" Plan_start body:" + message.getBody() +" start" );
     						kafkaBiPlanService.BiEtlSyncPlan(message);
-    						log.error("Plan_start  end++++++++++++++++++++++++++++++++++++++++++++++++++");
+    						log.info("uuid:" +message.getUuid() +" Plan_start  end");
     						break;
-    					case "Plan_check_end":
-    						log.error("Plan_check_end" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
+    					case Plan_check_end:
+    						log.info("uuid:" +message.getUuid() +" Plan_check_end body:" + message.getBody() + " start");
     						kafkaBiPlanService.BiEtlSyncManyPlan(message);
-    						log.error("Plan_check_end  end++++++++++++++++++++++++++++++++++++++++++++++++++");
+    						log.info("uuid:" +message.getUuid() +" Plan_check_end  end");
     						break;
-    					case "Plan_checkMany_end":
-    						log.error("Plan_checkMany_end" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
+    					case Plan_checkMany_end:
+    						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end body:" + message.getBody() + " start");
     						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
-    						log.error("Plan_checkMany_end  end++++++++++++++++++++++++++++++++++++++++++++++++++");
+    						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end  end");
     						break;
-    					case "Email":
-    						log.error("Email" + message.getBody() + " start++++++++++++++++++++++++++++++++++++++++++++++++++");
+    					case Email:
+    						log.info("uuid:" +message.getUuid() +" Email body: " + message.getBody() + " start");
     						emailService.kafkaSendEmail(message);
-    						log.error("Email end++++++++++++++++++++++++++++++++++++++++++++++++++");
+    						log.info("uuid:" +message.getUuid() +" Email end");
 
     					default:
-    						log.error("default：not catch beaname ++++++++++++++++++++++++++++++++++++++++++++++++++");
+    						log.error("uuid:" +message.getUuid() +" default：not catch beaname ");
     						break;
     					}
                     }
