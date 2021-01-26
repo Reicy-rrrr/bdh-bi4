@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.data.analyse.model.request.EmailDto;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 
 /**
  * Author:LIJUN
@@ -15,5 +16,11 @@ public interface EmailService {
      * @param type
      */
     void sendEmail(EmailDto dto, String type) throws Exception;
+
+    /**
+     * 
+     * @param message
+     */
+	void kafkaSendEmail(KafkaMessage message);
 
 }

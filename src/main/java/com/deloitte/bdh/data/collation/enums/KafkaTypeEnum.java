@@ -9,7 +9,7 @@ public enum KafkaTypeEnum {
 	Plan_start("Plan_start", "Plan_start", "启动计划修改成执行"),
 	Plan_check_end("Plan_check_end", "Plan_check_end", "单条更新数据，多条检查是否全部完成"),
 	Plan_checkMany_end("Plan_checkMany_end", "Plan_checkMany_end", "多条数据处理结果完成"),
-    
+	Email("Email","Email","发送邮件")
     ;
 
     private String type;
@@ -35,6 +35,16 @@ public enum KafkaTypeEnum {
         for (int i = 0; i < enums.length; i++) {
             if (StringUtils.equals(type, enums[i].getType())) {
                 return enums[i].getDesc();
+            }
+        }
+        return "";
+    }
+    
+    public static String getValue(String type) {
+        FileTypeEnum[] enums = FileTypeEnum.values();
+        for (int i = 0; i < enums.length; i++) {
+            if (StringUtils.equals(type, enums[i].getType())) {
+                return enums[i].getValue();
             }
         }
         return "";

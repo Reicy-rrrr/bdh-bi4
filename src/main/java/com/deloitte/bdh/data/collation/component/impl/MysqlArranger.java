@@ -385,14 +385,14 @@ public class MysqlArranger implements ArrangerSelector {
         segmentBuilder.append(", ");
         switch (targetType) {
             case Integer:
-                segmentBuilder.append("SIGNED");
+                segmentBuilder.append("DECIMAL(32,0)");
                 field.setColumnType("bigint(32)");
                 field.setDataType("bigint");
                 field.setLength("32");
                 field.setScale("0");
                 break;
             case Float:
-                segmentBuilder.append("DECIMAL");
+                segmentBuilder.append("DECIMAL(32,8)");
                 field.setColumnType("decimal(32,8)");
                 field.setDataType("decimal");
                 field.setLength("32");

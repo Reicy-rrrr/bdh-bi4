@@ -180,6 +180,9 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
 
         if (YesOrNoEnum.YES.getKey().equals(inf.getIsFile())) {
+            if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+                throw new RuntimeException("默认文件夹请勿删除");
+            }
             //校验是否有子文件
             List<BiEtlModel> modelList = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
                     .eq(BiEtlModel::getParentCode, inf.getCode())
@@ -234,12 +237,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         }
 
         if (!StringUtil.isEmpty(dto.getName())) {
-            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
-                    .eq(BiEtlModel::getName, dto.getName())
-                    .ne(BiEtlModel::getId, inf.getId()));
-            if (null != exitModel) {
-                throw new RuntimeException("名称已存在");
-            }
+//            BiEtlModel exitModel = biEtlModelMapper.selectOne(new LambdaQueryWrapper<BiEtlModel>()
+//                    .eq(BiEtlModel::getName, dto.getName())
+//                    .ne(BiEtlModel::getId, inf.getId()));
+//            if (null != exitModel) {
+//                throw new RuntimeException("名称已存在");
+//            }
             inf.setName(dto.getName());
         }
         if (!StringUtil.isEmpty(dto.getComments())) {
@@ -273,6 +276,11 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
             if (!StringUtil.isEmpty(dto.getFileCode())) {
                 inf.setParentCode(dto.getFileCode());
+            }
+        } else {
+            //默认文件夹不允许删除
+            if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+                throw new RuntimeException("默认文件夹请勿修改");
             }
         }
 
@@ -501,6 +509,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             fUOLamQW.eq(BiEtlModel::getParentCode, fileCode);
         }
         fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
+        fUOLamQW.eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator());
         fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
         return biEtlModelMapper.selectList(fUOLamQW);
     }

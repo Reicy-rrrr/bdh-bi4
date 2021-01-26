@@ -370,6 +370,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     public BiEtlDatabaseInf runResource(String id, String effect) {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (!effect.equals(inf.getEffect())) {
+            if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+                throw new RuntimeException("默认数据源请勿禁用");
+            }
+
             if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
                 //禁用需要如下校验
                 if (EffectEnum.DISABLE.getKey().equals(effect)) {
@@ -418,6 +422,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     @Override
     public void delResource(String id) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
+        if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+            throw new RuntimeException("默认数据源请勿删除");
+        }
+
         if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
             throw new RuntimeException("启用状态下,不允许删除");
         }
@@ -452,7 +460,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
             throw new RuntimeException("启用中的数据源不允许修改");
         }
-
+        if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+            throw new RuntimeException("默认数据源请勿修改");
+        }
         if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
             return updateResourceFromMysql(dto);
         } else {

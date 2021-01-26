@@ -3,6 +3,7 @@ package com.deloitte.bdh.data.collation.integration.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -42,7 +43,8 @@ import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.model.request.ConditionDto;
-import com.deloitte.bdh.data.collation.mq.consumer.KafkaProducter;
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+import com.deloitte.bdh.data.collation.mq.KafkaSyncDto;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
@@ -52,6 +54,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
+import com.deloitte.bdh.data.collation.service.Producter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,8 +82,9 @@ public class SyncServiceImpl implements SyncService {
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
+
     @Autowired
-    private KafkaProducter KafkaProducter;
+    private Producter producter;
 
     @Override
     public void sync() {
@@ -566,12 +570,30 @@ public class SyncServiceImpl implements SyncService {
         runPlans.add(outPlan);
 
         //执行
-        runPlans.forEach(s -> syncPlanService.createPlan(s));
+        List<KafkaSyncDto> planMessage = Lists.newArrayList();
+        runPlans.forEach(s -> {
+        	KafkaSyncDto kfs = new KafkaSyncDto();
+        	BiEtlSyncPlan bsp = syncPlanService.createPlan(s);
+        	kfs.setCode(bsp.getCode());
+        	kfs.setGroupCode(bsp.getGroupCode());
+        	kfs.setType("model");
+        	planMessage.add(kfs);
+        }
+        );
 
         
         //状态变为正在同步中
         model.setSyncStatus(YesOrNoEnum.YES.getKey());
         modelService.updateById(model);
-//        KafkaProducter.send(KafkaTypeEnum.Plan_start.getType(), JsonUtil.obj2String(runPlans));
+        if (YesOrNoEnum.NO.getKey().equals(isTrigger)) {
+        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
+            producter.send(message);
+        }else {
+        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_checkMany_end.getType());
+            producter.send(message);
+        }
+        
+        
+        
     }
 }

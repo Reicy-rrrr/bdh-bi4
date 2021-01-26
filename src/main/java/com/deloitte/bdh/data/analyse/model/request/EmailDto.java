@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.model.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.List;
  * @date 2019/07/18
  */
 @ApiModel("邮件发送请求参数封装")
+@ToString
 public class EmailDto implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -27,6 +29,8 @@ public class EmailDto implements Serializable {
 	private String template;
 	@ApiModelProperty("自定义参数")
 	private HashMap<String, Object> paramMap;
+	
+	private String pageId;
 
 	public String getEmail() {
 		return email;
@@ -76,15 +80,13 @@ public class EmailDto implements Serializable {
 		this.paramMap = paramMap;
 	}
 
-	@Override
-	public String toString() {
-		return "EmailDto{" +
-				"email='" + email + '\'' +
-				", ccList=" + ccList +
-				", subject='" + subject + '\'' +
-				", content='" + content + '\'' +
-				", template='" + template + '\'' +
-				", paramMap=" + paramMap +
-				'}';
+	public String getPageId() {
+		return pageId;
 	}
+
+	public void setPageId(String pageId) {
+		this.pageId = pageId;
+	}
+
+	
 }

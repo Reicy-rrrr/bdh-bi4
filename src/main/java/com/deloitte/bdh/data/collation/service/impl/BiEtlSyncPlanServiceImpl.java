@@ -49,7 +49,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
     private BiEtlSyncPlanMapper syncPlanMapper;
 
     @Override
-    public void createPlan(RunPlan plan) {
+    public BiEtlSyncPlan createPlan(RunPlan plan) {
         BiEtlSyncPlan syncPlan = new BiEtlSyncPlan();
         syncPlan.setCode(GenerateCodeUtil.generate());
         syncPlan.setName(plan.getPlanName());
@@ -88,6 +88,7 @@ public class BiEtlSyncPlanServiceImpl extends AbstractService<BiEtlSyncPlanMappe
             syncPlan.setNextExecuteDate(nextExecuteTime);
         }
         syncPlanMapper.insert(syncPlan);
+        return syncPlan;
     }
 
     @Override

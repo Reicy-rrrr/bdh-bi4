@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.service.EmailService;
+import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
 
@@ -33,6 +35,9 @@ public class BiConsumer implements ApplicationRunner {
     
     @Autowired
     private KafkaBiPlanService kafkaBiPlanService;
+    
+    @Resource
+    private EmailService emailService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -43,23 +48,37 @@ public class BiConsumer implements ApplicationRunner {
                 //必须在下次Poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG。
                 //建议开一个单独的线程池来消费消息，然后异步返回结果。
                 for (ConsumerRecord<String, String> record : records) {
-                    log.info("测试消费体：" + record.toString());
+                    log.info("测试消费体：" + record.toString() );
                     KafkaMessage message = JsonUtil.string2Obj(record.value(), KafkaMessage.class);
+                    log.info("uuid:" +message.getUuid() +"   message：" + message.toString());
                     if (null != message) {
                         ThreadLocalHolder.async(message.getTenantCode(), message.getTenantId(), message.getOperator(), message::process);
                         String beanName = message.getBeanName();
-                        switch (beanName) {
-    					case "Plan_start":
+                        log.info("uuid:" +message.getUuid() +"   beanname：" + beanName );
+                        switch (KafkaTypeEnum.valueOf(beanName)) {
+    					case Plan_start:
+    						
+    						log.info("uuid:" +message.getUuid() +" Plan_start body:" + message.getBody() +" start" );
     						kafkaBiPlanService.BiEtlSyncPlan(message);
+    						log.info("uuid:" +message.getUuid() +" Plan_start  end");
     						break;
-    					case "Plan_check_end":
+    					case Plan_check_end:
+    						log.info("uuid:" +message.getUuid() +" Plan_check_end body:" + message.getBody() + " start");
     						kafkaBiPlanService.BiEtlSyncManyPlan(message);
+    						log.info("uuid:" +message.getUuid() +" Plan_check_end  end");
     						break;
-    					case "Plan_checkMany_end":
+    					case Plan_checkMany_end:
+    						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end body:" + message.getBody() + " start");
     						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
+    						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end  end");
     						break;
+    					case Email:
+    						log.info("uuid:" +message.getUuid() +" Email body: " + message.getBody() + " start");
+    						emailService.kafkaSendEmail(message);
+    						log.info("uuid:" +message.getUuid() +" Email end");
 
     					default:
+    						log.error("uuid:" +message.getUuid() +" default：not catch beaname ");
     						break;
     					}
                     }
@@ -71,9 +90,10 @@ public class BiConsumer implements ApplicationRunner {
                 try {
                     Thread.sleep(1000);
                 } catch (Throwable ignore) {
-
+                	log.error(e.getMessage());
                 }
-                e.printStackTrace();
+                log.error(e.getMessage());
+                
             }
         }
     }
@@ -89,6 +109,7 @@ public class BiConsumer implements ApplicationRunner {
         //每次Poll的最大数量。
         //注意该值不要改得太大，如果Poll太多数据，而不能在下次Poll之前消费完，则会触发一次负载均衡，产生卡顿。
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 30);
+        props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, 6291456);
         //消息的反序列化方式。
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
@@ -108,6 +129,7 @@ public class BiConsumer implements ApplicationRunner {
             subscribedTopics.add(topic.trim());
         }
         consumer.subscribe(subscribedTopics);
+        
         return consumer;
     }
 }

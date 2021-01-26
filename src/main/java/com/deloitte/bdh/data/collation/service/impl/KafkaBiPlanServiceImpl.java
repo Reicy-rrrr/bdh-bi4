@@ -1,11 +1,13 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.taskdefs.Sleep;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +32,7 @@ import com.deloitte.bdh.data.collation.model.BiEtlSyncPlan;
 import com.deloitte.bdh.data.collation.model.BiProcessors;
 import com.deloitte.bdh.data.collation.model.RunPlan;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
-import com.deloitte.bdh.data.collation.mq.consumer.KafkaProducter;
+import com.deloitte.bdh.data.collation.mq.KafkaSyncDto;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlMappingConfigService;
@@ -39,6 +41,7 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
+import com.deloitte.bdh.data.collation.service.Producter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,30 +70,34 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
+
     @Autowired
-    private KafkaProducter Producter;
+    private Producter producter;
 	
 	@Override
 	public void BiEtlSyncPlan(KafkaMessage message) {
-		log.info("kafka 启动调用更新数据库表变成执行中");
+		log.info("uuid:" +message.getUuid() +"kafka Plan_start 启动调用更新数据库表变成执行中++++++++++++++++++++++++++++++++");
 		//改变执行计划变成已经开始执行
 		String body = message.getBody();
-		List<RunPlan> list = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
+		log.info("uuid:" +message.getUuid() +"kafka Plan_start body :" + body);
+		List<KafkaSyncDto> list = JsonUtil.string2Obj(body, new TypeReference<List<KafkaSyncDto>>() {
         });
+		log.info("uuid:" +message.getUuid() + "kafka Plan_start list:" + list.toString());
 		if(!CollectionUtils.isEmpty(list)) {
 			syncToExecute(list,message);
 			//发送kafka topic 消息 准备查询是否已执行完成
 			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
-			Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+//			producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+			producter.send(message);
 		}
 		
 	}
 
 	@Override
 	public void BiEtlSyncManyPlan(KafkaMessage message) {
-		log.info("kafka 启动调用更新数据库表查询是否结束，如果已结束 更新标志位");
+		log.info("uuid:" +message.getUuid()+" kafka 启动调用更新数据库表查询是否结束，如果已结束 更新标志位");
 		String body = message.getBody();
-		List<RunPlan> list = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
+		List<KafkaSyncDto> list = JsonUtil.string2Obj(body, new TypeReference<List<KafkaSyncDto>>() {
         });
 		if(!CollectionUtils.isEmpty(list)) {
 			//检查执行计划是否已经完成 未完成发送第二次请求使用延迟消费  如果多条请求全部完成发送topic 请求多条验证完成
@@ -101,9 +108,9 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 
 	@Override
 	public void BiEtlSyncManyEndPlan(KafkaMessage message) {
-		log.info("kafka 启动调用更新数据库表多条数据全部结束，查询当前tyep 为1 标志位是否同步结束 如已结束更新标志位");
+		log.info("uuid:" +message.getUuid()+" kafka 启动调用更新数据库表多条数据全部结束，查询当前tyep 为1 标志位是否同步结束 如已结束更新标志位");
 		String body = message.getBody();
-		List<RunPlan> planList = JsonUtil.string2Obj(body, new TypeReference<List<RunPlan>>() {
+		List<KafkaSyncDto> planList = JsonUtil.string2Obj(body, new TypeReference<List<KafkaSyncDto>>() {
         });
 		if(org.apache.commons.collections4.CollectionUtils.isEmpty(planList)) {
 			return;
@@ -119,35 +126,39 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 	}
 	
 	//启动
-	private void syncToExecute(List<RunPlan> planList, KafkaMessage message) {
+	private void syncToExecute(List<KafkaSyncDto> list2, KafkaMessage message) {
         //寻找类型为同步，状态为待执行的计划
-		RunPlan plan = planList.get(0);
-        List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
-                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
-                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
-                .isNull(BiEtlSyncPlan::getPlanResult)
-                .orderByAsc(BiEtlSyncPlan::getCreateDate)
-        );
-
-        list.forEach(s -> {
-            if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst())) {
-                syncToExecuteNonTask(s);
-            } else {
-                syncToExecuteTask(s);
-            }
-        });
+		for (KafkaSyncDto plan : list2) {
+			List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+	                .eq(BiEtlSyncPlan::getPlanType, "0")
+	                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.TO_EXECUTE.getKey())
+	                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+	                .eq(BiEtlSyncPlan::getCode, plan.getCode())
+	                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+	                .isNull(BiEtlSyncPlan::getPlanResult)
+	                .orderByAsc(BiEtlSyncPlan::getCreateDate)
+	        );
+	        log.info("uuid:" +message.getUuid()+" kafka Plan_start syncToExecute  " + list.toString());
+	        list.forEach(s -> {
+	            if (YesOrNoEnum.YES.getKey().equals(s.getIsFirst())) {
+	            	log.info("uuid:" +message.getUuid()+" kafka Plan_start syncToExecute  YesOrNoEnum.YES.getKey() ++++++++++++++++++++++++++++++++" );
+	                syncToExecuteNonTask(s);
+	            } else {
+	            	log.info("uuid:" +message.getUuid()+" kafka Plan_start syncToExecute  YesOrNoEnum.no.getKey() ++++++++++++++++++++++++++++++++");
+	                syncToExecuteTask(s);
+	            }
+	        });
+		}
 
     }
 	
 	private void syncToExecuteNonTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            if (5 < count) {
-                //判断已处理次数,超过5次则动作完成。
-                throw new RuntimeException("任务处理超时");
-            }
+//            if (5 < count) {
+//                //判断已处理次数,超过5次则动作完成。
+//                throw new RuntimeException("任务处理超时");
+//            }
             //组装数据 启动nifi 改变执行状态
             BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                     .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
@@ -172,7 +183,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
-            log.error("sync.syncToExecuteNonTask:", e);
+            log.error("sync.syncToExecuteNonTask:++++++++++++++++++++++++++++++", e);
             count++;
             plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
@@ -186,10 +197,10 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     private void syncToExecuteTask(BiEtlSyncPlan plan) {
         int count = Integer.parseInt(plan.getProcessCount());
         try {
-            if (5 < count) {
-                //判断已处理次数,超过5次则动作完成。
-                throw new RuntimeException("任务处理超时");
-            }
+//            if (5 < count) {
+//                //判断已处理次数,超过5次则动作完成。
+//                throw new RuntimeException("任务处理超时");
+//            }
             //组装数据 启动nifi 改变执行状态
             BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                     .eq(BiEtlMappingConfig::getCode, plan.getRefMappingCode())
@@ -212,7 +223,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
             plan.setProcessCount("0");
             plan.setResultDesc(null);
         } catch (Exception e) {
-            log.error("sync.syncToExecuteTask:", e);
+            log.error("sync.syncToExecuteTask:++++++++++++++++++++++++++++++++++++=", e);
             count++;
             plan.setPlanStage(PlanStageEnum.EXECUTED.getKey());
             plan.setPlanResult(PlanResultEnum.FAIL.getKey());
@@ -223,24 +234,46 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
         }
     }
 
-    private void syncExecuting(KafkaMessage message, List<RunPlan> planList) {
+    private void syncExecuting(KafkaMessage message, List<KafkaSyncDto> list2) {
     	
-    	RunPlan plan = planList.get(0);
+    	KafkaSyncDto plan = list2.get(0);
         //寻找类型为同步，状态为待执行的计划
-        List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
-                .eq(BiEtlSyncPlan::getPlanType, "0")
-                .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
-                .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
-                .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
-                .isNull(BiEtlSyncPlan::getPlanResult)
-                .orderByAsc(BiEtlSyncPlan::getCreateDate)
-              
-        );
+    	List<BiEtlSyncPlan> list = new ArrayList<>();
+    	if(list2.size() == 1) {
+    		list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                    .eq(BiEtlSyncPlan::getPlanType, "0")
+                    .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                    .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                    .eq(BiEtlSyncPlan::getCode, plan.getCode())
+                    .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+                    .isNull(BiEtlSyncPlan::getPlanResult)
+                    .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                  
+            );
+    	}else {
+    		list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
+                    .eq(BiEtlSyncPlan::getPlanType, "0")
+                    .eq(BiEtlSyncPlan::getPlanStage, PlanStageEnum.EXECUTING.getKey())
+                    .eq(BiEtlSyncPlan::getGroupCode, plan.getGroupCode())
+                    .eq(BiEtlSyncPlan::getTenantId, message.getTenantId())
+                    .isNull(BiEtlSyncPlan::getPlanResult)
+                    .orderByAsc(BiEtlSyncPlan::getCreateDate)
+                  
+            );
+    	}
+        
         if(org.apache.commons.collections4.CollectionUtils.isNotEmpty(list)) {
-        	if(list.size() == 1) {
+        	if(list2.size() == 1) {
         		if(!syncExecutingTask(list.get(0),message)) {
         			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
-            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+//            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+        			try {
+						Thread.sleep(60000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+            		producter.send(message);
         		}
         	}else {
         		int num = 0;
@@ -251,10 +284,24 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 				}
         		if(list.size() == num) {
         			message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
-            		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+//            		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+        			try {
+						Thread.sleep(60000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+        			producter.send(message);
         		}else {
         			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
-            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+//            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
+        			try {
+						Thread.sleep(60000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+        			producter.send(message);
         		}
         	}
         }
@@ -356,8 +403,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     }
 
 
-    private void etlToExecute(List<RunPlan> planList, KafkaMessage message) throws Exception {
-    	RunPlan plan = planList.get(0);
+    private void etlToExecute(List<KafkaSyncDto> planList, KafkaMessage message) throws Exception {
+    	KafkaSyncDto plan = planList.get(0);
         //寻找类型为同步，状态为待执行的计划s
         List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "1")
@@ -432,8 +479,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 
     }
 
-    private void etlExecuting(List<RunPlan> planList, KafkaMessage message) {
-    	RunPlan plan = planList.get(0);
+    private void etlExecuting(List<KafkaSyncDto> planList, KafkaMessage message) {
+    	KafkaSyncDto plan = planList.get(0);
         //寻找类型为同步，状态为待执行的计划
         List<BiEtlSyncPlan> list = syncPlanService.list(new LambdaQueryWrapper<BiEtlSyncPlan>()
                 .eq(BiEtlSyncPlan::getPlanType, "1")
@@ -465,10 +512,10 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 
         boolean retry = false;
         try {
-            if (10 < count) {
-                //判断已处理次数,超过10次则动作完成。
-                throw new RuntimeException("任务处理超时");
-            }
+//            if (10 < count) {
+//                //判断已处理次数,超过10次则动作完成。
+//                throw new RuntimeException("任务处理超时");
+//            }
             count++;
             //基于条件实时查询 localCount
 //                String condition = assemblyCondition(plan.getIsFirst(), config);
@@ -482,7 +529,10 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
                 // 等待下次再查询
                 plan.setSqlLocalCount(localCount);
                 message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
-        		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+//        		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
+                Thread.sleep(60000);
+                
+                producter.send(message);
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());

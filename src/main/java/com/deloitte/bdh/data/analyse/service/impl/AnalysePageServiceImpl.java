@@ -92,14 +92,31 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         } else {
             PageHelper.startPage(request.getPage(), request.getSize());
         }
-        SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
-        selectPublishedPageDto.setUserId(ThreadLocalHolder.getOperator());
-        selectPublishedPageDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
-        selectPublishedPageDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
-        selectPublishedPageDto.setName(request.getData().getName());
-        selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
-        List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
+        List<AnalysePageDto> pageList = Lists.newArrayList();
+        if (StringUtils.equals(request.getData().getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+            LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
+            if (StringUtils.isNotBlank(request.getData().getName())) {
+                queryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
+            }
+            queryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
+            List<BiUiAnalysePage> list = list(queryWrapper);
+            for (BiUiAnalysePage page : list) {
+                AnalysePageDto dto = new AnalysePageDto();
+                BeanUtils.copyProperties(page, dto);
+                pageList.add(dto);
+            }
+        } else {
+            SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
+            selectPublishedPageDto.setUserId(ThreadLocalHolder.getOperator());
+            selectPublishedPageDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+            selectPublishedPageDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectPublishedPageDto.setName(request.getData().getName());
+            selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
+            pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
+        }
+
         //处理查询之后做操作返回total不正确
         PageInfo pageInfo = PageInfo.of(pageList);
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
@@ -176,11 +193,24 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (CollectionUtils.isEmpty(pageIds)) {
             throw new BizException("请选择要删除的报表");
         }
-        //如果删除草稿箱的报表，不会直接删除page，而是删除config
+        //如果删除草稿箱的报表
         if (request.getType().equals(AnalyseConstants.PAGE_CONFIG_EDIT)) {
             List<BiUiAnalysePage> pages = this.listByIds(pageIds);
-            pages.forEach(p -> p.setIsEdit(YnTypeEnum.NO.getCode()));
-            updateBatchById(pages);
+            for (BiUiAnalysePage page : pages) {
+                //如果发布过
+                if (StringUtils.isNotBlank(page.getPublishId())) {
+                    BiUiAnalysePageConfig publishConfig = configService.getById(page.getPublishId());
+                    BiUiAnalysePageConfig editConfig = configService.getById(page.getEditId());
+                    editConfig.setContent(publishConfig.getContent());
+                    configService.updateById(editConfig);
+                    page.setIsEdit(YnTypeEnum.NO.getCode());
+                    updateById(page);
+                } else {
+                    removeById(page.getId());
+                    //删除config
+                    configService.removeById(page.getEditId());
+                }
+            }
             return;
         }
 

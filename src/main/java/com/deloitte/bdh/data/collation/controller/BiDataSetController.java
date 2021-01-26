@@ -67,6 +67,9 @@ public class BiDataSetController {
     @PostMapping("/reNameFile")
     public RetResult<Void> reNameFile(@RequestBody @Validated RetRequest<DataSetReNameDto> request) {
         BiDataSet dataSet = dataSetService.getById(request.getData().getId());
+        if (dataSet.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+            throw new RuntimeException("默认数据集请勿修改");
+        }
         dataSet.setTableDesc(request.getData().getToTableDesc());
         dataSet.setTableName(request.getData().getToTableDesc());
         dataSetService.updateById(dataSet);
@@ -96,7 +99,7 @@ public class BiDataSetController {
     @ApiOperation(value = "删除数据集或文件夹", notes = "删除数据集或文件夹")
     @PostMapping("/del")
     public RetResult<Void> delete(@RequestBody @Validated RetRequest<String> request) {
-        dataSetService.delete(request.getData(),false);
+        dataSetService.delete(request.getData(), false);
         return RetResponse.makeOKRsp();
     }
 }

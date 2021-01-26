@@ -14,4 +14,7 @@ public class GetAnalysePageDto {
 
     @ApiModelProperty(value = "名称")
     private String name;
+
+    @ApiModelProperty(value = "super")
+    private String userFlag;
 }
