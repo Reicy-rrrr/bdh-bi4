@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Author:LIJUN
@@ -48,7 +49,7 @@ public class AnalyseSubscribeController {
 
     @ApiOperation(value = "查询执行记录", notes = "查询执行记录")
     @PostMapping("/getExecuteLog")
-    public RetResult<AnalyseSubscribeLogDto> getExecuteLog(@RequestBody @Valid RetRequest<String> request) {
+    public RetResult<List<AnalyseSubscribeLogDto>> getExecuteLog(@RequestBody @Valid RetRequest<String> request) {
         return RetResponse.makeOKRsp(subscribeService.getExecuteLog(request.getData()));
     }
 
