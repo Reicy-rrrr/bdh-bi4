@@ -117,7 +117,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         LambdaQueryWrapper<BiEtlModel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiEtlModel::getParentCode, "0");
         lambdaQueryWrapper.eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey());
-        if (!StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+        if (!StringUtils.equals(userFlag, YesOrNoEnum.YES.getKey())) {
             lambdaQueryWrapper.in(BiEtlModel::getCreateUser, userList);
         }
         lambdaQueryWrapper.orderByDesc(BiEtlModel::getCreateDate);

@@ -23,6 +23,7 @@ import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -98,7 +99,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         List<AnalyseCategoryDto> categoryDtoList = Lists.newArrayList();
         List<String> categoryIds = Lists.newArrayList();
         //查询文件夹
-        if (StringUtils.equals(CommonConstant.SUPER_USER_FLAG, request.getData().getUserFlag())) {
+        if (StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getUserFlag())) {
             LambdaQueryWrapper<BiUiAnalyseCategory> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiUiAnalyseCategory::getType, request.getData().getType());
             if (StringUtils.isNotBlank(request.getData().getName())) {

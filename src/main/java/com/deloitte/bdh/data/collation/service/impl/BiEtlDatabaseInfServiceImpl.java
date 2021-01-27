@@ -111,7 +111,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         if (StringUtils.isNotBlank(dto.getEffect())) {
             lambdaQueryWrapper.eq(BiEtlDatabaseInf::getEffect, dto.getEffect());
         }
-        if (!StringUtils.equals(dto.getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+        if (!StringUtils.equals(dto.getUserFlag(), YesOrNoEnum.YES.getKey())) {
             lambdaQueryWrapper.in(BiEtlDatabaseInf::getCreateUser, ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
         }
         lambdaQueryWrapper.orderByDesc(BiEtlDatabaseInf::getCreateDate);

@@ -121,7 +121,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public List<DataSetResp> getFiles(String userFlag) {
         List<BiDataSet> setList;
         List<DataSetResp> respList = Lists.newArrayList();
-        if (StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+        if (StringUtils.equals(userFlag, YesOrNoEnum.YES.getKey())) {
             setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getParentId, "0")
                     .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
@@ -154,7 +154,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Override
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
         List<BiDataSet> dataSetList;
-        if (StringUtils.equals(dto.getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+        if (StringUtils.equals(dto.getUserFlag(), YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiDataSet::getParentId, dto.getFileId());
             queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
@@ -301,7 +301,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public List<BiDataSet> getTableList(String userFlag) {
         // 查询所有数据集
         List<BiDataSet> dataSetList;
-        if (StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+        if (StringUtils.equals(userFlag, YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
             queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
