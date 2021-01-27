@@ -7,5 +7,8 @@ public interface Producter {
 
 
     void send(KafkaMessage message);
+    
+    
+    void sendEmail(KafkaMessage message);
 
 }

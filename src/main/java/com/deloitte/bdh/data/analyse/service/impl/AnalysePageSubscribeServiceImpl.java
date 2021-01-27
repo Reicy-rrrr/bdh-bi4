@@ -222,27 +222,30 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     emailDto.setPageId(pageId);
                     
                     KafkaEmailDto KafkaEmailDto = new KafkaEmailDto();
-                    KafkaEmailDto.setEmailDto(emailDto);
+                    KafkaEmailDto.setCcList(emailDto.getCcList());
+                    KafkaEmailDto.setEmail(userIdMailDto.getEmail());
                     KafkaEmailDto.setPageId(pageId);
-                    KafkaEmailDto.setUserIdMailDto(userIdMailDto);
+                    KafkaEmailDto.setParamMap(params);
+                    KafkaEmailDto.setSubject(subscribe.getMailSubject());
+                    KafkaEmailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
                     KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),KafkaEmailDto,KafkaTypeEnum.Email.getType());
-                    producter.send(message);
 
                     //执行记录
-//                    BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
-//                    subscribeLog.setCron(CronUtil.createCronExpression(subscribe.getCronData()));
-//                    subscribeLog.setCronDesc(CronUtil.createDescription(subscribe.getCronData()));
-//                    subscribeLog.setPageId(subscribe.getPageId());
-//                    subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
-//                    try {
+                    BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
+                    subscribeLog.setCron(CronUtil.createCronExpression(subscribe.getCronData()));
+                    subscribeLog.setCronDesc(CronUtil.createDescription(subscribe.getCronData()));
+                    subscribeLog.setPageId(subscribe.getPageId());
+                    subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
+                    try {
 //                        emailService.sendEmail(emailDto, AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-//                        subscribeLog.setExecuteStatus("1");
-//                    } catch (Exception e) {
-//                        subscribeLog.setExecuteStatus("0");
-//                        subscribeLog.setFailMessage(e.getMessage());
-//                    } finally {
-//                        subscribeLogService.save(subscribeLog);
-//                    }
+                    	producter.sendEmail(message);
+                        subscribeLog.setExecuteStatus("1");
+                    } catch (Exception e) {
+                        subscribeLog.setExecuteStatus("0");
+                        subscribeLog.setFailMessage(e.getMessage());
+                    } finally {
+                        subscribeLogService.save(subscribeLog);
+                    }
                 }
             }
         }

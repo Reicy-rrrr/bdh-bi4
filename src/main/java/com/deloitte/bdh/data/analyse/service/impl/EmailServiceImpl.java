@@ -39,14 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @DS(DSConstant.BI_DB)
-public class EmailServiceImpl extends AbstractService<BiUiAnalyseSubscribeMapper, BiUiAnalyseSubscribe> implements EmailService {
+public class EmailServiceImpl implements EmailService {
 
     @Value("${portal.tools.url}")
     private String portalToolsHost;
     
-    @Resource
-    private AnalysePageSubscribeLogService subscribeLogService;
-
     private static SnowFlakeUtil idWorker = new SnowFlakeUtil(0, 0);
 
     @Override
@@ -66,32 +63,5 @@ public class EmailServiceImpl extends AbstractService<BiUiAnalyseSubscribeMapper
         HttpClientUtil.post(requestUrl, new HashMap<String, Object>(), params);
     }
 
-	@Override
-	public void kafkaSendEmail(KafkaMessage message) {
-		String body = message.getBody();
-		KafkaEmailDto kafkaEmailDto = JsonUtil.string2Obj(body, new TypeReference<KafkaEmailDto>() {
-        });
-		//执行记录
-		LambdaQueryWrapper<BiUiAnalyseSubscribe> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, kafkaEmailDto.getPageId());
-        BiUiAnalyseSubscribe subscribe = this.getOne(queryWrapper);
-        if (null == subscribe) {
-            throw new BizException("目标数据不存在");
-        }
-      BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
-      subscribeLog.setCron(CronUtil.createCronExpression(subscribe.getCronData()));
-      subscribeLog.setCronDesc(CronUtil.createDescription(subscribe.getCronData()));
-      subscribeLog.setPageId(subscribe.getPageId());
-      subscribeLog.setReceiver(JSON.toJSONString(kafkaEmailDto.getUserIdMailDto()));
-		try {
-            this.sendEmail(kafkaEmailDto.getEmailDto(), AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-            subscribeLog.setExecuteStatus("1");
-        } catch (Exception e) {
-            subscribeLog.setExecuteStatus("0");
-            subscribeLog.setFailMessage(e.getMessage());
-        } finally {
-            subscribeLogService.save(subscribeLog);
-        }
-		
-	}
+
 }

@@ -17,10 +17,6 @@ public interface EmailService {
      */
     void sendEmail(EmailDto dto, String type) throws Exception;
 
-    /**
-     * 
-     * @param message
-     */
-	void kafkaSendEmail(KafkaMessage message);
+
 
 }

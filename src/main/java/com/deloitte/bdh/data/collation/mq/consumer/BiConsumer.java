@@ -72,10 +72,6 @@ public class BiConsumer implements ApplicationRunner {
     						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
     						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end  end");
     						break;
-    					case Email:
-    						log.info("uuid:" +message.getUuid() +" Email body: " + message.getBody() + " start");
-    						emailService.kafkaSendEmail(message);
-    						log.info("uuid:" +message.getUuid() +" Email end");
 
     					default:
     						log.error("uuid:" +message.getUuid() +" default：not catch beaname ");

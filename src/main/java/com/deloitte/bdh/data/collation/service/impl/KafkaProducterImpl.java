@@ -47,6 +47,31 @@ public class KafkaProducterImpl implements Producter {
             throw new RuntimeException("error occurred");
         }
     }
+    
+    
+    @Override
+	public void sendEmail(KafkaMessage message) {
+    	try {
+            KafkaProducer<String, String> producer = init();
+            String key = message.getKey();
+            ProducerRecord<String, String> kafkaMessage = new ProducerRecord<>(properties.getKafkaEmailTopic(), key, JsonUtil.obj2String(message));
+            Future<RecordMetadata> future = producer.send(kafkaMessage);
+            producer.flush();
+            //同步获得Future对象的结果。
+            try {
+                RecordMetadata recordMetadata = future.get();
+                log.info(recordMetadata.toString());
+            } catch (Throwable t) {
+                log.error("error occurred");
+                t.printStackTrace();
+            }
+        } catch (Exception e) {
+            //客户端内部重试之后，仍然发送失败，业务要应对此类错误。
+            log.error("error occurred", e);
+            throw new RuntimeException("error occurred");
+        }
+		
+	}
 
 
     private KafkaProducer<String, String> init() {
@@ -67,4 +92,7 @@ public class KafkaProducterImpl implements Producter {
         //如果想提高性能，可以多构造几个对象，但不要太多，最好不要超过5个。
         return new KafkaProducer<>(props);
     }
+
+
+	
 }
