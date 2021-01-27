@@ -243,6 +243,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
                     try {
 //                        emailService.sendEmail(emailDto, AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+                    	log.error("准备发送kafka 邮件信息");
                     	producter.sendEmail(message);
                         subscribeLog.setExecuteStatus("1");
                     } catch (Exception e) {

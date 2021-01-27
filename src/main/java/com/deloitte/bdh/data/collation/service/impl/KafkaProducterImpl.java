@@ -52,6 +52,7 @@ public class KafkaProducterImpl implements Producter {
     @Override
 	public void sendEmail(KafkaMessage message) {
     	try {
+    		log.error("发送邮件kafka " + message.toString());
             KafkaProducer<String, String> producer = init();
             String key = message.getKey();
             ProducerRecord<String, String> kafkaMessage = new ProducerRecord<>(properties.getKafkaEmailTopic(), key, JsonUtil.obj2String(message));
