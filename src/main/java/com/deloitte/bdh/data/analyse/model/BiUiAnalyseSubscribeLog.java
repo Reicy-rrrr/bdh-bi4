@@ -27,12 +27,6 @@ public class BiUiAnalyseSubscribeLog implements Serializable {
     private String pageId;
 
     /**
-     * 邮件主题
-     */
-    @TableField("MAIL_SUBJECT")
-    private String mailSubject;
-
-    /**
      * cron表达式
      */
     @TableField("CRON")

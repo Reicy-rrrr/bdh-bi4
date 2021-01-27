@@ -10,6 +10,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 /**
  * Author:LIJUN
@@ -34,7 +36,7 @@ public interface AnalysePageSubscribeService extends Service<BiUiAnalyseSubscrib
      * 获取执行记录
      * @param pageId
      */
-    AnalyseSubscribeLogDto getExecuteLog(String pageId);
+    List<AnalyseSubscribeLogDto> getExecuteLog(String pageId);
 
     /**
      * 执行计划任务回调

@@ -34,6 +34,7 @@ import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.integration.XxJobService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.Producter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -162,14 +163,18 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     }
 
     @Override
-    public AnalyseSubscribeLogDto getExecuteLog(String pageId) {
+    public List<AnalyseSubscribeLogDto> getExecuteLog(String pageId) {
         LambdaQueryWrapper<BiUiAnalyseSubscribeLog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalyseSubscribeLog::getPageId, pageId);
-        BiUiAnalyseSubscribeLog subscribeLog = subscribeLogService.getOne(queryWrapper);
-        AnalyseSubscribeLogDto dto = new AnalyseSubscribeLogDto();
-        BeanUtils.copyProperties(subscribeLog, dto);
-        dto.setReceiver(JSONObject.parseObject(subscribeLog.getReceiver(), UserIdMailDto.class));
-        return dto;
+        List<BiUiAnalyseSubscribeLog> subscribeLog = subscribeLogService.list(queryWrapper);
+        List<AnalyseSubscribeLogDto> dtoList = Lists.newArrayList();
+        subscribeLog.forEach(log -> {
+            AnalyseSubscribeLogDto dto = new AnalyseSubscribeLogDto();
+            BeanUtils.copyProperties(log, dto);
+            dto.setReceiver(JSONObject.parseObject(log.getReceiver(), UserIdMailDto.class));
+            dtoList.add(dto);
+        });
+        return dtoList;
     }
 
     @Override

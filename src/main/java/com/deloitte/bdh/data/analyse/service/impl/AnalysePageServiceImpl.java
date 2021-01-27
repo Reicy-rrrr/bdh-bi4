@@ -93,7 +93,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             PageHelper.startPage(request.getPage(), request.getSize());
         }
         List<AnalysePageDto> pageList = Lists.newArrayList();
-        if (StringUtils.equals(request.getData().getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+        if (StringUtils.equals(request.getData().getUserFlag(), YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
             if (StringUtils.isNotBlank(request.getData().getName())) {
@@ -396,7 +396,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
         }
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getCode());
-        if (!StringUtils.equals(CommonConstant.SUPER_USER_FLAG, request.getData().getUserFlag())) {
+        if (!StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getUserFlag())) {
             pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
         }
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
