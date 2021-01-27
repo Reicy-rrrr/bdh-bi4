@@ -6,6 +6,8 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.model.request.KafkaEmailDto;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
@@ -17,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.UUID;
 
 
 @RestController
@@ -172,6 +175,19 @@ public class NifiController {
     public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
         KafkaMessage message = new KafkaMessage(null, request, request.getData());
         producter.send(message);
+        return RetResponse.makeOKRsp("ok");
+    }
+    
+    
+    @ApiOperation(value = "email", notes = "email")
+    @PostMapping("/email")
+    public RetResult<String> email(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    	KafkaEmailDto dto = new KafkaEmailDto();
+    	dto.setEmail("jianpeng@deloitte.com.cn");
+    	dto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+    	dto.setSubject("aaaaaaaa");
+        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""), dto, "email");
+        producter.sendEmail(message);
         return RetResponse.makeOKRsp("ok");
     }
 
