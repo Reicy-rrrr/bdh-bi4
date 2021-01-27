@@ -153,16 +153,24 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
+        List<BiDataSet> dataSetList;
+        if (StringUtils.equals(dto.getUserFlag(), CommonConstant.SUPER_USER_FLAG)) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiDataSet::getParentId, dto.getFileId());
+            queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
+            queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
+            dataSetList = list(queryWrapper);
+        } else {
+            SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+            selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+            selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+            selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectDataSetDto.setParentId(dto.getFileId());
+            selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
+            dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
+        }
         List<DataSetResp> result = Lists.newArrayList();
-        SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
-        selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
-        selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
-        selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-        selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
-        selectDataSetDto.setParentId(dto.getFileId());
-        selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
-        List<BiDataSet> dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
-
         if (CollectionUtils.isNotEmpty(dataSetList)) {
             for (BiDataSet dataSet : dataSetList) {
                 DataSetResp dataSetResp = new DataSetResp();
@@ -291,20 +299,23 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     public List<BiDataSet> getTableList(String userFlag) {
-        List<BiDataSet> results = Lists.newArrayList();
         // 查询所有数据集
-        List<String> userList = com.google.common.collect.Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
-        LambdaQueryWrapper<BiDataSet> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO);
-        lambdaQueryWrapper.orderByDesc(BiDataSet::getCreateDate);
-//        if (!org.apache.commons.lang3.StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
-//            lambdaQueryWrapper.in(BiDataSet::getCreateUser, userList);
-//        }
-        List<BiDataSet> dataSetList = setMapper.selectList(lambdaQueryWrapper);
-        if (CollectionUtils.isNotEmpty(dataSetList)) {
-            results.addAll(dataSetList);
+        List<BiDataSet> dataSetList;
+        if (StringUtils.equals(userFlag, CommonConstant.SUPER_USER_FLAG)) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
+            queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
+            dataSetList = list(queryWrapper);
+        } else {
+            SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+            selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+            selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+            selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
+            dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
         }
-        return results;
+        return dataSetList;
     }
 
     @Override
