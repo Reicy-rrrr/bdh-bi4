@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -186,6 +188,9 @@ public class NifiController {
     	dto.setEmail("jianpeng@deloitte.com.cn");
     	dto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
     	dto.setSubject("aaaaaaaa");
+    	List cc = new ArrayList<>();
+    	cc.add("307643310@qq.com");
+    	dto.setCcList(cc);
         KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""), dto, "email");
         producter.sendEmail(message);
         return RetResponse.makeOKRsp("ok");
