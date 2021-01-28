@@ -4,7 +4,6 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.RetRequest;
-import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -99,7 +98,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         List<AnalyseCategoryDto> categoryDtoList = Lists.newArrayList();
         List<String> categoryIds = Lists.newArrayList();
         //查询文件夹
-        if (StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getUserFlag())) {
+        if (StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getSuperUserFlag())) {
             LambdaQueryWrapper<BiUiAnalyseCategory> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiUiAnalyseCategory::getType, request.getData().getType());
             if (StringUtils.isNotBlank(request.getData().getName())) {

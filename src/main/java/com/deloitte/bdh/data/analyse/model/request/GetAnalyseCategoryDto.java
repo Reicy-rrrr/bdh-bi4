@@ -14,7 +14,7 @@ public class GetAnalyseCategoryDto {
     @ApiModelProperty(value = "我的分析(CUSTOMER),图形指标库(COMPONENT)")
     private String type;
 
-    @ApiModelProperty(value = "super")
-    private String userFlag;
+    @ApiModelProperty(value = "1")
+    private String superUserFlag;
 
 }
