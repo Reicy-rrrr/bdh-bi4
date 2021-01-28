@@ -193,6 +193,8 @@ public class NifiController {
 			@RequestParam String userNameEn,
 			@RequestParam String contentCn,
 			@RequestParam String contentEn,
+			@RequestParam String tenantId,
+			@RequestParam String operator,
 			@RequestParam(required = false) MultipartFile attachmentFile) throws Exception {
     	KafkaEmailDto dto = new KafkaEmailDto();
     	dto.setEmail(email);
@@ -209,6 +211,8 @@ public class NifiController {
     	paramMap.put("contentEn", contentEn);
     	dto.setParamMap(paramMap);
         KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""), dto, "email");
+        message.setTenantId(tenantId);
+        message.setOperator(operator);
         producter.sendEmail(message);
         return RetResponse.makeOKRsp("ok");
     }
