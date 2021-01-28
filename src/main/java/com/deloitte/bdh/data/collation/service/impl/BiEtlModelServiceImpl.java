@@ -112,12 +112,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     }
 
     @Override
-    public List<BiEtlModel> getModelTree(String userFlag) {
+    public List<BiEtlModel> getModelTree(String superUserFlag) {
         List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
         LambdaQueryWrapper<BiEtlModel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiEtlModel::getParentCode, "0");
         lambdaQueryWrapper.eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey());
-        if (!StringUtils.equals(userFlag, YesOrNoEnum.YES.getKey())) {
+        if (!StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
             lambdaQueryWrapper.in(BiEtlModel::getCreateUser, userList);
         }
         lambdaQueryWrapper.orderByDesc(BiEtlModel::getCreateDate);

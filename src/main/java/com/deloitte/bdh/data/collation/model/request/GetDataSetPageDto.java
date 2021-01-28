@@ -19,6 +19,6 @@ public class GetDataSetPageDto extends PageDto {
     @NotNull(message = "文件夹Id 不能为空")
     private String fileId;
 
-    @ApiModelProperty(value = "superuser")
-    private String userFlag;
+    @ApiModelProperty(value = "1")
+    private String superUserFlag;
 }

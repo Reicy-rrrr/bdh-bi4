@@ -17,7 +17,7 @@ public class AnalyseNameDto implements Serializable {
     @ApiModelProperty(value = "name")
     String name;
 
-    @ApiModelProperty(value = "super")
-    String userFlag;
+    @ApiModelProperty(value = "1")
+    String superUserFlag;
 
 }

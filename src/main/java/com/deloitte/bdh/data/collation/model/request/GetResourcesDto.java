@@ -21,6 +21,6 @@ public class GetResourcesDto extends PageDto {
     @ApiModelProperty(value = "数据源状态", example = "0/1")
     private String effect;
 
-    @ApiModelProperty(value = "用户标签", example = "super")
-    private String userFlag;
+    @ApiModelProperty(value = "用户标签", example = "1")
+    private String superUserFlag;
 }

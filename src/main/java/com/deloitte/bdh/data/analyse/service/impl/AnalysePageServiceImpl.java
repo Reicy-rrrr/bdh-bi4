@@ -6,7 +6,6 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
-import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
@@ -93,7 +92,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             PageHelper.startPage(request.getPage(), request.getSize());
         }
         List<AnalysePageDto> pageList = Lists.newArrayList();
-        if (StringUtils.equals(request.getData().getUserFlag(), YesOrNoEnum.YES.getKey())) {
+        if (StringUtils.equals(request.getData().getSuperUserFlag(), YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
             if (StringUtils.isNotBlank(request.getData().getName())) {
@@ -396,7 +395,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             pageLambdaQueryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
         }
         pageLambdaQueryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.YES.getCode());
-        if (!StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getUserFlag())) {
+        if (!StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getSuperUserFlag())) {
             pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
         }
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
