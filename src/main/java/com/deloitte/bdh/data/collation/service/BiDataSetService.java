@@ -5,12 +5,9 @@ import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.common.base.Service;
-import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
-import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
-import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
-import com.deloitte.bdh.data.collation.model.request.GetDataSetInfoDto;
-import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
+import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
+import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 
 import java.util.List;
 
@@ -36,7 +33,7 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     void create(CreateDataSetDto dto);
 
-    List<BiDataSet> getTableList(String superUserFlag);
+    List<DataSetTableInfo> getTableList(String superUserFlag);
 
     List<TableColumn> getColumns(String code) throws Exception;
 

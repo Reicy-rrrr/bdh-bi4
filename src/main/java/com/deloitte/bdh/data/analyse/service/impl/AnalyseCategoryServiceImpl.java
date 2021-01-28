@@ -144,19 +144,20 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         userResourceService.setPagePermission(pageList);
 
         //组装category id和page的map结构，方便递归取数据
-        Map<String, List<AnalysePageDto>> pageDtoMapTmp = new LinkedHashMap<>();
-        for (AnalysePageDto page : pageList) {
-            List<AnalysePageDto> pageDtoList;
-            if (pageDtoMapTmp.containsKey(page.getParentId())) {
-                pageDtoList = pageDtoMapTmp.get(page.getParentId());
-            } else {
-                pageDtoList = Lists.newArrayList();
-            }
-            AnalysePageDto pageDto = new AnalysePageDto();
-            BeanUtils.copyProperties(page, pageDto);
-            pageDtoList.add(pageDto);
-            pageDtoMapTmp.put(page.getParentId(), pageDtoList);
-        }
+        Map<String, List<AnalysePageDto>> pageDtoMapTmp = pageList.stream().collect(Collectors.groupingBy(AnalysePageDto::getParentId));
+//        Map<String, List<AnalysePageDto>> pageDtoMapTmp = new LinkedHashMap<>();
+//        for (AnalysePageDto page : pageList) {
+//            List<AnalysePageDto> pageDtoList;
+//            if (pageDtoMapTmp.containsKey(page.getParentId())) {
+//                pageDtoList = pageDtoMapTmp.get(page.getParentId());
+//            } else {
+//                pageDtoList = Lists.newArrayList();
+//            }
+//            AnalysePageDto pageDto = new AnalysePageDto();
+//            BeanUtils.copyProperties(page, pageDto);
+//            pageDtoList.add(pageDto);
+//            pageDtoMapTmp.put(page.getParentId(), pageDtoList);
+//        }
 
         //整理数据
         List<AnalyseCategoryTree> treeDataModels = Lists.newArrayList();

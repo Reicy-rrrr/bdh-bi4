@@ -1,14 +1,26 @@
 package com.deloitte.bdh.data.collation.model.request;
 
+import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DataSetTableInfo {
+
+    /** title */
+    @ApiModelProperty(value = "id", example = "tb_order", required = true)
+    private String title;
+
+    /** value */
+    @ApiModelProperty(value = "id", example = "tb_order", required = true)
+    private String value;
+
     /** id */
     @ApiModelProperty(value = "id", example = "tb_order", required = true)
     private String id;
@@ -24,4 +36,7 @@ public class DataSetTableInfo {
     /** 表描述 */
     @ApiModelProperty(value = "表描述", example = "订单表", required = true)
     private String toTableDesc;
+
+    @ApiModelProperty(value = "下级")
+    private List<DataSetTableInfo> children;
 }
