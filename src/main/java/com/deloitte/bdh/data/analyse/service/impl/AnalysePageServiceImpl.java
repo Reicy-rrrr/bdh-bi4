@@ -405,16 +405,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     private void checkBiUiAnalysePageByName(String code, String name, String tenantId, String currentId) {
-        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
-        query.eq(BiUiAnalysePage::getTenantId, tenantId);
-        query.eq(BiUiAnalysePage::getName, name);
-        if (currentId != null) {
-            query.ne(BiUiAnalysePage::getId, currentId);
-        }
-        List<BiUiAnalysePage> nameList = list(query);
-        if (CollectionUtils.isNotEmpty(nameList)) {
-            throw new BizException("已存在相同报表名称");
-        }
+//        query.eq(BiUiAnalysePage::getTenantId, tenantId);
+//        query.eq(BiUiAnalysePage::getName, name);
+//        if (currentId != null) {
+//            query.ne(BiUiAnalysePage::getId, currentId);
+//        }
+//        List<BiUiAnalysePage> nameList = list(query);
+//        if (CollectionUtils.isNotEmpty(nameList)) {
+//            throw new BizException("已存在相同报表名称");
+//        }
         if (StringUtils.isNotBlank(code)) {
             //字母和数字
             String regEx = "[A-Z,a-z,0-9,-]*";
@@ -423,7 +422,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 throw new BizException("编码只能由字母和数字组成");
             }
         }
-        query.clear();
+        LambdaQueryWrapper<BiUiAnalysePage> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePage::getTenantId, tenantId);
         query.eq(BiUiAnalysePage::getCode, code);
         if (currentId != null) {
