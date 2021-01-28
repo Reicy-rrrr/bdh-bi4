@@ -6,6 +6,8 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
+import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.model.request.KafkaEmailDto;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
@@ -16,7 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 @RestController
@@ -172,6 +178,27 @@ public class NifiController {
     public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
         KafkaMessage message = new KafkaMessage(null, request, request.getData());
         producter.send(message);
+        return RetResponse.makeOKRsp("ok");
+    }
+    
+    
+    @ApiOperation(value = "email", notes = "email")
+    @PostMapping("/email")
+    public RetResult<String> email(@RequestBody @Validated RetRequest<String> request) throws Exception {
+    	KafkaEmailDto dto = new KafkaEmailDto();
+    	dto.setEmail("jianpeng@deloitte.com.cn");
+    	dto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+    	dto.setSubject("aaaaaaaa");
+    	List cc = new ArrayList<>();
+    	cc.add("307643310@qq.com");
+    	dto.setCcList(cc);
+    	HashMap<String , Object> paramMap = new HashMap<>();
+    	paramMap.put("userName", "peng");
+    	paramMap.put("imgUrl", "https://bidev.tax.deloitte.com.cn/analyseManage/public/subscribe/pZH7s96GFjRoFTljWYUX9fAoo00oljkfOQZqlAeva7unoiUIu3O7o000obIztxuzktRl9IkzLGvu3i601XBIjloo00onr2EpJQO0O0OO0O0O");
+    	paramMap.put("accessUrl", "https://bidev.tax.deloitte.com.cn/analyseManage/share/publicReport/9q9tZBWtPYDjM8d7s77V1VjtVBQpO6xo000o9Hu8l0CgOtbV45Q419HfQ52ePkWLeHDqWGbVNBo15EjeDSBECguOhwO0O0OO0O0O");
+    	dto.setParamMap(paramMap);
+        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""), dto, "email");
+        producter.sendEmail(message);
         return RetResponse.makeOKRsp("ok");
     }
 
