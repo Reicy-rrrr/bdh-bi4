@@ -23,7 +23,7 @@ public class SelectDataSetDto implements Serializable {
 
     private String tenantId;
 
-    private String parentId;
+    private List<String> parentIdList;
 
     private String isFile;
 

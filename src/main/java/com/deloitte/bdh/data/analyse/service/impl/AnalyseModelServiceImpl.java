@@ -26,6 +26,7 @@ import com.deloitte.bdh.data.analyse.service.*;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
+import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -65,20 +66,8 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     private AnalysePageService pageService;
 
     @Override
-    public List<DataSetTableInfo> getAllTable(String userFlag) {
-        List<DataSetTableInfo> tableInfos = Lists.newArrayList();
-        List<BiDataSet> dataSetList = dataSetService.getTableList(userFlag);
-        if (CollectionUtils.isNotEmpty(dataSetList)) {
-            for (BiDataSet dataSet : dataSetList) {
-                DataSetTableInfo tableInfo = new DataSetTableInfo();
-                tableInfo.setId(dataSet.getId());
-                tableInfo.setCode(dataSet.getCode());
-                tableInfo.setToTableName(dataSet.getTableName());
-                tableInfo.setToTableDesc(dataSet.getTableDesc());
-                tableInfos.add(tableInfo);
-            }
-        }
-        return tableInfos;
+    public List<DataSetTableInfo> getAllTable(String superUserFlag) {
+        return dataSetService.getTableList(superUserFlag);
     }
 
     @Override

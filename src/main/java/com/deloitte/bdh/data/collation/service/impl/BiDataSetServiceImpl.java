@@ -1,11 +1,13 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
-import com.deloitte.bdh.common.constant.CommonConstant;
-import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
-
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.TreeChildrenTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
@@ -15,7 +17,8 @@ import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
-import com.deloitte.bdh.data.collation.model.request.SelectDataSetDto;
+import com.deloitte.bdh.data.collation.model.request.*;
+import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.google.common.collect.Lists;
@@ -41,11 +44,6 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
-import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
-import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
-import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
-import com.deloitte.bdh.data.collation.model.request.GetDataSetInfoDto;
-import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.service.BiComponentParamsService;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
@@ -118,10 +116,10 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<DataSetResp> getFiles(String userFlag) {
+    public List<DataSetResp> getFiles(String superUserFlag) {
         List<BiDataSet> setList;
         List<DataSetResp> respList = Lists.newArrayList();
-        if (StringUtils.equals(userFlag, YesOrNoEnum.YES.getKey())) {
+        if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
             setList = setMapper.selectList(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getParentId, "0")
                     .eq(BiDataSet::getIsFile, YesOrNoEnum.YES.getKey())
@@ -133,7 +131,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET_CATEGORY.getCode());
             selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
             selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
-            selectDataSetDto.setParentId("0");
+            selectDataSetDto.setParentIdList(Lists.newArrayList("0"));
             selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
             List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
             selectDataSetDto.setCreateUserList(userList);
@@ -146,17 +144,26 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 BeanUtils.copyProperties(dataSet, resp);
                 respList.add(resp);
             }
-            userResourceService.setDataSetCategoryPermission(respList);
+            userResourceService.setDataSetPermission(respList, ResourcesTypeEnum.DATA_SET_CATEGORY);
         }
         return respList;
     }
 
     @Override
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
+        List<String> parentIdList = Lists.newArrayList(dto.getFileId());
+        List<DataSetResp> result = getDataSet(parentIdList, dto.getSuperUserFlag());
+        userResourceService.setDataSetPermission(result, ResourcesTypeEnum.DATA_SET);
+        PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
+        PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
+        return pageResult;
+    }
+
+    public List<DataSetResp> getDataSet(List<String> parentIdList, String superUserFlag) {
         List<BiDataSet> dataSetList;
-        if (StringUtils.equals(dto.getUserFlag(), YesOrNoEnum.YES.getKey())) {
+        if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(BiDataSet::getParentId, dto.getFileId());
+            queryWrapper.in(BiDataSet::getParentId, parentIdList);
             queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
             queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
             dataSetList = list(queryWrapper);
@@ -166,7 +173,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
             selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
             selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
-            selectDataSetDto.setParentId(dto.getFileId());
+            selectDataSetDto.setParentIdList(parentIdList);
             selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
             dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
         }
@@ -197,9 +204,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 }
             }
         }
-        PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
-        PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
-        return pageResult;
+        return result;
     }
 
     @Override
@@ -298,24 +303,60 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
-    public List<BiDataSet> getTableList(String userFlag) {
-        // 查询所有数据集
-        List<BiDataSet> dataSetList;
-        if (StringUtils.equals(userFlag, YesOrNoEnum.YES.getKey())) {
-            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
-            queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
-            dataSetList = list(queryWrapper);
-        } else {
-            SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
-            selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
-            selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
-            selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
-            selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
-            selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
-            dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
+    public List<DataSetTableInfo> getTableList(String superUserFlag) {
+
+        List<DataSetResp> fileList = getFiles(superUserFlag);
+        List<String> parentIdList = Lists.newArrayList();
+        fileList.forEach(file -> parentIdList.add(file.getId()));
+        List<DataSetResp> dataSetRespList = getDataSet(parentIdList, superUserFlag);
+        Map<String, List<DataSetResp>> parentIdMap = dataSetRespList.stream().collect(Collectors.groupingBy(DataSetResp::getParentId));
+
+        //整理数据
+        List<DataSetTableInfo> dataSetTree = Lists.newArrayList();
+        for (DataSetResp file : fileList) {
+            DataSetTableInfo fileTree = new DataSetTableInfo();
+            fileTree.setId(file.getId());
+            fileTree.setCode(file.getCode());
+            fileTree.setToTableName(file.getTableName());
+            fileTree.setToTableDesc(file.getTableDesc());
+            fileTree.setTitle(file.getTableDesc());
+            fileTree.setValue(file.getCode());
+            List<DataSetResp> dataSetList = parentIdMap.get(file.getId());
+            List<DataSetTableInfo> child = Lists.newArrayList();
+            if (CollectionUtils.isNotEmpty(dataSetList)) {
+                for (DataSetResp dataSet : dataSetList) {
+                    DataSetTableInfo tree = new DataSetTableInfo();
+                    tree.setId(dataSet.getId());
+                    tree.setCode(dataSet.getCode());
+                    tree.setToTableName(dataSet.getTableName());
+                    tree.setToTableDesc(dataSet.getTableDesc());
+                    tree.setTitle(dataSet.getTableDesc());
+                    tree.setValue(dataSet.getCode());
+                    child.add(tree);
+                }
+                fileTree.setChildren(child);
+            }
+            dataSetTree.add(fileTree);
         }
-        return dataSetList;
+        return dataSetTree;
+
+//        // 查询所有数据集
+//        List<BiDataSet> dataSetList;
+//        if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
+//            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+//            queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
+//            queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
+//            dataSetList = list(queryWrapper);
+//        } else {
+//            SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+//            selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+//            selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+//            selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+//            selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+//            selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
+//            dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
+//        }
+//        return dataSetList;
     }
 
     @Override
