@@ -133,8 +133,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
             selectDataSetDto.setParentIdList(Lists.newArrayList("0"));
             selectDataSetDto.setIsFile(YesOrNoEnum.YES.getKey());
-            List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
-            selectDataSetDto.setCreateUserList(userList);
+//            List<String> userList = Lists.newArrayList(ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+//            selectDataSetDto.setCreateUserList(userList);
             setList = setMapper.selectDataSetCategory(selectDataSetDto);
         }
 
