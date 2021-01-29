@@ -319,6 +319,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             fileTree.setToTableName(file.getTableName());
             fileTree.setToTableDesc(file.getTableDesc());
             fileTree.setTitle(file.getTableDesc());
+            fileTree.setValue(file.getCode());
             List<DataSetResp> dataSetList = parentIdMap.get(file.getId());
             List<DataSetTableInfo> child = Lists.newArrayList();
             if (CollectionUtils.isNotEmpty(dataSetList)) {
