@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
 import com.deloitte.bdh.common.base.Service;
+import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
 import com.deloitte.bdh.data.analyse.model.request.PermissionItemDto;
@@ -31,5 +32,5 @@ public interface AnalyseUserResourceService extends Service<BiUiAnalyseUserResou
 
     void setPagePermission(List<AnalysePageDto> pageDtoList);
 
-    void setDataSetCategoryPermission(List<DataSetResp> dataSetList);
+    void setDataSetPermission(List<DataSetResp> dataSetList, ResourcesTypeEnum resourcesTypeEnum);
 }

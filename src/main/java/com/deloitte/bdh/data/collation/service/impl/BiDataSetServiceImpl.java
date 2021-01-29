@@ -144,7 +144,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 BeanUtils.copyProperties(dataSet, resp);
                 respList.add(resp);
             }
-            userResourceService.setDataSetCategoryPermission(respList);
+            userResourceService.setDataSetPermission(respList, ResourcesTypeEnum.DATA_SET_CATEGORY);
         }
         return respList;
     }
@@ -153,6 +153,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
         List<String> parentIdList = Lists.newArrayList(dto.getFileId());
         List<DataSetResp> result = getDataSet(parentIdList, dto.getSuperUserFlag());
+        userResourceService.setDataSetPermission(result, ResourcesTypeEnum.DATA_SET);
         PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
         PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
         return pageResult;

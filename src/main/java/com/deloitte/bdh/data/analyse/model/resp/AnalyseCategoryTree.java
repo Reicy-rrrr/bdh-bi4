@@ -57,7 +57,7 @@ public class AnalyseCategoryTree implements Serializable {
     private String icon;
 
     @ApiModelProperty(value = "permitted Action")
-    private String permittedAction;
+    private List<String> permittedAction;
 
     @ApiModelProperty(value = "configId")
     private String configId;
