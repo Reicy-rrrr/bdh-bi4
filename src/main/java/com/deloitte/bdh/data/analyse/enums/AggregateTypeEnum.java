@@ -3,6 +3,12 @@ package com.deloitte.bdh.data.analyse.enums;
 
 
 public enum AggregateTypeEnum {
+    NONE("NONE", "求和") {
+        @Override
+        public String expression(String str) {
+            return str;
+        }
+    },
     SUM("SUM", "求和"),
     AVG("AVG", "均值"),
     MAX("MAX", "最大"),

@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
+import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -36,7 +37,9 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
             if (StringUtils.equals(tableAggregate, "true")) {
                 if (CollectionUtils.isNotEmpty(request.getDataConfig().getDataModel().getX())) {
                     for (DataModelField field : request.getDataConfig().getDataModel().getX()) {
-                        field.setQuota(DataModelTypeEnum.WD.getCode());
+                        if (StringUtils.equals(field.getQuota(), DataModelTypeEnum.DL.getCode())) {
+                            field.setAggregateType(AggregateTypeEnum.NONE.getKey());
+                        }
                     }
                 }
             }
