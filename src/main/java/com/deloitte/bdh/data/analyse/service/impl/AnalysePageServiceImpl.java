@@ -167,6 +167,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
+    @Transactional
     public AnalysePageDto copyDeloittePage(CopyDeloittePageDto request) {
         checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
@@ -205,8 +206,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             newDataSet.setIsFile(YesOrNoEnum.NO.getKey());
             newDataSet.setTenantId(ThreadLocalHolder.getTenantId());
             dataSetService.save(newDataSet);
-            String sql = "CREATE TABLE " + tableName + " LIKE " + dataSet.getTableName() + ";";
+            String existSql = "select * from information_schema.TABLES where TABLE_NAME = '" + dataSet.getTableName() + "';";
+            if (CollectionUtils.isEmpty(demoMapper.selectDemoList(existSql))) {
+                throw new BizException("只能复制本地库报表");
+            }
+            String sql = "create table " + tableName + " like " + dataSet.getTableName() + ";";
             demoMapper.selectDemoList(sql);
+            String insertSql = "insert into " + tableName + " select * from " + dataSet.getTableName() + ";";
+            demoMapper.selectDemoList(insertSql);
             codeMap.put(code, newCode);
         }
 
