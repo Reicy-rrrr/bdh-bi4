@@ -14,7 +14,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2021-01-28
+ * @since 2021-02-01
  */
 @TableName("BI_REPORT_OUT")
 public class BiReportOut implements Serializable {
@@ -23,6 +23,11 @@ public class BiReportOut implements Serializable {
 
     @TableId(value = "ID", type = IdType.AUTO)
     private String id;
+
+    /**
+     * 类型
+     */
+    private String type;
 
     /**
      * 期间
@@ -96,6 +101,13 @@ public class BiReportOut implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
     public String getPeriod() {
         return period;
@@ -200,6 +212,7 @@ public class BiReportOut implements Serializable {
     public String toString() {
         return "BiReportOut{" +
         "id=" + id +
+        ", type=" + type +
         ", period=" + period +
         ", periodDate=" + periodDate +
         ", reportName=" + reportName +

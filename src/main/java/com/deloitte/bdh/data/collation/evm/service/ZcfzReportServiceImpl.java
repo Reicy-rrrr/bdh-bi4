@@ -12,12 +12,9 @@ import com.deloitte.bdh.data.collation.model.BiReportOut;
 import com.deloitte.bdh.data.collation.service.BiReportOutService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +41,15 @@ public class ZcfzReportServiceImpl extends AbstractReport {
             List<BiReportOut> all = Lists.newArrayList();
             Map<String, BiReportOut> last = Maps.newHashMap();
             for (String period : periods) {
-                String periodDate = period.length() == 4 ? "年报" : "月报";
+                String type = period.length() == 4 ? "年报" : "月报";
+                String periodTemp = period.length() == 4 ? period : period.substring(0, period.lastIndexOf("-"));
+                String periodDate = period.length() == 4 ? period + "-12-31" : period;
                 for (Rule rule : getType().relySheets().right) {
                     BiReportOut lastReport = last.get(rule.getTargetCode());
                     String ytyValue = null == lastReport ? null : lastReport.getIndexValue();
                     BiReportOut out = new BiReportOut();
-                    out.setPeriod(period);
+                    out.setType(type);
+                    out.setPeriod(periodTemp);
                     out.setPeriodDate(periodDate);
                     out.setReportName(getType().getValue());
                     out.setIndexCode(rule.getTargetCode());

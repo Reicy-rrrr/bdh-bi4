@@ -423,6 +423,24 @@ public class DateUtils {
         return add(date, 5, amount);
     }
 
+    public static String stampToDate(String time) {
+        SimpleDateFormat sdf = new SimpleDateFormat(STANDARD_DATE_TIME);
+        String time_Date = sdf.format(new Date(Long.parseLong(time)));
+        return time_Date;
+    }
+
+    public static String stampToDateOfYear(String time) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+        String time_Date = sdf.format(new Date(Long.parseLong(time)));
+        return time_Date;
+    }
+
+    public static String stampToDateOfYear(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+        String time_Date = sdf.format(date);
+        return time_Date;
+    }
+
     private static Date add(Date date, int calendarField, int amount) {
         if (date == null) {
             throw new IllegalArgumentException("The date must not be null");
@@ -434,5 +452,8 @@ public class DateUtils {
         }
     }
 
-
+    public static void main(String[] args) throws ParseException {
+        String period="2020-01-1";
+        System.out.println(period.substring(0, period.lastIndexOf("-") ));
+    }
 }

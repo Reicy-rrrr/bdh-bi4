@@ -15,6 +15,7 @@ import com.deloitte.bdh.data.collation.model.BiEvmFile;
 import com.deloitte.bdh.data.collation.dao.bi.BiEvmFileMapper;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
 import com.deloitte.bdh.data.collation.service.BiEvmFileService;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.data.collation.service.Producter;
@@ -44,6 +45,8 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
     private AliyunOssUtil aliyunOss;
     @Autowired
     private Producter producter;
+    @Autowired
+    private BiEvmFileConsumerService consumerService;
 
     @Override
     public void uploadEvm(BiEtlDbFileUploadDto fileUploadDto) {
@@ -72,16 +75,20 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         biEvmFile.setFileType(file.getContentType());
         biEvmFile.setFilePath(filePath);
         biEvmFile.setFileSize(String.valueOf(file.getSize()));
-        //todo 获取sheet nums
-        biEvmFile.setToProcessNum("");
+        biEvmFile.setToProcessNum("1");
         biEvmFile.setProcessedNum("0");
         biEvmFile.setCreateDate(LocalDateTime.now());
         biEvmFile.setCreateUser(operator);
         biEvmFile.setTenantId(tenantId);
+        biEvmFile.setExpireDate(LocalDateTime.now());
         fileMapper.insert(biEvmFile);
 
+        biEvmFile.setCreateDate(null);
+        biEvmFile.setExpireDate(null);
         KafkaMessage<BiEvmFile> message = new KafkaMessage<>(UUID.randomUUID().toString().replaceAll("-", ""), biEvmFile, KafkaTypeEnum.EVM_FILE.getType());
-        producter.send(message);
+        consumerService.consumer(message);
+//        producter.send(message);
+
 
     }
 }

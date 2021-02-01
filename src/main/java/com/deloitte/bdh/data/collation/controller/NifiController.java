@@ -8,6 +8,7 @@ import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.model.request.KafkaEmailDto;
+import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
 import com.deloitte.bdh.data.collation.integration.NifiProcessService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
@@ -177,8 +178,7 @@ public class NifiController {
     @ApiOperation(value = "getTime", notes = "getTime")
     @PostMapping("/getTime")
     public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        KafkaMessage message = new KafkaMessage(null, request, request.getData());
-        producter.send(message);
+        evmService.choose("ZCXLZTSPB");
         return RetResponse.makeOKRsp("ok");
     }
     
@@ -221,4 +221,6 @@ public class NifiController {
     private BiProperties biProperties;
     @Autowired
     private Producter producter;
+    @Autowired
+    private EvmServiceImpl evmService;
 }
