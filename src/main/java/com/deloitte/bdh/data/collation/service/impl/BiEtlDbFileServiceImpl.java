@@ -11,16 +11,12 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbFileMapper;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
 import com.deloitte.bdh.data.collation.model.FilePreReadResult;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
 import com.deloitte.bdh.data.collation.model.resp.BiEtlDbFileUploadResp;
-import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.BiEtlDbFileService;
 import com.deloitte.bdh.data.collation.service.FileReadService;
-import com.deloitte.bdh.data.collation.service.Producter;
-import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -33,8 +29,6 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * <p>
@@ -55,8 +49,6 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
     private FileReadService fileReadService;
     @Autowired
     private AliyunOssUtil aliyunOss;
-    @Autowired
-    private Producter producter;
 
 
     @Override
@@ -148,32 +140,6 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
         });
         biEtlDbFileMapper.delete(queryWrapper);
         return Boolean.TRUE;
-    }
-
-    @Override
-    public void uploadEvm(BiEtlDbFileUploadDto fileUploadDto) {
-        MultipartFile file = fileUploadDto.getFile();
-        String fileName = file.getOriginalFilename();
-        // 文件使用uuid重新命名
-        String suffix = fileName.substring(fileName.lastIndexOf("."));
-        String finalName = "EVM_" + UUIDUtil.generate() + suffix;
-
-        String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/attachment/";
-        String storedFileKey = null;
-        try {
-            storedFileKey = aliyunOss.uploadFile(file.getInputStream(), filePath, finalName, file.getContentType());
-        } catch (IOException e) {
-            throw new BizException("File upload error: 上传文件发生错误，请检查文件有效性！");
-        }
-        // 发送消息去处理文件入库
-        Map<String, String> request = Maps.newHashMap();
-        request.put("fileName", finalName);
-        request.put("filePath", filePath);
-        request.put("storedFileKey", storedFileKey);
-
-        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-", ""), request, KafkaTypeEnum.EVM_FILE.getType());
-        producter.send(message);
-
     }
 
 }

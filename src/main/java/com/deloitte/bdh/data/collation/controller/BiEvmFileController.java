@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
-import com.deloitte.bdh.data.collation.service.BiEtlDbFileService;
+import com.deloitte.bdh.data.collation.service.BiEvmFileService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -15,14 +15,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * <p>
+ * 前端控制器
+ * </p>
+ *
+ * @author lw
+ * @since 2021-02-01
+ */
 @Api(tags = "EVM-处理文件")
 @RestController
-@RequestMapping("/evm/file")
+@RequestMapping("/biEvmFile")
 public class BiEvmFileController {
     @Autowired
-    private BiEtlDbFileService biEtlDbFileService;
+    private BiEvmFileService evmFileService;
+
 
     @ApiOperation(value = "上传文件", notes = "EVM上传文件")
     @PostMapping("/upload")
@@ -48,7 +58,7 @@ public class BiEvmFileController {
         }
         // 设置全局用户
         ThreadLocalHolder.set("operator", operator);
-        biEtlDbFileService.uploadEvm(fileUploadDto);
+        evmFileService.uploadEvm(fileUploadDto);
         return RetResponse.makeOKRsp();
     }
 
