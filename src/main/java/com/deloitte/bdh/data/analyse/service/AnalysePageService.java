@@ -40,7 +40,7 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      * @param request
      * @return
      */
-    AnalysePageDto copyAnalysePage(CopyAnalysePageDto request);
+    AnalysePageDto copyDeloittePage(CopyDeloittePageDto request);
 
     /**
      * 批量删除页面

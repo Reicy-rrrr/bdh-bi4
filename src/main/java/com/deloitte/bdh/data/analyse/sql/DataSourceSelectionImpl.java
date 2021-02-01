@@ -43,6 +43,7 @@ public class DataSourceSelectionImpl implements DataSourceSelection {
         switch (typeEnum) {
             case DEFAULT:
             case MODEL:
+            case COPY:
                 //本地
                 bean = SpringUtil.getBean(ANALYSE_PREFIX + "Local", AnalyseSql.class);
                 break;

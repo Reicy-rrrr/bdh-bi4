@@ -1,5 +1,8 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -9,12 +12,10 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
-import com.deloitte.bdh.common.util.AesUtil;
-import com.deloitte.bdh.common.util.Md5Util;
-import com.deloitte.bdh.common.util.StringUtil;
-import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
+import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
@@ -27,7 +28,10 @@ import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.*;
+import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
+import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -83,6 +87,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Resource
     private AnalysePageHomepageService homepageService;
+
+    @Resource
+    private BiDataSetService dataSetService;
+
+    @Resource
+    private BiUiDemoMapper demoMapper;
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
@@ -157,29 +167,85 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
-    public AnalysePageDto copyAnalysePage(CopyAnalysePageDto request) {
+    public AnalysePageDto copyDeloittePage(CopyDeloittePageDto request) {
         checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
         if (null == fromPage) {
             throw new BizException("源报表不存在");
         }
+        //复制数据集
+        BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getPublishId());
+        JSONObject content = (JSONObject) JSONObject.parse(fromPageConfig.getContent());
+        JSONArray childrenArr = content.getJSONArray("children");
+        if (null == childrenArr) {
+            throw new BizException("源报表未配置图表");
+        }
+        List<String> originCodeList = Lists.newArrayList();
+        for (int i = 0; i < childrenArr.size(); i++) {
+            JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+            if (data.size() != 0) {
+                originCodeList.add(data.getString("tableCode"));
+            }
+        }
+        Map<String, String> codeMap = Maps.newHashMap();
+        for (String code : originCodeList) {
+            LambdaQueryWrapper<BiDataSet> dataSetQueryWrapper = new LambdaQueryWrapper<>();
+            dataSetQueryWrapper.eq(BiDataSet::getCode, code);
+            BiDataSet dataSet = dataSetService.getOne(dataSetQueryWrapper);
+            BiDataSet newDataSet = new BiDataSet();
+            String newCode = GenerateCodeUtil.generate();
+            String tableName = "COPY_" + newCode;
+            newDataSet.setCode(newCode);
+            newDataSet.setType(DataSetTypeEnum.COPY.getKey());
+            newDataSet.setTableName(tableName);
+            newDataSet.setTableDesc(dataSet.getTableDesc());
+            newDataSet.setRefModelCode(dataSet.getRefModelCode());
+            newDataSet.setParentId(request.getDataSetCategoryId());
+            newDataSet.setComments(request.getDataSetName());
+            newDataSet.setIsFile(YesOrNoEnum.NO.getKey());
+            newDataSet.setTenantId(ThreadLocalHolder.getTenantId());
+            dataSetService.save(newDataSet);
+            String sql = "CREATE TABLE " + tableName + " LIKE " + dataSet.getTableName() + ";";
+            demoMapper.selectDemoList(sql);
+            codeMap.put(code, newCode);
+        }
+
         //复制page
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
-        BeanUtils.copyProperties(request, insertPage);
-        insertPage.setIsEdit(YnTypeEnum.YES.getCode());
+        insertPage.setType("dashboard");
+        insertPage.setName(request.getName());
+        insertPage.setCode(request.getCode());
+        insertPage.setParentId(request.getCategoryId());
+        insertPage.setIsPublic(YesOrNoEnum.YES.getKey());
+        insertPage.setIsEdit(YnTypeEnum.NO.getCode());
+        insertPage.setTenantId(ThreadLocalHolder.getTenantId());
+        insertPage.setDeloitteFlag(YesOrNoEnum.NO.getKey());
+        insertPage.setOriginPageId(null);
         this.save(insertPage);
 
-        //复制page config
-        BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getEditId());
-        if (null != fromPageConfig) {
-            BiUiAnalysePageConfig insertConfig = new BiUiAnalysePageConfig();
-            insertConfig.setPageId(insertPage.getId());
-            insertConfig.setContent(fromPageConfig.getContent());
-            insertConfig.setTenantId(ThreadLocalHolder.getTenantId());
-            configService.save(insertConfig);
-            insertPage.setEditId(insertConfig.getId());
-            this.updateById(insertPage);
+        //替换content
+        content.put("page", insertPage);
+        for (int i = 0; i < childrenArr.size(); i++) {
+            JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+            if (data.size() != 0) {
+                data.put("tableCode", codeMap.get(data.getString("tableCode")));
+            }
         }
+
+        //复制config
+        BiUiAnalysePageConfig editConfig = new BiUiAnalysePageConfig();
+        editConfig.setPageId(insertPage.getId());
+        editConfig.setContent(content.toJSONString());
+        editConfig.setTenantId(ThreadLocalHolder.getTenantId());
+        configService.save(editConfig);
+        BiUiAnalysePageConfig publishConfig = new BiUiAnalysePageConfig();
+        publishConfig.setPageId(insertPage.getId());
+        publishConfig.setContent(content.toJSONString());
+        publishConfig.setTenantId(ThreadLocalHolder.getTenantId());
+        configService.save(publishConfig);
+        insertPage.setEditId(editConfig.getId());
+        insertPage.setPublishId(publishConfig.getId());
+        this.updateById(insertPage);
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(insertPage, dto);
         return dto;
