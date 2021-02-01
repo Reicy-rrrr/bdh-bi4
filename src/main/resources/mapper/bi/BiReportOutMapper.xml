@@ -5,6 +5,7 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.deloitte.bdh.data.collation.model.BiReportOut">
         <id column="ID" property="id" />
+        <result column="type" property="type" />
         <result column="PERIOD" property="period" />
         <result column="PERIOD_DATE" property="periodDate" />
         <result column="REPORT_NAME" property="reportName" />

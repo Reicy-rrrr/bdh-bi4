@@ -34,19 +34,19 @@ public class RuleParseUtil {
             }
             if ("A".equals(own[0])) {
                 tempValue = sheet.xCellValueAfter(var, text[1]);
-                if(null ==tempValue){
+                if (null == tempValue) {
                     tempValue = sheet.yCellValue(var, text[1]);
                 }
             }
             if ("P".equals(own[0])) {
                 tempValue = sheet.xCellValuePre(var, text[1]);
-                if(null ==tempValue){
+                if (null == tempValue) {
                     tempValue = sheet.yCellValue(var, text[1]);
                 }
             }
         }
         ruleExpression = ruleExpression.replace(singText, tempValue);
-        return ruleExpression.replace("{", "").replace("}", "");
+        return calculate(ruleExpression);
     }
 
     /**
@@ -61,15 +61,31 @@ public class RuleParseUtil {
         for (Map.Entry<String, String> entry : textmate.entrySet()) {
             ruleExpression = ruleExpression.replace(entry.getKey(), entry.getValue());
         }
+        return calculate(ruleExpression);
+    }
+
+    private static String calculate(String ruleExpression) {
         ruleExpression = ruleExpression.replace("{", "").replace("}", "");
+        ruleExpression = ruleExpression.replace(" ", "");
         try {
             String result = String.valueOf(ExpressionHandler.scriptEngine.eval(ruleExpression));
-            return "Infinity".equals(result) ? "0" : new BigDecimal(result).setScale(5, BigDecimal.ROUND_HALF_UP).toString();
+            if (isZero(result)) {
+                result = "0";
+            } else {
+                result = new BigDecimal(result).setScale(5, BigDecimal.ROUND_HALF_UP).toString();
+            }
+            return result;
         } catch (ScriptException e) {
             throw new RuntimeException(e);
         }
     }
 
+    private static boolean isZero(String result) {
+        if ("0".equals(result) || "Infinity".equals(result) || "NaN".equals(result)) {
+            return true;
+        }
+        return false;
+    }
 
     private static List<String> getParseText(String str) {
         List<String> result = Lists.newLinkedList();

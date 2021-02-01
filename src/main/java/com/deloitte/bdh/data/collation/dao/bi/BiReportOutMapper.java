@@ -9,7 +9,7 @@ import com.deloitte.bdh.common.base.Mapper;
  * </p>
  *
  * @author lw
- * @since 2021-01-28
+ * @since 2021-02-01
  */
 public interface BiReportOutMapper extends Mapper<BiReportOut> {
 
