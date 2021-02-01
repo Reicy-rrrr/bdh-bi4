@@ -5,12 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import com.deloitte.bdh.common.exception.BizException;
 
 public enum KafkaTypeEnum {
-	
-	Plan_start("Plan_start", "Plan_start", "启动计划修改成执行"),
-	Plan_check_end("Plan_check_end", "Plan_check_end", "单条更新数据，多条检查是否全部完成"),
-	Plan_checkMany_end("Plan_checkMany_end", "Plan_checkMany_end", "多条数据处理结果完成"),
-	Email("Email","Email","发送邮件")
-    ;
+
+    Plan_start("Plan_start", "Plan_start", "启动计划修改成执行"),
+    Plan_check_end("Plan_check_end", "Plan_check_end", "单条更新数据，多条检查是否全部完成"),
+    Plan_checkMany_end("Plan_checkMany_end", "Plan_checkMany_end", "多条数据处理结果完成"),
+    Email("Email", "Email", "发送邮件"),
+    EVM_FILE("EVM_FILE", "EVM_FILE", "EVM文件解析");
 
     private String type;
 
@@ -23,7 +23,7 @@ public enum KafkaTypeEnum {
         this.value = value;
         this.desc = desc;
     }
-    
+
     /**
      * 根据文件type获取描述
      *
@@ -39,7 +39,7 @@ public enum KafkaTypeEnum {
         }
         return "";
     }
-    
+
     public static String getValue(String type) {
         FileTypeEnum[] enums = FileTypeEnum.values();
         for (int i = 0; i < enums.length; i++) {
@@ -52,6 +52,7 @@ public enum KafkaTypeEnum {
 
     /**
      * 根据类型获取枚举类型
+     *
      * @param type
      * @return
      */

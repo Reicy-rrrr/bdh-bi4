@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -32,12 +33,15 @@ import lombok.extern.slf4j.Slf4j;
 public class BiConsumer implements ApplicationRunner {
     @Resource
     private BiProperties properties;
-    
+
     @Autowired
     private KafkaBiPlanService kafkaBiPlanService;
-    
+
     @Resource
     private EmailService emailService;
+
+    @Resource
+    private BiEvmFileConsumerService evmFileConsumerService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -48,48 +52,51 @@ public class BiConsumer implements ApplicationRunner {
                 //必须在下次Poll之前消费完这些数据, 且总耗时不得超过SESSION_TIMEOUT_MS_CONFIG。
                 //建议开一个单独的线程池来消费消息，然后异步返回结果。
                 for (ConsumerRecord<String, String> record : records) {
-                    log.info("测试消费体：" + record.toString() );
+                    log.info("测试消费体：" + record.toString());
                     KafkaMessage message = JsonUtil.string2Obj(record.value(), KafkaMessage.class);
-                    log.info("uuid:" +message.getUuid() +"   message：" + message.toString());
+                    log.info("uuid:" + message.getUuid() + "   message：" + message.toString());
                     if (null != message) {
                         ThreadLocalHolder.async(message.getTenantCode(), message.getTenantId(), message.getOperator(), message::process);
                         String beanName = message.getBeanName();
-                        log.info("uuid:" +message.getUuid() +"   beanname：" + beanName );
+                        log.info("uuid:" + message.getUuid() + "   beanname：" + beanName);
                         switch (KafkaTypeEnum.valueOf(beanName)) {
-    					case Plan_start:
-    						
-    						log.info("uuid:" +message.getUuid() +" Plan_start body:" + message.getBody() +" start" );
-    						kafkaBiPlanService.BiEtlSyncPlan(message);
-    						log.info("uuid:" +message.getUuid() +" Plan_start  end");
-    						break;
-    					case Plan_check_end:
-    						log.info("uuid:" +message.getUuid() +" Plan_check_end body:" + message.getBody() + " start");
-    						kafkaBiPlanService.BiEtlSyncManyPlan(message);
-    						log.info("uuid:" +message.getUuid() +" Plan_check_end  end");
-    						break;
-    					case Plan_checkMany_end:
-    						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end body:" + message.getBody() + " start");
-    						kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
-    						log.info("uuid:" +message.getUuid() +" Plan_checkMany_end  end");
-    						break;
+                            case Plan_start:
 
-    					default:
-    						log.error("uuid:" +message.getUuid() +" default：not catch beaname ");
-    						break;
-    					}
+                                log.info("uuid:" + message.getUuid() + " Plan_start body:" + message.getBody() + " start");
+                                kafkaBiPlanService.BiEtlSyncPlan(message);
+                                log.info("uuid:" + message.getUuid() + " Plan_start  end");
+                                break;
+                            case Plan_check_end:
+                                log.info("uuid:" + message.getUuid() + " Plan_check_end body:" + message.getBody() + " start");
+                                kafkaBiPlanService.BiEtlSyncManyPlan(message);
+                                log.info("uuid:" + message.getUuid() + " Plan_check_end  end");
+                                break;
+                            case Plan_checkMany_end:
+                                log.info("uuid:" + message.getUuid() + " Plan_checkMany_end body:" + message.getBody() + " start");
+                                kafkaBiPlanService.BiEtlSyncManyEndPlan(message);
+                                log.info("uuid:" + message.getUuid() + " Plan_checkMany_end  end");
+                                break;
+
+                            case EVM_FILE:
+                                evmFileConsumerService.consumer(message);
+                                break;
+
+                            default:
+                                log.error("uuid:" + message.getUuid() + " default：not catch beaname ");
+                                break;
+                        }
                     }
-                    
-                    
-                    
-                } 
+
+
+                }
             } catch (Exception e) {
                 try {
                     Thread.sleep(1000);
                 } catch (Throwable ignore) {
-                	log.error(e.getMessage());
+                    log.error(e.getMessage());
                 }
                 log.error(e.getMessage());
-                
+
             }
         }
     }
@@ -125,7 +132,7 @@ public class BiConsumer implements ApplicationRunner {
             subscribedTopics.add(topic.trim());
         }
         consumer.subscribe(subscribedTopics);
-        
+
         return consumer;
     }
 }

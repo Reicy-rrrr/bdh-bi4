@@ -39,4 +39,13 @@ public interface BiEtlDbFileService extends Service<BiEtlDbFile> {
      * @return
      */
     Boolean deleteByDbId(String dbId);
+
+    /**
+     * EVM文件上传
+     *
+     * @param fileUploadDto
+     * @return
+     */
+    void uploadEvm(BiEtlDbFileUploadDto fileUploadDto);
+
 }
