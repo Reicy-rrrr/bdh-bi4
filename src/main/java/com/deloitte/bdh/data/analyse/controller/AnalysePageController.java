@@ -150,4 +150,11 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(share);
     }
 
+    @ApiOperation(value = "替换数据集", notes = "替换数据集")
+    @PostMapping("/replace")
+    public RetResult<Void> replaceDateSet(@RequestBody @Validated RetRequest<ReplaceDataSetDto> request) throws Exception {
+        analysePageService.replaceDataSet(request.getData());
+        return RetResponse.makeOKRsp();
+    }
+
 }
