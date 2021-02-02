@@ -430,6 +430,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return null;
     }
 
+    
     private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig, String isPublic) {
 
         //新建config
