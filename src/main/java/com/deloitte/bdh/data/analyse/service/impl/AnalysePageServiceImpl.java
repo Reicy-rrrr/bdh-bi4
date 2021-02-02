@@ -372,7 +372,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         } else {
             String password = request.getPassword();
 
-            //获取公开状态
+            //获取公开状态s
             String isPublic = request.getIsPublic();
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 updatePage(request, originPage, originConfig, isPublic);
@@ -456,6 +456,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (StringUtils.isEmpty(originPage.getOriginPageId())) {
             originPage.setOriginPageId(originPage.getId());
         }
+        originPage.setParentId(dto.getCategoryId());
         originPage.setIsEdit(YnTypeEnum.NO.getCode());
         updateById(originPage);
     }
