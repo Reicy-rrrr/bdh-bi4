@@ -74,4 +74,10 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      */
     PageResult<AnalysePageDto> getAnalysePageDrafts(PageRequest<AnalyseNameDto> request);
 
+    /**
+     * 替换数据集
+     * @param dto
+     * @return
+     */
+    void replaceDataSet (ReplaceDataSetDto dto) throws Exception;
 }

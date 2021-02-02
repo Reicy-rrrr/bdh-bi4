@@ -1,6 +1,5 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
@@ -28,6 +27,7 @@ import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.*;
+import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
@@ -37,6 +37,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +48,7 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -478,6 +480,61 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList);
+    }
+
+    @Override
+    public void replaceDataSet(ReplaceDataSetDto dto) throws Exception {
+        BiUiAnalysePage page = getById(dto.getPageId());
+        if (null == page) {
+            throw new BizException("报表不存在");
+        }
+        List<String> configIdList = Lists.newArrayList();
+        configIdList.add(page.getEditId());
+        if (StringUtils.isNotBlank(page.getPublishId())) {
+            configIdList.add(page.getPublishId());
+        }
+        //校验数据集字段类型
+        List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
+        for (ReplaceItemDto itemDto : dto.getReplaceItemDtoList()) {
+            BiDataSet fromDataSet = dataSetService.getById(itemDto.getFromDataSetCode());
+            BiDataSet toDataSet = dataSetService.getById(itemDto.getToDataSetCode());
+            List<TableColumn> fromFieldList = dataSetService.getColumns(fromDataSet.getCode());
+            List<TableColumn> toFieldList = dataSetService.getColumns(toDataSet.getCode());
+            validReplaceField(fromFieldList, toFieldList);
+        }
+        Map<String, ReplaceItemDto> itemDtoMap = dto.getReplaceItemDtoList().stream().collect(
+                Collectors.toMap(ReplaceItemDto::getFromDataSetCode, a -> a, (k1, k2) -> k1));
+        //替换数据
+        for (BiUiAnalysePageConfig config : configList) {
+            JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
+            JSONArray childrenArr = content.getJSONArray("children");
+            for (int i = 0; i < childrenArr.size(); i++) {
+                JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+                if (data.size() != 0 && null != MapUtils.getObject(itemDtoMap, data.getString("tableCode"))) {
+                    ReplaceItemDto itemDto = MapUtils.getObject(itemDtoMap, data.getString("tableCode"));
+                    data.put("tableCode", itemDto.getToDataSetCode());
+                }
+            }
+            config.setContent(content.toJSONString());
+            configService.updateById(config);
+        }
+    }
+
+    private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList){
+        Map<String, TableColumn> fromMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(fromFieldList)) {
+            fromMap = fromFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
+                    a -> a, (k1, k2) -> k1));
+        }
+        for (TableColumn column : toFieldList) {
+            if (null == MapUtils.getObject(fromMap, column.getName())) {
+                throw new BizException(column.getName() + "未找到对应字段");
+            }
+            TableColumn fromColumn = MapUtils.getObject(fromMap, column.getName());
+            if (!org.apache.commons.lang.StringUtils.equals(column.getDataType(), fromColumn.getDataType())) {
+                throw new BizException(column.getName() + "字段类型不匹配");
+            }
+        }
     }
 
     private void checkBiUiAnalysePageByName(String code, String name, String tenantId, String currentId) {
