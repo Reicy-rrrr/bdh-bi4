@@ -14,10 +14,10 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2021-02-01
+ * @since 2021-02-02
  */
-@TableName("BI_REPORT_OUT")
-public class BiReportOut implements Serializable {
+@TableName("EVM_CAPANALYSIS_SUM")
+public class EvmCapanalysisSum implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -88,12 +88,6 @@ public class BiReportOut implements Serializable {
 
     @TableField(value = "MODIFIED_USER", fill = FieldFill.INSERT_UPDATE)
     private String modifiedUser;
-
-    @TableField("IP")
-    private String ip;
-
-    @TableField("TENANT_ID")
-    private String tenantId;
 
     public String getId() {
         return id;
@@ -193,24 +187,10 @@ public class BiReportOut implements Serializable {
     public void setModifiedUser(String modifiedUser) {
         this.modifiedUser = modifiedUser;
     }
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
 
     @Override
     public String toString() {
-        return "BiReportOut{" +
+        return "EvmCapanalysisSum{" +
         "id=" + id +
         ", type=" + type +
         ", period=" + period +
@@ -225,8 +205,6 @@ public class BiReportOut implements Serializable {
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +
         ", modifiedUser=" + modifiedUser +
-        ", ip=" + ip +
-        ", tenantId=" + tenantId +
         "}";
     }
 }
