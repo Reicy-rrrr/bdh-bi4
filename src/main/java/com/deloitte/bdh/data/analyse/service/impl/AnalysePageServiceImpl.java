@@ -175,7 +175,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("源报表不存在");
         }
         //复制数据集
-        BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getPublishId());
+        BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getEditId());
+        if (null == fromPageConfig) {
+            throw new BizException("请先编辑源报表");
+        }
         JSONObject content = (JSONObject) JSONObject.parse(fromPageConfig.getContent());
         JSONArray childrenArr = content.getJSONArray("children");
         if (null == childrenArr) {
