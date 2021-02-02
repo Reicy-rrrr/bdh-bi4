@@ -1,20 +1,21 @@
-package com.deloitte.bdh.data.collation.evm.service;
+package com.deloitte.bdh.data.collation.evm.service.Impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.collation.evm.dto.Rule;
 import com.deloitte.bdh.data.collation.evm.dto.Sheet;
 import com.deloitte.bdh.data.collation.evm.enums.ReportCodeEnum;
+import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
+import com.deloitte.bdh.data.collation.evm.service.AbstractReport;
 import com.deloitte.bdh.data.collation.evm.utils.RuleParseUtil;
-import com.deloitte.bdh.data.collation.model.BiReportOut;
-import com.deloitte.bdh.data.collation.service.BiReportOutService;
+import com.deloitte.bdh.data.collation.model.EvmCapanalysisSum;
+import com.deloitte.bdh.data.collation.service.EvmCapanalysisSumService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +24,10 @@ import java.util.Map;
  * 资产负债效率整体水平表
  * 基于期间变量
  */
-@Service(value = "zcfzReportServiceImpl")
-public class ZcfzReportServiceImpl extends AbstractReport {
+@Service(value = "zjbReportServiceImpl")
+public class ZjbReportServiceImpl extends AbstractReport {
     @Resource
-    private BiReportOutService outService;
+    private EvmCapanalysisSumService sumService;
 
     @Override
     protected ReportCodeEnum getType() {
@@ -34,24 +35,33 @@ public class ZcfzReportServiceImpl extends AbstractReport {
     }
 
     @Override
+    protected void clear() {
+        sumService.remove(new LambdaQueryWrapper<EvmCapanalysisSum>().last("where 1=1"));
+    }
+
+    @Override
     protected List<LinkedHashMap<String, Object>> assembly(Map<String, Sheet> map) {
         //获取资产负债表的期间集合
-        List<String> periods = map.get("zcfz").yCellNo();
+        Sheet tempSheet = map.get(SheetCodeEnum.zcfzb.getName());
+        if (null == tempSheet) {
+            return null;
+        }
+
+        List<String> periods = tempSheet.yCellNo();
         if (CollectionUtils.isNotEmpty(periods)) {
-            List<BiReportOut> all = Lists.newArrayList();
-            Map<String, BiReportOut> last = Maps.newHashMap();
+            List<EvmCapanalysisSum> all = Lists.newArrayList();
+            Map<String, EvmCapanalysisSum> last = Maps.newHashMap();
             for (String period : periods) {
                 String type = period.length() == 4 ? "年报" : "月报";
                 String periodTemp = period.length() == 4 ? period : period.substring(0, period.lastIndexOf("-"));
                 String periodDate = period.length() == 4 ? period + "-12-31" : period;
                 for (Rule rule : getType().relySheets().right) {
-                    BiReportOut lastReport = last.get(rule.getTargetCode());
+                    EvmCapanalysisSum lastReport = last.get(rule.getTargetCode());
                     String ytyValue = null == lastReport ? null : lastReport.getIndexValue();
-                    BiReportOut out = new BiReportOut();
+                    EvmCapanalysisSum out = new EvmCapanalysisSum();
                     out.setType(type);
                     out.setPeriod(periodTemp);
                     out.setPeriodDate(periodDate);
-                    out.setReportName(getType().getValue());
                     out.setIndexCode(rule.getTargetCode());
                     out.setIndexName(rule.getTargetName());
                     out.setIndexValue(RuleParseUtil.value(rule.getExpression(), map, period));
@@ -77,14 +87,11 @@ public class ZcfzReportServiceImpl extends AbstractReport {
                             out.setYtyRate(ytyRate);
                         }
                     }
-                    out.setCreateDate(LocalDateTime.now());
-                    out.setCreateUser("1");
-                    out.setTenantId("1");
                     last.put(out.getIndexCode(), out);
                     all.add(out);
                 }
             }
-            outService.saveBatch(all);
+            sumService.saveBatch(all);
         }
         return null;
     }

@@ -81,7 +81,7 @@ public class RuleParseUtil {
     }
 
     private static boolean isZero(String result) {
-        if ("0".equals(result) || "Infinity".equals(result) || "NaN".equals(result)) {
+        if ("0".equals(result) || "Infinity".equals(result) || "NaN".equals(result) || "-Infinity".equals(result) || "-NaN".equals(result)) {
             return true;
         }
         return false;
