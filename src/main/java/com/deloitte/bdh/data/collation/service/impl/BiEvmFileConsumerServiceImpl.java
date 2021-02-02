@@ -71,7 +71,9 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
             }
             doZcfzb(workbook.getSheet("资产负债表"), batchId);
-            Sheet dataSheet = workbook.getSheetAt(0);
+            doLrb(workbook.getSheet("利润表"), batchId);
+
+            Sheet dataSheet = workbook.getSheet("资产负债表");
             // poi 行号从0开始
             if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
                 log.error("读取Excel文件失败，上传文件内容为空！");
@@ -87,14 +89,10 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
     }
 
     private void doZcfzb(Sheet sheet, String batchId) {
-        int rowNos = sheet.getLastRowNum();
-        if (rowNos != 82) {
-            throw new BizException("资产负债表行数不正确");
-        }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
         if (null == typeCell) {
-            throw new BizException("未获取到报表类型");
+            throw new BizException("未获取到报表期间类型");
         }
         String type = typeCell.getStringCellValue();
 
@@ -198,6 +196,48 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                     }
                 }
 
+                tempList.add(biReport);
+            }
+            list.addAll(tempList);
+        }
+        reportService.saveBatch(list);
+    }
+
+    private void doLrb(Sheet sheet, String batchId) {
+        //获取类型
+        Cell typeCell = sheet.getRow(0).getCell(3);
+        if (null == typeCell) {
+            throw new BizException("未获取到报表期间类型");
+        }
+        String type = typeCell.getStringCellValue();
+
+        //获取期间列数
+        int colNums = sheet.getRow(1).getLastCellNum();
+
+        //循环
+        List<BiReport> list = Lists.newArrayList();
+
+        for (int row = 2; row < sheet.getLastRowNum() + 1; row++) {
+            List<BiReport> tempList = Lists.newArrayList();
+            String indexCode = sheet.getRow(row).getCell(0).getStringCellValue();
+            for (int cell = 2; cell < colNums; cell++) {
+                BiReport biReport = new BiReport();
+                biReport.setBatchId(batchId);
+                biReport.setReportCode("lrb");
+                biReport.setReportName(sheet.getSheetName());
+                biReport.setRowNo(String.valueOf(row));
+                biReport.setIndexCode(indexCode);
+                biReport.setCell1(sheet.getRow(row).getCell(1).getStringCellValue());
+                biReport.setTenantId(ThreadLocalHolder.getTenantId());
+                biReport.setColNo(String.valueOf(cell));
+                Cell temp = sheet.getRow(row).getCell(cell);
+                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                biReport.setCell2(tempValue);
+                if ("年报".equals(type)) {
+                    biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                } else {
+                    biReport.setPeriod(DateUtils.formatStandardDate(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                }
                 tempList.add(biReport);
             }
             list.addAll(tempList);
