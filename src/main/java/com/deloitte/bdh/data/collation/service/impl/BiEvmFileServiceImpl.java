@@ -66,6 +66,7 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         } catch (IOException e) {
             throw new BizException("File upload error: 上传文件发生错误，请检查文件有效性！");
         }
+
         // 发送消息去处理文件入库
         BiEvmFile biEvmFile = new BiEvmFile();
         biEvmFile.setBatchId(GenerateCodeUtil.generate());
@@ -86,7 +87,7 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         biEvmFile.setCreateDate(null);
         biEvmFile.setExpireDate(null);
         KafkaMessage<BiEvmFile> message = new KafkaMessage<>(UUID.randomUUID().toString().replaceAll("-", ""), biEvmFile, KafkaTypeEnum.EVM_FILE.getType());
-        consumerService.consumer(message);
+        ThreadLocalHolder.async(() -> consumerService.consumer(message));
 //        producter.send(message);
 
 

@@ -8,7 +8,6 @@
         <result column="type" property="type" />
         <result column="PERIOD" property="period" />
         <result column="PERIOD_DATE" property="periodDate" />
-        <result column="REPORT_NAME" property="reportName" />
         <result column="INDEX_CODE" property="indexCode" />
         <result column="INDEX_NAME" property="indexName" />
         <result column="INDEX_VALUE" property="indexValue" />

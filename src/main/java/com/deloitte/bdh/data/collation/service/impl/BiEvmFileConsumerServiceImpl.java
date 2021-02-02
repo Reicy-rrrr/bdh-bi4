@@ -3,12 +3,16 @@ package com.deloitte.bdh.data.collation.service.impl;
 import java.math.BigDecimal;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.collation.evm.enums.ReportCodeEnum;
+import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
+import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
 import com.deloitte.bdh.data.collation.model.BiEvmFile;
 import com.deloitte.bdh.data.collation.model.BiReport;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
@@ -39,6 +43,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
     private AliyunOssUtil aliyunOss;
     @Resource
     private BiReportService reportService;
+    @Autowired
+    private EvmServiceImpl evmService;
 
     @Override
     public void consumer(KafkaMessage<BiEvmFile> message) {
@@ -70,15 +76,16 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 log.error("读取Excel文件失败，上传文件内容为空！");
                 throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
             }
-            doZcfzb(workbook.getSheet("资产负债表"), batchId);
-            doLrb(workbook.getSheet("利润表"), batchId);
 
-            Sheet dataSheet = workbook.getSheet("资产负债表");
-            // poi 行号从0开始
-            if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
-                log.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
-            }
+            //todo check
+            doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), batchId);
+            doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), batchId);
+            doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), batchId);
+
+            //todo send mq
+            evmService.choose(ReportCodeEnum.ZCXLZTSPB.getName());
+//            evmService.choose(ReportCodeEnum.ZJB.getName());
+
         } catch (IOException e) {
             log.error("读取Excel文件失败，程序运行错误！", e);
             throw new BizException("读取Excel文件失败，程序运行错误！");
@@ -89,14 +96,19 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
     }
 
     private void doZcfzb(Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+        }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
         if (null == typeCell) {
             throw new BizException("未获取到报表期间类型");
         }
-        String type = typeCell.getStringCellValue();
+
+        reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.zcfzb.getName()));
 
         //获取期间列数
+        String type = typeCell.getStringCellValue();
         int colNums = sheet.getRow(1).getLastCellNum();
 
         //循环
@@ -108,7 +120,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             for (int cell = 2; cell < colNums; cell++) {
                 BiReport biReport = new BiReport();
                 biReport.setBatchId(batchId);
-                biReport.setReportCode("zcfz");
+                biReport.setReportCode(SheetCodeEnum.zcfzb.getName());
                 biReport.setReportName(sheet.getSheetName());
                 biReport.setRowNo(String.valueOf(row));
                 biReport.setIndexCode(indexCode);
@@ -123,79 +135,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 } else {
                     biReport.setPeriod(DateUtils.formatStandardDate(sheet.getRow(1).getCell(cell).getDateCellValue()));
                 }
-                //处理平均净资产
-                if ("EVMB080".equals(indexCode)) {
-                    BiReport evmb078 = new BiReport();
-                    BeanUtils.copyProperties(biReport, evmb078);
-                    evmb078.setIndexCode("EVMB080_AVG");
-                    evmb078.setCell1("平均净资产");
-                    if (2 < cell) {
-                        Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
-                        String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
-                        evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
-                                .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
-                        tempList.add(evmb078);
-                    }
-                }
-                //应收账款平均余额
-                if ("EVMB008".equals(indexCode)) {
-                    BiReport evmb078 = new BiReport();
-                    BeanUtils.copyProperties(biReport, evmb078);
-                    evmb078.setIndexCode("EVMB008_AVG");
-                    evmb078.setCell1("应收账款平均余额");
-                    if (2 < cell) {
-                        Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
-                        String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
-                        evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
-                                .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
-                        tempList.add(evmb078);
-                    }
-                }
 
-                //固定资产平均余额
-                if ("EVMB027".equals(indexCode)) {
-                    BiReport evmb078 = new BiReport();
-                    BeanUtils.copyProperties(biReport, evmb078);
-                    evmb078.setIndexCode("EVMB027_AVG");
-                    evmb078.setCell1("固定资产平均余额");
-                    if (2 < cell) {
-                        Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
-                        String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
-                        evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
-                                .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
-                        tempList.add(evmb078);
-                    }
-                }
-
-                //平均存货
-                if ("EVMB012".equals(indexCode)) {
-                    BiReport evmb078 = new BiReport();
-                    BeanUtils.copyProperties(biReport, evmb078);
-                    evmb078.setIndexCode("EVMB012_AVG");
-                    evmb078.setCell1("平均存货");
-                    if (2 < cell) {
-                        Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
-                        String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
-                        evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
-                                .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
-                        tempList.add(evmb078);
-                    }
-                }
-                //总资产平均水平
-                if ("EVMB039".equals(indexCode)) {
-                    BiReport evmb078 = new BiReport();
-                    BeanUtils.copyProperties(biReport, evmb078);
-                    evmb078.setIndexCode("EVMB039_AVG");
-                    evmb078.setCell1("总资产平均水平");
-                    if (2 < cell) {
-                        Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
-                        String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
-                        evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
-                                .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
-                        tempList.add(evmb078);
-                    }
-                }
-
+                processZcfzAvg(tempList, indexCode, biReport, row, cell, sheet);
                 tempList.add(biReport);
             }
             list.addAll(tempList);
@@ -204,14 +145,18 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
     }
 
     private void doLrb(Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+        }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
         if (null == typeCell) {
             throw new BizException("未获取到报表期间类型");
         }
-        String type = typeCell.getStringCellValue();
+        reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.lrb.getName()));
 
         //获取期间列数
+        String type = typeCell.getStringCellValue();
         int colNums = sheet.getRow(1).getLastCellNum();
 
         //循环
@@ -223,7 +168,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             for (int cell = 2; cell < colNums; cell++) {
                 BiReport biReport = new BiReport();
                 biReport.setBatchId(batchId);
-                biReport.setReportCode("lrb");
+                biReport.setReportCode(SheetCodeEnum.lrb.name());
                 biReport.setReportName(sheet.getSheetName());
                 biReport.setRowNo(String.valueOf(row));
                 biReport.setIndexCode(indexCode);
@@ -244,4 +189,211 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
         }
         reportService.saveBatch(list);
     }
+
+    private void doXjllb(Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+        }
+        //获取类型
+        Cell typeCell = sheet.getRow(0).getCell(3);
+        if (null == typeCell) {
+            throw new BizException("未获取到报表期间类型");
+        }
+        reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.xjllb.getName()));
+
+        //获取期间列数
+        String type = typeCell.getStringCellValue();
+        int colNums = sheet.getRow(1).getLastCellNum();
+
+        //循环
+        List<BiReport> list = Lists.newArrayList();
+
+        for (int row = 2; row < sheet.getLastRowNum() + 1; row++) {
+            List<BiReport> tempList = Lists.newArrayList();
+            String indexCode = sheet.getRow(row).getCell(0).getStringCellValue();
+            for (int cell = 2; cell < colNums; cell++) {
+                BiReport biReport = new BiReport();
+                biReport.setBatchId(batchId);
+                biReport.setReportCode(SheetCodeEnum.xjllb.name());
+                biReport.setReportName(sheet.getSheetName());
+                biReport.setRowNo(String.valueOf(row));
+                biReport.setIndexCode(indexCode);
+                biReport.setCell1(sheet.getRow(row).getCell(1).getStringCellValue());
+                biReport.setTenantId(ThreadLocalHolder.getTenantId());
+                biReport.setColNo(String.valueOf(cell));
+                Cell temp = sheet.getRow(row).getCell(cell);
+                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                biReport.setCell2(tempValue);
+                if ("年报".equals(type)) {
+                    biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                } else {
+                    biReport.setPeriod(DateUtils.formatStandardDate(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                }
+                tempList.add(biReport);
+            }
+            list.addAll(tempList);
+        }
+        reportService.saveBatch(list);
+    }
+
+    private void processZcfzAvg(List<BiReport> tempList, String indexCode, BiReport biReport, int row, int cell, Sheet sheet) {
+        if ("EVMB001".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB001_AVG");
+            evmb078.setCell1("营业收入余额");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        if ("EVMB002".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB002_AVG");
+            evmb078.setCell1("营业成本余额");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+        //期初资金总额余额
+        if ("EVMB003".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB003_AVG");
+            evmb078.setCell1("期初资金总额余额");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        if ("EVMB004".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB004_AVG");
+            evmb078.setCell1("期末资金总额余额");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        if ("EVMB008".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB008_AVG");
+            evmb078.setCell1("应收账款平均余额");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        //平均存货
+        if ("EVMB012".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB012_AVG");
+            evmb078.setCell1("平均存货");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        if ("EVMB017".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB017_AVG");
+            evmb078.setCell1("平均流动资产");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        //固定资产平均余额
+        if ("EVMB027".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB027_AVG");
+            evmb078.setCell1("固定资产平均余额");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        //总资产平均水平
+        if ("EVMB039".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB039_AVG");
+            evmb078.setCell1("总资产平均水平");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        if ("EVMB055".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB055_AVG");
+            evmb078.setCell1("平均流动负债");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
+        //处理平均净资产
+        if ("EVMB080".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB080_AVG");
+            evmb078.setCell1("平均净资产");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+    }
+
 }

@@ -19,6 +19,8 @@ public abstract class AbstractReport implements ReportService {
 
     abstract protected ReportCodeEnum getType();
 
+    abstract protected void clear();
+
     protected Map<String, Sheet> buildEntity(List<String> codes) {
         Map<String, Sheet> map = Maps.newLinkedHashMap();
         for (String code : codes) {
@@ -39,9 +41,9 @@ public abstract class AbstractReport implements ReportService {
     @Override
     public void process() {
         Map<String, Sheet> map = buildEntity(getType().relySheets().left);
+        clear();
         assembly(map);
     }
-
 
 
 }

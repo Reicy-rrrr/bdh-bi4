@@ -42,12 +42,6 @@ public class EvmCapanalysisSum implements Serializable {
     private String periodDate;
 
     /**
-     * 表名称
-     */
-    @TableField("REPORT_NAME")
-    private String reportName;
-
-    /**
      * 指标编码
      */
     @TableField("INDEX_CODE")
@@ -116,13 +110,6 @@ public class EvmCapanalysisSum implements Serializable {
 
     public void setPeriodDate(String periodDate) {
         this.periodDate = periodDate;
-    }
-    public String getReportName() {
-        return reportName;
-    }
-
-    public void setReportName(String reportName) {
-        this.reportName = reportName;
     }
     public String getIndexCode() {
         return indexCode;
@@ -195,7 +182,6 @@ public class EvmCapanalysisSum implements Serializable {
         ", type=" + type +
         ", period=" + period +
         ", periodDate=" + periodDate +
-        ", reportName=" + reportName +
         ", indexCode=" + indexCode +
         ", indexName=" + indexName +
         ", indexValue=" + indexValue +

@@ -7,14 +7,19 @@ import javax.annotation.Resource;
 
 @Service
 public class EvmServiceImpl {
-    @Resource
+    @Resource(name = "zcfzReportServiceImpl")
     private ReportService zcfzReportService;
+    @Resource(name = "zjbReportServiceImpl")
+    private ReportService zjbReportService;
 
     public void choose(String reportCode) {
         ReportCodeEnum reportCodeEnum = ReportCodeEnum.valueOf(reportCode);
         switch (reportCodeEnum) {
             case ZCXLZTSPB:
                 zcfzReportService.process();
+                break;
+            case ZJB:
+                zjbReportService.process();
                 break;
             default:
                 ;
