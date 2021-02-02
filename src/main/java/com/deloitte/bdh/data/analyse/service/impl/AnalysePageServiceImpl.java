@@ -374,9 +374,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 updatePage(request, originPage, originConfig, isPublic);
             } else {
-                if (originPage.getParentId().equals(categoryId)) {
-                    updatePage(request, originPage, originConfig, isPublic);
-                } else {
+//                if (originPage.getParentId().equals(categoryId)) {
+//                    updatePage(request, originPage, originConfig, isPublic);
+//                } else {
                     List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
                             .eq(BiUiAnalysePage::getParentId, categoryId)
                             .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
@@ -414,7 +414,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                     } else {
                         updatePage(request, originPage, originConfig, isPublic);
                     }
-                }
+//                }
             }
 
             //可见编辑权限
