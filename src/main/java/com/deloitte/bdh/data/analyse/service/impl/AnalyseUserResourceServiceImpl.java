@@ -10,11 +10,13 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
@@ -44,6 +46,9 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
 
     @Resource
     private AnalyseUserDataService userDataService;
+
+    @Resource
+    private AnalysePageService pageService;
 
     @Override
     public void saveResourcePermission(SaveResourcePermissionDto dto) {
@@ -130,6 +135,18 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         result.setViewUserList(viewUserList);
         result.setEditUserList(editUserList);
         return result;
+    }
+
+    @Override
+    public ResourcePermissionDto getPagePermissionByCode(GetPagePermissionByCodeDto dto) {
+        LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePage::getCode, dto.getCode());
+        queryWrapper.eq(BiUiAnalysePage::getParentId, dto.getCategoryId());
+        BiUiAnalysePage page = pageService.getOne(queryWrapper);
+        GetResourcePermissionDto permissionDto = new GetResourcePermissionDto();
+        permissionDto.setId(page.getId());
+        permissionDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+        return getResourcePermission(permissionDto);
     }
 
     @Override

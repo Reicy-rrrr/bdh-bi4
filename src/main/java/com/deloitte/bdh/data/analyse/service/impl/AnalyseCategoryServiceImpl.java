@@ -309,19 +309,19 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             if (CollectionUtils.isNotEmpty(childList)) {
                 throw new BizException("请先删除下级文件夹");
             }
-            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
-            if (CollectionUtils.isNotEmpty(childPageList)) {
-                List<String> existEdit = childPageList.stream()
-                        .filter(BiUiAnalysePage -> null != BiUiAnalysePage.getIsEdit() &&
-                                BiUiAnalysePage.getIsEdit().equals(YnTypeEnum.YES.getCode()))
-                        .map(BiUiAnalysePage::getName).collect(Collectors.toList());
-                if (CollectionUtils.isNotEmpty(existEdit)) {
-                    String message = StringUtils.join(existEdit);
-                    throw new BizException("请删除在草稿箱中的" + message + "报表");
-                } else {
-                    throw new BizException("请先删除下级页面");
-                }
-            }
+//            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
+//            if (CollectionUtils.isNotEmpty(childPageList)) {
+//                List<String> existEdit = childPageList.stream()
+//                        .filter(BiUiAnalysePage -> null != BiUiAnalysePage.getIsEdit() &&
+//                                BiUiAnalysePage.getIsEdit().equals(YnTypeEnum.YES.getCode()))
+//                        .map(BiUiAnalysePage::getName).collect(Collectors.toList());
+//                if (CollectionUtils.isNotEmpty(existEdit)) {
+//                    String message = StringUtils.join(existEdit);
+//                    throw new BizException("请删除在草稿箱中的" + message + "报表");
+//                } else {
+//                    throw new BizException("请先删除下级页面");
+//                }
+//            }
             //删除
             this.removeByIds(parentIdList);
 

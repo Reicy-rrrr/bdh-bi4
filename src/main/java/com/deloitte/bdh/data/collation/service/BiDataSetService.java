@@ -25,6 +25,8 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     List<DataSetResp> getFiles(String superUserFlag);
 
+    List<DataSetResp> getDataSetByCode(GetDataSetByCodeDto dto);
+
     PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto);
 
     void reName(DataSetReNameDto dto);

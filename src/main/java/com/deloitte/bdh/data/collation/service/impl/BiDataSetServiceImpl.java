@@ -16,6 +16,7 @@ import com.deloitte.bdh.data.analyse.model.BiUiModelFolder;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFolderService;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
+import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.*;
@@ -98,6 +99,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Resource
     private AnalyseUserResourceService userResourceService;
 
+    @Resource
+    private BiEtlDbMapper biEtlDbMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void initDataSet() {
@@ -146,6 +150,24 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 respList.add(resp);
             }
             userResourceService.setDataSetPermission(respList, ResourcesTypeEnum.DATA_SET_CATEGORY);
+        }
+        return respList;
+    }
+
+    @Override
+    public List<DataSetResp> getDataSetByCode(GetDataSetByCodeDto dto) {
+        List<DataSetResp> respList = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(dto.getCodeList())) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiDataSet::getCode, dto.getCodeList());
+            List<BiDataSet> list = list(queryWrapper);
+            if (CollectionUtils.isNotEmpty(list)) {
+                list.forEach(dataSet -> {
+                    DataSetResp resp = new DataSetResp();
+                    BeanUtils.copyProperties(dataSet, resp);
+                    respList.add(resp);
+                });
+            }
         }
         return respList;
     }
@@ -322,6 +344,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             fileTree.setToTableDesc(file.getTableDesc());
             fileTree.setTitle(file.getTableDesc());
             fileTree.setValue(file.getCode());
+            fileTree.setIsFile(file.getIsFile());
             List<DataSetResp> dataSetList = parentIdMap.get(file.getId());
             List<DataSetTableInfo> child = Lists.newArrayList();
             if (CollectionUtils.isNotEmpty(dataSetList)) {
@@ -333,6 +356,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                     tree.setToTableDesc(dataSet.getTableDesc());
                     tree.setTitle(dataSet.getTableDesc());
                     tree.setValue(dataSet.getCode());
+                    tree.setIsFile(dataSet.getIsFile());
                     child.add(tree);
                 }
                 fileTree.setChildren(child);
@@ -458,6 +482,10 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 }
                 if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
                     throw new RuntimeException("初始化数据表，暂不允许删除");
+                }
+                if (DataSetTypeEnum.COPY.getKey().equals(dataSet.getType())) {
+                    String deleteSql = "drop table " + dataSet.getTableName();
+                    biEtlDbMapper.truncateTable(deleteSql);
                 }
                 //删除度量维度配置
                 folderService.remove(new LambdaQueryWrapper<BiUiModelFolder>().eq(BiUiModelFolder::getModelId, dataSet.getCode()));

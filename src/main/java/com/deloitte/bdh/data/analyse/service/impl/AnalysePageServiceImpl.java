@@ -407,6 +407,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         newPage.setParentId(categoryId);
                         newPage.setIsEdit(YnTypeEnum.NO.getCode());
                         newPage.setOriginPageId(originPage.getId());
+                        //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
+                        newPage.setCode(originPage.getCode());
+                        if (StringUtils.isNotBlank(isPublic)){
+                            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+                                newPage.setIsPublic(YesOrNoEnum.YES.getKey());
+                            } else {
+                                newPage.setIsPublic(YesOrNoEnum.NO.getKey());
+                            }
+                        }
                         save(newPage);
                         String newPageId = newPage.getId();
                         //保存pageId到config
@@ -433,6 +442,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return null;
     }
 
+    
     private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig, String isPublic) {
 
         //新建config
@@ -450,9 +460,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         //更新page
         if (StringUtils.isNotBlank(isPublic)){
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                originPage.setIsPublic("1");
+                originPage.setIsPublic(YesOrNoEnum.YES.getKey());
             } else {
-                originPage.setIsPublic("0");
+                originPage.setIsPublic(YesOrNoEnum.NO.getKey());
             }
         }
         originPage.setPublishId(newConfig.getId());
