@@ -453,7 +453,6 @@ public class DateUtils {
     }
 
     public static void main(String[] args) throws ParseException {
-        String period="2020-01-1";
-        System.out.println(period.substring(0, period.lastIndexOf("-") ));
+        System.out.println(formatStandardDateTime(new Date()));
     }
 }

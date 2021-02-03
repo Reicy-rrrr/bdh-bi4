@@ -9,6 +9,7 @@ import lombok.ToString;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author chenghzhang
@@ -37,4 +38,9 @@ public class BiEtlDbFileUploadDto {
 
     @ApiModelProperty(value = "国际化语言标识", example = "cn")
     private String lang;
+
+    @ApiModelProperty(value = "表列表", example = "1", required = true)
+    @NotNull(message = "表列表 不能为空")
+    private List<String> tables;
+
 }

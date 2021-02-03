@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -76,16 +77,13 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         biEvmFile.setFileType(file.getContentType());
         biEvmFile.setFilePath(filePath);
         biEvmFile.setFileSize(String.valueOf(file.getSize()));
-        biEvmFile.setToProcessNum("1");
-        biEvmFile.setProcessedNum("0");
         biEvmFile.setCreateDate(LocalDateTime.now());
         biEvmFile.setCreateUser(operator);
         biEvmFile.setTenantId(tenantId);
-        biEvmFile.setExpireDate(LocalDateTime.now());
+        biEvmFile.setTables(JsonUtil.obj2String(fileUploadDto.getTables()));
         fileMapper.insert(biEvmFile);
 
         biEvmFile.setCreateDate(null);
-        biEvmFile.setExpireDate(null);
         KafkaMessage<BiEvmFile> message = new KafkaMessage<>(UUID.randomUUID().toString().replaceAll("-", ""), biEvmFile, KafkaTypeEnum.EVM_FILE.getType());
         ThreadLocalHolder.async(() -> consumerService.consumer(message));
 //        producter.send(message);

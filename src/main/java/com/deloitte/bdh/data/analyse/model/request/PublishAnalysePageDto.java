@@ -19,7 +19,6 @@ public class PublishAnalysePageDto implements Serializable {
     @ApiModelProperty(value = "pageId")
     String pageId;
 
-    @NotBlank(message = "发布页面，字段不能为null")
     @ApiModelProperty(value = "categoryId" ,required = true)
     String categoryId;
 

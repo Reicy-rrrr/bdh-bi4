@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -240,7 +241,7 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
-    public long executeInsert(String tableName, List<Map<String, Object>> rows) {
+    public long executeInsert(String tableName, List<LinkedHashMap<String, Object>> rows) {
         if (StringUtils.isBlank(tableName)) {
             throw new BizException("DbHandler execute insert error: 表名不能为空！");
         }

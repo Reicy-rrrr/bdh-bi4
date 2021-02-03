@@ -12,9 +12,7 @@
         <result column="FILE_TYPE" property="fileType" />
         <result column="FILE_PATH" property="filePath" />
         <result column="FILE_SIZE" property="fileSize" />
-        <result column="EXPIRE_DATE" property="expireDate" />
-        <result column="TO_PROCESS_NUM" property="toProcessNum" />
-        <result column="PROCESSED_NUM" property="processedNum" />
+        <result column="TABLES" property="tables" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />
