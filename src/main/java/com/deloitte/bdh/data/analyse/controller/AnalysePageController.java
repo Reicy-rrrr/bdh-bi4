@@ -3,11 +3,8 @@ package com.deloitte.bdh.data.analyse.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
-import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageHomepage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
@@ -70,10 +67,10 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(analysePageService.createAnalysePage(request));
     }
 
-    @ApiOperation(value = "复制页面", notes = "复制页面")
-    @PostMapping("/copyAnalysePage")
-    public RetResult<AnalysePageDto> copyAnalysePage(@RequestBody @Validated RetRequest<CopyAnalysePageDto> request) {
-        return RetResponse.makeOKRsp(analysePageService.copyAnalysePage(request.getData()));
+    @ApiOperation(value = "复制德勤方案", notes = "复制德勤方案")
+    @PostMapping("/copyDeloittePage")
+    public RetResult<AnalysePageDto> copyDeloittePage(@RequestBody @Validated RetRequest<CopyDeloittePageDto> request) {
+        return RetResponse.makeOKRsp(analysePageService.copyDeloittePage(request.getData()));
     }
 
     @ApiOperation(value = "批量删除页面", notes = "批量删除页面")
@@ -151,6 +148,13 @@ public class AnalysePageController {
         lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
         return RetResponse.makeOKRsp(share);
+    }
+
+    @ApiOperation(value = "替换数据集", notes = "替换数据集")
+    @PostMapping("/replace")
+    public RetResult<Void> replaceDateSet(@RequestBody @Validated RetRequest<ReplaceDataSetDto> request) throws Exception {
+        analysePageService.replaceDataSet(request.getData());
+        return RetResponse.makeOKRsp();
     }
 
 }

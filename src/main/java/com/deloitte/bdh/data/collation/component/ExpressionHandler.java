@@ -42,7 +42,7 @@ public class ExpressionHandler {
     /**
      * 脚本引擎
      **/
-    private static final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
+    public static final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("javascript");
 
     /**
      * 运算符：加

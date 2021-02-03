@@ -7,6 +7,7 @@ public enum DataSetTypeEnum {
 
     DIRECT("0", "直连"),
     MODEL("1", "整理"),
+    COPY("2", "复制"),
     DEFAULT("9", "默认文件"),
 
     ;

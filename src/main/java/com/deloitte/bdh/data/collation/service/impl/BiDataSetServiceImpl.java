@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.TreeChildrenTypeEnum;
@@ -371,6 +372,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         List<TableColumn> columns = Lists.newArrayList();
         switch (setTypeEnum) {
             case MODEL:
+            case COPY:
             case DEFAULT:
                 //本地查询
                 columns = dbHandler.getColumns(biDataSet.getTableName());

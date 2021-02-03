@@ -39,4 +39,5 @@ public interface BiEtlDbFileService extends Service<BiEtlDbFile> {
      * @return
      */
     Boolean deleteByDbId(String dbId);
+
 }
