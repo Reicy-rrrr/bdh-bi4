@@ -9,9 +9,10 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
+import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.evm.enums.ReportCodeEnum;
 import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
+import com.deloitte.bdh.data.collation.evm.enums.TableMappingEnum;
 import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
 import com.deloitte.bdh.data.collation.model.BiEvmFile;
 import com.deloitte.bdh.data.collation.model.BiReport;
@@ -20,11 +21,13 @@ import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
 import com.deloitte.bdh.data.collation.service.BiReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -48,44 +52,41 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
     @Override
     public void consumer(KafkaMessage<BiEvmFile> message) {
-        log.info("BiEvmFileConsumerServiceImpl.begin :  body:" + message.getBody());
         // 文件信息id
         BiEvmFile evmFile = message.getBody(BiEvmFile.class);
-
         // 从oss服务器获取文件
         InputStream fileStream = aliyunOss.getFileStream(evmFile.getFilePath(), evmFile.getStoredFileName());
-        // 读取文件
-        readIntoDb(fileStream, evmFile.getBatchId());
-        // 设置文件的关联数据源id
-        //todo 解析文件
+        // 解析文件
+        readExcelIntoDb(fileStream, evmFile);
     }
 
-    public void readIntoDb(InputStream stream, String batchId) {
-        byte[] bytes = null;
+    private void readExcelIntoDb(InputStream fileStream, BiEvmFile evmFile) {
+        byte[] bytes;
         try {
-            bytes = IOUtils.toByteArray(stream);
+            bytes = IOUtils.toByteArray(fileStream);
         } catch (IOException e) {
             throw new BizException("File read error: 读取文件错误！");
         }
-        readExcelIntoDb(bytes, batchId);
-    }
 
-    private void readExcelIntoDb(byte[] bytes, String batchId) {
         try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
             if (workbook == null) {
                 log.error("读取Excel文件失败，上传文件内容为空！");
                 throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
             }
 
+            List<String> tables = JsonUtil.string2Obj(evmFile.getTables(), new TypeReference<List<String>>() {
+            });
             //todo check
-            doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), batchId);
-            doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), batchId);
-            doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), batchId);
+            doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), evmFile.getBatchId());
+            doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), evmFile.getBatchId());
+            doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), evmFile.getBatchId());
 
+            List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             //todo send mq
-            evmService.choose(ReportCodeEnum.ZCXLZTSPB.getName());
-            evmService.choose(ReportCodeEnum.ZJB.getName());
 
+            for (ImmutablePair<TableMappingEnum, String> pair : enums) {
+                evmService.choose(pair.left.getValue().getName(), pair.right);
+            }
         } catch (IOException | InvalidFormatException e) {
             log.error("读取Excel文件失败，程序运行错误！", e);
             throw new BizException("读取Excel文件失败，程序运行错误！");
