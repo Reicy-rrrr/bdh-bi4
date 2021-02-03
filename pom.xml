@@ -168,6 +168,12 @@
             <version>${ojdbc8.version}</version>
         </dependency>
 
+        <!--服务调用-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
         <!--    mysql   -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
