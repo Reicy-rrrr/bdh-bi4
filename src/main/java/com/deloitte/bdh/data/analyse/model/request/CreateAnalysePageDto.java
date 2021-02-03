@@ -5,11 +5,11 @@ import lombok.Data;
 
 @Data
 public class CreateAnalysePageDto {
-    /**
-     * 报表编码
-     */
-    @ApiModelProperty(value = "报表编码")
-    private String code;
+//    /**
+//     * 报表编码
+//     */
+//    @ApiModelProperty(value = "报表编码")
+//    private String code;
 
     /**
      * 报表名称
