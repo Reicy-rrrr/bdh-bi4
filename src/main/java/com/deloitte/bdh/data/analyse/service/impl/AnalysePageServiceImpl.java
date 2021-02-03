@@ -157,9 +157,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Override
     public AnalysePageDto createAnalysePage(RetRequest<CreateAnalysePageDto> request) {
-        checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), ThreadLocalHolder.getTenantId(), null);
+//        checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage entity = new BiUiAnalysePage();
         BeanUtils.copyProperties(request.getData(), entity);
+        entity.setCode(GenerateCodeUtil.generate());
         entity.setTenantId(ThreadLocalHolder.getTenantId());
         entity.setIsEdit(YnTypeEnum.YES.getCode());
         this.save(entity);
