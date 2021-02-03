@@ -155,6 +155,24 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
+    public List<DataSetResp> getDataSetByCode(GetDataSetByCodeDto dto) {
+        List<DataSetResp> respList = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(dto.getCodeList())) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiDataSet::getCode, dto.getCodeList());
+            List<BiDataSet> list = list(queryWrapper);
+            if (CollectionUtils.isNotEmpty(list)) {
+                list.forEach(dataSet -> {
+                    DataSetResp resp = new DataSetResp();
+                    BeanUtils.copyProperties(dataSet, resp);
+                    respList.add(resp);
+                });
+            }
+        }
+        return respList;
+    }
+
+    @Override
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
         List<String> parentIdList = Lists.newArrayList(dto.getFileId());
         List<DataSetResp> result = getDataSet(parentIdList, dto.getSuperUserFlag());

@@ -7,11 +7,7 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
-import com.deloitte.bdh.data.collation.model.request.CreateDataSetDto;
-import com.deloitte.bdh.data.collation.model.request.CreateDataSetFileDto;
-import com.deloitte.bdh.data.collation.model.request.DataSetReNameDto;
-import com.deloitte.bdh.data.collation.model.request.GetDataSetInfoDto;
-import com.deloitte.bdh.data.collation.model.request.GetDataSetPageDto;
+import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.github.pagehelper.PageHelper;
@@ -47,6 +43,12 @@ public class BiDataSetController {
     @PostMapping("/getFiles")
     public RetResult<List<DataSetResp>> getFiles(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(dataSetService.getFiles(request.getData()));
+    }
+
+    @ApiOperation(value = "通过code获取数据集", notes = "通过code获取数据集")
+    @PostMapping("/getDataSetByCode")
+    public RetResult<List<DataSetResp>> getDataSetByCode(@RequestBody @Validated RetRequest<GetDataSetByCodeDto> request) {
+        return RetResponse.makeOKRsp(dataSetService.getDataSetByCode(request.getData()));
     }
 
     @ApiOperation(value = "基于文件夹户获取数据集列表", notes = "基于文件夹户获取数据集列表")

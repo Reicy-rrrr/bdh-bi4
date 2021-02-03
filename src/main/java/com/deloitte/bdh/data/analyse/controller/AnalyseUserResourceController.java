@@ -3,10 +3,7 @@ package com.deloitte.bdh.data.analyse.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.data.analyse.model.request.GetResourcePermissionDto;
-import com.deloitte.bdh.data.analyse.model.request.PermissionItemDto;
-import com.deloitte.bdh.data.analyse.model.request.ResourcePermissionDto;
-import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,11 +42,16 @@ public class AnalyseUserResourceController {
         return RetResponse.makeOKRsp(userResourceService.getResourcePermission(request.getData()));
     }
 
+    @ApiOperation(value = "查询报表权限", notes = "查询报表权限")
+    @PostMapping("/getPagePermissionByCode")
+    public RetResult<ResourcePermissionDto> getPagePermissionByCode(@RequestBody @Valid RetRequest<GetPagePermissionByCodeDto> request) {
+        return RetResponse.makeOKRsp(userResourceService.getPagePermissionByCode(request.getData()));
+    }
+
     @ApiOperation(value = "查询数据权限", notes = "查询数据权限")
     @PostMapping("/getDataPermission")
     public RetResult<List<PermissionItemDto>> getDataPermission(@RequestBody @Valid RetRequest<String> request) {
         return RetResponse.makeOKRsp(userResourceService.getDataPermission(request.getData()));
     }
-
 
 }
