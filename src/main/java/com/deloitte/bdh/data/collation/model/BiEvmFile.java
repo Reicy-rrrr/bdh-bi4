@@ -14,7 +14,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2021-02-01
+ * @since 2021-02-03
  */
 @TableName("BI_EVM_FILE")
 public class BiEvmFile implements Serializable {
@@ -67,22 +67,10 @@ public class BiEvmFile implements Serializable {
     private String fileSize;
 
     /**
-     * 文件失效时间
+     * 数据刷新的表名
      */
-    @TableField("EXPIRE_DATE")
-    private LocalDateTime expireDate;
-
-    /**
-     * 待解析数量
-     */
-    @TableField("TO_PROCESS_NUM")
-    private String toProcessNum;
-
-    /**
-     * 已解析数量
-     */
-    @TableField("PROCESSED_NUM")
-    private String processedNum;
+    @TableField("TABLES")
+    private String tables;
 
     @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
@@ -158,26 +146,12 @@ public class BiEvmFile implements Serializable {
     public void setFileSize(String fileSize) {
         this.fileSize = fileSize;
     }
-    public LocalDateTime getExpireDate() {
-        return expireDate;
+    public String getTables() {
+        return tables;
     }
 
-    public void setExpireDate(LocalDateTime expireDate) {
-        this.expireDate = expireDate;
-    }
-    public String getToProcessNum() {
-        return toProcessNum;
-    }
-
-    public void setToProcessNum(String toProcessNum) {
-        this.toProcessNum = toProcessNum;
-    }
-    public String getProcessedNum() {
-        return processedNum;
-    }
-
-    public void setProcessedNum(String processedNum) {
-        this.processedNum = processedNum;
+    public void setTables(String tables) {
+        this.tables = tables;
     }
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -233,9 +207,7 @@ public class BiEvmFile implements Serializable {
         ", fileType=" + fileType +
         ", filePath=" + filePath +
         ", fileSize=" + fileSize +
-        ", expireDate=" + expireDate +
-        ", toProcessNum=" + toProcessNum +
-        ", processedNum=" + processedNum +
+        ", tables=" + tables +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +

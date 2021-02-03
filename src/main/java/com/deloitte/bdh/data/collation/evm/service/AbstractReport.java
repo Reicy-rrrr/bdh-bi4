@@ -1,12 +1,14 @@
 package com.deloitte.bdh.data.collation.evm.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.evm.dto.Sheet;
 import com.deloitte.bdh.data.collation.evm.enums.ReportCodeEnum;
 import com.deloitte.bdh.data.collation.model.BiReport;
 import com.deloitte.bdh.data.collation.service.BiReportService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import java.util.LinkedHashMap;
@@ -16,10 +18,10 @@ import java.util.Map;
 public abstract class AbstractReport implements ReportService {
     @Resource
     private BiReportService reportService;
+    @Autowired
+    protected DbHandler dbHandler;
 
     abstract protected ReportCodeEnum getType();
-
-    abstract protected void clear();
 
     protected Map<String, Sheet> buildEntity(List<String> codes) {
         Map<String, Sheet> map = Maps.newLinkedHashMap();
@@ -39,10 +41,13 @@ public abstract class AbstractReport implements ReportService {
 
 
     @Override
-    public void process() {
-        Map<String, Sheet> map = buildEntity(getType().relySheets().left);
-        clear();
-        assembly(map);
+    public void process(String tableName) {
+        if (dbHandler.isTableExists(tableName)) {
+            Map<String, Sheet> map = this.buildEntity(getType().relySheets().left);
+            dbHandler.truncateTable(tableName);
+            List<LinkedHashMap<String, Object>> lines = assembly(map);
+            dbHandler.executeInsert(tableName, lines);
+        }
     }
 
 

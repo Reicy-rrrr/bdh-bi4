@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,5 +80,5 @@ public interface BiEtlDbMapper {
      * @param rows      数据行
      * @return
      */
-    long executeInsert(@Param(value = "tableName") String tableName, @Param(value = "rows") List<Map<String, Object>> rows);
+    long executeInsert(@Param(value = "tableName") String tableName, @Param(value = "rows") List<LinkedHashMap<String, Object>> rows);
 }
