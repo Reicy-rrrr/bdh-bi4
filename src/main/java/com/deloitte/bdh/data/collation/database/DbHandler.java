@@ -7,6 +7,7 @@ import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableInfo;
 import com.github.pagehelper.PageInfo;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -154,7 +155,7 @@ public interface DbHandler {
      * @param rows      数据行
      * @return
      */
-    long executeInsert(String tableName, List<Map<String, Object>> rows);
+    long executeInsert(String tableName, List<LinkedHashMap<String, Object>> rows);
 
     /**
      * 查询数据源组件表字段

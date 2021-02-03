@@ -178,7 +178,6 @@ public class NifiController {
     @ApiOperation(value = "getTime", notes = "getTime")
     @PostMapping("/getTime")
     public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        evmService.choose("ZCXLZTSPB");
         return RetResponse.makeOKRsp("ok");
     }
     
