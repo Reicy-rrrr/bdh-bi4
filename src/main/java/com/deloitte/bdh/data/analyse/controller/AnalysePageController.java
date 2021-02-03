@@ -141,7 +141,7 @@ public class AnalysePageController {
 
     @ApiOperation(value = "获取非公开报表的链接", notes = "获取非公开报表的链接")
     @PostMapping("/getUrl")
-    public RetResult<BiUiAnalysePublicShare> getUrl(@RequestBody @Validated RetRequest<PublishAnalysePageDto> request) {
+    public RetResult<BiUiAnalysePublicShare> getUrl(@RequestBody @Validated RetRequest<GetShareUrlDto> request) {
         LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId());
         List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
