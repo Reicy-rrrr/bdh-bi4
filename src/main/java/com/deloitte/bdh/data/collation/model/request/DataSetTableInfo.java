@@ -37,6 +37,10 @@ public class DataSetTableInfo {
     @ApiModelProperty(value = "表描述", example = "订单表", required = true)
     private String toTableDesc;
 
+    /** 表描述 */
+    @ApiModelProperty(value = "是否文件夹", example = "1", required = true)
+    private String isFile;
+
     @ApiModelProperty(value = "下级")
     private List<DataSetTableInfo> children;
 }

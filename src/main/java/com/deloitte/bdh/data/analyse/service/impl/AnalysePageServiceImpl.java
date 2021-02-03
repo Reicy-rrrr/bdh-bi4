@@ -407,6 +407,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                         newPage.setParentId(categoryId);
                         newPage.setIsEdit(YnTypeEnum.NO.getCode());
                         newPage.setOriginPageId(originPage.getId());
+                        if (StringUtils.isNotBlank(isPublic)){
+                            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+                                newPage.setIsPublic(YesOrNoEnum.YES.getKey());
+                            } else {
+                                newPage.setIsPublic(YesOrNoEnum.NO.getKey());
+                            }
+                        }
                         save(newPage);
                         String newPageId = newPage.getId();
                         //保存pageId到config
@@ -451,9 +458,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         //更新page
         if (StringUtils.isNotBlank(isPublic)){
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                originPage.setIsPublic("1");
+                originPage.setIsPublic(YesOrNoEnum.YES.getKey());
             } else {
-                originPage.setIsPublic("0");
+                originPage.setIsPublic(YesOrNoEnum.NO.getKey());
             }
         }
         originPage.setPublishId(newConfig.getId());
