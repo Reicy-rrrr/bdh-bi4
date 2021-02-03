@@ -8,8 +8,8 @@ import com.deloitte.bdh.data.collation.evm.enums.ReportCodeEnum;
 import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
 import com.deloitte.bdh.data.collation.evm.service.AbstractReport;
 import com.deloitte.bdh.data.collation.evm.utils.RuleParseUtil;
-import com.deloitte.bdh.data.collation.model.EvmCapanalysisSum;
-import com.deloitte.bdh.data.collation.service.EvmCapanalysisSumService;
+import com.deloitte.bdh.data.collation.model.EvmCapanalysisFund;
+import com.deloitte.bdh.data.collation.service.EvmCapanalysisFundService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.Map;
 @Service(value = "zjbReportServiceImpl")
 public class ZjbReportServiceImpl extends AbstractReport {
     @Resource
-    private EvmCapanalysisSumService sumService;
+    private EvmCapanalysisFundService fundService;
 
     @Override
     protected ReportCodeEnum getType() {
@@ -36,7 +36,7 @@ public class ZjbReportServiceImpl extends AbstractReport {
 
     @Override
     protected void clear() {
-        sumService.remove(new LambdaQueryWrapper<EvmCapanalysisSum>().last("where 1=1"));
+        fundService.remove(new LambdaQueryWrapper<EvmCapanalysisFund>().last("where 1=1"));
     }
 
     @Override
@@ -49,50 +49,55 @@ public class ZjbReportServiceImpl extends AbstractReport {
 
         List<String> periods = tempSheet.yCellNo();
         if (CollectionUtils.isNotEmpty(periods)) {
-            List<EvmCapanalysisSum> all = Lists.newArrayList();
-            Map<String, EvmCapanalysisSum> last = Maps.newHashMap();
+            List<EvmCapanalysisFund> all = Lists.newArrayList();
+            Map<String, EvmCapanalysisFund> last = Maps.newHashMap();
             for (String period : periods) {
                 String type = period.length() == 4 ? "年报" : "月报";
                 String periodTemp = period.length() == 4 ? period : period.substring(0, period.lastIndexOf("-"));
                 String periodDate = period.length() == 4 ? period + "-12-31" : period;
                 for (Rule rule : getType().relySheets().right) {
-                    EvmCapanalysisSum lastReport = last.get(rule.getTargetCode());
+                    EvmCapanalysisFund lastReport = last.get(rule.getTargetCode());
                     String ytyValue = null == lastReport ? null : lastReport.getIndexValue();
-                    EvmCapanalysisSum out = new EvmCapanalysisSum();
+                    EvmCapanalysisFund out = new EvmCapanalysisFund();
                     out.setType(type);
                     out.setPeriod(periodTemp);
                     out.setPeriodDate(periodDate);
                     out.setIndexCode(rule.getTargetCode());
                     out.setIndexName(rule.getTargetName());
                     out.setIndexValue(RuleParseUtil.value(rule.getExpression(), map, period));
-                    out.setYtyValue(ytyValue);
-                    //设置比率
-                    if (null == ytyValue) {
-                        out.setYtyRate(null);
-                    } else {
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-                            out.setYtyRate("0");
-                        }
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-                            out.setYtyRate("-100");
-                        }
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-                            out.setYtyRate("100");
-                        }
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-                            String ytyRate = (new BigDecimal(out.getIndexValue()).subtract(new BigDecimal(ytyValue)))
-                                    .divide(new BigDecimal(ytyValue), 5, BigDecimal.ROUND_HALF_UP)
-                                    .multiply(new BigDecimal("100"))
-                                    .toString();
-                            out.setYtyRate(ytyRate);
-                        }
-                    }
+                    out.setChainValue("0");
+                    //设置同比
+                    setYtyValue(ytyValue, out);
+
                     last.put(out.getIndexCode(), out);
                     all.add(out);
                 }
             }
-            sumService.saveBatch(all);
+            fundService.saveBatch(all);
         }
         return null;
+    }
+
+    private void setYtyValue(String ytyValue, EvmCapanalysisFund out) {
+        if (null == ytyValue) {
+            out.setYtyRate(null);
+        } else {
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
+                out.setYtyRate("0");
+            }
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
+                out.setYtyRate("-100");
+            }
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
+                out.setYtyRate("100");
+            }
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
+                String ytyRate = (new BigDecimal(out.getIndexValue()).subtract(new BigDecimal(ytyValue)))
+                        .divide(new BigDecimal(ytyValue), 5, BigDecimal.ROUND_HALF_UP)
+                        .multiply(new BigDecimal("100"))
+                        .toString();
+                out.setYtyRate(ytyRate);
+            }
+        }
     }
 }

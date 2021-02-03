@@ -67,27 +67,8 @@ public class ZcfzReportServiceImpl extends AbstractReport {
                     out.setIndexName(rule.getTargetName());
                     out.setIndexValue(RuleParseUtil.value(rule.getExpression(), map, period));
                     out.setYtyValue(ytyValue);
-                    //设置比率
-                    if (null == ytyValue) {
-                        out.setYtyRate(null);
-                    } else {
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-                            out.setYtyRate("0");
-                        }
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-                            out.setYtyRate("-100");
-                        }
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-                            out.setYtyRate("100");
-                        }
-                        if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-                            String ytyRate = (new BigDecimal(out.getIndexValue()).subtract(new BigDecimal(ytyValue)))
-                                    .divide(new BigDecimal(ytyValue), 5, BigDecimal.ROUND_HALF_UP)
-                                    .multiply(new BigDecimal("100"))
-                                    .toString();
-                            out.setYtyRate(ytyRate);
-                        }
-                    }
+                    //设置同比
+                    setYtyValue(ytyValue, out);
                     last.put(out.getIndexCode(), out);
                     all.add(out);
                 }
@@ -96,4 +77,28 @@ public class ZcfzReportServiceImpl extends AbstractReport {
         }
         return null;
     }
+
+    private void setYtyValue(String ytyValue, EvmCapanalysisSum out) {
+        if (null == ytyValue) {
+            out.setYtyRate(null);
+        } else {
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
+                out.setYtyRate("0");
+            }
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
+                out.setYtyRate("-100");
+            }
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
+                out.setYtyRate("100");
+            }
+            if (BigDecimal.ZERO.compareTo(new BigDecimal(out.getIndexValue())) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
+                String ytyRate = (new BigDecimal(out.getIndexValue()).subtract(new BigDecimal(ytyValue)))
+                        .divide(new BigDecimal(ytyValue), 5, BigDecimal.ROUND_HALF_UP)
+                        .multiply(new BigDecimal("100"))
+                        .toString();
+                out.setYtyRate(ytyRate);
+            }
+        }
+    }
+
 }

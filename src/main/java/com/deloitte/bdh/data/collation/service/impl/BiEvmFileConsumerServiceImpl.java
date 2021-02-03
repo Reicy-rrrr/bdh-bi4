@@ -84,12 +84,9 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
             //todo send mq
             evmService.choose(ReportCodeEnum.ZCXLZTSPB.getName());
-//            evmService.choose(ReportCodeEnum.ZJB.getName());
+            evmService.choose(ReportCodeEnum.ZJB.getName());
 
-        } catch (IOException e) {
-            log.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
-        } catch (InvalidFormatException e) {
+        } catch (IOException | InvalidFormatException e) {
             log.error("读取Excel文件失败，程序运行错误！", e);
             throw new BizException("读取Excel文件失败，程序运行错误！");
         }
