@@ -1,5 +1,21 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
@@ -8,10 +24,16 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.client.FeignClientService;
+import com.deloitte.bdh.common.client.dto.IntactUserInfoVoCache;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
-import com.deloitte.bdh.common.util.*;
+import com.deloitte.bdh.common.util.AesUtil;
+import com.deloitte.bdh.common.util.GenerateCodeUtil;
+import com.deloitte.bdh.common.util.Md5Util;
+import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
@@ -23,10 +45,25 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
-import com.deloitte.bdh.data.analyse.model.request.*;
+import com.deloitte.bdh.data.analyse.model.request.AnalyseNameDto;
+import com.deloitte.bdh.data.analyse.model.request.BatchDeleteAnalyseDto;
+import com.deloitte.bdh.data.analyse.model.request.CopyDeloittePageDto;
+import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageDto;
+import com.deloitte.bdh.data.analyse.model.request.ReplaceDataSetDto;
+import com.deloitte.bdh.data.analyse.model.request.ReplaceItemDto;
+import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
+import com.deloitte.bdh.data.analyse.model.request.SelectPublishedPageDto;
+import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
-import com.deloitte.bdh.data.analyse.service.*;
+import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageHomepageService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageService;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
+import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
+import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
@@ -36,19 +73,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -95,6 +119,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Resource
     private BiUiDemoMapper demoMapper;
+    
+    @Autowired
+    private FeignClientService feignClientService;
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
@@ -114,7 +141,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             List<BiUiAnalysePage> list = list(queryWrapper);
             for (BiUiAnalysePage page : list) {
                 AnalysePageDto dto = new AnalysePageDto();
+                
                 BeanUtils.copyProperties(page, dto);
+                
                 pageList.add(dto);
             }
         } else {
@@ -133,7 +162,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
+            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(),request.getLang());
+            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(),request.getLang());
             BeanUtils.copyProperties(page, dto);
+            if(voc != null) {
+            	dto.setCreateUserName(voc.getEmployeeName());
+            }
+            if(vom != null) {
+            	dto.setModifiedUserName(vom.getEmployeeName());
+            }
             pageDtoList.add(dto);
         });
         userResourceService.setPagePermission(pageDtoList);

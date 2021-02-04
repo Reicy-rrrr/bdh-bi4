@@ -14,6 +14,11 @@
         <result column="ORIGIN_PAGE_ID" property="originPageId"/>
         <result column="DELOITTE_FLAG" property="deloitteFlag"/>
         <result column="IS_PUBLIC" property="isPublic"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="MODIFIED_DATE" property="modifiedDate"/>
+        <result column="MODIFIED_USER" property="modifiedUser"/>
+        
     </resultMap>
 
     <select id="selectPublishedPage" resultMap="BaseResultMap">
@@ -27,7 +32,11 @@
         t1.CATEGORY_ID,
         t1.EDIT_ID,
         t1.PUBLISH_ID,
-        t1.IS_PUBLIC
+        t1.IS_PUBLIC,
+        t1.CREATE_USER,
+        t1.CREATE_DATE,
+        t1.MODIFIED_DATE,
+        t1.MODIFIED_USER
         FROM
         BI_UI_ANALYSE_PAGE t1
         LEFT JOIN (

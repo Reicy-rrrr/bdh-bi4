@@ -5,6 +5,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import lombok.Data;
+
 /**
  * rediskey配置类
  *
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "portal.key")
 @PropertySource("classpath:redisKey.properties")
+@Data
 public class RedisKeyProperties {
 
 	private String userIdPrefix;
@@ -21,6 +24,10 @@ public class RedisKeyProperties {
 	private String biTargetKey;
 	@Value(value = "${portal.key.admin.enumCode}")
 	private String enumCode;
+	@Value(value = "${bdh.key.tenant.tenantCode}")
+	  private String tenantCode;
+	
+	public static final String FEIGN_DLA_PREFIX = "bdh:bi:feign:";
 
 	public String getUserIdPrefix() {
 		return userIdPrefix;
