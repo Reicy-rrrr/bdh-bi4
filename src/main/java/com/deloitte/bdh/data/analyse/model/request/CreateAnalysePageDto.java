@@ -24,11 +24,6 @@ public class CreateAnalysePageDto {
     private String type;
 
     /**
-     * 是否用户自定义类型CUSTOMER,TYPE1,TYPE2...
-     */
-    @ApiModelProperty(value = "是否用户自定义类型CUSTOMER,TYPE1,TYPE2")
-    private String initType;
-    /**
      * 报表描述
      */
     @ApiModelProperty(value = "报表描述")
