@@ -84,7 +84,7 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
             //获取所有的category
             for (Map<String, Object> row : rows) {
                 String categoryName = MapUtils.getString(row, "category");
-                if (categoryMap.keySet().toString().contains(categoryName)) {
+                if (categoryMap.containsKey(categoryName)) {
                     categoryMap.get(categoryName).add(MapUtils.getObject(row, yColName));
                 } else {
                     List<Object> valueList = Lists.newArrayList();
