@@ -153,7 +153,7 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
         Map<String, List<Object>> categoryMap = Maps.newHashMap();
         for (Map<String, Object> row : rows) {
             String categoryName = MapUtils.getString(row, "category");
-            if (categoryMap.keySet().toString().contains(categoryName)) {
+            if (categoryMap.containsKey(categoryName)) {
                 categoryMap.get(categoryName).add(MapUtils.getDouble(row, "value"));
             } else {
                 List<Object> valueList = Lists.newArrayList();
