@@ -61,6 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,14 +176,37 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     @Override
     public PageResult<List<DataSetResp>> getDataSetPage(GetDataSetPageDto dto) {
         List<String> parentIdList = Lists.newArrayList(dto.getFileId());
-        List<DataSetResp> result = getDataSet(parentIdList, dto.getSuperUserFlag());
-        userResourceService.setDataSetPermission(result, ResourcesTypeEnum.DATA_SET);
-        PageInfo<BiEtlModel> pageInfo = new PageInfo(result);
-        PageResult<List<DataSetResp>> pageResult = new PageResult(pageInfo);
-        return pageResult;
+        PageInfo<BiDataSet> pageInfo = getDataSetPage(parentIdList, dto.getSuperUserFlag());
+        List<DataSetResp> respList = transfer(pageInfo.getList());
+        userResourceService.setDataSetPermission(respList, ResourcesTypeEnum.DATA_SET);
+        PageInfo<DataSetResp> pageResult = new PageInfo<>();
+        BeanUtils.copyProperties(pageInfo, pageResult);
+        pageResult.setList(respList);
+        return new PageResult<>(pageResult);
     }
 
-    public List<DataSetResp> getDataSet(List<String> parentIdList, String superUserFlag) {
+    private PageInfo<BiDataSet> getDataSetPage(List<String> parentIdList, String superUserFlag) {
+        PageInfo<BiDataSet> dataSetList;
+        if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiDataSet::getParentId, parentIdList);
+            queryWrapper.eq(BiDataSet::getIsFile, YesOrNoEnum.NO.getKey());
+            queryWrapper.eq(BiDataSet::getTenantId, ThreadLocalHolder.getTenantId());
+            dataSetList = new PageInfo<>(list(queryWrapper));
+        } else {
+            SelectDataSetDto selectDataSetDto = new SelectDataSetDto();
+            selectDataSetDto.setUserId(ThreadLocalHolder.getOperator());
+            selectDataSetDto.setResourceType(ResourcesTypeEnum.DATA_SET.getCode());
+            selectDataSetDto.setPermittedAction(PermittedActionEnum.VIEW.getCode());
+            selectDataSetDto.setTenantId(ThreadLocalHolder.getTenantId());
+            selectDataSetDto.setParentIdList(parentIdList);
+            selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
+            dataSetList = new PageInfo<>(setMapper.selectDataSetCategory(selectDataSetDto));
+        }
+        return dataSetList;
+    }
+
+    private List<DataSetResp> getDataSet(List<String> parentIdList, String superUserFlag) {
         List<BiDataSet> dataSetList;
         if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
@@ -200,9 +224,13 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             selectDataSetDto.setIsFile(YesOrNoEnum.NO.getKey());
             dataSetList = setMapper.selectDataSetCategory(selectDataSetDto);
         }
-        List<DataSetResp> result = Lists.newArrayList();
-        if (CollectionUtils.isNotEmpty(dataSetList)) {
-            for (BiDataSet dataSet : dataSetList) {
+        return transfer(dataSetList);
+    }
+
+    private List<DataSetResp> transfer(List<BiDataSet> list) {
+        List<DataSetResp> result = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (BiDataSet dataSet : list) {
                 DataSetResp dataSetResp = new DataSetResp();
                 BeanUtils.copyProperties(dataSet, dataSetResp);
                 result.add(dataSetResp);

@@ -12,7 +12,7 @@ import java.io.Serializable;
  * Description:
  */
 @Data
-public class GetPagePermissionByCodeDto implements Serializable {
+public class GetPermissionByCodeDto implements Serializable {
 
     @NotBlank
     @ApiModelProperty(value = "报表code")

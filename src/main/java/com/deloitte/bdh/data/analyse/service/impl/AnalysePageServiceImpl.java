@@ -43,6 +43,7 @@ import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageLink;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.AnalyseNameDto;
@@ -60,6 +61,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageHomepageService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageLinkService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
@@ -122,6 +124,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     
     @Autowired
     private FeignClientService feignClientService;
+
+    @Resource
+    private AnalysePageLinkService linkService;
 
     @Override
     public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
@@ -214,7 +219,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (null == fromPage) {
             throw new BizException("源报表不存在");
         }
-        //复制数据集
         BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getEditId());
         if (null == fromPageConfig) {
             throw new BizException("请先编辑源报表");
@@ -225,12 +229,22 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("源报表未配置图表");
         }
         List<String> originCodeList = Lists.newArrayList();
+        List<String> LinkPageId = Lists.newArrayList();
         for (int i = 0; i < childrenArr.size(); i++) {
             JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+            JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
             if (data.size() != 0) {
                 originCodeList.add(data.getString("tableCode"));
             }
+            if (mutual.size() != 0) {
+                JSONArray jumpReport = mutual.getJSONArray("jumpReport");
+                if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
+                    LinkPageId.add(jumpReport.getString(1));
+                }
+            }
         }
+
+        //创建数据集、复制表和数据
         Map<String, String> codeMap = Maps.newHashMap();
         for (String code : originCodeList) {
             LambdaQueryWrapper<BiDataSet> dataSetQueryWrapper = new LambdaQueryWrapper<>();
@@ -273,6 +287,19 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         insertPage.setOriginPageId(null);
         this.save(insertPage);
 
+        //添加跳转关系
+        if (CollectionUtils.isNotEmpty(LinkPageId)) {
+            LinkPageId = LinkPageId.stream().distinct().collect(Collectors.toList());
+            List<BiUiAnalysePageLink> linkList = Lists.newArrayList();
+            for (String refPageId : LinkPageId) {
+                BiUiAnalysePageLink link = new BiUiAnalysePageLink();
+                link.setPageId(insertPage.getId());
+                link.setRefPageId(refPageId);
+                linkList.add(link);
+            }
+            linkService.saveBatch(linkList);
+        }
+
         //替换content
         content.put("page", insertPage);
         for (int i = 0; i < childrenArr.size(); i++) {
@@ -296,6 +323,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         insertPage.setEditId(editConfig.getId());
         insertPage.setPublishId(publishConfig.getId());
         this.updateById(insertPage);
+
+        //替换跳转到此报表的链接
+        replaceLinkId(request.getCategoryId(), request.getFromPageId(), insertPage.getId());
+
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(insertPage, dto);
         return dto;
@@ -544,8 +575,16 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         //校验数据集字段类型
         List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
         for (ReplaceItemDto itemDto : dto.getReplaceItemDtoList()) {
-            BiDataSet fromDataSet = dataSetService.getById(itemDto.getFromDataSetCode());
-            BiDataSet toDataSet = dataSetService.getById(itemDto.getToDataSetCode());
+            BiDataSet fromDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
+                    .eq(BiDataSet::getCode, itemDto.getFromDataSetCode()));
+            if (null == fromDataSet) {
+                throw new BizException("要替换的数据集不存在");
+            }
+            BiDataSet toDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
+                    .eq(BiDataSet::getCode, itemDto.getToDataSetCode()));
+            if (null == toDataSet) {
+                throw new BizException("被替换的数据集不存在");
+            }
             List<TableColumn> fromFieldList = dataSetService.getColumns(fromDataSet.getCode());
             List<TableColumn> toFieldList = dataSetService.getColumns(toDataSet.getCode());
             validReplaceField(fromFieldList, toFieldList);
@@ -569,16 +608,16 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList){
-        Map<String, TableColumn> fromMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(fromFieldList)) {
-            fromMap = fromFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
+        Map<String, TableColumn> toMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(toFieldList)) {
+            toMap = toFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
                     a -> a, (k1, k2) -> k1));
         }
-        for (TableColumn column : toFieldList) {
-            if (null == MapUtils.getObject(fromMap, column.getName())) {
+        for (TableColumn column : fromFieldList) {
+            if (null == MapUtils.getObject(toMap, column.getName())) {
                 throw new BizException(column.getName() + "未找到对应字段");
             }
-            TableColumn fromColumn = MapUtils.getObject(fromMap, column.getName());
+            TableColumn fromColumn = MapUtils.getObject(toMap, column.getName());
             if (!org.apache.commons.lang.StringUtils.equals(column.getDataType(), fromColumn.getDataType())) {
                 throw new BizException(column.getName() + "字段类型不匹配");
             }
@@ -626,6 +665,47 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         });
         pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
+    }
+
+    private void replaceLinkId(String categoryId, String oldPageId, String newPageId) {
+        LambdaQueryWrapper<BiUiAnalysePageLink> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePageLink::getRefPageId, oldPageId);
+        List<BiUiAnalysePageLink> linkList = linkService.list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(linkList)) {
+            List<String> pageIdList = Lists.newArrayList();
+            linkList.forEach(link -> linkList.add(link));
+            List<BiUiAnalysePage> pageList = listByIds(pageIdList);
+            List<String> configIdList = Lists.newArrayList();
+            //编辑版本和发布版本都替换
+            pageList.forEach(page -> {
+                configIdList.add(page.getEditId());
+                configIdList.add(page.getPublishId());
+            });
+            List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
+            if (CollectionUtils.isNotEmpty(configList)) {
+                for (BiUiAnalysePageConfig config : configList) {
+                    JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
+                    JSONArray childrenArr = content.getJSONArray("children");
+                    for (int i = 0; i < childrenArr.size(); i++) {
+                        JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
+                        if (mutual.size() != 0) {
+                            JSONArray jumpReport = mutual.getJSONArray("jumpReport");
+                            if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
+                                if (StringUtils.equals(jumpReport.getString(1), oldPageId)) {
+                                    jumpReport.set(0, categoryId);
+                                    jumpReport.set(1, newPageId);
+                                }
+                            }
+                        }
+                    }
+                    config.setContent(content.toJSONString());
+                    configService.saveOrUpdate(config);
+                }
+            }
+            //替换之后更新关联关系
+            linkList.forEach(link -> link.setRefPageId(newPageId));
+            linkService.saveOrUpdateBatch(linkList);
+        }
     }
 
 }
