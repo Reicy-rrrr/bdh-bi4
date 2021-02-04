@@ -201,18 +201,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 }
             }
         }
-        //添加跳转关系
-        if (CollectionUtils.isNotEmpty(LinkPageId)) {
-            LinkPageId = LinkPageId.stream().distinct().collect(Collectors.toList());
-            List<BiUiAnalysePageLink> linkList = Lists.newArrayList();
-            for (String refPageId : LinkPageId) {
-                BiUiAnalysePageLink link = new BiUiAnalysePageLink();
-                link.setPageId(request.getFromPageId());
-                link.setRefPageId(refPageId);
-                linkList.add(link);
-            }
-            linkService.saveBatch(linkList);
-        }
 
         //创建数据集、复制表和数据
         Map<String, String> codeMap = Maps.newHashMap();
@@ -256,6 +244,19 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         insertPage.setDeloitteFlag(YesOrNoEnum.NO.getKey());
         insertPage.setOriginPageId(null);
         this.save(insertPage);
+
+        //添加跳转关系
+        if (CollectionUtils.isNotEmpty(LinkPageId)) {
+            LinkPageId = LinkPageId.stream().distinct().collect(Collectors.toList());
+            List<BiUiAnalysePageLink> linkList = Lists.newArrayList();
+            for (String refPageId : LinkPageId) {
+                BiUiAnalysePageLink link = new BiUiAnalysePageLink();
+                link.setPageId(insertPage.getId());
+                link.setRefPageId(refPageId);
+                linkList.add(link);
+            }
+            linkService.saveBatch(linkList);
+        }
 
         //替换content
         content.put("page", insertPage);
@@ -559,16 +560,16 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList){
-        Map<String, TableColumn> fromMap = Maps.newHashMap();
-        if (CollectionUtils.isNotEmpty(fromFieldList)) {
-            fromMap = fromFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
+        Map<String, TableColumn> toMap = Maps.newHashMap();
+        if (CollectionUtils.isNotEmpty(toFieldList)) {
+            toMap = toFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
                     a -> a, (k1, k2) -> k1));
         }
-        for (TableColumn column : toFieldList) {
-            if (null == MapUtils.getObject(fromMap, column.getName())) {
+        for (TableColumn column : fromFieldList) {
+            if (null == MapUtils.getObject(toMap, column.getName())) {
                 throw new BizException(column.getName() + "未找到对应字段");
             }
-            TableColumn fromColumn = MapUtils.getObject(fromMap, column.getName());
+            TableColumn fromColumn = MapUtils.getObject(toMap, column.getName());
             if (!org.apache.commons.lang.StringUtils.equals(column.getDataType(), fromColumn.getDataType())) {
                 throw new BizException(column.getName() + "字段类型不匹配");
             }
@@ -653,6 +654,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                     configService.saveOrUpdate(config);
                 }
             }
+            //替换之后更新关联关系
+            linkList.forEach(link -> link.setRefPageId(newPageId));
+            linkService.saveOrUpdateBatch(linkList);
         }
     }
 

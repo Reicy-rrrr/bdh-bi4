@@ -54,7 +54,7 @@ public class AnalyseUserResourceController {
         return RetResponse.makeOKRsp(userResourceService.getPagePermissionByCode(request.getData()));
     }
 
-    @ApiOperation(value = "根据报表code、文件夹id查询报表权限", notes = "根据报表code、文件夹id查询报表权限")
+    @ApiOperation(value = "根据报表code、文件夹id查询数据权限", notes = "根据报表code、文件夹id查询数据权限")
     @PostMapping("/getPageDataPermissionByCode")
     public RetResult<List<PermissionItemDto>> getPageDataPermissionByCode(@RequestBody @Valid RetRequest<GetPermissionByCodeDto> request) {
         return RetResponse.makeOKRsp(userResourceService.getPageDataPermissionByCode(request.getData()));
