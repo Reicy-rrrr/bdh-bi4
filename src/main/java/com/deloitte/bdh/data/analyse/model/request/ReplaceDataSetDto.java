@@ -12,11 +12,11 @@ import java.util.List;
 @Data
 public class ReplaceDataSetDto {
 
-    @ApiModelProperty(value = "报表id", example = "3211231", required = true)
+    @ApiModelProperty(value = "报表id", required = true)
     @NotNull(message = "报表id")
     private String pageId;
 
-    @ApiModelProperty(value = "数据集替换集合", example = "3211231", required = true)
+    @ApiModelProperty(value = "数据集替换集合", required = true)
     @NotNull(message = "数据集替换集合")
     private List<ReplaceItemDto> replaceItemDtoList;
 }

@@ -42,16 +42,22 @@ public class AnalyseUserResourceController {
         return RetResponse.makeOKRsp(userResourceService.getResourcePermission(request.getData()));
     }
 
-    @ApiOperation(value = "查询报表权限", notes = "查询报表权限")
-    @PostMapping("/getPagePermissionByCode")
-    public RetResult<ResourcePermissionDto> getPagePermissionByCode(@RequestBody @Valid RetRequest<GetPagePermissionByCodeDto> request) {
-        return RetResponse.makeOKRsp(userResourceService.getPagePermissionByCode(request.getData()));
-    }
-
     @ApiOperation(value = "查询数据权限", notes = "查询数据权限")
     @PostMapping("/getDataPermission")
     public RetResult<List<PermissionItemDto>> getDataPermission(@RequestBody @Valid RetRequest<String> request) {
         return RetResponse.makeOKRsp(userResourceService.getDataPermission(request.getData()));
+    }
+
+    @ApiOperation(value = "根据报表code、文件夹id查询报表权限", notes = "根据报表code、文件夹id查询报表权限")
+    @PostMapping("/getPagePermissionByCode")
+    public RetResult<ResourcePermissionDto> getPagePermissionByCode(@RequestBody @Valid RetRequest<GetPermissionByCodeDto> request) {
+        return RetResponse.makeOKRsp(userResourceService.getPagePermissionByCode(request.getData()));
+    }
+
+    @ApiOperation(value = "根据报表code、文件夹id查询数据权限", notes = "根据报表code、文件夹id查询数据权限")
+    @PostMapping("/getPageDataPermissionByCode")
+    public RetResult<List<PermissionItemDto>> getPageDataPermissionByCode(@RequestBody @Valid RetRequest<GetPermissionByCodeDto> request) {
+        return RetResponse.makeOKRsp(userResourceService.getPageDataPermissionByCode(request.getData()));
     }
 
 }

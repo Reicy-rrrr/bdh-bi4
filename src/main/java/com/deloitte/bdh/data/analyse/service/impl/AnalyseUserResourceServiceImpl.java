@@ -5,7 +5,6 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
@@ -19,11 +18,9 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -138,15 +135,30 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
     }
 
     @Override
-    public ResourcePermissionDto getPagePermissionByCode(GetPagePermissionByCodeDto dto) {
+    public ResourcePermissionDto getPagePermissionByCode(GetPermissionByCodeDto dto) {
         LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalysePage::getCode, dto.getCode());
         queryWrapper.eq(BiUiAnalysePage::getParentId, dto.getCategoryId());
         BiUiAnalysePage page = pageService.getOne(queryWrapper);
-        GetResourcePermissionDto permissionDto = new GetResourcePermissionDto();
-        permissionDto.setId(page.getId());
-        permissionDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
-        return getResourcePermission(permissionDto);
+        if (null != page) {
+            GetResourcePermissionDto permissionDto = new GetResourcePermissionDto();
+            permissionDto.setId(page.getId());
+            permissionDto.setResourceType(ResourcesTypeEnum.PAGE.getCode());
+            return getResourcePermission(permissionDto);
+        }
+        return new ResourcePermissionDto();
+    }
+
+    @Override
+    public List<PermissionItemDto> getPageDataPermissionByCode(GetPermissionByCodeDto dto) {
+        LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalysePage::getCode, dto.getCode());
+        queryWrapper.eq(BiUiAnalysePage::getParentId, dto.getCategoryId());
+        BiUiAnalysePage page = pageService.getOne(queryWrapper);
+        if (null != page) {
+            return getDataPermission(page.getId());
+        }
+        return null;
     }
 
     @Override
