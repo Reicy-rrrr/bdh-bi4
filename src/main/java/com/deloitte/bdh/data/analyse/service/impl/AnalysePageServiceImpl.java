@@ -535,8 +535,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         for (ReplaceItemDto itemDto : dto.getReplaceItemDtoList()) {
             BiDataSet fromDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getCode, itemDto.getFromDataSetCode()));
+            if (null == fromDataSet) {
+                throw new BizException("要替换的数据集不存在");
+            }
             BiDataSet toDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getCode, itemDto.getToDataSetCode()));
+            if (null == toDataSet) {
+                throw new BizException("被替换的数据集不存在");
+            }
             List<TableColumn> fromFieldList = dataSetService.getColumns(fromDataSet.getCode());
             List<TableColumn> toFieldList = dataSetService.getColumns(toDataSet.getCode());
             validReplaceField(fromFieldList, toFieldList);
