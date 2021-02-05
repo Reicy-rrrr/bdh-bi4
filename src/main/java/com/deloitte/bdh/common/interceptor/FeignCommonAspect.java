@@ -31,7 +31,7 @@ public class FeignCommonAspect {
         Object[] args = proceedingJoinPoint.getArgs();
         if (args != null && args.length == 1 && args[0] instanceof RetRequest) {
             RetRequest<?> retRequest = (RetRequest) args[0];
-            retRequest.setLang(ThreadLocalHolder.get("lang"));
+//            retRequest.setLang(ThreadLocalHolder.get("lang"));
             retRequest.setOperator(ThreadLocalHolder.getOperator());
         }
         Object object = proceedingJoinPoint.proceed();

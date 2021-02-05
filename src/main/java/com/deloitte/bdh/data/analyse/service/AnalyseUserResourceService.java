@@ -28,9 +28,9 @@ public interface AnalyseUserResourceService extends Service<BiUiAnalyseUserResou
 
     List<PermissionItemDto> getDataPermission(String pageId);
 
-    void setCategoryPermission(List<AnalyseCategoryDto> categoryList);
+    void setCategoryPermission(List<AnalyseCategoryDto> categoryList, String superUserFlag);
 
-    void setPagePermission(List<AnalysePageDto> pageDtoList);
+    void setPagePermission(List<AnalysePageDto> pageDtoList, String superUserFlag);
 
-    void setDataSetPermission(List<DataSetResp> dataSetList, ResourcesTypeEnum resourcesTypeEnum);
+    void setDataSetPermission(List<DataSetResp> dataSetList, ResourcesTypeEnum resourcesTypeEnum, String superUserFlag);
 }

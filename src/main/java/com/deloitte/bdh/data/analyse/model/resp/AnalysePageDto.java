@@ -96,9 +96,15 @@ public class AnalysePageDto implements Serializable {
     @ApiModelProperty(value = "CREATE_USER")
     private String createUser;
 
+    @ApiModelProperty(value = "CREATE_USER_NAME")
+    private String createUserName;
+    
     @ApiModelProperty(value = "MODIFIED_DATE")
     private LocalDateTime modifiedDate;
 
     @ApiModelProperty(value = "MODIFIED_USER")
     private String modifiedUser;
+    
+    @ApiModelProperty(value = "MODIFIED_USER_NAME")
+    private String modifiedUserName;
 }

@@ -4,6 +4,7 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
@@ -18,6 +19,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -196,7 +198,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
     }
 
     @Override
-    public void setCategoryPermission(List<AnalyseCategoryDto> categoryList) {
+    public void setCategoryPermission(List<AnalyseCategoryDto> categoryList, String superUserFlag) {
         List<String> categoryIds = new ArrayList<>();
         categoryList.forEach(category -> categoryIds.add(category.getId()));
 
@@ -212,21 +214,25 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             categoryIdResourcesMap = categoryResources.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
         }
         for (AnalyseCategoryDto dto : categoryList) {
-            BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
-            if (resource != null) {
-                if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                    dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
+            if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
+                dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+            } else {
+                BiUiAnalyseUserResource resource = MapUtils.getObject(categoryIdResourcesMap, dto.getId());
+                if (resource != null) {
+                    if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
+                    } else {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                    }
                 } else {
                     dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                 }
-            } else {
-                dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
             }
         }
     }
 
     @Override
-    public void setPagePermission(List<AnalysePageDto> pageDtoList) {
+    public void setPagePermission(List<AnalysePageDto> pageDtoList, String superUserFlag) {
         List<String> pageIdList = new ArrayList<>();
         pageDtoList.forEach(page -> pageIdList.add(page.getId()));
 
@@ -242,21 +248,25 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             pageIdResourcesMap = categoryResources.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
         }
         for (AnalysePageDto dto : pageDtoList) {
-            BiUiAnalyseUserResource resource = MapUtils.getObject(pageIdResourcesMap, dto.getId());
-            if (resource != null) {
-                if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                    dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
+            if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
+                dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+            } else {
+                BiUiAnalyseUserResource resource = MapUtils.getObject(pageIdResourcesMap, dto.getId());
+                if (resource != null) {
+                    if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
+                    } else {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                    }
                 } else {
                     dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                 }
-            } else {
-                dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
             }
         }
     }
 
     @Override
-    public void setDataSetPermission(List<DataSetResp> dataSetList, ResourcesTypeEnum resourcesTypeEnum) {
+    public void setDataSetPermission(List<DataSetResp> dataSetList, ResourcesTypeEnum resourcesTypeEnum, String superUserFlag) {
         List<String> idList = new ArrayList<>();
         dataSetList.forEach(dataSet -> idList.add(dataSet.getId()));
 
@@ -272,15 +282,19 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             dataSetIdResourcesMap = resourceList.stream().collect(Collectors.toMap(BiUiAnalyseUserResource::getResourceId, b -> b, (v1, v2) -> v1));
         }
         for (DataSetResp dto : dataSetList) {
-            BiUiAnalyseUserResource resource = MapUtils.getObject(dataSetIdResourcesMap, dto.getId());
-            if (resource != null) {
-                if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
-                    dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
+            if (StringUtils.equals(superUserFlag, YesOrNoEnum.YES.getKey())) {
+                dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+            } else {
+                BiUiAnalyseUserResource resource = MapUtils.getObject(dataSetIdResourcesMap, dto.getId());
+                if (resource != null) {
+                    if (StringUtils.equals(PermittedActionEnum.VIEW.getCode(), resource.getPermittedAction())) {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode()));
+                    } else {
+                        dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
+                    }
                 } else {
                     dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
                 }
-            } else {
-                dto.setPermittedAction(Lists.newArrayList(PermittedActionEnum.VIEW.getCode(), PermittedActionEnum.EDIT.getCode()));
             }
         }
     }
