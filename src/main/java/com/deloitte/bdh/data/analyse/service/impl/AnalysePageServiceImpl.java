@@ -178,7 +178,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             }
             pageDtoList.add(dto);
         });
-        userResourceService.setPagePermission(pageDtoList);
+        userResourceService.setPagePermission(pageDtoList, request.getData().getSuperUserFlag());
         homepageService.fillHomePage(pageDtoList);
         pageInfo.setList(pageDtoList);
         return new PageResult<>(pageInfo);
