@@ -21,9 +21,11 @@ import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
 import com.deloitte.bdh.data.collation.service.BiReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -70,8 +72,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
         try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
             if (workbook == null) {
-                log.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+                log.error("读取Excel文件失败，上传文件内容为空!");
+                throw new BizException("读取Excel文件失败，上传文件内容不能为空!");
             }
 
             List<String> tables = JsonUtil.string2Obj(evmFile.getTables(), new TypeReference<List<String>>() {
@@ -95,7 +97,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
     private void doZcfzb(Sheet sheet, String batchId) {
         if (sheet == null) {
-            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+            throw new BizException("读取Excel文件失败，上传文件内容不能为空!");
         }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
@@ -112,9 +114,20 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
         //循环
         List<BiReport> list = Lists.newArrayList();
 
-        for (int row = 2; row < sheet.getLastRowNum() + 1; row++) {
+        for (int row = 2; row < sheet.getLastRowNum(); row++) {
             List<BiReport> tempList = Lists.newArrayList();
-            String indexCode = sheet.getRow(row).getCell(0).getStringCellValue();
+            Row indexRow = sheet.getRow(row);
+            if (null == indexRow) {
+                continue;
+            }
+            Cell indexCell = indexRow.getCell(0);
+            if (null == indexCell) {
+                continue;
+            }
+            String indexCode = indexCell.getStringCellValue();
+            if (StringUtils.isBlank(indexCode)) {
+                continue;
+            }
             for (int cell = 2; cell < colNums; cell++) {
                 BiReport biReport = new BiReport();
                 biReport.setBatchId(batchId);
@@ -162,7 +175,18 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
         for (int row = 2; row < sheet.getLastRowNum() + 1; row++) {
             List<BiReport> tempList = Lists.newArrayList();
-            String indexCode = sheet.getRow(row).getCell(0).getStringCellValue();
+            Row indexRow = sheet.getRow(row);
+            if (null == indexRow) {
+                continue;
+            }
+            Cell indexCell = indexRow.getCell(0);
+            if (null == indexCell) {
+                continue;
+            }
+            String indexCode = indexCell.getStringCellValue();
+            if (StringUtils.isBlank(indexCode)) {
+                continue;
+            }
             for (int cell = 2; cell < colNums; cell++) {
                 BiReport biReport = new BiReport();
                 biReport.setBatchId(batchId);
@@ -208,7 +232,18 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
         for (int row = 2; row < sheet.getLastRowNum() + 1; row++) {
             List<BiReport> tempList = Lists.newArrayList();
-            String indexCode = sheet.getRow(row).getCell(0).getStringCellValue();
+            Row indexRow = sheet.getRow(row);
+            if (null == indexRow) {
+                continue;
+            }
+            Cell indexCell = indexRow.getCell(0);
+            if (null == indexCell) {
+                continue;
+            }
+            String indexCode = indexCell.getStringCellValue();
+            if (StringUtils.isBlank(indexCode)) {
+                continue;
+            }
             for (int cell = 2; cell < colNums; cell++) {
                 BiReport biReport = new BiReport();
                 biReport.setBatchId(batchId);
