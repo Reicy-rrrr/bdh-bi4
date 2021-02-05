@@ -299,9 +299,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         if (CollectionUtils.isNotEmpty(categoryList)) {
             List<String> parentIdList = Lists.newArrayList();
             categoryList.forEach(category -> {
-                if (StringUtils.equals(category.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
-                    throw new BizException("顶级文件夹不能删除");
-                }
+//                if (StringUtils.equals(category.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
+//                    throw new BizException("顶级文件夹不能删除");
+//                }
                 parentIdList.add(category.getId());
             });
             //删除前检查是否有下级文件
@@ -309,8 +309,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             if (CollectionUtils.isNotEmpty(childList)) {
                 throw new BizException("请先删除下级文件夹");
             }
-//            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
-//            if (CollectionUtils.isNotEmpty(childPageList)) {
+            List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
+            if (CollectionUtils.isNotEmpty(childPageList)) {
 //                List<String> existEdit = childPageList.stream()
 //                        .filter(BiUiAnalysePage -> null != BiUiAnalysePage.getIsEdit() &&
 //                                BiUiAnalysePage.getIsEdit().equals(YnTypeEnum.YES.getCode()))
@@ -321,7 +321,10 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 //                } else {
 //                    throw new BizException("请先删除下级页面");
 //                }
-//            }
+                List<String> pageNameList = childPageList.stream().map(BiUiAnalysePage::getName).collect(Collectors.toList());
+                String message = StringUtils.join(pageNameList);
+                throw new BizException("文件夹下还存在报表：" + message + "，请先删除");
+            }
             //删除
             this.removeByIds(parentIdList);
 
