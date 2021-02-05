@@ -136,6 +136,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             PageHelper.startPage(request.getPage(), request.getSize());
         }
         List<AnalysePageDto> pageList = Lists.newArrayList();
+        PageInfo pageInfo;
         if (StringUtils.equals(request.getData().getSuperUserFlag(), YesOrNoEnum.YES.getKey())) {
             LambdaQueryWrapper<BiUiAnalysePage> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(BiUiAnalysePage::getParentId, request.getData().getCategoryId());
@@ -144,11 +145,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             }
             queryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
             List<BiUiAnalysePage> list = list(queryWrapper);
+            pageInfo = PageInfo.of(list);
             for (BiUiAnalysePage page : list) {
                 AnalysePageDto dto = new AnalysePageDto();
-                
                 BeanUtils.copyProperties(page, dto);
-                
                 pageList.add(dto);
             }
         } else {
@@ -160,10 +160,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             selectPublishedPageDto.setName(request.getData().getName());
             selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
             pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
+            pageInfo = PageInfo.of(pageList);
         }
 
         //处理查询之后做操作返回total不正确
-        PageInfo pageInfo = PageInfo.of(pageList);
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();

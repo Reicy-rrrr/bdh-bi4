@@ -128,7 +128,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             categoryDtoList.forEach(category -> categoryIds.add(category.getId()));
         }
         //设置文件夹权限
-        userResourceService.setCategoryPermission(categoryDtoList);
+        userResourceService.setCategoryPermission(categoryDtoList, request.getData().getSuperUserFlag());
 
         //查询page
         SelectPublishedPageDto selectPublishedPageDto = new SelectPublishedPageDto();
@@ -141,7 +141,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         List<AnalysePageDto> pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
 
         //设置报表权限
-        userResourceService.setPagePermission(pageList);
+        userResourceService.setPagePermission(pageList, request.getData().getSuperUserFlag());
 
         //组装category id和page的map结构，方便递归取数据
         Map<String, List<AnalysePageDto>> pageDtoMapTmp = new LinkedHashMap<>();
