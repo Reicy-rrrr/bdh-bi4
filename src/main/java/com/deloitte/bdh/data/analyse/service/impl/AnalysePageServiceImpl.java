@@ -454,49 +454,49 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                     List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
                             .eq(BiUiAnalysePage::getParentId, categoryId)
                             .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
-                    if (CollectionUtils.isEmpty(allPageList)) {
-                        //新建config
-                        BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-                        if (originConfig != null) {
-                            BeanUtils.copyProperties(originConfig, newConfig);
-                            originConfig.setContent(request.getContent());
-                            configService.updateById(originConfig);
-                        }
-                        newConfig.setId(null);
-                        newConfig.setPageId(null);
-                        newConfig.setContent(request.getContent());
-                        newConfig.setTenantId(ThreadLocalHolder.getTenantId());
-                        configService.save(newConfig);
-                        //新建page
-                        BiUiAnalysePage newPage = new BiUiAnalysePage();
-                        BeanUtils.copyProperties(originPage, newPage);
-                        newPage.setId(null);
-                        newPage.setPublishId(newConfig.getId());
-                        newPage.setParentId(categoryId);
-                        newPage.setIsEdit(YnTypeEnum.NO.getCode());
-                        newPage.setOriginPageId(originPage.getId());
-                        //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
-                        newPage.setCode(originPage.getCode());
-                        if (StringUtils.isNotBlank(isPublic)){
-                            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                                newPage.setIsPublic(YesOrNoEnum.YES.getKey());
-                            } else {
-                                newPage.setIsPublic(YesOrNoEnum.NO.getKey());
-                            }
-                        }
-                        save(newPage);
-                        String newPageId = newPage.getId();
-                        //保存pageId到config
-                        newConfig.setPageId(newPageId);
-                        configService.updateById(newConfig);
-                        //把新的pageId传给权限操作
-                        if (null != permissionDto) {
-                            pageId = newPageId;
-                            permissionDto.setId(newPageId);
-                        }
-                    } else {
-                        updatePage(request, originPage, originConfig, isPublic);
+                if (CollectionUtils.isEmpty(allPageList) && StringUtils.isNotBlank(originPage.getParentId())) {
+                    //新建config
+                    BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                    if (originConfig != null) {
+                        BeanUtils.copyProperties(originConfig, newConfig);
+                        originConfig.setContent(request.getContent());
+                        configService.updateById(originConfig);
                     }
+                    newConfig.setId(null);
+                    newConfig.setPageId(null);
+                    newConfig.setContent(request.getContent());
+                    newConfig.setTenantId(ThreadLocalHolder.getTenantId());
+                    configService.save(newConfig);
+                    //新建page
+                    BiUiAnalysePage newPage = new BiUiAnalysePage();
+                    BeanUtils.copyProperties(originPage, newPage);
+                    newPage.setId(null);
+                    newPage.setPublishId(newConfig.getId());
+                    newPage.setParentId(categoryId);
+                    newPage.setIsEdit(YnTypeEnum.NO.getCode());
+                    newPage.setOriginPageId(originPage.getId());
+                    //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
+                    newPage.setCode(originPage.getCode());
+                    if (StringUtils.isNotBlank(isPublic)) {
+                        if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+                            newPage.setIsPublic(YesOrNoEnum.YES.getKey());
+                        } else {
+                            newPage.setIsPublic(YesOrNoEnum.NO.getKey());
+                        }
+                    }
+                    save(newPage);
+                    String newPageId = newPage.getId();
+                    //保存pageId到config
+                    newConfig.setPageId(newPageId);
+                    configService.updateById(newConfig);
+                    //把新的pageId传给权限操作
+                    if (null != permissionDto) {
+                        pageId = newPageId;
+                        permissionDto.setId(newPageId);
+                    }
+                } else {
+                    updatePage(request, originPage, originConfig, isPublic);
+                }
 //                }
             }
 
