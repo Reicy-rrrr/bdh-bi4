@@ -82,6 +82,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), evmFile.getBatchId());
             doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), evmFile.getBatchId());
             doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), evmFile.getBatchId());
+            doKmyeb(workbook.getSheet(SheetCodeEnum.kmyeb.getValue()), evmFile.getBatchId());
 
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             //todo send mq
@@ -268,6 +269,64 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
         }
         reportService.saveBatch(list);
     }
+
+    private void doKmyeb(Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+        }
+        //获取类型
+        Cell typeCell = sheet.getRow(0).getCell(4);
+        if (null == typeCell) {
+            throw new BizException("未获取到报表期间类型");
+        }
+        reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.kmyeb.getName()));
+
+        //获取期间列数
+        String type = typeCell.getStringCellValue();
+        int colNums = sheet.getRow(1).getLastCellNum();
+
+        //循环
+        List<BiReport> list = Lists.newArrayList();
+
+        for (int row = 2; row < sheet.getLastRowNum() + 1; row++) {
+            List<BiReport> tempList = Lists.newArrayList();
+            Row indexRow = sheet.getRow(row);
+            if (null == indexRow) {
+                continue;
+            }
+            Cell indexCell = indexRow.getCell(0);
+            if (null == indexCell) {
+                continue;
+            }
+            String indexCode = indexCell.getStringCellValue();
+            if (StringUtils.isBlank(indexCode)) {
+                continue;
+            }
+            for (int cell = 3; cell < colNums; cell++) {
+                BiReport biReport = new BiReport();
+                biReport.setBatchId(batchId);
+                biReport.setReportCode(SheetCodeEnum.kmyeb.name());
+                biReport.setReportName(sheet.getSheetName());
+                biReport.setRowNo(String.valueOf(row));
+                biReport.setIndexCode(indexCode);
+                biReport.setCell1(sheet.getRow(row).getCell(2).getStringCellValue());
+                biReport.setTenantId(ThreadLocalHolder.getTenantId());
+                biReport.setColNo(String.valueOf(cell));
+                Cell temp = sheet.getRow(row).getCell(cell);
+                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                biReport.setCell2(tempValue);
+                if ("年报".equals(type)) {
+                    biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                } else {
+                    biReport.setPeriod(DateUtils.formatStandardDate(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                }
+                tempList.add(biReport);
+            }
+            list.addAll(tempList);
+        }
+        reportService.saveBatch(list);
+    }
+
 
     private void processZcfzAvg(List<BiReport> tempList, String indexCode, BiReport biReport, int row, int cell, Sheet sheet) {
         if ("EVMB001".equals(indexCode)) {

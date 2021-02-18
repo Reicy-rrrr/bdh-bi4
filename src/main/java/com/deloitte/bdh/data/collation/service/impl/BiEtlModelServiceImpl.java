@@ -333,7 +333,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setStatus(RunStatusEnum.RUNNING.getKey());
             biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
 
-            //设置数据集 此处是否该删除维度和度量？todo
+            //设置数据集
             BiDataSet oldDateSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getRefModelCode, biEtlModel.getCode()));
             if (null != oldDateSet) {
                 dataSetService.removeById(oldDateSet.getId());

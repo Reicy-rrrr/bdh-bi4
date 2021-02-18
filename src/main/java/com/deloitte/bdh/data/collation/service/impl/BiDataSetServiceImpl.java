@@ -466,6 +466,13 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             context.setSize(dto.getSize());
             tableData = dbSelector.getTableData(context);
         } else {
+            if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                //判断是否在整理中
+                BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dataSet.getRefModelCode()));
+                if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
+                    throw new RuntimeException("该数据集正在数据整理同步中，暂无数据");
+                }
+            }
             String querySql = "SELECT * FROM " + dataSet.getTableName();
             PageInfo<Map<String, Object>> pageInfo = dbHandler.executePageQuery(querySql, dto.getPage(), dto.getSize());
             if (null != pageInfo) {

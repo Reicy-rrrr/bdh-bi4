@@ -23,15 +23,15 @@ public enum ReportCodeEnum {
             Rule rule6 = new Rule(7, "EVM0007", "净资产", "{N#zcfzb.EVMB080}");
             Rule rule7 = new Rule(8, "EVM0008", "净资产收益率", "{N#lrb.EVMP024}/{N#zcfzb.EVMB080_AVG}");
             Rule rule8 = new Rule(9, "EVM0009", "应收账款", "{N#zcfzb.EVMB080}");
-            Rule rule9 = new Rule(10, "EVM0010", "逾期应收账款", "{N#zcfzb.EVMB080}");
+            Rule rule9 = new Rule(10, "EVM0010", "逾期应收账款", "{N#zcfzb.EVMB080}+111111");
             Rule rule10 = new Rule(11, "EVM0011", "应收账款周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG}");
             Rule rule11 = new Rule(12, "EVM0012", "总资产周转率 （次数）", "{N#lrb.EVMP001}/{N#zcfzb.EVMB039_AVG}");
             Rule rule12 = new Rule(13, "EVM0013", "总资产周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB039_AVG})");
             Rule rule13 = new Rule(14, "EVM0014", "固定资产", "{N#zcfzb.EVMB027}");
             Rule rule14 = new Rule(15, "EVM0015", "原值", "1+1");
             Rule rule15 = new Rule(16, "EVM0016", "累计折旧", "1+1");
-            Rule rule16 = new Rule(17, "EVM0017", "固定资产周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB037_AVG}");
-            Rule rule17 = new Rule(18, "EVM0018", "固定资产周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB037_AVG})");
+            Rule rule16 = new Rule(17, "EVM0017", "固定资产周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB027_AVG}");
+            Rule rule17 = new Rule(18, "EVM0018", "固定资产周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB027_AVG})");
             collusion.add(rule0);
             collusion.add(rule1);
             collusion.add(rule2);
@@ -61,7 +61,7 @@ public enum ReportCodeEnum {
             List<Rule> collusion = Lists.newArrayList();
             Rule rule0 = new Rule(1, "EVM0001", "资金总额", "{N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}");
             Rule rule1 = new Rule(2, "EVM0002", "资金占总资产比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004})/{N#zcfzb.EVMB039}");
-            Rule rule2 = new Rule(3, "EVM0003", "资金周转率", "({N#zcfzb.EVMB003_AVG}+{N#zcfzb.EVMB004_AVG})");
+            Rule rule2 = new Rule(3, "EVM0003", "资金周转率", "{N#kmyeb.M132}/({N#zcfzb.EVMB003_AVG}+{N#zcfzb.EVMB004_AVG})");
             Rule rule3 = new Rule(4, "EVM0004", "应收账款周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG})");
             Rule rule4 = new Rule(5, "EVM0005", "应付账款周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB046_AVG})");
             Rule rule5 = new Rule(6, "EVM0006", "存货周转天数", "360/({N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG})");
