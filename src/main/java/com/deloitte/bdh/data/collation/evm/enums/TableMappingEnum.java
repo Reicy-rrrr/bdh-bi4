@@ -9,6 +9,7 @@ public enum TableMappingEnum {
 
     EVM_CAPANALYSIS_SUM("EVM_CAPANALYSIS_SUM", ReportCodeEnum.ZCXLZTSPB),
     EVM_CAPANALYSIS_FUND("EVM_CAPANALYSIS_FUND", ReportCodeEnum.ZJB),
+    EVM_CAPANALYSIS_STRUCT("EVM_CAPANALYSIS_STRUCT", ReportCodeEnum.ZCGCB),
 
     ;
     private String name;
