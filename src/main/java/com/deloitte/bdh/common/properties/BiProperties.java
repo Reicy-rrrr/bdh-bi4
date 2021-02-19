@@ -48,11 +48,14 @@ public class BiProperties {
 
     @Value("${kafka.topic}")
     private String kafkaTopic;
-    
+
     @Value("${kafka.topic.email}")
     private String kafkaEmailTopic;
 
     @Value("${kafka.group.id}")
     private String kafkaGroupId;
+
+    @Value("${evm.download.address}")
+    private String evmDownLoadAddress;
 }
 
