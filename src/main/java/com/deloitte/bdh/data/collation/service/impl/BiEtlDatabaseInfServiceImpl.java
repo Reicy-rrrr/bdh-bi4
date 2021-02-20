@@ -21,7 +21,7 @@ import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.database.po.TableSchema;
 import com.deloitte.bdh.data.collation.enums.*;
-import com.deloitte.bdh.data.collation.integration.NifiProcessService;
+import com.deloitte.bdh.data.collation.service.NifiProcessService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.*;
 import com.deloitte.bdh.data.collation.service.*;

@@ -39,7 +39,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -85,8 +84,6 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             doKmyeb(workbook.getSheet(SheetCodeEnum.kmyeb.getValue()), evmFile.getBatchId());
 
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
-            //todo send mq
-
             for (ImmutablePair<TableMappingEnum, String> pair : enums) {
                 evmService.choose(pair.left.getValue().getName(), pair.right);
             }

@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.integration.impl;
+package com.deloitte.bdh.data.collation.service.impl;
 
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.util.JsonUtil;

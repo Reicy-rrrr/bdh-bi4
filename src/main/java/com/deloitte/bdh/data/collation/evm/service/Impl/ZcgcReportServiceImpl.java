@@ -52,8 +52,6 @@ public class ZcgcReportServiceImpl extends AbstractReport {
                 String EVMB068 = tempSheet.xCellValue("EVMB068", period);
 
                 for (Rule rule : getType().relySheets().right) {
-                    LinkedHashMap<String, Object> lastReport = last.get(rule.getTargetCode());
-//                    String ytyValue = null == lastReport ? null : MapUtils.getString(lastReport, "INDEX_VALUE");
                     LinkedHashMap<String, Object> out = Maps.newLinkedHashMap();
                     out.put("type", type);
                     out.put("PERIOD", periodTemp);
@@ -65,9 +63,6 @@ public class ZcgcReportServiceImpl extends AbstractReport {
                     out.put("VALUE1", setValue(EVMB080, MapUtils.getString(out, "INDEX_VALUE")));
                     out.put("VALUE2", setValue(EVMB039, MapUtils.getString(out, "INDEX_VALUE")));
                     out.put("VALUE3", setValue(EVMB068, MapUtils.getString(out, "INDEX_VALUE")));
-
-                    //设置同比
-//                    setYtyValue(ytyValue, out);
                     last.put(rule.getTargetCode(), out);
                     all.add(out);
                 }
@@ -86,28 +81,4 @@ public class ZcgcReportServiceImpl extends AbstractReport {
         return (new BigDecimal(value).divide(new BigDecimal(evm), 5, BigDecimal.ROUND_HALF_UP)).toString();
     }
 
-//    private void setYtyValue(String ytyValue, LinkedHashMap<String, Object> out) {
-//        String indexValue = MapUtils.getString(out, "INDEX_VALUE");
-//        if (null == ytyValue) {
-//            out.put("YTY_RATE", null);
-//        } else {
-//            if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-//                out.put("YTY_RATE", "0");
-//            }
-//            if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-//                out.put("YTY_RATE", "-100");
-//            }
-//            if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-//                out.put("YTY_RATE", "100");
-//            }
-//            if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-//                String ytyRate = (new BigDecimal(indexValue).subtract(new BigDecimal(ytyValue)))
-//                        .divide(new BigDecimal(ytyValue), 5, BigDecimal.ROUND_HALF_UP)
-//                        .multiply(new BigDecimal("100"))
-//                        .toString();
-//                out.put("YTY_RATE", ytyRate);
-//
-//            }
-//        }
-//    }
 }

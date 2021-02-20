@@ -57,9 +57,10 @@ public class ZjbReportServiceImpl extends AbstractReport {
                     out.put("INDEX_CODE", rule.getTargetCode());
                     out.put("INDEX_NAME", rule.getTargetName());
                     out.put("INDEX_VALUE", RuleParseUtil.value(rule.getExpression(), map, period));
-                    out.put("CHAIN_VALUE", "0");
                     out.put("CREATE_DATE", date);
 
+                    //todo 环比值
+                    out.put("CHAIN_VALUE", "0");
                     //设置同比
                     setYtyValue(ytyValue, out);
                     last.put(rule.getTargetCode(), out);

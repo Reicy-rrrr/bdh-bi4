@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.integration.impl;
+package com.deloitte.bdh.data.collation.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +33,7 @@ import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.SourceTypeEnum;
 import com.deloitte.bdh.data.collation.enums.SyncTypeEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
-import com.deloitte.bdh.data.collation.integration.SyncService;
+import com.deloitte.bdh.data.collation.service.SyncService;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiComponentParams;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
