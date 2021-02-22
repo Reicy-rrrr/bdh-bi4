@@ -110,6 +110,15 @@ public class Sheet {
         return columnMap.get(y).colSum(x);
     }
 
+
+    /**
+     * 获取所有的行号
+     */
+    public List<String> xCellNo() {
+        return new ArrayList<>(rowMap.keySet());
+    }
+
+
     /**
      * 获取所有的列号
      * 根据期间/列编号、指标编码/行编号 获取 单元格值

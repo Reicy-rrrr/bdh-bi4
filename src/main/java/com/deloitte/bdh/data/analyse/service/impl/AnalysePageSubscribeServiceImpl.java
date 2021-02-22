@@ -31,7 +31,7 @@ import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import com.deloitte.bdh.data.analyse.service.EmailService;
 import com.deloitte.bdh.data.analyse.utils.ScreenshotUtil;
 import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
-import com.deloitte.bdh.data.collation.integration.XxJobService;
+import com.deloitte.bdh.data.collation.service.XxJobService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.Producter;
 import com.google.common.collect.Lists;

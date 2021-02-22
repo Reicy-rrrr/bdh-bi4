@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.integration;
+package com.deloitte.bdh.data.collation.service;
 
 public interface SyncService {
     /**

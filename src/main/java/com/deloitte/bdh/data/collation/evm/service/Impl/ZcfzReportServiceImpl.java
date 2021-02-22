@@ -52,7 +52,7 @@ public class ZcfzReportServiceImpl extends AbstractReport {
                 for (Rule rule : getType().relySheets().right) {
                     LinkedHashMap<String, Object> lastReport = last.get(rule.getTargetCode());
                     String ytyValue = null == lastReport ? null : MapUtils.getString(lastReport, "INDEX_VALUE");
-                    LinkedHashMap<String, Object> out = new LinkedHashMap<String, Object>();
+                    LinkedHashMap<String, Object> out = new LinkedHashMap<>();
                     out.put("type", type);
                     out.put("PERIOD", periodTemp);
                     out.put("PERIOD_DATE", periodDate);

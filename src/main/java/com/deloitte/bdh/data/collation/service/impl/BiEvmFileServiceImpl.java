@@ -19,7 +19,6 @@ import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
 import com.deloitte.bdh.data.collation.service.BiEvmFileService;
 import com.deloitte.bdh.common.base.AbstractService;
-import com.deloitte.bdh.data.collation.service.Producter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,8 +43,6 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
     private BiEvmFileMapper fileMapper;
     @Autowired
     private AliyunOssUtil aliyunOss;
-    @Autowired
-    private Producter producter;
     @Autowired
     private BiEvmFileConsumerService consumerService;
 
@@ -86,8 +83,5 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         biEvmFile.setCreateDate(null);
         KafkaMessage<BiEvmFile> message = new KafkaMessage<>(UUID.randomUUID().toString().replaceAll("-", ""), biEvmFile, KafkaTypeEnum.EVM_FILE.getType());
         ThreadLocalHolder.async(() -> consumerService.consumer(message));
-//        producter.send(message);
-
-
     }
 }

@@ -452,7 +452,105 @@ public class DateUtils {
         }
     }
 
+
+    /**
+     * 动态解析日期格式
+     *
+     * @param date 日期字符串
+     * @return 日期
+     */
+    public static Date parseDateDynamic(String date) throws ParseException {
+        if (date == null) {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+        boolean simple = true;
+
+        if (date.indexOf("-") > 0) {
+            String[] args = date.split("-");
+            if (args.length != 3) {
+                throw new IllegalArgumentException("Incorrect format");
+            }
+            if (args[0].length() <= 2) {
+                date = args[2] + "-" + args[1] + "-" + args[0];
+            }
+            simple = false;
+        }
+        if (date.indexOf("/") > 0) {
+            String[] args = date.split("/");
+            if (args.length != 3) {
+                throw new IllegalArgumentException("Incorrect format");
+            }
+            if (args[0].length() <= 2) {
+                date = args[2] + "-" + args[1] + "-" + args[0];
+            } else {
+                date = args[0] + "-" + args[1] + "-" + args[2];
+            }
+            simple = false;
+        }
+        if (date.indexOf(".") > 0) {
+            String[] args = date.split("\\.");
+            if (args.length != 3) {
+                throw new IllegalArgumentException("Incorrect format");
+            }
+            if (args[0].length() <= 2) {
+                date = args[2] + "-" + args[1] + "-" + args[0];
+            } else {
+                date = args[0] + "-" + args[1] + "-" + args[2];
+            }
+            simple = false;
+        }
+        if (date.contains("年") && date.contains("月") && date.contains("日")) {
+            String year = date.substring(date.indexOf("年") - 4, date.indexOf("年"));
+            String month = date.substring(date.indexOf("月") - 2, date.indexOf("月"));
+            String day = date.substring(date.indexOf("日") - 2, date.indexOf("日"));
+            date = year + "-" + month + "-" + day;
+            simple = false;
+        }
+        if (simple && date.length() == 8) {
+            return shortDate.get().parse(date);
+        }
+        return standardDate.get().parse(date);
+    }
+
+
+    /**
+     * 动态解析日期时间格式
+     *
+     * @param dateTime 日期字符串
+     * @return 日期
+     */
+    public static Date parseDateTimeDynamic(String dateTime) throws ParseException {
+        if (dateTime == null) {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+        //"yyyy-MM-dd HH:mm:ss.SSS"
+        if (dateTime.length() == 23) {
+            return new SimpleDateFormat(FULL_STANDARD_DATE_TIME).parse(dateTime);
+        }
+        //yyyy-MM-dd HH:mm:ss
+        if (dateTime.length() == 19) {
+            return new SimpleDateFormat(STANDARD_DATE_TIME).parse(dateTime);
+        }
+        //yyyy-MM-dd HH:mm
+        if (dateTime.length() == 16) {
+            return new SimpleDateFormat(INCOMPLETE_DATE_TIME).parse(dateTime);
+        }
+        //yyyyMMddHHmmssSSS
+        if (dateTime.length() == 17) {
+            return new SimpleDateFormat(FULL_SHORT_DATE_TIME).parse(dateTime);
+        }
+        //yyyyMMddHHmmss
+        if (dateTime.length() == 14) {
+            return new SimpleDateFormat(SHORT_DATE_TIME).parse(dateTime);
+        }
+        //yyyy-MM-dd'T'HH:mm:ss'Z'
+        if (dateTime.length() == 24) {
+            return new SimpleDateFormat(UTC_DATE_TIME).parse(dateTime);
+        }
+        return null;
+    }
+
     public static void main(String[] args) throws ParseException {
-        System.out.println(formatStandardDateTime(new Date()));
+        System.out.println(parseDateTimeDynamic("20020101121212"));
     }
 }

@@ -7,7 +7,7 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
-import com.deloitte.bdh.data.collation.integration.SyncService;
+import com.deloitte.bdh.data.collation.service.SyncService;
 import com.deloitte.bdh.data.collation.model.request.BiEtlSyncPlanListDto;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import io.swagger.annotations.Api;

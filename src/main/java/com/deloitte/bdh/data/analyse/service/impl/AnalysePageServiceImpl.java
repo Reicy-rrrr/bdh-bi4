@@ -121,7 +121,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Resource
     private BiUiDemoMapper demoMapper;
-    
+
     @Autowired
     private FeignClientService feignClientService;
 
@@ -167,14 +167,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
-            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(),request.getLang());
-            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(),request.getLang());
+            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
             BeanUtils.copyProperties(page, dto);
-            if(voc != null) {
-            	dto.setCreateUserName(voc.getEmployeeName());
+            if (voc != null) {
+                dto.setCreateUserName(voc.getEmployeeName());
             }
-            if(vom != null) {
-            	dto.setModifiedUserName(vom.getEmployeeName());
+            if (vom != null) {
+                dto.setModifiedUserName(vom.getEmployeeName());
             }
             pageDtoList.add(dto);
         });
@@ -252,7 +252,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             BiDataSet dataSet = dataSetService.getOne(dataSetQueryWrapper);
             BiDataSet newDataSet = new BiDataSet();
             String newCode = GenerateCodeUtil.generate();
-            String tableName = "COPY_" + newCode;
+//            String tableName = "COPY_" + newCode;
+            String tableName = dataSet.getTableName() + "_" + newCode;
             newDataSet.setCode(newCode);
             newDataSet.setType(DataSetTypeEnum.COPY.getKey());
             newDataSet.setTableName(tableName);
@@ -451,52 +452,52 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 //                if (originPage.getParentId().equals(categoryId)) {
 //                    updatePage(request, originPage, originConfig, isPublic);
 //                } else {
-                    List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
-                            .eq(BiUiAnalysePage::getParentId, categoryId)
-                            .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
-                    if (CollectionUtils.isEmpty(allPageList)) {
-                        //新建config
-                        BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-                        if (originConfig != null) {
-                            BeanUtils.copyProperties(originConfig, newConfig);
-                            originConfig.setContent(request.getContent());
-                            configService.updateById(originConfig);
-                        }
-                        newConfig.setId(null);
-                        newConfig.setPageId(null);
-                        newConfig.setContent(request.getContent());
-                        newConfig.setTenantId(ThreadLocalHolder.getTenantId());
-                        configService.save(newConfig);
-                        //新建page
-                        BiUiAnalysePage newPage = new BiUiAnalysePage();
-                        BeanUtils.copyProperties(originPage, newPage);
-                        newPage.setId(null);
-                        newPage.setPublishId(newConfig.getId());
-                        newPage.setParentId(categoryId);
-                        newPage.setIsEdit(YnTypeEnum.NO.getCode());
-                        newPage.setOriginPageId(originPage.getId());
-                        //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
-                        newPage.setCode(originPage.getCode());
-                        if (StringUtils.isNotBlank(isPublic)){
-                            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                                newPage.setIsPublic(YesOrNoEnum.YES.getKey());
-                            } else {
-                                newPage.setIsPublic(YesOrNoEnum.NO.getKey());
-                            }
-                        }
-                        save(newPage);
-                        String newPageId = newPage.getId();
-                        //保存pageId到config
-                        newConfig.setPageId(newPageId);
-                        configService.updateById(newConfig);
-                        //把新的pageId传给权限操作
-                        if (null != permissionDto) {
-                            pageId = newPageId;
-                            permissionDto.setId(newPageId);
-                        }
-                    } else {
-                        updatePage(request, originPage, originConfig, isPublic);
+                List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                        .eq(BiUiAnalysePage::getParentId, categoryId)
+                        .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
+                if (CollectionUtils.isEmpty(allPageList) && StringUtils.isNotBlank(originPage.getParentId())) {
+                    //新建config
+                    BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                    if (originConfig != null) {
+                        BeanUtils.copyProperties(originConfig, newConfig);
+                        originConfig.setContent(request.getContent());
+                        configService.updateById(originConfig);
                     }
+                    newConfig.setId(null);
+                    newConfig.setPageId(null);
+                    newConfig.setContent(request.getContent());
+                    newConfig.setTenantId(ThreadLocalHolder.getTenantId());
+                    configService.save(newConfig);
+                    //新建page
+                    BiUiAnalysePage newPage = new BiUiAnalysePage();
+                    BeanUtils.copyProperties(originPage, newPage);
+                    newPage.setId(null);
+                    newPage.setPublishId(newConfig.getId());
+                    newPage.setParentId(categoryId);
+                    newPage.setIsEdit(YnTypeEnum.NO.getCode());
+                    newPage.setOriginPageId(originPage.getId());
+                    //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
+                    newPage.setCode(originPage.getCode());
+                    if (StringUtils.isNotBlank(isPublic)) {
+                        if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+                            newPage.setIsPublic(YesOrNoEnum.YES.getKey());
+                        } else {
+                            newPage.setIsPublic(YesOrNoEnum.NO.getKey());
+                        }
+                    }
+                    save(newPage);
+                    String newPageId = newPage.getId();
+                    //保存pageId到config
+                    newConfig.setPageId(newPageId);
+                    configService.updateById(newConfig);
+                    //把新的pageId传给权限操作
+                    if (null != permissionDto) {
+                        pageId = newPageId;
+                        permissionDto.setId(newPageId);
+                    }
+                } else {
+                    updatePage(request, originPage, originConfig, isPublic);
+                }
 //                }
             }
 
@@ -510,7 +511,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return null;
     }
 
-    
+
     private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig, String isPublic) {
 
         //新建config
@@ -526,7 +527,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         newConfig.setTenantId(ThreadLocalHolder.getTenantId());
         configService.save(newConfig);
         //更新page
-        if (StringUtils.isNotBlank(isPublic)){
+        if (StringUtils.isNotBlank(isPublic)) {
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 originPage.setIsPublic(YesOrNoEnum.YES.getKey());
             } else {
@@ -607,7 +608,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
     }
 
-    private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList){
+    private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList) {
         Map<String, TableColumn> toMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(toFieldList)) {
             toMap = toFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
@@ -673,7 +674,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<BiUiAnalysePageLink> linkList = linkService.list(queryWrapper);
         if (CollectionUtils.isNotEmpty(linkList)) {
             List<String> pageIdList = Lists.newArrayList();
-            linkList.forEach(link -> linkList.add(link));
+            linkList.addAll(linkList);
             List<BiUiAnalysePage> pageList = listByIds(pageIdList);
             List<String> configIdList = Lists.newArrayList();
             //编辑版本和发布版本都替换

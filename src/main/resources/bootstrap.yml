@@ -58,9 +58,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        namespace: f8b196e0-5ce5-41dc-abe8-e05973684c98
+        namespace: 065a1ca0-1f41-4f6a-85b7-135ec5b51394
       config:
-        namespace: f8b196e0-5ce5-41dc-abe8-e05973684c98
+        namespace: 065a1ca0-1f41-4f6a-85b7-135ec5b51394
 
 ---
 # prod
@@ -69,9 +69,9 @@ spring:
   cloud:
     nacos:
       discovery:
-        namespace: a7dc2813-4e2f-485d-b629-689ced735a24
+        namespace: 53170133-ff3f-4c4d-ac80-7e770ec809e6
       config:
-        namespace: a7dc2813-4e2f-485d-b629-689ced735a24
+        namespace: 53170133-ff3f-4c4d-ac80-7e770ec809e6
 
 ---
 # hktest
