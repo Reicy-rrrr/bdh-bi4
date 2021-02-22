@@ -5,6 +5,7 @@ import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
 import com.deloitte.bdh.data.collation.service.BiEvmFileService;
@@ -12,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class BiEvmFileController {
     @Autowired
     private BiEvmFileService evmFileService;
+    @Autowired
+    private BiProperties properties;
 
 
     @ApiOperation(value = "上传文件", notes = "EVM上传文件")
@@ -62,4 +66,11 @@ public class BiEvmFileController {
         return RetResponse.makeOKRsp();
     }
 
+
+    @ApiOperation(value = "获取下载地址", notes = "获取下载地址")
+    @GetMapping("/getDownLoadAddress")
+    @NoInterceptor
+    public RetResult<String> getDownLoadAddress() {
+        return RetResponse.makeOKRsp(properties.getEvmDownLoadAddress());
+    }
 }

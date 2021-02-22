@@ -527,7 +527,7 @@ public class FileReadServiceImpl implements FileReadService {
                     target = null;
                 } else if (source instanceof String) {
                     try {
-                        target = DateUtils.parseStandardDate((String) source);
+                        target = DateUtils.parseDateDynamic((String) source);
                     } catch (Exception e) {
                         target = null;
                     }
@@ -544,7 +544,7 @@ public class FileReadServiceImpl implements FileReadService {
                     target = null;
                 } else if (source instanceof String) {
                     try {
-                        target = DateUtils.parseStandardDateTime((String) source);
+                        target = DateUtils.parseDateTimeDynamic((String) source);
                     } catch (Exception e) {
                         target = null;
                     }

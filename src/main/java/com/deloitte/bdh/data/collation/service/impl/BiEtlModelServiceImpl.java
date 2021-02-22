@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
-import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.json.JsonUtil;
@@ -25,8 +24,8 @@ import com.deloitte.bdh.data.collation.enums.DataSetTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
-import com.deloitte.bdh.data.collation.integration.NifiProcessService;
-import com.deloitte.bdh.data.collation.integration.XxJobService;
+import com.deloitte.bdh.data.collation.service.NifiProcessService;
+import com.deloitte.bdh.data.collation.service.XxJobService;
 import com.deloitte.bdh.data.collation.model.*;
 import com.deloitte.bdh.data.collation.model.request.CreateModelDto;
 import com.deloitte.bdh.data.collation.model.request.EffectModelDto;
@@ -333,7 +332,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             biEtlModel.setStatus(RunStatusEnum.RUNNING.getKey());
             biEtlModel.setValidate(YesOrNoEnum.YES.getKey());
 
-            //设置数据集 此处是否该删除维度和度量？todo
+            //设置数据集
             BiDataSet oldDateSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getRefModelCode, biEtlModel.getCode()));
             if (null != oldDateSet) {
                 dataSetService.removeById(oldDateSet.getId());

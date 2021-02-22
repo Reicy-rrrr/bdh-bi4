@@ -11,6 +11,8 @@ public class EvmServiceImpl {
     private ReportService zcfzReportService;
     @Resource(name = "zjbReportServiceImpl")
     private ReportService zjbReportService;
+    @Resource(name = "zcgcReportServiceImpl")
+    private ReportService zcgcReportService;
 
     public void choose(String reportCode, String tableName) {
         ReportCodeEnum reportCodeEnum = ReportCodeEnum.valueOf(reportCode);
@@ -20,6 +22,9 @@ public class EvmServiceImpl {
                 break;
             case ZJB:
                 zjbReportService.process(tableName);
+                break;
+            case ZCGCB:
+                zcgcReportService.process(tableName);
                 break;
             default:
                 ;

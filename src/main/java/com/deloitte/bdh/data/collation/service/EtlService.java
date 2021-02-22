@@ -1,4 +1,4 @@
-package com.deloitte.bdh.data.collation.integration;
+package com.deloitte.bdh.data.collation.service;
 
 import com.deloitte.bdh.data.collation.enums.ArrangeTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiComponent;

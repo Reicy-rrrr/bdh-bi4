@@ -72,6 +72,17 @@ public class CronUtil {
             cronExp.append("* ");
             cronExp.append("?");
         }
+        
+        if (taskScheduleModel.getJobType() == 5) {
+            validateMin(taskScheduleModel);
+            cronExp.append("0 ");
+            cronExp.append(taskScheduleModel.getMinute());
+            cronExp.append(" ");
+            cronExp.append("* ");
+            cronExp.append("* ");
+            cronExp.append("* ");
+            cronExp.append("?");
+        }
 
         //每天
         if (taskScheduleModel.getJobType() == 1) {

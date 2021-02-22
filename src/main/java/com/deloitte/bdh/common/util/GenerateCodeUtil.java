@@ -13,10 +13,7 @@ public class GenerateCodeUtil {
     private static final String PREFIX_MODEL_ = "Model_";
     private static final String PREFIX_COMPONENT_ = "COMP_";
     private static final String PREFIX_PROCESSORS_ = "PROS_";
-    private static final String PREFIX_PROCESSOR_ = "PRO_";
     private static final String PREFIX_PARAMS_ = "PARAM_";
-    private static final String PREFIX_CONNECT_ = "CON_";
-    private static final String PREFIX_REF_ = "REF_";
     private static final String PREFIX_CONNECTS_ = "CONS_";
     private static final String PREFIX_PAGE_ = "PAGE_";
     private static final String PREFIX_SHOT_ = "SHOT_";
@@ -44,20 +41,8 @@ public class GenerateCodeUtil {
         return generate(PREFIX_PROCESSORS_);
     }
 
-    public static String genProcessor() {
-        return generate(PREFIX_PROCESSOR_);
-    }
-
     public static String genParam() {
         return generate(PREFIX_PARAMS_);
-    }
-
-    public static String genConnect() {
-        return generate(PREFIX_CONNECT_);
-    }
-
-    public static String genDbRef() {
-        return generate(PREFIX_REF_);
     }
 
     public static String genConnects() {

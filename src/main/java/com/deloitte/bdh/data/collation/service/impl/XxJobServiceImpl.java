@@ -1,11 +1,11 @@
-package com.deloitte.bdh.data.collation.integration.impl;
+package com.deloitte.bdh.data.collation.service.impl;
 
 import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.integration.XxJobService;
+import com.deloitte.bdh.data.collation.service.XxJobService;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

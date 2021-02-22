@@ -121,7 +121,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
     @Resource
     private BiUiDemoMapper demoMapper;
-    
+
     @Autowired
     private FeignClientService feignClientService;
 
@@ -167,17 +167,21 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
-            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(),request.getLang());
-            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(),request.getLang());
-            BeanUtils.copyProperties(page, dto);
-            if(voc != null) {
-            	dto.setCreateUserName(voc.getEmployeeName());
+            if (StringUtils.isNotBlank(page.getCreateUser())) {
+                IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+                if (voc != null) {
+                    dto.setCreateUserName(voc.getEmployeeName());
+                }
             }
-            if(vom != null) {
-            	dto.setModifiedUserName(vom.getEmployeeName());
+            if (StringUtils.isNotBlank(page.getModifiedUser())) {
+                IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
+                BeanUtils.copyProperties(page, dto);
+                if (vom != null) {
+                    dto.setModifiedUserName(vom.getEmployeeName());
+                }
             }
             pageDtoList.add(dto);
-        });
+            });
         userResourceService.setPagePermission(pageDtoList, request.getData().getSuperUserFlag());
         homepageService.fillHomePage(pageDtoList);
         pageInfo.setList(pageDtoList);
@@ -214,7 +218,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Override
     @Transactional
     public AnalysePageDto copyDeloittePage(CopyDeloittePageDto request) {
-        checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
+//        checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
         if (null == fromPage) {
             throw new BizException("源报表不存在");
@@ -252,7 +256,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             BiDataSet dataSet = dataSetService.getOne(dataSetQueryWrapper);
             BiDataSet newDataSet = new BiDataSet();
             String newCode = GenerateCodeUtil.generate();
-            String tableName = "COPY_" + newCode;
+//            String tableName = "COPY_" + newCode;
+            String tableName = dataSet.getTableName() + "_" + newCode;
             newDataSet.setCode(newCode);
             newDataSet.setType(DataSetTypeEnum.COPY.getKey());
             newDataSet.setTableName(tableName);
@@ -278,7 +283,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
         insertPage.setType("dashboard");
         insertPage.setName(request.getName());
-        insertPage.setCode(request.getCode());
+        insertPage.setCode(GenerateCodeUtil.generate());
         insertPage.setParentId(request.getCategoryId());
         insertPage.setIsPublic(YesOrNoEnum.YES.getKey());
         insertPage.setIsEdit(YnTypeEnum.NO.getCode());
@@ -451,9 +456,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 //                if (originPage.getParentId().equals(categoryId)) {
 //                    updatePage(request, originPage, originConfig, isPublic);
 //                } else {
-                    List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
-                            .eq(BiUiAnalysePage::getParentId, categoryId)
-                            .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
+                List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                        .eq(BiUiAnalysePage::getParentId, categoryId)
+                        .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
                 if (CollectionUtils.isEmpty(allPageList) && StringUtils.isNotBlank(originPage.getParentId())) {
                     //新建config
                     BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
@@ -510,7 +515,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return null;
     }
 
-    
+
     private void updatePage(PublishAnalysePageDto dto, BiUiAnalysePage originPage, BiUiAnalysePageConfig originConfig, String isPublic) {
 
         //新建config
@@ -526,7 +531,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         newConfig.setTenantId(ThreadLocalHolder.getTenantId());
         configService.save(newConfig);
         //更新page
-        if (StringUtils.isNotBlank(isPublic)){
+        if (StringUtils.isNotBlank(isPublic)) {
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 originPage.setIsPublic(YesOrNoEnum.YES.getKey());
             } else {
@@ -607,7 +612,39 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
     }
 
-    private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList){
+    @Override
+    public List<String> getUsedTableName(String pageId) {
+        List<String> result = Lists.newArrayList();
+        BiUiAnalysePage page = this.getById(pageId);
+        if (null == page) {
+            throw new BizException("报表不存在");
+        }
+        BiUiAnalysePageConfig config = configService.getById(page.getEditId());
+        if (null == config) {
+            return result;
+        }
+        JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
+        JSONArray childrenArr = content.getJSONArray("children");
+        if (null == childrenArr) {
+            return result;
+        }
+        List<String> codeList = Lists.newArrayList();
+        for (int i = 0; i < childrenArr.size(); i++) {
+            JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+            if (data.size() != 0) {
+                codeList.add(data.getString("tableCode"));
+            }
+        }
+        if (CollectionUtils.isNotEmpty(codeList)) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiDataSet::getCode, codeList);
+            List<BiDataSet> dataSetList = dataSetService.list(queryWrapper);
+            dataSetList.forEach(dataSet -> result.add(dataSet.getTableName()));
+        }
+        return result;
+    }
+
+    private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList) {
         Map<String, TableColumn> toMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(toFieldList)) {
             toMap = toFieldList.stream().collect(Collectors.toMap(TableColumn::getName,
@@ -673,7 +710,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<BiUiAnalysePageLink> linkList = linkService.list(queryWrapper);
         if (CollectionUtils.isNotEmpty(linkList)) {
             List<String> pageIdList = Lists.newArrayList();
-            linkList.forEach(link -> linkList.add(link));
+            linkList.addAll(linkList);
             List<BiUiAnalysePage> pageList = listByIds(pageIdList);
             List<String> configIdList = Lists.newArrayList();
             //编辑版本和发布版本都替换

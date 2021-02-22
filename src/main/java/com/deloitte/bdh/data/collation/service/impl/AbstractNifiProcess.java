@@ -1,11 +1,11 @@
-package com.deloitte.bdh.data.collation.integration.impl;
+package com.deloitte.bdh.data.collation.service.impl;
 
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.redis.RedisClusterUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.data.collation.enums.NifiEnum;
-import com.deloitte.bdh.data.collation.integration.NifiProcessService;
+import com.deloitte.bdh.data.collation.service.NifiProcessService;
 import com.google.common.collect.Maps;
 import org.springframework.beans.factory.annotation.Autowired;
 

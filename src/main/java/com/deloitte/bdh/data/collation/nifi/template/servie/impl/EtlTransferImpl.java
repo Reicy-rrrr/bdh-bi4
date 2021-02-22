@@ -2,7 +2,7 @@ package com.deloitte.bdh.data.collation.nifi.template.servie.impl;
 
 import com.deloitte.bdh.common.config.TemplateConfig;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
-import com.deloitte.bdh.data.collation.integration.NifiProcessService;
+import com.deloitte.bdh.data.collation.service.NifiProcessService;
 import com.deloitte.bdh.data.collation.nifi.template.TemplateEnum;
 import com.deloitte.bdh.data.collation.nifi.template.config.Template;
 import com.google.common.collect.Maps;
