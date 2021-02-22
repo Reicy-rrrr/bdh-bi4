@@ -167,17 +167,21 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
-            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
-            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
-            BeanUtils.copyProperties(page, dto);
-            if (voc != null) {
-                dto.setCreateUserName(voc.getEmployeeName());
+            if (StringUtils.isNotBlank(page.getCreateUser())) {
+                IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+                if (voc != null) {
+                    dto.setCreateUserName(voc.getEmployeeName());
+                }
             }
-            if (vom != null) {
-                dto.setModifiedUserName(vom.getEmployeeName());
+            if (StringUtils.isNotBlank(page.getModifiedUser())) {
+                IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
+                BeanUtils.copyProperties(page, dto);
+                if (vom != null) {
+                    dto.setModifiedUserName(vom.getEmployeeName());
+                }
             }
             pageDtoList.add(dto);
-        });
+            });
         userResourceService.setPagePermission(pageDtoList, request.getData().getSuperUserFlag());
         homepageService.fillHomePage(pageDtoList);
         pageInfo.setList(pageDtoList);
