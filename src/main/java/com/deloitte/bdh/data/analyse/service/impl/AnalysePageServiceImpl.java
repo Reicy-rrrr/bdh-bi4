@@ -559,7 +559,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
-        return getAnalysePageDtoPageResult(pageList);
+        return getAnalysePageDtoPageResult(pageList,request);
     }
 
     @Override
@@ -655,13 +655,22 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
     }
 
-    private PageResult<AnalysePageDto> getAnalysePageDtoPageResult(List<BiUiAnalysePage> pageList) {
+    private PageResult<AnalysePageDto> getAnalysePageDtoPageResult(List<BiUiAnalysePage> pageList, PageRequest<AnalyseNameDto> request) {
         //处理查询之后做操作返回total不正确
         PageInfo pageInfo = PageInfo.of(pageList);
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
+            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
+            BeanUtils.copyProperties(page, dto);
+            if (voc != null) {
+                dto.setCreateUserName(voc.getEmployeeName());
+            }
+            if (vom != null) {
+                dto.setModifiedUserName(vom.getEmployeeName());
+            }
             pageDtoList.add(dto);
         });
         pageInfo.setList(pageDtoList);
