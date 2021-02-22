@@ -157,4 +157,10 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp();
     }
 
+    @ApiOperation(value = "获取报表使用的表", notes = "获取报表使用的表")
+    @PostMapping("/getUsedTableName")
+    public RetResult<List<String>> getUsedTableName(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(analysePageService.getUsedTableName(request.getData()));
+    }
+
 }
