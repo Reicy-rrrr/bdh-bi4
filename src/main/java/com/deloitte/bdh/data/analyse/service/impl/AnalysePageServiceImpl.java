@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -167,21 +168,21 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
-            if (StringUtils.isNotBlank(page.getCreateUser())) {
+            BeanUtils.copyProperties(page, dto);
+            if (StringUtils.isNotBlank(page.getCreateUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getCreateUser())) {
                 IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
                 if (voc != null) {
                     dto.setCreateUserName(voc.getEmployeeName());
                 }
             }
-            if (StringUtils.isNotBlank(page.getModifiedUser())) {
+            if (StringUtils.isNotBlank(page.getModifiedUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getModifiedUser())) {
                 IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
-                BeanUtils.copyProperties(page, dto);
                 if (vom != null) {
                     dto.setModifiedUserName(vom.getEmployeeName());
                 }
             }
             pageDtoList.add(dto);
-            });
+        });
         userResourceService.setPagePermission(pageDtoList, request.getData().getSuperUserFlag());
         homepageService.fillHomePage(pageDtoList);
         pageInfo.setList(pageDtoList);
