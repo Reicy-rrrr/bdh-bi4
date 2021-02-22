@@ -9,6 +9,8 @@ import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 
+import java.util.List;
+
 /**
  * Author:LIJUN
  * Date:12/11/2020
@@ -80,4 +82,12 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     void replaceDataSet (ReplaceDataSetDto dto) throws Exception;
+
+    /**
+     * 获取报表使用的表
+     *
+     * @param pageId
+     * @return
+     */
+    List<String> getUsedTableName(String pageId);
 }

@@ -99,7 +99,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .eq(BiComponent::getRefModelCode, modelCode)
         );
         if (CollectionUtils.isEmpty(components)) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置组件信息");
+            throw new RuntimeException("请先配置组件信息");
         }
 
         List<BiComponentConnection> connections = connectionService.list(new LambdaQueryWrapper<BiComponentConnection>()
@@ -107,13 +107,13 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
         );
 
         if (CollectionUtils.isEmpty(connections)) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置组件之间的关联关系");
+            throw new RuntimeException("请先配置组件之间的关联关系");
         }
         //基于输出组件往上推
         Optional<BiComponent> componentOptional = components.stream().filter(param -> param.getType()
                 .equals(ComponentTypeEnum.OUT.getKey())).findAny();
         if (!componentOptional.isPresent()) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 请先配置输出组件信息");
+            throw new RuntimeException("请添加输出组件后重试");
         }
         BiComponent out = componentOptional.get();
         Set<String> usedCode = validate(out, components, connections);
@@ -152,7 +152,7 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
                 .ne(BiComponent::getCode, component.getCode())
         );
         if (CollectionUtils.isNotEmpty(sameRefList)) {
-            throw new RuntimeException("EtlServiceImpl.removeResource.error : 该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
+            throw new RuntimeException("该组件不能移除，已经被其他模板引用，请先取消其他被引用的组件。");
         }
 
         //判断当前组件同步类型，"直连或本地" 则直接删除
@@ -311,17 +311,17 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     public BiComponent rename(ComponentRenameDto dto) {
         String componentId = dto.getComponentId();
         if (StringUtils.isBlank(componentId)) {
-            throw new BizException("Component rename error: 组件id不能为空！");
+            throw new BizException("组件id不能为空！");
         }
 
         String name = dto.getName();
         if (StringUtils.isBlank(name)) {
-            throw new BizException("Component rename error: 组件名称不能为空！");
+            throw new BizException("组件名称不能为空！");
         }
 
         BiComponent biComponent = getById(componentId);
         if (biComponent == null) {
-            throw new BizException("Component rename error: 未查询到组件信息！");
+            throw new BizException("未查询到组件信息！");
         }
 
         biComponent.setName(name);
@@ -332,18 +332,18 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
     private Set<String> validate(BiComponent component, List<BiComponent> components, List<BiComponentConnection> connections) {
         Set<String> usedCode = Sets.newHashSet();
         if (EffectEnum.DISABLE.getKey().equals(component.getEffect())) {
-            throw new RuntimeException("EtlServiceImpl.runModel.validate : 未生效的组件," + component.getName());
+            throw new RuntimeException("未生效的组件," + component.getName());
         }
         List<BiComponentConnection> collects = connections.stream().filter(s -> s.getToComponentCode().equals(component.getCode()))
                 .collect(Collectors.toList());
 
         if (ComponentTypeEnum.DATASOURCE.getKey().equals(component.getType())) {
             if (CollectionUtils.isNotEmpty(collects)) {
-                throw new RuntimeException("EtlServiceImpl.runModel.validate : 数据源组件不能被关联");
+                throw new RuntimeException("数据源组件不能被关联");
             }
         } else {
             if (CollectionUtils.isEmpty(collects)) {
-                throw new RuntimeException("EtlServiceImpl.runModel.validate : 未与组件进行关联");
+                throw new RuntimeException("未与组件进行关联");
             }
         }
 
@@ -351,12 +351,12 @@ public class BiComponentServiceImpl extends AbstractService<BiComponentMapper, B
             String fromCode = connection.getFromComponentCode();
             usedCode.add(fromCode);
             if (fromCode.equals(component.getCode())) {
-                throw new RuntimeException("EtlServiceImpl.runModel.validate : 组件关联不能指向自己");
+                throw new RuntimeException("组件关联不能指向自己");
             }
 
             Optional<BiComponent> fromComponents = components.stream().filter(s -> s.getCode().equals(fromCode)).findAny();
             if (!fromComponents.isPresent()) {
-                throw new RuntimeException("EtlServiceImpl.runModel.validate : 未找到该组件的来源组件,组件名称:" + component.getName());
+                throw new RuntimeException("未找到该组件的来源组件,组件名称:" + component.getName());
             }
             Set<String> innerSet = validate(fromComponents.get(), components, connections);
             if (CollectionUtils.isNotEmpty(innerSet)) {

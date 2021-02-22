@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -167,14 +168,18 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<AnalysePageDto> pageDtoList = Lists.newArrayList();
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
-            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
-            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
             BeanUtils.copyProperties(page, dto);
-            if (voc != null) {
-                dto.setCreateUserName(voc.getEmployeeName());
+            if (StringUtils.isNotBlank(page.getCreateUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getCreateUser())) {
+                IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+                if (voc != null) {
+                    dto.setCreateUserName(voc.getEmployeeName());
+                }
             }
-            if (vom != null) {
-                dto.setModifiedUserName(vom.getEmployeeName());
+            if (StringUtils.isNotBlank(page.getModifiedUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getModifiedUser())) {
+                IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
+                if (vom != null) {
+                    dto.setModifiedUserName(vom.getEmployeeName());
+                }
             }
             pageDtoList.add(dto);
         });
@@ -214,7 +219,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Override
     @Transactional
     public AnalysePageDto copyDeloittePage(CopyDeloittePageDto request) {
-        checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
+//        checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
         BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
         if (null == fromPage) {
             throw new BizException("源报表不存在");
@@ -279,7 +284,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
         insertPage.setType("dashboard");
         insertPage.setName(request.getName());
-        insertPage.setCode(request.getCode());
+        insertPage.setCode(GenerateCodeUtil.generate());
         insertPage.setParentId(request.getCategoryId());
         insertPage.setIsPublic(YesOrNoEnum.YES.getKey());
         insertPage.setIsEdit(YnTypeEnum.NO.getCode());
@@ -606,6 +611,38 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             config.setContent(content.toJSONString());
             configService.updateById(config);
         }
+    }
+
+    @Override
+    public List<String> getUsedTableName(String pageId) {
+        List<String> result = Lists.newArrayList();
+        BiUiAnalysePage page = this.getById(pageId);
+        if (null == page) {
+            throw new BizException("报表不存在");
+        }
+        BiUiAnalysePageConfig config = configService.getById(page.getEditId());
+        if (null == config) {
+            return result;
+        }
+        JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
+        JSONArray childrenArr = content.getJSONArray("children");
+        if (null == childrenArr) {
+            return result;
+        }
+        List<String> codeList = Lists.newArrayList();
+        for (int i = 0; i < childrenArr.size(); i++) {
+            JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+            if (data.size() != 0) {
+                codeList.add(data.getString("tableCode"));
+            }
+        }
+        if (CollectionUtils.isNotEmpty(codeList)) {
+            LambdaQueryWrapper<BiDataSet> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(BiDataSet::getCode, codeList);
+            List<BiDataSet> dataSetList = dataSetService.list(queryWrapper);
+            dataSetList.forEach(dataSet -> result.add(dataSet.getTableName()));
+        }
+        return result;
     }
 
     private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList) {

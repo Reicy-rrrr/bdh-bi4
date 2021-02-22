@@ -14,9 +14,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class CopyDeloittePageDto {
 
-    @NotBlank
-    @ApiModelProperty(value = "报表编码")
-    private String code;
+//    @NotBlank
+//    @ApiModelProperty(value = "报表编码")
+//    private String code;
 
     @NotBlank
     @ApiModelProperty(value = "报表名称")
