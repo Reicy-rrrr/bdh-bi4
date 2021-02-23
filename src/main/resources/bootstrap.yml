@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: uat
   application:
     name: bi
   cloud:
