@@ -98,6 +98,10 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 resourceList.add(resource);
             }
             //添加当前用户
+            List<BiUiAnalyseUserResource> exist = resourceList.stream().filter(resource -> StringUtils.equals(resource.getUserId(), ThreadLocalHolder.getOperator())).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(exist)) {
+                resourceList.remove(exist.get(0));
+            }
             BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
             resource.setResourceId(dto.getId());
             resource.setResourceType(dto.getResourceType());
