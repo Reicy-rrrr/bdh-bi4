@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
+import com.deloitte.bdh.common.util.UserInfoUtil;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.aspectj.lang.JoinPoint;
@@ -58,7 +59,7 @@ public class WebLogAspect {
         //用改变后的参数执行目标方法
         doBefore(point);
         Object returnValue = point.proceed();
-        doAfterReturning(returnValue);
+        doAfterReturning((RetRequest) point.getArgs()[0], returnValue);
         logger.info("共耗时 : " + (System.currentTimeMillis() - startTime) + "毫秒");
         MDC.clear();
         ThreadLocalHolder.clear();
@@ -117,12 +118,13 @@ public class WebLogAspect {
     /**
      * 在切入点return内容之后切入内容
      */
-    public void doAfterReturning(Object ret) {
+    public void doAfterReturning(RetRequest retRequest, Object ret) {
         // 处理完请求，返回内容
         if (null != ret && ret instanceof RetResult) {
             RetResult baseResult = (RetResult) ret;
             String traceId = MDC.get("traceId");
             baseResult.setTraceId(traceId);
+            UserInfoUtil.get(retRequest, baseResult);
         }
         logger.info("返回值 : " + JSON.toJSONStringWithDateFormat(ret, "yyyy-MM-dd HH:mm:ss"));
     }
