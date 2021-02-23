@@ -56,7 +56,7 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
                 }
             }
 
-            List<Map<String, Object>> result = Lists.newArrayList();
+            List<Map<String, Object>> temp = Lists.newArrayList();
             BigDecimal count = BigDecimal.ZERO;
             for (Map<String, Object> map : list) {
                 Map<String, Object> one = Maps.newHashMap();
@@ -83,16 +83,17 @@ public class GraphicsDataImpl extends AbstractDataService implements AnalyseData
                         one.put("dataUnit", DataUnitEnum.getDesc(MapUtils.getObject(dataUnitMap, entry.getKey())));
                     }
                 }
-                result.add(one);
+                temp.add(one);
             }
             //求百分比
-            for (Map<String, Object> map : result) {
-                if (!NumberUtils.DOUBLE_ZERO.equals(count.doubleValue())) {
-                    BigDecimal per = new BigDecimal(String.valueOf(map.get("count")))
-                            .multiply(new BigDecimal("100"))
-                            .divide(count, 2, BigDecimal.ROUND_HALF_UP);
-                    map.put("percent", per.doubleValue());
+            List<Map<String, Object>> result = Lists.newArrayList();
+            for (Map<String, Object> map : temp) {
+                BigDecimal per = new BigDecimal(String.valueOf(map.get("count")));
+                if (per.compareTo(BigDecimal.ZERO) < 1) {
+                    continue;
                 }
+                result.add(map);
+                map.put("percent", per.multiply(new BigDecimal("100")).divide(count, 2, BigDecimal.ROUND_HALF_UP).doubleValue());
             }
             return result;
         });
