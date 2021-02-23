@@ -125,7 +125,7 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
 
     @Override
     public PageResult<List<ModelResp>> getModelPage(GetModelPageDto dto) {
-        List<BiEtlModel> list = getModelListByFileCode(dto.getFileCode());
+        List<BiEtlModel> list = getModelListByFileCode(dto.getFileCode(), dto.getSuperUserFlag());
         List<ModelResp> models = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(list)) {
             for (BiEtlModel model : list) {
@@ -501,14 +501,16 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         return inf;
     }
 
-    private List<BiEtlModel> getModelListByFileCode(String fileCode) {
+    private List<BiEtlModel> getModelListByFileCode(String fileCode, String superFlag) {
         LambdaQueryWrapper<BiEtlModel> fUOLamQW = new LambdaQueryWrapper();
         fUOLamQW.select(BiEtlModel.class, model -> !("CONTENT").equals(model.getColumn()));
         if (!StringUtil.isEmpty(fileCode)) {
             fUOLamQW.eq(BiEtlModel::getParentCode, fileCode);
         }
         fUOLamQW.eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey());
-        fUOLamQW.eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator());
+        if (!StringUtils.equals(superFlag, YesOrNoEnum.YES.getKey())) {
+            fUOLamQW.eq(BiEtlModel::getCreateUser, ThreadLocalHolder.getOperator());
+        }
         fUOLamQW.orderByDesc(BiEtlModel::getCreateDate);
         return biEtlModelMapper.selectList(fUOLamQW);
     }
