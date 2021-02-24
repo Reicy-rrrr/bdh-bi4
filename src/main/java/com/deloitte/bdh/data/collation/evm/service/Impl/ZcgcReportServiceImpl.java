@@ -27,7 +27,7 @@ import java.util.Map;
 public class ZcgcReportServiceImpl extends AbstractReport {
     @Override
     protected ReportCodeEnum getType() {
-        return ReportCodeEnum.ZCXLZTSPB;
+        return ReportCodeEnum.ZCGCB;
     }
 
     @Override
