@@ -10,12 +10,14 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseUserResourceMapper;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategoryOrg;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.analyse.service.AnalyseCategoryOrgService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
@@ -48,6 +50,9 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
 
     @Resource
     private AnalysePageService pageService;
+
+    @Resource
+    private AnalyseCategoryOrgService orgService;
 
     @Override
     public void saveResourcePermission(SaveResourcePermissionDto dto) {
@@ -112,6 +117,18 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             if (CollectionUtils.isNotEmpty(resourceList)) {
                 this.saveBatch(resourceList);
             }
+
+            if (CollectionUtils.isNotEmpty(dto.getOrganizationList()) && StringUtils.equals(dto.getResourceType(), ResourcesTypeEnum.CATEGORY.getCode())) {
+                List<BiUiAnalyseCategoryOrg> orgList = Lists.newArrayList();
+                for (String organization : dto.getOrganizationList()) {
+                    BiUiAnalyseCategoryOrg org = new BiUiAnalyseCategoryOrg();
+                    org.setCategoryId(dto.getId());
+                    org.setRefOrgId(organization);
+                    org.setTenantId(ThreadLocalHolder.getTenantId());
+                    orgList.add(org);
+                }
+                orgService.saveBatch(orgList);
+            }
         }
     }
 
@@ -138,6 +155,33 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         result.setViewUserList(viewUserList);
         result.setEditUserList(editUserList);
         return result;
+    }
+
+    @Override
+    public OrganizationPermissionDto getCategoryOrganization(String categoryId) {
+        OrganizationPermissionDto dto = new OrganizationPermissionDto();
+        LambdaQueryWrapper<BiUiAnalyseCategoryOrg> orgQueryWrapper = new LambdaQueryWrapper<>();
+        orgQueryWrapper.eq(BiUiAnalyseCategoryOrg::getCategoryId, categoryId);
+        List<BiUiAnalyseCategoryOrg> categoryOrgList = orgService.list(orgQueryWrapper);
+        List<String> organizationList = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(categoryOrgList)) {
+            categoryOrgList.forEach(org -> organizationList.add(org.getRefOrgId()));
+        }
+        dto.setOrganizationList(organizationList);
+
+        List<String> userList = Lists.newArrayList();
+        LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, categoryId);
+        queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, ResourcesTypeEnum.CATEGORY.getCode());
+        queryWrapper.eq(BiUiAnalyseUserResource::getTenantId, ThreadLocalHolder.getTenantId());
+        List<BiUiAnalyseUserResource> list = list(queryWrapper);
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (BiUiAnalyseUserResource userResource : list) {
+                userList.add(userResource.getUserId());
+            }
+        }
+        dto.setUserList(userList);
+        return dto;
     }
 
     @Override

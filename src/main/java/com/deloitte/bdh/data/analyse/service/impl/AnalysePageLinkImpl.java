@@ -11,6 +11,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 @DS(DSConstant.BI_DB)
-public class AnalysePageConfigLinkImpl extends AbstractService<BiUiAnalysePageLinkMapper, BiUiAnalysePageLink> implements AnalysePageLinkService {
+public class AnalysePageLinkImpl extends AbstractService<BiUiAnalysePageLinkMapper, BiUiAnalysePageLink> implements AnalysePageLinkService {
 
 }

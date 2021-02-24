@@ -42,6 +42,12 @@ public class AnalyseUserResourceController {
         return RetResponse.makeOKRsp(userResourceService.getResourcePermission(request.getData()));
     }
 
+    @ApiOperation(value = "查询文件夹可勾选", notes = "查询文件夹可勾选")
+    @PostMapping("/getCategoryOrganization")
+    public RetResult<OrganizationPermissionDto> getCategoryOrganization(@RequestBody @Valid RetRequest<String> request) {
+        return RetResponse.makeOKRsp(userResourceService.getCategoryOrganization(request.getData()));
+    }
+
     @ApiOperation(value = "查询数据权限", notes = "查询数据权限")
     @PostMapping("/getDataPermission")
     public RetResult<List<PermissionItemDto>> getDataPermission(@RequestBody @Valid RetRequest<String> request) {

@@ -22,6 +22,8 @@ public interface AnalyseUserResourceService extends Service<BiUiAnalyseUserResou
 
     ResourcePermissionDto getResourcePermission(GetResourcePermissionDto dto);
 
+    OrganizationPermissionDto getCategoryOrganization(String categoryId);
+
     ResourcePermissionDto getPagePermissionByCode(GetPermissionByCodeDto dto);
 
     List<PermissionItemDto> getPageDataPermissionByCode(GetPermissionByCodeDto dto);
