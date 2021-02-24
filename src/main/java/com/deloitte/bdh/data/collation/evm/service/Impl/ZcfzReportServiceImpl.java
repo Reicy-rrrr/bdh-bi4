@@ -61,7 +61,14 @@ public class ZcfzReportServiceImpl extends AbstractReport {
                     out.put("INDEX_VALUE", RuleParseUtil.value(rule.getExpression(), map, period));
                     out.put("YTY_VALUE", ytyValue);
                     out.put("CREATE_DATE", date);
-
+                    out.put("TOTAL_ASSETS", null);
+                    out.put("TOTAL_ASSETS_TURNOVER",null);
+                    if ("EVM0001".equals(rule.getTargetCode())) {
+                        out.put("TOTAL_ASSETS", out.get("INDEX_VALUE"));
+                    }
+                    if ("EVM0012".equals(rule.getTargetCode())) {
+                        out.put("TOTAL_ASSETS_TURNOVER", out.get("INDEX_VALUE"));
+                    }
                     //设置同比
                     setYtyValue(ytyValue, out);
                     last.put(rule.getTargetCode(), out);

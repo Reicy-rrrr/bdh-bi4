@@ -74,15 +74,14 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 log.error("读取Excel文件失败，上传文件内容为空!");
                 throw new BizException("读取Excel文件失败，上传文件内容不能为空!");
             }
-
-            List<String> tables = JsonUtil.string2Obj(evmFile.getTables(), new TypeReference<List<String>>() {
-            });
             //todo check
             doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), evmFile.getBatchId());
             doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), evmFile.getBatchId());
             doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), evmFile.getBatchId());
             doKmyeb(workbook.getSheet(SheetCodeEnum.kmyeb.getValue()), evmFile.getBatchId());
 
+            List<String> tables = JsonUtil.string2Obj(evmFile.getTables(), new TypeReference<List<String>>() {
+            });
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             for (ImmutablePair<TableMappingEnum, String> pair : enums) {
                 evmService.choose(pair.left.getValue().getName(), pair.right);
