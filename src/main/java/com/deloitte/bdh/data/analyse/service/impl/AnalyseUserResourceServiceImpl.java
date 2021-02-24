@@ -180,7 +180,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 userList.add(userResource.getUserId());
             }
         }
-        dto.setUserList(userList);
+        dto.setUserList(userList.stream().distinct().collect(Collectors.toList()));
         return dto;
     }
 
