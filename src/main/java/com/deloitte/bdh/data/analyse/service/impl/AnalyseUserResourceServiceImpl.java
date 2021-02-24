@@ -118,16 +118,31 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 this.saveBatch(resourceList);
             }
 
-            if (CollectionUtils.isNotEmpty(dto.getOrganizationList()) && StringUtils.equals(dto.getResourceType(), ResourcesTypeEnum.CATEGORY.getCode())) {
-                List<BiUiAnalyseCategoryOrg> orgList = Lists.newArrayList();
-                for (String organization : dto.getOrganizationList()) {
-                    BiUiAnalyseCategoryOrg org = new BiUiAnalyseCategoryOrg();
-                    org.setCategoryId(dto.getId());
-                    org.setRefOrgId(organization);
-                    org.setTenantId(ThreadLocalHolder.getTenantId());
-                    orgList.add(org);
+            if (StringUtils.equals(dto.getResourceType(), ResourcesTypeEnum.CATEGORY.getCode())) {
+                if (CollectionUtils.isNotEmpty(dto.getViewOrganizationList())) {
+                    List<BiUiAnalyseCategoryOrg> orgList = Lists.newArrayList();
+                    for (String organization : dto.getViewOrganizationList()) {
+                        BiUiAnalyseCategoryOrg org = new BiUiAnalyseCategoryOrg();
+                        org.setCategoryId(dto.getId());
+                        org.setRefOrgId(organization);
+                        org.setType(PermittedActionEnum.EDIT.getCode());
+                        org.setTenantId(ThreadLocalHolder.getTenantId());
+                        orgList.add(org);
+                    }
+                    orgService.saveBatch(orgList);
                 }
-                orgService.saveBatch(orgList);
+                if (CollectionUtils.isNotEmpty(dto.getEditOrganizationList())) {
+                    List<BiUiAnalyseCategoryOrg> orgList = Lists.newArrayList();
+                    for (String organization : dto.getEditOrganizationList()) {
+                        BiUiAnalyseCategoryOrg org = new BiUiAnalyseCategoryOrg();
+                        org.setCategoryId(dto.getId());
+                        org.setRefOrgId(organization);
+                        org.setType(PermittedActionEnum.VIEW.getCode());
+                        org.setTenantId(ThreadLocalHolder.getTenantId());
+                        orgList.add(org);
+                    }
+                    orgService.saveBatch(orgList);
+                }
             }
         }
     }
@@ -163,11 +178,21 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         LambdaQueryWrapper<BiUiAnalyseCategoryOrg> orgQueryWrapper = new LambdaQueryWrapper<>();
         orgQueryWrapper.eq(BiUiAnalyseCategoryOrg::getCategoryId, categoryId);
         List<BiUiAnalyseCategoryOrg> categoryOrgList = orgService.list(orgQueryWrapper);
-        List<String> organizationList = Lists.newArrayList();
+
+        List<String> viewOrganizationList = Lists.newArrayList();
+        List<String> editOrganizationList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(categoryOrgList)) {
-            categoryOrgList.forEach(org -> organizationList.add(org.getRefOrgId()));
+            for (BiUiAnalyseCategoryOrg org : categoryOrgList) {
+                if (StringUtils.contains(org.getType(), PermittedActionEnum.VIEW.getCode())) {
+                    viewOrganizationList.add(org.getRefOrgId());
+                }
+                if (StringUtils.contains(org.getType(), PermittedActionEnum.EDIT.getCode())) {
+                    editOrganizationList.add(org.getRefOrgId());
+                }
+            }
         }
-        dto.setOrganizationList(organizationList);
+        dto.setViewOrganizationList(viewOrganizationList);
+        dto.setEditOrganizationList(editOrganizationList);
 
         List<String> userList = Lists.newArrayList();
         LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();

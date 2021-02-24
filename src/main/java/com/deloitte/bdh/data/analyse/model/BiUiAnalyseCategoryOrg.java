@@ -27,6 +27,12 @@ public class BiUiAnalyseCategoryOrg implements Serializable {
     @TableField("REF_ORG_ID")
     private String refOrgId;
 
+    /**
+     * 类型
+     */
+    @TableField("type")
+    private String type;
+
     @TableField("IP")
     private String ip;
 

@@ -18,7 +18,10 @@ public class OrganizationPermissionDto implements Serializable {
     @ApiModelProperty(value = "用户列表")
     private List<String> userList = Lists.newArrayList();
 
-    @ApiModelProperty(value = "组织id")
-    private List<String> organizationList = Lists.newArrayList();
+    @ApiModelProperty(value = "查看组织列表")
+    private List<String> viewOrganizationList = Lists.newArrayList();
+
+    @ApiModelProperty(value = "编辑组织列表")
+    private List<String> editOrganizationList = Lists.newArrayList();
 
 }
