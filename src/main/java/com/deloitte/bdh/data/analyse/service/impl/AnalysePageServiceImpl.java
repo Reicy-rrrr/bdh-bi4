@@ -248,10 +248,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 }
             }
         }
-
+        List<String> uniqueCodeList = originCodeList.stream().distinct().collect(Collectors.toList());
         //创建数据集、复制表和数据
         Map<String, String> codeMap = Maps.newHashMap();
-        for (String code : originCodeList) {
+        for (String code : uniqueCodeList) {
             LambdaQueryWrapper<BiDataSet> dataSetQueryWrapper = new LambdaQueryWrapper<>();
             dataSetQueryWrapper.eq(BiDataSet::getCode, code);
             BiDataSet dataSet = dataSetService.getOne(dataSetQueryWrapper);
