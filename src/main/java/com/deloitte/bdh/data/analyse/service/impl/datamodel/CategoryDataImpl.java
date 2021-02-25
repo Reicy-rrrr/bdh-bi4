@@ -168,6 +168,9 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
             Object max = null;
             Object min = null;
             for (Object ob : valueList) {
+                if (null == ob) {
+                    ob = "0";
+                }
                 if (null == max) {
                     max = ob;
                 }
