@@ -191,6 +191,7 @@ public class NifiController {
 			@RequestParam String contentCn,
 			@RequestParam String contentEn,
 			@RequestParam String tenantId,
+			@RequestParam String imgUrl,
 			@RequestParam String operator,
 			@RequestParam(required = false) MultipartFile attachmentFile) throws Exception {
     	KafkaEmailDto dto = new KafkaEmailDto();
@@ -200,7 +201,7 @@ public class NifiController {
     	
     	HashMap<String , Object> paramMap = new HashMap<>();
     	paramMap.put("userName", "peng");
-    	paramMap.put("imgUrl", "https://bidev.tax.deloitte.com.cn/analyseManage/public/subscribe/pZH7s96GFjRoFTljWYUX9fAoo00oljkfOQZqlAeva7unoiUIu3O7o000obIztxuzktRl9IkzLGvu3i601XBIjloo00onr2EpJQO0O0OO0O0O");
+    	paramMap.put("imgUrl", imgUrl);
     	paramMap.put("accessUrl", "https://bidev.tax.deloitte.com.cn/analyseManage/share/publicReport/9q9tZBWtPYDjM8d7s77V1VjtVBQpO6xo000o9Hu8l0CgOtbV45Q419HfQ52ePkWLeHDqWGbVNBo15EjeDSBECguOhwO0O0OO0O0O");
     	paramMap.put("userNameCn", userNameCn);
     	paramMap.put("userNameEn", userNameEn);
