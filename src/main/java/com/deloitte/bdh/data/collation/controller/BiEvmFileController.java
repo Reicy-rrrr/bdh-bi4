@@ -45,7 +45,7 @@ public class BiEvmFileController {
     @PostMapping("/upload")
     @NoInterceptor
     public RetResult<Void> upload(@ModelAttribute BiEtlDbFileUploadDto fileUploadDto) {
-        log.info("biEvmFile.upload:" + JsonUtil.obj2String(fileUploadDto));
+        log.info("biEvmFile.upload:" + JsonUtil.obj2String(fileUploadDto.getTables()));
         // 租户id
         String tenantId = fileUploadDto.getTenantId();
         if (StringUtils.isBlank(tenantId)) {
