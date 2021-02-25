@@ -6,11 +6,13 @@ import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.properties.BiProperties;
+import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
 import com.deloitte.bdh.data.collation.service.BiEvmFileService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "EVM-处理文件")
 @RestController
 @RequestMapping("/biEvmFile")
+@Slf4j
 public class BiEvmFileController {
     @Autowired
     private BiEvmFileService evmFileService;
@@ -42,6 +45,7 @@ public class BiEvmFileController {
     @PostMapping("/upload")
     @NoInterceptor
     public RetResult<Void> upload(@ModelAttribute BiEtlDbFileUploadDto fileUploadDto) {
+        log.info("biEvmFile.upload:" + JsonUtil.obj2String(fileUploadDto));
         // 租户id
         String tenantId = fileUploadDto.getTenantId();
         if (StringUtils.isBlank(tenantId)) {
