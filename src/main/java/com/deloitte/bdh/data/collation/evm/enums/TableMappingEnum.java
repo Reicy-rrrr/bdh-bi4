@@ -32,7 +32,7 @@ public enum TableMappingEnum {
 
     public String getTableName(List<String> list) {
         for (String var : list) {
-            if (var.indexOf(this.getName()) >= 0) {
+            if (var.toUpperCase().indexOf(this.getName()) >= 0) {
                 return var;
             }
         }
