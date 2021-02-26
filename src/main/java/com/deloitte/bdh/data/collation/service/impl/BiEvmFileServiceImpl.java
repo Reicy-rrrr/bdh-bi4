@@ -77,7 +77,7 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         biEvmFile.setCreateDate(LocalDateTime.now());
         biEvmFile.setCreateUser(operator);
         biEvmFile.setTenantId(tenantId);
-        biEvmFile.setTables(JsonUtil.obj2String(fileUploadDto.getTables()));
+        biEvmFile.setTables(fileUploadDto.getTables());
         fileMapper.insert(biEvmFile);
 
         biEvmFile.setCreateDate(null);

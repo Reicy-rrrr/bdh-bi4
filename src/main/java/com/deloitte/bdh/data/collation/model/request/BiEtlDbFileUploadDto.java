@@ -41,6 +41,6 @@ public class BiEtlDbFileUploadDto {
 
     @ApiModelProperty(value = "表列表", example = "1", required = true)
     @NotNull(message = "表列表 不能为空")
-    private List<String> tables;
+    private String tables;
 
 }

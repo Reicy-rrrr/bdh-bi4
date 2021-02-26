@@ -38,6 +38,8 @@ import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -80,8 +82,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), evmFile.getBatchId());
             doKmyeb(workbook.getSheet(SheetCodeEnum.kmyeb.getValue()), evmFile.getBatchId());
 
-            List<String> tables = JsonUtil.string2Obj(evmFile.getTables(), new TypeReference<List<String>>() {
-            });
+            List<String> tables = new ArrayList<>(Arrays.asList(evmFile.getTables().split(",")));
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             for (ImmutablePair<TableMappingEnum, String> pair : enums) {
                 evmService.choose(pair.left.getValue().getName(), pair.right);
