@@ -22,7 +22,7 @@ public enum ReportCodeEnum {
             Rule rule5 = new Rule(6, "EVM0006", "存货周转天数", "360/({N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG})");
             Rule rule6 = new Rule(7, "EVM0007", "净资产", "{N#zcfzb.EVMB080}");
             Rule rule7 = new Rule(8, "EVM0008", "净资产收益率", "{N#lrb.EVMP024}/{N#zcfzb.EVMB080_AVG}");
-            Rule rule8 = new Rule(9, "EVM0009", "应收账款", "{N#zcfzb.EVMB080}");
+            Rule rule8 = new Rule(9, "EVM0009", "应收账款", "{N#zcfzb.EVMB008}");
             Rule rule9 = new Rule(10, "EVM0010", "逾期应收账款", "{N#zcfzb.EVMB080}+111111");
             Rule rule10 = new Rule(11, "EVM0011", "应收账款周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG}");
             Rule rule11 = new Rule(12, "EVM0012", "总资产周转率 （次数）", "{N#lrb.EVMP001}/{N#zcfzb.EVMB039_AVG}");
