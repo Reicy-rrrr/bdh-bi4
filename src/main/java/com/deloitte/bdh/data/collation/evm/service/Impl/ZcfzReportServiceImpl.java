@@ -88,15 +88,14 @@ public class ZcfzReportServiceImpl extends AbstractReport {
                 out.put("YTY_RATE", "0");
             }
             if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) == 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
-                out.put("YTY_RATE", "-100");
+                out.put("YTY_RATE", "-1");
             }
             if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) == 0) {
-                out.put("YTY_RATE", "100");
+                out.put("YTY_RATE", "1");
             }
             if (BigDecimal.ZERO.compareTo(new BigDecimal(indexValue)) != 0 && BigDecimal.ZERO.compareTo(new BigDecimal(ytyValue)) != 0) {
                 String ytyRate = (new BigDecimal(indexValue).subtract(new BigDecimal(ytyValue)))
                         .divide(new BigDecimal(ytyValue), 5, BigDecimal.ROUND_HALF_UP)
-                        .multiply(new BigDecimal("100"))
                         .toString();
                 out.put("YTY_RATE", ytyRate);
 
