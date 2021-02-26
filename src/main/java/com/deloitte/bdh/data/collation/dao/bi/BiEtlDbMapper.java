@@ -74,6 +74,14 @@ public interface BiEtlDbMapper {
     List<Map<String, Object>> executeQuery(@Param("querySql") String querySql);
 
     /**
+     * 执行查询sql
+     *
+     * @param querySql
+     * @return
+     */
+    List<LinkedHashMap<String, Object>> executeQueryLinked(@Param("querySql") String querySql);
+
+    /**
      * 执行批量插入操作
      *
      * @param tableName 目标表名

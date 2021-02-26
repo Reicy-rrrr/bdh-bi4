@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.RetRequest;
+import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.SpringUtil;
@@ -24,6 +25,7 @@ import com.deloitte.bdh.data.analyse.model.request.GetAnalyseDataTreeDto;
 import com.deloitte.bdh.data.analyse.model.resp.*;
 import com.deloitte.bdh.data.analyse.service.*;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
 import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
@@ -148,6 +150,9 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
 
     @Override
     public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
+        if (StringUtils.equals(request.getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
+            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+        }
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         BaseComponentDataResponse response = new BaseComponentDataResponse();
         try {

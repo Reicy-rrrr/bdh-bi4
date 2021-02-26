@@ -5,12 +5,15 @@ import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
+import com.deloitte.bdh.common.constant.CommonConstant;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +43,9 @@ public class AnalysePageConfigController {
     public RetResult<AnalysePageConfigDto> getAnalysePageConfig(@RequestBody @Validated RetRequest<GetAnalysePageConfigDto> request) {
         if (null == request.getData() || StringUtils.isBlank(request.getData().getPageId())) {
             return RetResponse.makeOKRsp();
+        }
+        if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
+            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
         }
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfig(request));
     }

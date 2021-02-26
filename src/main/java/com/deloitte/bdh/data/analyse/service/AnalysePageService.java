@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.analyse.service;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
@@ -8,8 +10,10 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Author:LIJUN
@@ -18,15 +22,15 @@ import java.util.List;
  */
 public interface AnalysePageService extends Service<BiUiAnalysePage> {
 
-    PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request);
+    PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageListDto> request);
 
     /**
      * 查看单个resource
      *
-     * @param id
+     * @param pageId
      * @return
      */
-    AnalysePageDto getAnalysePage(String id);
+    AnalysePageDto getAnalysePage(String pageId);
 
     /**
      * 创建页面
@@ -37,12 +41,16 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
     AnalysePageDto createAnalysePage(RetRequest<CreateAnalysePageDto> request);
 
     /**
-     * 复制页面
-     *
-     * @param request
      * @return
      */
-    AnalysePageDto copyDeloittePage(CopyDeloittePageDto request);
+    AnalysePageDto saveNewPage(String name, String categoryId, String fromPageId, List<String> linkPageId,
+                               JSONObject content, JSONArray childrenArr, Map<String, String> codeMap);
+
+    CopySourceDto getCopySourceData(String pageId);
+
+    Map<String, Object> buildNewDataSet(String dataSetName, String dataSetCategoryId, String code);
+
+    void saveNewTable(Map<String, Object> map);
 
     /**
      * 批量删除页面

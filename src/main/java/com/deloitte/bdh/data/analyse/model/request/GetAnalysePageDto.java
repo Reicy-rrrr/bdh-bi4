@@ -8,13 +8,10 @@ import javax.validation.constraints.NotNull;
 @Data
 public class GetAnalysePageDto {
 
-    @ApiModelProperty(value = "categoryId")
-    @NotNull(message = "目录id")
-    private String categoryId;
-
-    @ApiModelProperty(value = "名称")
-    private String name;
+    @ApiModelProperty(value = "page id")
+    @NotNull(message = "报表id")
+    private String pageId;
 
     @ApiModelProperty(value = "1")
-    private String superUserFlag;
+    private String fromDeloitte;
 }

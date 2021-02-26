@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -7,7 +9,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.common.constant.CommonConstant;
+import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
+import com.deloitte.bdh.data.collation.database.DbHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,17 +52,6 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageLink;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
-import com.deloitte.bdh.data.analyse.model.request.AnalyseNameDto;
-import com.deloitte.bdh.data.analyse.model.request.BatchDeleteAnalyseDto;
-import com.deloitte.bdh.data.analyse.model.request.CopyDeloittePageDto;
-import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageDto;
-import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageDto;
-import com.deloitte.bdh.data.analyse.model.request.PublishAnalysePageDto;
-import com.deloitte.bdh.data.analyse.model.request.ReplaceDataSetDto;
-import com.deloitte.bdh.data.analyse.model.request.ReplaceItemDto;
-import com.deloitte.bdh.data.analyse.model.request.SaveResourcePermissionDto;
-import com.deloitte.bdh.data.analyse.model.request.SelectPublishedPageDto;
-import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
@@ -129,8 +123,11 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     @Resource
     private AnalysePageLinkService linkService;
 
+    @Resource
+    private DbHandler dbHandler;
+
     @Override
-    public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageDto> request) {
+    public PageResult<AnalysePageDto> getChildAnalysePageList(PageRequest<GetAnalysePageListDto> request) {
         if (0 == request.getSize()) {
             PageHelper.startPage(request.getPage(), request.getSize(), true, false, true);
         } else {
@@ -190,9 +187,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
-    public AnalysePageDto getAnalysePage(String id) {
-        if (StringUtils.isNotBlank(id)) {
-            BiUiAnalysePage page = this.getById(id);
+    public AnalysePageDto getAnalysePage(String pageId) {
+        if (StringUtils.isNotBlank(pageId)) {
+            BiUiAnalysePage page = this.getById(pageId);
             if (null != page) {
                 AnalysePageDto dto = new AnalysePageDto();
                 BeanUtils.copyProperties(page, dto);
@@ -217,10 +214,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
-    @Transactional
-    public AnalysePageDto copyDeloittePage(CopyDeloittePageDto request) {
-//        checkBiUiAnalysePageByName(request.getCode(), request.getName(), ThreadLocalHolder.getTenantId(), null);
-        BiUiAnalysePage fromPage = this.getById(request.getFromPageId());
+    public CopySourceDto getCopySourceData(String pageId){
+        CopySourceDto dto = new CopySourceDto();
+        BiUiAnalysePage fromPage = this.getById(pageId);
         if (null == fromPage) {
             throw new BizException("源报表不存在");
         }
@@ -234,7 +230,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("源报表未配置图表");
         }
         List<String> originCodeList = Lists.newArrayList();
-        List<String> LinkPageId = Lists.newArrayList();
+        List<String> linkPageId = Lists.newArrayList();
         for (int i = 0; i < childrenArr.size(); i++) {
             JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
             JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
@@ -243,49 +239,67 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             }
             if (mutual.size() != 0) {
                 JSONArray jumpReport = mutual.getJSONArray("jumpReport");
-                if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
-                    LinkPageId.add(jumpReport.getString(1));
+                if (null != jumpReport && jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
+                    linkPageId.add(jumpReport.getString(1));
                 }
             }
         }
-        List<String> uniqueCodeList = originCodeList.stream().distinct().collect(Collectors.toList());
-        //创建数据集、复制表和数据
-        Map<String, String> codeMap = Maps.newHashMap();
-        for (String code : uniqueCodeList) {
-            LambdaQueryWrapper<BiDataSet> dataSetQueryWrapper = new LambdaQueryWrapper<>();
-            dataSetQueryWrapper.eq(BiDataSet::getCode, code);
-            BiDataSet dataSet = dataSetService.getOne(dataSetQueryWrapper);
-            BiDataSet newDataSet = new BiDataSet();
-            String newCode = GenerateCodeUtil.generate();
-//            String tableName = "COPY_" + newCode;
-            String tableName = dataSet.getTableName() + "_" + newCode;
-            newDataSet.setCode(newCode);
-            newDataSet.setType(DataSetTypeEnum.COPY.getKey());
-            newDataSet.setTableName(tableName);
-            newDataSet.setTableDesc(dataSet.getTableDesc());
-            newDataSet.setRefModelCode(dataSet.getRefModelCode());
-            newDataSet.setParentId(request.getDataSetCategoryId());
-            newDataSet.setComments(request.getDataSetName());
-            newDataSet.setIsFile(YesOrNoEnum.NO.getKey());
-            newDataSet.setTenantId(ThreadLocalHolder.getTenantId());
-            dataSetService.save(newDataSet);
-            String existSql = "select * from information_schema.TABLES where TABLE_NAME = '" + dataSet.getTableName() + "';";
-            if (CollectionUtils.isEmpty(demoMapper.selectDemoList(existSql))) {
-                throw new BizException("只能复制本地库报表");
-            }
-            String sql = "create table " + tableName + " like " + dataSet.getTableName() + ";";
-            demoMapper.selectDemoList(sql);
-            String insertSql = "insert into " + tableName + " select * from " + dataSet.getTableName() + ";";
-            demoMapper.selectDemoList(insertSql);
-            codeMap.put(code, newCode);
-        }
+        dto.setContent(content);
+        dto.setChildrenArr(childrenArr);
+        dto.setLinkPageId(linkPageId);
+        dto.setOriginCodeList(originCodeList);
+        return dto;
+    }
 
+    @Override
+    public Map<String, Object> buildNewDataSet(String dataSetName, String dataSetCategoryId, String code) {
+        Map<String, Object> map = new HashMap<>();
+        LambdaQueryWrapper<BiDataSet> dataSetQueryWrapper = new LambdaQueryWrapper<>();
+        dataSetQueryWrapper.eq(BiDataSet::getCode, code);
+        BiDataSet dataSet = dataSetService.getOne(dataSetQueryWrapper);
+        map.put("dataSet", dataSet);
+        BiDataSet newDataSet = new BiDataSet();
+        String newCode = GenerateCodeUtil.generate();
+        map.put("newCode", newCode);
+        String tableName = dataSet.getTableName() + "_" + newCode;
+        map.put("tableName", tableName);
+        newDataSet.setCode(newCode);
+        newDataSet.setType(DataSetTypeEnum.COPY.getKey());
+        newDataSet.setTableName(tableName);
+        newDataSet.setTableDesc(dataSet.getTableDesc());
+        newDataSet.setRefModelCode(dataSet.getRefModelCode());
+        newDataSet.setParentId(dataSetCategoryId);
+        newDataSet.setComments(dataSetName);
+        newDataSet.setIsFile(YesOrNoEnum.NO.getKey());
+        newDataSet.setTenantId(ThreadLocalHolder.getTenantId());
+        map.put("newDataSet", newDataSet);
+        //获取建表语句
+        String createSql = dbHandler.getCreateSql(dataSet.getTableName());
+        createSql = createSql.replace(dataSet.getTableName(), tableName);
+        map.put("createSql", createSql);
+        //获取原始数据
+        List<LinkedHashMap<String, Object>> data = dbHandler.executeQueryLinked("select * from " + dataSet.getTableName() + ";");
+        map.put("data", data);
+        return map;
+    }
+
+    @Override
+    public void saveNewTable(Map<String, Object> map) {
+        dataSetService.save((BiDataSet) MapUtils.getObject(map, "newDataSet"));
+        dbHandler.executeQuery(MapUtils.getString(map, "createSql"));
+        dbHandler.executeInsert(MapUtils.getString(map, "tableName"), (List<LinkedHashMap<String, Object>>) MapUtils.getObject(map, "data"));
+    }
+
+    @Override
+    @Transactional
+    public AnalysePageDto saveNewPage(String name, String categoryId, String fromPageId, List<String> linkPageId,
+                                      JSONObject content, JSONArray childrenArr, Map<String, String> codeMap) {
         //复制page
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
         insertPage.setType("dashboard");
-        insertPage.setName(request.getName());
+        insertPage.setName(name);
         insertPage.setCode(GenerateCodeUtil.generate());
-        insertPage.setParentId(request.getCategoryId());
+        insertPage.setParentId(categoryId);
         insertPage.setIsPublic(YesOrNoEnum.YES.getKey());
         insertPage.setIsEdit(YnTypeEnum.NO.getCode());
         insertPage.setTenantId(ThreadLocalHolder.getTenantId());
@@ -294,13 +308,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         this.save(insertPage);
 
         //添加跳转关系
-        if (CollectionUtils.isNotEmpty(LinkPageId)) {
-            LinkPageId = LinkPageId.stream().distinct().collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(linkPageId)) {
+            linkPageId = linkPageId.stream().distinct().collect(Collectors.toList());
             List<BiUiAnalysePageLink> linkList = Lists.newArrayList();
-            for (String refPageId : LinkPageId) {
+            for (String refPageId : linkPageId) {
                 BiUiAnalysePageLink link = new BiUiAnalysePageLink();
                 link.setPageId(insertPage.getId());
                 link.setRefPageId(refPageId);
+                link.setTenantId(ThreadLocalHolder.getTenantId());
                 linkList.add(link);
             }
             linkService.saveBatch(linkList);
@@ -331,7 +346,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         this.updateById(insertPage);
 
         //替换跳转到此报表的链接
-        replaceLinkId(request.getCategoryId(), request.getFromPageId(), insertPage.getId());
+        replaceLinkId(categoryId, fromPageId, insertPage.getId());
 
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(insertPage, dto);

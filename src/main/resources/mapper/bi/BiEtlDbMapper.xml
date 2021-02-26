@@ -37,6 +37,11 @@
         ${querySql}
     </select>
 
+    <!-- 执行批量sql查询语句 -->
+    <select id="executeQueryLinked" parameterType="String" resultType="java.util.LinkedHashMap">
+        ${querySql}
+    </select>
+
     <!-- 执行批量插入 -->
     <insert id="executeInsert">
         insert into ${tableName}

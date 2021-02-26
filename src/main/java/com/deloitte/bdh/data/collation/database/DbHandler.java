@@ -139,6 +139,14 @@ public interface DbHandler {
     List<Map<String, Object>> executeQuery(String querySql);
 
     /**
+     * 执行查询sql
+     *
+     * @param querySql
+     * @return
+     */
+    List<LinkedHashMap<String, Object>> executeQueryLinked(String querySql);
+
+    /**
      * 执行分页查询sql
      *
      * @param querySql 查询sql
@@ -178,4 +186,11 @@ public interface DbHandler {
      * @return
      */
     DbContext getDbContext(String dbId);
+
+    /**
+     * 获取建表语句
+     * @param tableName
+     * @return
+     */
+    String getCreateSql(String tableName);
 }

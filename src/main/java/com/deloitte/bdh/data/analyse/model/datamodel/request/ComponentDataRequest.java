@@ -17,6 +17,9 @@ public class ComponentDataRequest {
     @ApiModelProperty(value = "报表id")
     String pageId;
 
+    @ApiModelProperty(value = "1")
+    private String fromDeloitte;
+
     @NotNull
     @ApiModelProperty(value = "图标数据相关配置")
     DataConfig dataConfig;

@@ -229,6 +229,11 @@ public class DbHandlerImpl implements DbHandler {
     }
 
     @Override
+    public List<LinkedHashMap<String, Object>> executeQueryLinked(String querySql) {
+        return biEtlDbMapper.executeQueryLinked(querySql);
+    }
+
+    @Override
     public PageInfo<Map<String, Object>> executePageQuery(String querySql, Integer page, Integer size) {
         if (page == null) {
             page = 1;
@@ -433,6 +438,18 @@ public class DbHandlerImpl implements DbHandler {
     public long getCountLocal(String query) {
         String querySql = "SELECT COUNT(1) FROM (" + query + " ) count_temp";
         return biEtlDbMapper.selectCount(querySql);
+    }
+
+    @Override
+    public String getCreateSql(String tableName) {
+        //获取建表语句
+        String sql = "show create table " + tableName;
+        List<Map<String, Object>> result = biEtlDbMapper.selectColumns(sql);
+        String resultSql = "";
+        for (Map<String, Object> map : result) {
+            resultSql = MapUtils.getString(map, "Create Table");
+        }
+        return resultSql;
     }
 
     private List<TableField> getTableFieldFromMysql(List<Map<String, Object>> results) {
