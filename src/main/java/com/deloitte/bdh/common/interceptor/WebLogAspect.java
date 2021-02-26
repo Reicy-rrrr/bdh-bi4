@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.deloitte.bdh.common.util.UserInfoUtil;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -93,6 +94,8 @@ public class WebLogAspect {
         //设置参数
         if (joinPoint.getArgs().length > 0) {
 
+
+
             Map<String, Object> params;
             Object args = joinPoint.getArgs()[0];
             if (args instanceof Map) {
@@ -112,6 +115,10 @@ public class WebLogAspect {
             if (null != MapUtils.getString(params, "operator")) {
                 ThreadLocalHolder.set("operator", MapUtils.getString(params, "operator"));
             }
+        }
+        if (StringUtils.isNotBlank(request.getHeader("internalFlag")) &&
+                StringUtils.equals(request.getHeader("internalFlag"), "1")) {
+            ThreadLocalHolder.set("tenantId", "1001");
         }
     }
 

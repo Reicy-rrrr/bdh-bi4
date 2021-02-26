@@ -3,6 +3,8 @@ package com.deloitte.bdh.data.analyse.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
+import com.deloitte.bdh.common.constant.CommonConstant;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
@@ -13,11 +15,17 @@ import com.deloitte.bdh.data.analyse.service.AnalysePageHomepageService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePageComponentService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
+import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Author:LIJUN
@@ -49,15 +59,27 @@ public class AnalysePageController {
     @Resource
     AnalysePageHomepageService analysePageHomepageService;
 
+    @Resource
+    private DbHandler dbHandler;
+
+    @Resource
+    private BiDataSetService dataSetService;
+
     @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
     @PostMapping("/getChildAnalysePageList")
-    public RetResult<PageResult<AnalysePageDto>> getChildAnalysePageList(@RequestBody @Validated PageRequest<GetAnalysePageDto> request) {
+    public RetResult<PageResult<AnalysePageDto>> getChildAnalysePageList(@RequestBody @Validated PageRequest<GetAnalysePageListDto> request) {
+        if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
+            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+        }
         return RetResponse.makeOKRsp(analysePageService.getChildAnalysePageList(request));
     }
 
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
     @PostMapping("/getAnalysePage")
-    public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<String> request) {
+    public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) {
+        if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
+            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+        }
         return RetResponse.makeOKRsp(analysePageService.getAnalysePage(request.getData()));
     }
 
@@ -70,7 +92,28 @@ public class AnalysePageController {
     @ApiOperation(value = "复制德勤方案", notes = "复制德勤方案")
     @PostMapping("/copyDeloittePage")
     public RetResult<AnalysePageDto> copyDeloittePage(@RequestBody @Validated RetRequest<CopyDeloittePageDto> request) {
-        return RetResponse.makeOKRsp(analysePageService.copyDeloittePage(request.getData()));
+        String beginTenantCode = ThreadLocalHolder.getTenantCode();
+        //切换到内部库
+        ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+        CopySourceDto copySourceDto = analysePageService.getCopySourceData(request.getData().getFromPageId());
+        List<String> uniqueCodeList = copySourceDto.getOriginCodeList().stream().distinct().collect(Collectors.toList());
+        //创建数据集、复制表和数据
+        Map<String, String> codeMap = Maps.newHashMap();
+        for (String code : uniqueCodeList) {
+            //切换到内部库
+            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            Map<String, Object> map = analysePageService.buildNewDataSet(request.getData().getDataSetName(), request.getData().getDataSetCategoryId(), code);
+
+            //切换到当前租户库
+            ThreadLocalHolder.set("tenantCode", beginTenantCode);
+            analysePageService.saveNewTable(map);
+            codeMap.put(code, MapUtils.getString(map, "newCode"));
+        }
+        //切换到当前租户库
+        ThreadLocalHolder.set("tenantCode", beginTenantCode);
+        AnalysePageDto dto = analysePageService.saveNewPage(request.getData().getName(), request.getData().getCategoryId(), request.getData().getFromPageId(),
+                copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
+        return RetResponse.makeOKRsp(dto);
     }
 
     @ApiOperation(value = "批量删除页面", notes = "批量删除页面")

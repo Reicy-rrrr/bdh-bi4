@@ -17,4 +17,7 @@ public class GetAnalysePageConfigDto {
 
     @ApiModelProperty(value = "configId")
     private String configId;
+
+    @ApiModelProperty(value = "1")
+    private String fromDeloitte;
 }
