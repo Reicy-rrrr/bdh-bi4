@@ -187,9 +187,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
-    public AnalysePageDto getAnalysePage(GetAnalysePageDto request) {
-        if (StringUtils.isNotBlank(request.getPageId())) {
-            BiUiAnalysePage page = this.getById(request.getPageId());
+    public AnalysePageDto getAnalysePage(String pageId) {
+        if (StringUtils.isNotBlank(pageId)) {
+            BiUiAnalysePage page = this.getById(pageId);
             if (null != page) {
                 AnalysePageDto dto = new AnalysePageDto();
                 BeanUtils.copyProperties(page, dto);

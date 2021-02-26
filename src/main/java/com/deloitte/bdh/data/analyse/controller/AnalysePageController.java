@@ -74,12 +74,18 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(analysePageService.getChildAnalysePageList(request));
     }
 
+//    @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
+//    @PostMapping("/getAnalysePage")
+//    public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) {
+//        if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
+//            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+//        }
+//        return RetResponse.makeOKRsp(analysePageService.getAnalysePage(request.getData().getPageId()));
+//    }
+
     @ApiOperation(value = "查看单个页面详情", notes = "查看单个页面详情")
     @PostMapping("/getAnalysePage")
-    public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) {
-        if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
-        }
+    public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(analysePageService.getAnalysePage(request.getData()));
     }
 

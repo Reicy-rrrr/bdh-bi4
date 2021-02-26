@@ -27,10 +27,10 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
     /**
      * 查看单个resource
      *
-     * @param dto
+     * @param pageId
      * @return
      */
-    AnalysePageDto getAnalysePage(GetAnalysePageDto dto);
+    AnalysePageDto getAnalysePage(String pageId);
 
     /**
      * 创建页面
