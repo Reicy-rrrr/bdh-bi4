@@ -459,13 +459,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException("报表已经不存在了。");
         }
 
+        String isPublic = request.getIsPublic();
         if (StringUtils.equals(request.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
-            updatePage(request, originPage, originConfig, "false");
+            updatePage(request, originPage, originConfig, ShareTypeEnum.TRUE.getKey());
         } else {
-            String password = request.getPassword();
 
             //获取公开状态s
-            String isPublic = request.getIsPublic();
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 updatePage(request, originPage, originConfig, isPublic);
             } else {
@@ -523,11 +522,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
             //可见编辑权限
             userResourceService.saveResourcePermission(permissionDto);
-            //生成链接
-            setAccessUrl(pageId, password, isPublic);
+
             //数据权限
             userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
         }
+        //生成链接
+        setAccessUrl(pageId, request.getPassword(), isPublic);
         return null;
     }
 

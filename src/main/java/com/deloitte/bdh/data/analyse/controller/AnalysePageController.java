@@ -185,11 +185,14 @@ public class AnalysePageController {
     @ApiOperation(value = "获取非公开报表的链接", notes = "获取非公开报表的链接")
     @PostMapping("/getUrl")
     public RetResult<BiUiAnalysePublicShare> getUrl(@RequestBody @Validated RetRequest<GetShareUrlDto> request) {
-        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId());
-        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
-        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
-        BiUiAnalysePublicShare share = shareService.getOne(lambdaQueryWrapper);
+        if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
+            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+        }
+//        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId());
+//        List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+//        lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
+        BiUiAnalysePublicShare share = shareService.get(request.getData().getPageId());
         return RetResponse.makeOKRsp(share);
     }
 

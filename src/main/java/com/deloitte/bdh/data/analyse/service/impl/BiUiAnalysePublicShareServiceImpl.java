@@ -80,16 +80,15 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
         //排除订阅分享数据
         List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
         lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
-        BiUiAnalysePublicShare share = getOne(lambdaQueryWrapper);
 
-        if (null == share) {
-            share = new BiUiAnalysePublicShare();
-            share.setRefPageId(id);
-            share.setType(ShareTypeEnum.ZERO.getKey());
-            share.setTenantId(ThreadLocalHolder.getTenantId());
-            save(share);
-        }
-        return share;
+//        if (null == share) {
+//            share = new BiUiAnalysePublicShare();
+//            share.setRefPageId(id);
+//            share.setType(ShareTypeEnum.ZERO.getKey());
+//            share.setTenantId(ThreadLocalHolder.getTenantId());
+//            save(share);
+//        }
+        return getOne(lambdaQueryWrapper);
     }
 
 }

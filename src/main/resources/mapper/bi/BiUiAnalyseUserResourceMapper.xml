@@ -9,6 +9,7 @@
         <result column="RESOURCE_ID" property="resourceId"/>
         <result column="RESOURCE_TYPE" property="resourceType"/>
         <result column="PERMITTED_ACTION" property="permittedAction"/>
+        <result column="IS_DEFAULT" property="isDefault"/>
         <result column="TENANT_ID" property="tenantId"/>
         <result column="CREATE_DATE" property="createDate"/>
         <result column="CREATE_USER" property="createUser"/>

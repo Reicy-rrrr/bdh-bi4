@@ -13,4 +13,7 @@ public class GetShareUrlDto implements Serializable {
     @NotNull(message = "报表id")
     private String pageId;
 
+    @ApiModelProperty(value = "1")
+    private String fromDeloitte;
+
 }

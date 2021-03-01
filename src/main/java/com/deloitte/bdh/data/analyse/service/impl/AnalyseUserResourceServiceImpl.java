@@ -104,19 +104,20 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
             }
             //添加当前用户
             List<BiUiAnalyseUserResource> exist = resourceList.stream().filter(resource -> StringUtils.equals(resource.getUserId(), ThreadLocalHolder.getOperator())).collect(Collectors.toList());
-            if (CollectionUtils.isNotEmpty(exist)) {
-                resourceList.remove(exist.get(0));
+            if (CollectionUtils.isEmpty(exist)) {
+                BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
+                resource.setResourceId(dto.getId());
+                resource.setResourceType(dto.getResourceType());
+                resource.setPermittedAction(PermittedActionEnum.VIEW.getCode() + "," + PermittedActionEnum.EDIT.getCode());
+                resource.setIsDefault(YesOrNoEnum.YES.getKey());
+                resource.setTenantId(ThreadLocalHolder.getTenantId());
+                resource.setUserId(ThreadLocalHolder.getOperator());
+                resourceList.add(resource);
+                if (CollectionUtils.isNotEmpty(resourceList)) {
+                    this.saveBatch(resourceList);
+                }
             }
-            BiUiAnalyseUserResource resource = new BiUiAnalyseUserResource();
-            resource.setResourceId(dto.getId());
-            resource.setResourceType(dto.getResourceType());
-            resource.setPermittedAction(PermittedActionEnum.VIEW.getCode() + "," + PermittedActionEnum.EDIT.getCode());
-            resource.setTenantId(ThreadLocalHolder.getTenantId());
-            resource.setUserId(ThreadLocalHolder.getOperator());
-            resourceList.add(resource);
-            if (CollectionUtils.isNotEmpty(resourceList)) {
-                this.saveBatch(resourceList);
-            }
+
 
             if (StringUtils.equals(dto.getResourceType(), ResourcesTypeEnum.CATEGORY.getCode())) {
                 if (CollectionUtils.isNotEmpty(dto.getViewOrganizationList())) {
@@ -153,6 +154,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
         queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, dto.getResourceType());
         queryWrapper.eq(BiUiAnalyseUserResource::getTenantId, ThreadLocalHolder.getTenantId());
+        queryWrapper.ne(BiUiAnalyseUserResource::getIsDefault, YesOrNoEnum.YES.getKey());
         List<BiUiAnalyseUserResource> list = list(queryWrapper);
         List<String> viewUserList = Lists.newArrayList();
         List<String> editUserList = Lists.newArrayList();

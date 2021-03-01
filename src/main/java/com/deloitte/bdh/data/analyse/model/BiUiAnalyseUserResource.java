@@ -44,6 +44,9 @@ public class BiUiAnalyseUserResource implements Serializable {
     @TableField("PERMITTED_ACTION")
     private String permittedAction;
 
+    @TableField("IS_DEFAULT")
+    private String isDefault;
+
     @TableField("TENANT_ID")
     private String tenantId;
 
