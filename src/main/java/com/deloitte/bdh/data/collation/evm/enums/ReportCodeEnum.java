@@ -65,7 +65,7 @@ public enum ReportCodeEnum {
             Rule rule3 = new Rule(4, "EVM0004", "应收账款周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG})");
             Rule rule4 = new Rule(5, "EVM0005", "应付账款周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB046_AVG})");
             Rule rule5 = new Rule(6, "EVM0006", "存货周转天数", "360/({N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG})");
-            Rule rule6 = new Rule(7, "EVM0007", "现金周转天数", "(360/({N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG}))+(360/({N#lrb.EVMP001}/{N#zcfzb.EVMB046_AVG}))+(360/({N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG}))");
+            Rule rule6 = new Rule(7, "EVM0007", "现金周转天数", "(360/({N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG}))-(360/({N#lrb.EVMP001}/{N#zcfzb.EVMB046_AVG}))+(360/({N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG}))");
             Rule rule7 = new Rule(8, "EVM0008", "期末资金集中度", "1+1");
             Rule rule8 = new Rule(9, "EVM0009", "资金计划报送及时率", "1+1");
             Rule rule9 = new Rule(10, "EVM0010", "资金计划执行准确率", "1+1");
@@ -87,16 +87,18 @@ public enum ReportCodeEnum {
             Rule rule25 = new Rule(26, "EVM0026", "应付债券", "{N#zcfzb.EVMB058}");
             Rule rule26 = new Rule(27, "EVM0027", "非流动负债", "{N#zcfzb.EVMB057}+{N#zcfzb.EVMB058}");
             Rule rule27 = new Rule(28, "EVM0028", "流动比率", "{N#zcfzb.EVMB017}/{N#zcfzb.EVMB055}");
-            Rule rule28 = new Rule(29, "EVM0029", "速动比率", "({N#zcfzb.EVMB017}-{N#zcfzb.EVMB012})/{N#zcfzb.EVMB056}");
-            Rule rule29 = new Rule(30, "EVM0030", "现金比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}+{N#zcfzb.EVMB005})/{N#zcfzb.EVMB057}");
+            Rule rule28 = new Rule(29, "EVM0029", "速动比率", "({N#zcfzb.EVMB017}-{N#zcfzb.EVMB012})/{N#zcfzb.EVMB055}");
+            Rule rule29 = new Rule(30, "EVM0030", "现金比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}+{N#zcfzb.EVMB005})/{N#zcfzb.EVMB056}");
             Rule rule30 = new Rule(31, "EVM0031", "流动资产合计", "{N#zcfzb.EVMB017}");
             Rule rule31 = new Rule(32, "EVM0032", "流动负债合计", "{N#zcfzb.EVMB055}");
             Rule rule32 = new Rule(33, "EVM0033", "资产负债率", "{N#zcfzb.EVMB068}/{N#zcfzb.EVMB039}");
             Rule rule33 = new Rule(34, "EVM0034", "产权比率", "{N#zcfzb.EVMB068}/{N#zcfzb.EVMB080}");
             Rule rule34 = new Rule(35, "EVM0035", "有形资产债务率", "{N#zcfzb.EVMB068}/({N#zcfzb.EVMB080}-{N#zcfzb.EVMB032})");
             Rule rule35 = new Rule(36, "EVM0036", "资产总额", "{N#zcfzb.EVMB039}");
-            Rule rule36 = new Rule(18, "EVM0037", "负债总额", "{N#zcfzb.EVMB068}");
-            Rule rule37 = new Rule(18, "EVM0038", "利息偿付倍数", "({N#lrb.EVMP022}-{N#lrb.EVMP008})/{N#lrb.EVMP008}");
+            Rule rule36 = new Rule(37, "EVM0037", "负债总额", "{N#zcfzb.EVMB068}");
+            Rule rule37 = new Rule(38, "EVM0038", "利息偿付倍数", "({N#lrb.EVMP022}-{N#lrb.EVMP008})/{N#lrb.EVMP008}");
+            Rule rule38 = new Rule(39, "EVM0039", "经营活动现金流量", "{N#xjllb.EVMC011}");
+            Rule rule39 = new Rule(40, "EVM0040", "运营资金周转率", "{N#xjllb.EVMC011}/({N#zcfzb.EVMB017_AVG}-{N#zcfzb.EVMB055_AVG})");
 
             collusion.add(rule0);
             collusion.add(rule1);
@@ -136,6 +138,9 @@ public enum ReportCodeEnum {
             collusion.add(rule35);
             collusion.add(rule36);
             collusion.add(rule37);
+            collusion.add(rule38);
+            collusion.add(rule39);
+
             return new ImmutablePair<>(relySheets, collusion);
         }
     },
