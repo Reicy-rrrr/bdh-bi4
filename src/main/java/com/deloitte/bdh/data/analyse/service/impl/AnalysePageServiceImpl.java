@@ -275,7 +275,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         map.put("newDataSet", newDataSet);
         //获取建表语句
         String createSql = dbHandler.getCreateSql(dataSet.getTableName()).toUpperCase();
-        createSql = createSql.replace(dataSet.getTableName(), tableName);
+        createSql = createSql.replace(dataSet.getTableName().toUpperCase(), tableName);
         map.put("createSql", createSql);
         //获取原始数据
         List<LinkedHashMap<String, Object>> data = dbHandler.executeQueryLinked("select * from " + dataSet.getTableName() + ";");
