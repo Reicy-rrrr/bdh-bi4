@@ -7,7 +7,9 @@
         <id column="id" property="id" />
         <result column="NAME" property="name" />
         <result column="REF_CODE" property="refCode" />
-        <result column="ADDRESS" property="address" />
+        <result column="FILE_NAME" property="fileName" />
+        <result column="PATH" property="path" />
+        <result column="STORE_FILE_KEY" property="storeFileKey" />
         <result column="STATUS" property="status" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />

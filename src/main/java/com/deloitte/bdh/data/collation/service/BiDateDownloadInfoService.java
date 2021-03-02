@@ -16,6 +16,8 @@ import java.util.Map;
  * @since 2021-03-02
  */
 public interface BiDateDownloadInfoService extends Service<BiDateDownloadInfo> {
+
     void export(BiDateDownloadInfo info, List<TableColumn> columns, List<Map<String, Object>> list);
 
+    String downLoad(String id);
 }

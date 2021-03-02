@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.controller;
 
 
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
@@ -142,5 +141,11 @@ public class BiDataSetController {
 
         ThreadLocalHolder.async(() -> dateDownloadInfoService.export(dateDownloadInfo, columns, list));
         return RetResponse.makeOKRsp();
+    }
+
+    @ApiOperation(value = "获取下载地址", notes = "获取下载地址")
+    @PostMapping("/downLoad")
+    public RetResult<String> getDownLoadAddress(@RequestBody @Validated RetRequest<String> request) {
+        return RetResponse.makeOKRsp(dateDownloadInfoService.downLoad(request.getData()));
     }
 }

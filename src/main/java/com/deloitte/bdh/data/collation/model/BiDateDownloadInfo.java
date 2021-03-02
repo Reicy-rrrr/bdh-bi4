@@ -37,10 +37,22 @@ public class BiDateDownloadInfo implements Serializable {
     private String refCode;
 
     /**
+     * 文件名称
+     */
+    @TableField("FILE_NAME")
+    private String fileName;
+
+    /**
      * 下载地址
      */
-    @TableField("ADDRESS")
-    private String address;
+    @TableField("PATH")
+    private String path;
+
+    /**
+     * STORE_FILE_KEY
+     */
+    @TableField("STORE_FILE_KEY")
+    private String storeFileKey;
 
     /**
      * 处理状态
@@ -87,12 +99,26 @@ public class BiDateDownloadInfo implements Serializable {
     public void setRefCode(String refCode) {
         this.refCode = refCode;
     }
-    public String getAddress() {
-        return address;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+    public String getStoreFileKey() {
+        return storeFileKey;
+    }
+
+    public void setStoreFileKey(String storeFileKey) {
+        this.storeFileKey = storeFileKey;
     }
     public String getStatus() {
         return status;
@@ -150,7 +176,9 @@ public class BiDateDownloadInfo implements Serializable {
         "id=" + id +
         ", name=" + name +
         ", refCode=" + refCode +
-        ", address=" + address +
+        ", fileName=" + fileName +
+        ", path=" + path +
+        ", storeFileKey=" + storeFileKey +
         ", status=" + status +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
