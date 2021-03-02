@@ -1,14 +1,8 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
-import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.TreeChildrenTypeEnum;
-import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
-import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
-import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryTree;
-import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
@@ -20,7 +14,6 @@ import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbMapper;
 import com.deloitte.bdh.data.collation.model.BiComponent;
 import com.deloitte.bdh.data.collation.model.BiEtlDatabaseInf;
 import com.deloitte.bdh.data.collation.model.request.*;
-import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 import com.deloitte.bdh.data.collation.service.BiComponentService;
 import com.deloitte.bdh.data.collation.service.BiEtlDatabaseInfService;
 import com.google.common.collect.Lists;
@@ -451,7 +444,7 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
-    public TableData getDataSetInfoPage(GetDataSetInfoDto dto) throws Exception {
+    public TableData getDataInfoPage(GetDataSetInfoDto dto) throws Exception {
         BiDataSet dataSet = setMapper.selectById(dto.getId());
         if (null == dataSet) {
             throw new RuntimeException("未找到目标对象");
@@ -500,6 +493,32 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
             }
         }
         return tableData;
+    }
+
+    @Override
+    public List<Map<String, Object>> getDataInfo(String id) throws Exception {
+        BiDataSet dataSet = setMapper.selectById(id);
+        if (null == dataSet) {
+            throw new RuntimeException("未找到目标对象");
+        }
+        String querySql = "SELECT * FROM " + dataSet.getTableName();
+        List<Map<String, Object>> list;
+        if (DataSetTypeEnum.DIRECT.getKey().equals(dataSet.getType())) {
+            DbContext context = new DbContext();
+            context.setDbId(dataSet.getRefSourceId());
+            context.setQuerySql(querySql);
+            list = dbSelector.executeQuery(context);
+        } else {
+            if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                //判断是否在整理中
+                BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dataSet.getRefModelCode()));
+                if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
+                    throw new RuntimeException("该数据集正在数据整理同步中，暂无数据");
+                }
+            }
+            list = dbHandler.executeQuery(querySql);
+        }
+        return list;
     }
 
     @Override

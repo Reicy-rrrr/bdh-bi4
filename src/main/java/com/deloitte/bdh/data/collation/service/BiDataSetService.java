@@ -10,6 +10,7 @@ import com.deloitte.bdh.data.collation.model.resp.DataSetResp;
 import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -39,7 +40,9 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     List<TableColumn> getColumns(String code) throws Exception;
 
-    TableData getDataSetInfoPage(GetDataSetInfoDto dto) throws Exception;
+    TableData getDataInfoPage(GetDataSetInfoDto dto) throws Exception;
+
+    List<Map<String, Object>> getDataInfo(String id) throws Exception;
 
     void delete(String code, boolean canDel);
 

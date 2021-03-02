@@ -1,21 +1,33 @@
 package com.deloitte.bdh.common.util;
 
+import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ExcelUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ExcelUtils.class);
+
 
     public static final String CONTENT_TYPE_XLS = "application/vnd.ms-excel";
     public static final String CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -26,6 +38,7 @@ public class ExcelUtils {
     private static DecimalFormat decimalFormat = new DecimalFormat("###################.###########");
 
     private static NumberFormat numberFormat = NumberFormat.getInstance();
+
     static {
         numberFormat.setGroupingUsed(false);
     }
@@ -209,9 +222,11 @@ public class ExcelUtils {
         if (cell == null) {
             cell = row.createCell(cellAddress.getColumn());
         }
-        if (cellValue instanceof String) {
-            cell.setCellValue((String) cellValue);//改变数据
-        } else if (cellValue instanceof Double) {
+        setCellValue(cell, cellValue);
+    }
+
+    public static void setCellValue(Cell cell, Object cellValue) {
+        if (cellValue instanceof Double) {
             cell.setCellValue((Double) cellValue);//改变数据
         } else if (cellValue instanceof Calendar) {
             cell.setCellValue((Calendar) cellValue);//改变数据
@@ -219,6 +234,8 @@ public class ExcelUtils {
             cell.setCellValue((RichTextString) cellValue);//改变数据
         } else if (cellValue instanceof Date) {
             cell.setCellValue((Date) cellValue);//改变数据
+        } else {
+            cell.setCellValue((String) cellValue);
         }
 
         CellStyle style = cell.getCellStyle();
@@ -227,26 +244,6 @@ public class ExcelUtils {
         // 设置垂直对齐的样式为居中对齐;
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         cell.setCellStyle(style);
-    }
-
-    public static void setCellValueOnly(Sheet sheet, String cellIndex, Object cellValue) {
-        CellAddress cellAddress = new CellAddress(cellIndex);
-        Row row = sheet.getRow(cellAddress.getRow());//得到行
-        Cell cell = row.getCell(cellAddress.getColumn());//得到列
-        if (cell == null) {
-            cell = row.createCell(cellAddress.getColumn());
-        }
-        if (cellValue instanceof String) {
-            cell.setCellValue((String) cellValue);//改变数据
-        } else if (cellValue instanceof Double) {
-            cell.setCellValue((Double) cellValue);//改变数据
-        } else if (cellValue instanceof Calendar) {
-            cell.setCellValue((Calendar) cellValue);//改变数据
-        } else if (cellValue instanceof RichTextString) {
-            cell.setCellValue((RichTextString) cellValue);//改变数据
-        } else if (cellValue instanceof Date) {
-            cell.setCellValue((Date) cellValue);//改变数据
-        }
     }
 
     public static void setCellStringValue(Sheet sheet, String cellIndex, String cellValue) {
@@ -323,4 +320,56 @@ public class ExcelUtils {
         }
         return true;
     }
+
+    public static InputStream export(List<Map<String, Object>> data, List<TableColumn> columns) {
+        Workbook wb = new HSSFWorkbook();
+        int rowSize = 0;
+        Sheet sheet = wb.createSheet();
+        Row row = sheet.createRow(rowSize);
+        //设置header
+        Map<String, Integer> properties = Maps.newHashMap();
+        for (int i = 0; i < columns.size(); i++) {
+            String name = columns.get(i).getName();
+            properties.put(name, i);
+            row.createCell(i).setCellValue(name);
+        }
+
+        for (int x = 0; x < data.size(); x++) {
+            Row rowNew = sheet.createRow(1 + x);
+            Map<String, Object> rowDate = data.get(x);
+            for (Map.Entry<String, Integer> param : properties.entrySet()) {
+                Object value = rowDate.get(param.getKey());
+                Cell cell = rowNew.createCell(param.getValue());
+                setCellValue(cell, value);
+            }
+
+        }
+
+        ByteArrayOutputStream outputStream = null;
+        InputStream inputStream = null;
+        try {
+            outputStream = new ByteArrayOutputStream();
+            wb.write(outputStream);
+            byte[] brray = outputStream.toByteArray();
+            inputStream = new ByteArrayInputStream(brray);
+        } catch (Exception e) {
+            logger.error("文件导出失败：", e);
+        } finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.flush();
+                    outputStream.close();
+                }
+            } catch (Exception e) {
+                logger.error("文件流关闭失败：", e);
+            }
+            try {
+                wb.close();
+            } catch (Exception e) {
+                logger.error("Workbook 关闭失败：", e);
+            }
+        }
+        return inputStream;
+    }
+
 }
