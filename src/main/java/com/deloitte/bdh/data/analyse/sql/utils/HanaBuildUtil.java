@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.sql.utils;
 
+import com.deloitte.bdh.data.analyse.enums.AggregateTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
 import com.deloitte.bdh.data.analyse.sql.enums.HanaFormatTypeEnum;
@@ -42,8 +43,14 @@ public class HanaBuildUtil extends RelaBaseBuildUtil{
             if (StringUtils.isNotBlank(dataUnit)) {
                 fieldExpress = calWithUnit(fieldExpress, dataUnit);
             }
-            if (StringUtils.isNotBlank(dataType) && null != precision && MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
-                fieldExpress = formatPrecision(fieldExpress, precision);
+            if (StringUtils.isNotBlank(dataType) && MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
+                //均值，小数点自动情况下设置保留8位
+                if (null == precision && StringUtils.isNotBlank(aggregateType) && StringUtils.equals(aggregateType, AggregateTypeEnum.AVG.getKey())) {
+                    precision = 8;
+                }
+                if (null != precision) {
+                    fieldExpress = formatPrecision(fieldExpress, precision);
+                }
             }
 
             if (StringUtils.isNotBlank(defaultValue)) {

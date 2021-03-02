@@ -42,12 +42,12 @@ public class MysqlBuildUtil extends RelaBaseBuildUtil {
             }
             if (StringUtils.isNotBlank(dataType) && MENSURE_DECIMAL_TYPE.contains(dataType.toUpperCase())) {
                 //均值，小数点自动情况下设置保留8位
-                if (null == precision) {
-                    if (StringUtils.isNotBlank(aggregateType) && StringUtils.equals(aggregateType, AggregateTypeEnum.AVG.getKey())) {
-                        precision = 8;
-                    }
+                if (null == precision && StringUtils.isNotBlank(aggregateType) && StringUtils.equals(aggregateType, AggregateTypeEnum.AVG.getKey())) {
+                    precision = 8;
                 }
-                fieldExpress = formatPrecision(fieldExpress, precision);
+                if (null != precision) {
+                    fieldExpress = formatPrecision(fieldExpress, precision);
+                }
             }
             if (StringUtils.isNotBlank(defaultValue)) {
                 fieldExpress = ifNull(fieldExpress);
