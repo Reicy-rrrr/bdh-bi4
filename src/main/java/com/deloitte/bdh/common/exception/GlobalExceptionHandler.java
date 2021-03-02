@@ -4,6 +4,7 @@ import com.deloitte.bdh.common.base.RetCode;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.constant.ResultConstant;
 
+import java.sql.SQLSyntaxErrorException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.ConstraintViolationException;
@@ -81,6 +82,14 @@ public class GlobalExceptionHandler {
         } else {
             result.fail(e.getErrorCode(), e.getMessage());
         }
+        logger.error(e.getMessage(), e);
+        return this.buildResponseEntity(result);
+    }
+
+    @ExceptionHandler(value = SQLSyntaxErrorException.class)
+    public ResponseEntity<Object> sqlSyntaxErrorExceptionHandler(SQLSyntaxErrorException e) {
+        RetResult<Object> result = this.initResult();
+        result.fail(RetCode.INTERNAL_SERVER_ERROR.code, "未查询到表或字段");
         logger.error(e.getMessage(), e);
         return this.buildResponseEntity(result);
     }

@@ -165,8 +165,6 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 extraMap.putAll(joinDataUnit(request, response));
             }
             response.setExtra(extraMap);
-        } catch (SQLSyntaxErrorException e) {
-            throw new BizException("表或者字段有变动，请重新配置报表");
         } catch (SQLException e) {
             log.error(e.getMessage());
             response.setRows(null);
