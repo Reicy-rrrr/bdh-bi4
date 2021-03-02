@@ -261,7 +261,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiDataSet newDataSet = new BiDataSet();
         String newCode = GenerateCodeUtil.generate();
         map.put("newCode", newCode);
-        String tableName = dataSet.getTableName() + "_" + newCode;
+        String tableName = dataSet.getTableName().toUpperCase() + "_" + newCode;
         map.put("tableName", tableName);
         newDataSet.setCode(newCode);
         newDataSet.setType(DataSetTypeEnum.COPY.getKey());
@@ -274,7 +274,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         newDataSet.setTenantId(ThreadLocalHolder.getTenantId());
         map.put("newDataSet", newDataSet);
         //获取建表语句
-        String createSql = dbHandler.getCreateSql(dataSet.getTableName());
+        String createSql = dbHandler.getCreateSql(dataSet.getTableName()).toUpperCase();
         createSql = createSql.replace(dataSet.getTableName(), tableName);
         map.put("createSql", createSql);
         //获取原始数据
