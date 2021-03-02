@@ -234,8 +234,13 @@ public class ExcelUtils {
             cell.setCellValue((RichTextString) cellValue);//改变数据
         } else if (cellValue instanceof Date) {
             cell.setCellValue((Date) cellValue);//改变数据
+        }else if (cellValue instanceof BigDecimal) {
+            cell.setCellValue(cellValue.toString());//改变数据
         } else {
-            cell.setCellValue((String) cellValue);
+            if(null == cellValue){
+                cellValue="";
+            }
+            cell.setCellValue(String.valueOf(cellValue));
         }
 
         CellStyle style = cell.getCellStyle();
@@ -322,32 +327,32 @@ public class ExcelUtils {
     }
 
     public static InputStream export(List<Map<String, Object>> data, List<TableColumn> columns) {
-        Workbook wb = new HSSFWorkbook();
-        int rowSize = 0;
-        Sheet sheet = wb.createSheet();
-        Row row = sheet.createRow(rowSize);
-        //设置header
-        Map<String, Integer> properties = Maps.newHashMap();
-        for (int i = 0; i < columns.size(); i++) {
-            String name = columns.get(i).getName();
-            properties.put(name, i);
-            row.createCell(i).setCellValue(name);
-        }
-
-        for (int x = 0; x < data.size(); x++) {
-            Row rowNew = sheet.createRow(1 + x);
-            Map<String, Object> rowDate = data.get(x);
-            for (Map.Entry<String, Integer> param : properties.entrySet()) {
-                Object value = rowDate.get(param.getKey());
-                Cell cell = rowNew.createCell(param.getValue());
-                setCellValue(cell, value);
-            }
-
-        }
-
         ByteArrayOutputStream outputStream = null;
         InputStream inputStream = null;
+        Workbook wb = new HSSFWorkbook();
         try {
+            int rowSize = 0;
+            Sheet sheet = wb.createSheet();
+            Row row = sheet.createRow(rowSize);
+            //设置header
+            Map<String, Integer> properties = Maps.newHashMap();
+            for (int i = 0; i < columns.size(); i++) {
+                String name = columns.get(i).getName();
+                properties.put(name, i);
+                row.createCell(i).setCellValue(name);
+            }
+
+            for (int x = 0; x < data.size(); x++) {
+                Row rowNew = sheet.createRow(1 + x);
+                Map<String, Object> rowDate = data.get(x);
+                for (Map.Entry<String, Integer> param : properties.entrySet()) {
+                    Object value = rowDate.get(param.getKey());
+                    Cell cell = rowNew.createCell(param.getValue());
+                    setCellValue(cell, value);
+                }
+
+            }
+
             outputStream = new ByteArrayOutputStream();
             wb.write(outputStream);
             byte[] brray = outputStream.toByteArray();

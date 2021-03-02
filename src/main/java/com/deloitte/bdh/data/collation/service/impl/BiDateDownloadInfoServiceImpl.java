@@ -48,12 +48,13 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
         if (null == inputStream) {
             info.setStatus(DownLoadTStatusEnum.FAIL.getKey());
         } else {
-            String fileName = info.getName() + System.currentTimeMillis();
+            String fileName = info.getName() + System.currentTimeMillis() + ".xls";
             String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/dataset/";
             String storedFileKey = aliyunOss.uploadFile2OSS(inputStream, filePath, fileName);
             info.setFileName(fileName);
             info.setPath(filePath);
             info.setStoreFileKey(storedFileKey);
+            info.setStatus(DownLoadTStatusEnum.SUCCESS.getKey());
         }
         //生成excel 再更新状态
         dateDownloadInfoMapper.updateById(info);
@@ -62,6 +63,9 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
     @Override
     public String downLoad(String id) {
         BiDateDownloadInfo info = dateDownloadInfoMapper.selectById(id);
+        if (null == info) {
+            throw new RuntimeException("下载失败:未找到该条导出记录");
+        }
         if (DownLoadTStatusEnum.ING.getKey().equalsIgnoreCase(info.getStatus())) {
             throw new RuntimeException("下载失败:当前数据正在生成种");
         }

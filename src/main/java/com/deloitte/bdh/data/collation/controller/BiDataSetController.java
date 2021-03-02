@@ -117,7 +117,7 @@ public class BiDataSetController {
     @ApiOperation(value = "导出", notes = "导出")
     @PostMapping("/export")
     public RetResult<Void> export(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getId, request.getData()));
+        BiDataSet dataSet = dataSetService.getById(request.getData());
         if (null == dataSet) {
             return RetResponse.makeErrRsp("未找到目标对象");
         }
