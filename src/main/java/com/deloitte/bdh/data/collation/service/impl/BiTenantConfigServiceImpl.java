@@ -92,8 +92,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
 
         //调度校验
         checkTaskGroup();
-        initBiTask();
-        initEtlTask();
+//        initBiTask();
+//        initEtlTask();
         modelService.initModelTree();
         //初始化数据源与数据集文件夹与数据
         dataSetService.initDataSet();
@@ -125,7 +125,7 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
         try {
             //调用NIFI 创建模板
             Map<String, Object> reqNifi = Maps.newHashMap();
-            reqNifi.put("name", "TenantCode_" + ThreadLocalHolder.getTenantCode());
+            reqNifi.put("name", biProperties.getEvn() + "_TenantCode_" + ThreadLocalHolder.getTenantCode());
             reqNifi.put("comments", "TenantCode_" + ThreadLocalHolder.getTenantCode() + "的顶级模板");
             reqNifi.put("position", JsonUtil.JsonStrToMap(NifiProcessUtil.randPosition()));
             Map<String, Object> sourceMap = nifiProcessService.createProcessGroup(reqNifi, null);
@@ -152,13 +152,13 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             Map<String, Object> createParams = Maps.newHashMap();
             createParams.put("id", rootGroupId);
             createParams.put("type", PoolTypeEnum.DBCPConnectionPool.getKey());
-            createParams.put("name", "TenantCode_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
+            createParams.put("name", biProperties.getEvn() + "_TenantCode_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
             createParams.put("dbUser", userName);
             createParams.put("passWord", passWord);
             createParams.put("dbUrl", url);
             createParams.put("driverName", SourceTypeEnum.Mysql.getDriverName());
             createParams.put("driverLocations", biProperties.getMysqlDriver());
-            createParams.put("comments", "TenantCode_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
+            createParams.put("comments", biProperties.getEvn() + "_TenantCode_" + ThreadLocalHolder.getTenantCode() + "的本地mysql数据源");
             Map<String, Object> sourceMap = nifiProcessService.createControllerService(createParams);
             nifiProcessService.runControllerService(MapUtils.getString(sourceMap, "id"), EffectEnum.ENABLE.getKey());
             return MapUtils.getString(sourceMap, "id");

@@ -10,6 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @RefreshScope
 public class BiProperties {
 
+    @Value("${bdh.bi.evn}")
+    protected String evn;
+
     @Value("${nifi.transfer.url}")
     protected String nifiUrl;
 
