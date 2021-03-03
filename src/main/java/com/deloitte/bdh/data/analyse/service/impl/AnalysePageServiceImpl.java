@@ -577,7 +577,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         if (!StringUtils.equals(YesOrNoEnum.YES.getKey(), request.getData().getSuperUserFlag())) {
             pageLambdaQueryWrapper.eq(BiUiAnalysePage::getCreateUser, ThreadLocalHolder.getOperator());
         }
-        pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
+        pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getModifiedDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList,request);
     }
