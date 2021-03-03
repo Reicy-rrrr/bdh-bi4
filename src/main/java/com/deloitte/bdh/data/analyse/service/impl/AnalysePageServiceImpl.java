@@ -138,6 +138,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             if (StringUtils.isNotBlank(request.getData().getName())) {
                 queryWrapper.like(BiUiAnalysePage::getName, request.getData().getName());
             }
+            queryWrapper.isNotNull(BiUiAnalysePage::getPublishId);
+            queryWrapper.eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode());
             queryWrapper.orderByDesc(BiUiAnalysePage::getCreateDate);
             List<BiUiAnalysePage> list = list(queryWrapper);
             pageInfo = PageInfo.of(list);
@@ -154,6 +156,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             selectPublishedPageDto.setTenantId(ThreadLocalHolder.getTenantId());
             selectPublishedPageDto.setName(request.getData().getName());
             selectPublishedPageDto.setResourcesIds(Lists.newArrayList(request.getData().getCategoryId()));
+            selectPublishedPageDto.setIsEdit(YnTypeEnum.NO.getCode());
             pageList = analysePageMapper.selectPublishedPage(selectPublishedPageDto);
             pageInfo = PageInfo.of(pageList);
         }
@@ -425,7 +428,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             share.setCode(AesUtil.encryptNoSymbol(JsonUtil.readObjToJson(params), encryptPass));
 
         }
-        if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
+        if (StringUtils.equals(isPublic, ShareTypeEnum.FALSE.getKey())) {
             share.setType(ShareTypeEnum.ZERO.getKey());
             share.setAddress(viewAddress);
         } else {

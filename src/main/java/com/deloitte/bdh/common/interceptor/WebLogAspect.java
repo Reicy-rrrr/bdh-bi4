@@ -118,7 +118,7 @@ public class WebLogAspect {
         }
         if (StringUtils.isNotBlank(request.getHeader("internalFlag")) &&
                 StringUtils.equals(request.getHeader("internalFlag"), "1")) {
-            ThreadLocalHolder.set("tenantId", "1001");
+            ThreadLocalHolder.set("tenantCode", "1001");
         }
     }
 
