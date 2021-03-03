@@ -115,9 +115,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     private BiDataSetService dataSetService;
 
     @Resource
-    private BiUiDemoMapper demoMapper;
-
-    @Autowired
     private FeignClientService feignClientService;
 
     @Resource
@@ -166,18 +163,18 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
-            if (StringUtils.isNotBlank(page.getCreateUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getCreateUser())) {
-                IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
-                if (voc != null) {
-                    dto.setCreateUserName(voc.getEmployeeName());
-                }
-            }
-            if (StringUtils.isNotBlank(page.getModifiedUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getModifiedUser())) {
-                IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
-                if (vom != null) {
-                    dto.setModifiedUserName(vom.getEmployeeName());
-                }
-            }
+//            if (StringUtils.isNotBlank(page.getCreateUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getCreateUser())) {
+//                IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+//                if (voc != null) {
+//                    dto.setCreateUserName(voc.getEmployeeName());
+//                }
+//            }
+//            if (StringUtils.isNotBlank(page.getModifiedUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getModifiedUser())) {
+//                IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
+//                if (vom != null) {
+//                    dto.setModifiedUserName(vom.getEmployeeName());
+//                }
+//            }
             pageDtoList.add(dto);
         });
         userResourceService.setPagePermission(pageDtoList, request.getData().getSuperUserFlag());
@@ -714,15 +711,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
-            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
-            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
+//            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
+//            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
             BeanUtils.copyProperties(page, dto);
-            if (voc != null) {
-                dto.setCreateUserName(voc.getEmployeeName());
-            }
-            if (vom != null) {
-                dto.setModifiedUserName(vom.getEmployeeName());
-            }
+//            if (voc != null) {
+//                dto.setCreateUserName(voc.getEmployeeName());
+//            }
+//            if (vom != null) {
+//                dto.setModifiedUserName(vom.getEmployeeName());
+//            }
             pageDtoList.add(dto);
         });
         pageInfo.setList(pageDtoList);
