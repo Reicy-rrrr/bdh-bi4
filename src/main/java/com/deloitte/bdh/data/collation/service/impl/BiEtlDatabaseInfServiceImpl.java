@@ -95,7 +95,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             resourcesDto.setComments("默认数据源");
             resourcesDto.setType(SourceTypeEnum.File_Excel.getType());
             resourcesDto.setDbName("ORDERS_USCA_BI");
-            return this.createResource(resourcesDto);
+            return this.createResource(resourcesDto, true);
         }
         return this.getOne(new LambdaQueryWrapper<BiEtlDatabaseInf>().orderByAsc(BiEtlDatabaseInf::getId).last("limit 1"));
     }
@@ -120,7 +120,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     @Override
     @Transactional
-    public BiEtlDatabaseInf createResource(CreateResourcesDto dto) {
+    public BiEtlDatabaseInf createResource(CreateResourcesDto dto, boolean init) {
         BiEtlDatabaseInf inf = null;
         SourceTypeEnum typeEnum = SourceTypeEnum.values(dto.getType());
         switch (typeEnum) {
@@ -141,7 +141,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             default:
                 throw new RuntimeException("未找到对应的数据模型的类型!");
         }
-        runResource(inf.getId(), EffectEnum.ENABLE.getKey());
+        runResource(inf.getId(), EffectEnum.ENABLE.getKey(), init);
         return inf;
     }
 
@@ -174,7 +174,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         } else {
             createDto.setType(SourceTypeEnum.File_Excel.getType());
         }
-        BiEtlDatabaseInf inf = createResource(createDto);
+        BiEtlDatabaseInf inf = createResource(createDto, false);
 
         // 根据数据源信息初始化表名称
         String tableName = initImportTableName(inf);
@@ -366,10 +366,10 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     }
 
     @Override
-    public BiEtlDatabaseInf runResource(String id, String effect) {
+    public BiEtlDatabaseInf runResource(String id, String effect, boolean init) {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (!effect.equals(inf.getEffect())) {
-            if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
+            if (!init && inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
                 throw new RuntimeException("默认数据源请勿禁用");
             }
 

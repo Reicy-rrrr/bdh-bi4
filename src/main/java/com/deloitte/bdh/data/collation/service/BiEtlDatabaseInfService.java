@@ -35,7 +35,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dto
      * @return
      */
-    BiEtlDatabaseInf createResource(CreateResourcesDto dto);
+    BiEtlDatabaseInf createResource(CreateResourcesDto dto, boolean init);
 
     /**
      * 创建文件数据源
@@ -67,7 +67,7 @@ public interface BiEtlDatabaseInfService extends Service<BiEtlDatabaseInf> {
      * @param dto
      * @return
      */
-    BiEtlDatabaseInf runResource(String id, String effect) throws Exception;
+    BiEtlDatabaseInf runResource(String id, String effect, boolean init) throws Exception;
 
     /**
      * del数据源

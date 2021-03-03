@@ -54,7 +54,7 @@ public class BiSourceController {
     @ApiOperation(value = "新增数据源", notes = "新增数据源")
     @PostMapping("/createResource")
     public RetResult<BiEtlDatabaseInf> createResource(@RequestBody @Validated RetRequest<CreateResourcesDto> request) {
-        return RetResponse.makeOKRsp(biEtlDatabaseInfService.createResource(request.getData()));
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.createResource(request.getData(), false));
     }
 
     @ApiOperation(value = "创建文件型数据源", notes = "创建文件型数据源")
@@ -79,7 +79,7 @@ public class BiSourceController {
     @PostMapping("/runResource")
     public RetResult<BiEtlDatabaseInf> runResource(@RequestBody @Validated RetRequest<RunResourcesDto> request) throws Exception {
         RunResourcesDto dto = request.getData();
-        return RetResponse.makeOKRsp(biEtlDatabaseInfService.runResource(dto.getId(), dto.getEffect()));
+        return RetResponse.makeOKRsp(biEtlDatabaseInfService.runResource(dto.getId(), dto.getEffect(), false));
     }
 
     @ApiOperation(value = "删除数据源", notes = "删除数据源")
