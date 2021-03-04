@@ -57,6 +57,7 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
 
     @Override
     public void export(BiDateDownloadInfo info, BiDataSet dataSet) throws Exception {
+        long begin = System.currentTimeMillis();
         String zipFilePath = "/usr/local/t_" + ThreadLocalHolder.getTenantCode()
                 + "/" + DateUtils.formatShortDate(new Date()) + "/" + dataSet.getCode() + "/";
         List<TableColumn> columns = dataSetService.getColumns(dataSet.getCode());
@@ -98,6 +99,7 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
         }
 
         //生成excel 再更新状态
+        info.setProcessTime((System.currentTimeMillis() - begin) / 1000 + "");
         dateDownloadInfoMapper.updateById(info);
 
         //删除压缩的文件夹

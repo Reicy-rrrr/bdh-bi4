@@ -11,6 +11,7 @@
         <result column="PATH" property="path" />
         <result column="STORE_FILE_KEY" property="storeFileKey" />
         <result column="STATUS" property="status" />
+        <result column="PROCESS_TIME" property="processTime" />
         <result column="CREATE_DATE" property="createDate" />
         <result column="CREATE_USER" property="createUser" />
         <result column="MODIFIED_DATE" property="modifiedDate" />

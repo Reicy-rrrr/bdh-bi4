@@ -1,7 +1,6 @@
 package com.deloitte.bdh.data.collation.model;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
@@ -14,9 +13,8 @@ import java.io.Serializable;
  * </p>
  *
  * @author lw
- * @since 2021-03-02
+ * @since 2021-03-04
  */
-@TableName("BI_DATE_DOWNLOAD_INFO")
 public class BiDateDownloadInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -59,6 +57,12 @@ public class BiDateDownloadInfo implements Serializable {
      */
     @TableField("STATUS")
     private String status;
+
+    /**
+     * 处理时间
+     */
+    @TableField("PROCESS_TIME")
+    private String processTime;
 
     @TableField(value = "CREATE_DATE", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime createDate;
@@ -127,6 +131,13 @@ public class BiDateDownloadInfo implements Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
+    public String getProcessTime() {
+        return processTime;
+    }
+
+    public void setProcessTime(String processTime) {
+        this.processTime = processTime;
+    }
     public LocalDateTime getCreateDate() {
         return createDate;
     }
@@ -180,6 +191,7 @@ public class BiDateDownloadInfo implements Serializable {
         ", path=" + path +
         ", storeFileKey=" + storeFileKey +
         ", status=" + status +
+        ", processTime=" + processTime +
         ", createDate=" + createDate +
         ", createUser=" + createUser +
         ", modifiedDate=" + modifiedDate +
