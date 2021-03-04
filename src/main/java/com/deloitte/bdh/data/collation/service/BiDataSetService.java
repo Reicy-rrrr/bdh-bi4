@@ -42,6 +42,8 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     TableData getDataInfoPage(GetDataSetInfoDto dto) throws Exception;
 
+    TableData getDataInfoPage(BiDataSet dataSet, Integer page, Integer size) throws Exception;
+
     List<Map<String, Object>> getDataInfo(String id) throws Exception;
 
     void delete(String code, boolean canDel);

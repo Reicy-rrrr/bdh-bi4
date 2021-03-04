@@ -11,8 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -234,11 +238,11 @@ public class ExcelUtils {
             cell.setCellValue((RichTextString) cellValue);//改变数据
         } else if (cellValue instanceof Date) {
             cell.setCellValue((Date) cellValue);//改变数据
-        }else if (cellValue instanceof BigDecimal) {
+        } else if (cellValue instanceof BigDecimal) {
             cell.setCellValue(cellValue.toString());//改变数据
         } else {
-            if(null == cellValue){
-                cellValue="";
+            if (null == cellValue) {
+                cellValue = "";
             }
             cell.setCellValue(String.valueOf(cellValue));
         }
@@ -377,4 +381,47 @@ public class ExcelUtils {
         return inputStream;
     }
 
+    public static void create(String filePath, String fileName, InputStream inputStream) {
+        BufferedInputStream bufferedInputStream = null;
+        FileOutputStream fileOutputStream = null;
+        BufferedOutputStream bufferedOutputStream = null;
+        try {
+            File fp = new File(filePath);
+            // 创建目录
+            if (!fp.exists()) {
+                fp.mkdirs();// 目录不存在的情况下，创建目录。
+            }
+
+            //BIO方式读取文件,写出文件
+            bufferedInputStream = new BufferedInputStream(inputStream);
+            fileOutputStream = new FileOutputStream(new File(filePath + fileName));
+            bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+            //相对当前位置的偏移量
+            int off = 0;
+            //读取的长度，单位为字节
+            int len = 1024;
+            //读取的数据存储到该字节数组
+            //数组初始化之后，会有1024个字节，默认值为0。所以下面读取数据到b字节数组的时候，假如读取的长度不够，会有0填充的问题。
+            //所以具体要从b中读取多少个数据，要看len= bufferedInputStream.read(b, off, len)中，b到底从输入流中读取到了多少字节，也就是Len的值为多少
+            //以下的写法就是正常的，不会出现message中有乱码或者0填充的情况。
+            byte[] b = new byte[1024];
+            while ((len = bufferedInputStream.read(b, off, len)) != -1) {
+                bufferedOutputStream.write(b, 0, len);
+            }
+            bufferedOutputStream.flush();
+        } catch (Exception e) {
+            logger.error("本地文件生成失败：", e);
+        } finally {
+            try {
+                if (bufferedOutputStream != null) {
+                    bufferedOutputStream.close();
+                }
+                if (fileOutputStream != null) {
+                    fileOutputStream.close();
+                }
+            } catch (Exception e) {
+                logger.error("文件流关闭失败：", e);
+            }
+        }
+    }
 }

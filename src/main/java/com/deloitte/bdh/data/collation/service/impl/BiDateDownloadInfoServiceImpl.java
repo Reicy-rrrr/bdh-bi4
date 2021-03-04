@@ -1,28 +1,32 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
-import com.deloitte.bdh.common.annotation.NoInterceptor;
-import com.deloitte.bdh.common.base.RetResponse;
-import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.constant.DSConstant;
-import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.ExcelUtils;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.common.util.ZipUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
+import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.enums.DownLoadTStatusEnum;
+import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiDateDownloadInfo;
 import com.deloitte.bdh.data.collation.dao.bi.BiDateDownloadInfoMapper;
+import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.deloitte.bdh.data.collation.service.BiDateDownloadInfoService;
 import com.deloitte.bdh.common.base.AbstractService;
-import io.swagger.annotations.ApiOperation;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -41,23 +45,57 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
     private BiDateDownloadInfoMapper dateDownloadInfoMapper;
     @Autowired
     private AliyunOssUtil aliyunOss;
+    @Resource
+    private BiDataSetService dataSetService;
 
     @Override
-    public void export(BiDateDownloadInfo info, List<TableColumn> columns, List<Map<String, Object>> list) {
-        InputStream inputStream = ExcelUtils.export(list, columns);
-        if (null == inputStream) {
+    public void export(BiDateDownloadInfo info, BiDataSet dataSet) throws Exception {
+        String zipFilePath = "/usr/local/t_" + ThreadLocalHolder.getTenantCode()
+                + "/" + DateUtils.formatShortDate(new Date()) + "/" + dataSet.getCode() + "/";
+        List<TableColumn> columns = dataSetService.getColumns(dataSet.getCode());
+        Integer page = 1;
+        Integer pageSize = 60000;
+        boolean more;
+        List<String> zipFiles = Lists.newArrayList();
+        try {
+            do {
+                String fileName = dataSet.getTableDesc() + "_" + System.currentTimeMillis() + ".xls";
+                TableData data = dataSetService.getDataInfoPage(dataSet, page, pageSize);
+                more = data.isMore();
+                page++;
+                List<Map<String, Object>> list = data.getRows();
+                InputStream inputStream = ExcelUtils.export(list, columns);
+                ExcelUtils.create(zipFilePath, fileName, inputStream);
+                zipFiles.add(zipFilePath + fileName);
+            } while (more);
+        } catch (Exception e) {
+            log.error("压缩文件错误：", e);
+        }
+
+        //压缩
+        if (CollectionUtils.isEmpty(zipFiles)) {
             info.setStatus(DownLoadTStatusEnum.FAIL.getKey());
         } else {
-            String fileName = info.getName() + System.currentTimeMillis() + ".xls";
-            String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/dataset/";
-            String storedFileKey = aliyunOss.uploadFile2OSS(inputStream, filePath, fileName);
-            info.setFileName(fileName);
-            info.setPath(filePath);
-            info.setStoreFileKey(storedFileKey);
-            info.setStatus(DownLoadTStatusEnum.SUCCESS.getKey());
+            String zipFileName = info.getName() + System.currentTimeMillis() + ".zip";
+            boolean success = ZipUtil.toZip(zipFilePath + zipFileName, zipFiles);
+            if (!success) {
+                info.setStatus(DownLoadTStatusEnum.FAIL.getKey());
+            } else {
+                String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/dataset/";
+                String storedFileKey = aliyunOss.uploadFile2OSS(new FileInputStream(new File(zipFilePath + zipFileName)), filePath, zipFileName);
+                info.setFileName(zipFileName);
+                info.setPath(filePath);
+                info.setStoreFileKey(storedFileKey);
+                info.setStatus(DownLoadTStatusEnum.SUCCESS.getKey());
+            }
         }
+
         //生成excel 再更新状态
         dateDownloadInfoMapper.updateById(info);
+
+        //删除压缩的文件夹
+        File file = new File(zipFilePath);
+        ZipUtil.deleteFolder(file);
     }
 
     @Override

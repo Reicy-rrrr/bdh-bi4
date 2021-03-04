@@ -127,10 +127,8 @@ public class BiDataSetController {
                 .eq(BiDateDownloadInfo::getCreateUser, ThreadLocalHolder.getOperator())
         );
         if (num > 0) {
-            return RetResponse.makeErrRsp("该数据正在导出种，请稍后再试");
+            return RetResponse.makeErrRsp("该数据正在导出中，请稍后再试");
         }
-        List<TableColumn> columns = dataSetService.getColumns(dataSet.getCode());
-        List<Map<String, Object>> list = dataSetService.getDataInfo(request.getData());
 
         BiDateDownloadInfo dateDownloadInfo = new BiDateDownloadInfo();
         dateDownloadInfo.setName(dataSet.getTableDesc());
@@ -139,7 +137,7 @@ public class BiDataSetController {
         dateDownloadInfo.setTenantId(ThreadLocalHolder.getTenantId());
         dateDownloadInfoService.save(dateDownloadInfo);
 
-        ThreadLocalHolder.async(() -> dateDownloadInfoService.export(dateDownloadInfo, columns, list));
+        ThreadLocalHolder.async(() -> dateDownloadInfoService.export(dateDownloadInfo, dataSet));
         return RetResponse.makeOKRsp();
     }
 

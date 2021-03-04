@@ -496,6 +496,36 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     }
 
     @Override
+    public TableData getDataInfoPage(BiDataSet dataSet, Integer page, Integer size) throws Exception {
+        TableData tableData = new TableData();
+        if (DataSetTypeEnum.DIRECT.getKey().equals(dataSet.getType())) {
+            DbContext context = new DbContext();
+            context.setDbId(dataSet.getRefSourceId());
+            context.setTableName(dataSet.getTableName());
+            context.setPage(page);
+            context.setSize(size);
+            tableData = dbSelector.getTableData(context);
+        } else {
+            if (DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
+                //判断是否在整理中
+                BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dataSet.getRefModelCode()));
+                if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
+                    throw new RuntimeException("该数据集正在数据整理同步中，暂无数据");
+                }
+            }
+            String querySql = "SELECT * FROM " + dataSet.getTableName();
+            PageInfo<Map<String, Object>> pageInfo = dbHandler.executePageQuery(querySql, page, size);
+            if (null != pageInfo) {
+                tableData.setTotal(pageInfo.getTotal());
+                tableData.setMore(pageInfo.isHasNextPage());
+                tableData.setRows(pageInfo.getList());
+            }
+        }
+
+        return tableData;
+    }
+
+    @Override
     public List<Map<String, Object>> getDataInfo(String id) throws Exception {
         BiDataSet dataSet = setMapper.selectById(id);
         if (null == dataSet) {
