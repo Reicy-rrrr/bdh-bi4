@@ -7,7 +7,6 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.enums.DownLoadTStatusEnum;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -146,4 +144,12 @@ public class BiDataSetController {
     public RetResult<String> getDownLoadAddress(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(dateDownloadInfoService.downLoad(request.getData()));
     }
+
+    @ApiOperation(value = "获取下载分页列表", notes = "获取下载分页列表")
+    @PostMapping("/downloadPage")
+    public RetResult<PageResult<List<BiDateDownloadInfo>>> downloadPage(@RequestBody @Validated RetRequest<GetDownloadPageDto> request) {
+        PageHelper.startPage(request.getData().getPage(), request.getData().getSize());
+        return RetResponse.makeOKRsp(dateDownloadInfoService.downloadPage(request.getData()));
+    }
+
 }

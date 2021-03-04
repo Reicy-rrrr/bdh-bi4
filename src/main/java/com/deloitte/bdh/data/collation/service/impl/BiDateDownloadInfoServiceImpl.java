@@ -1,6 +1,8 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
@@ -8,16 +10,21 @@ import com.deloitte.bdh.common.util.ExcelUtils;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.ZipUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableData;
 import com.deloitte.bdh.data.collation.enums.DownLoadTStatusEnum;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.BiDateDownloadInfo;
 import com.deloitte.bdh.data.collation.dao.bi.BiDateDownloadInfoMapper;
+import com.deloitte.bdh.data.collation.model.request.GetDownloadPageDto;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.deloitte.bdh.data.collation.service.BiDateDownloadInfoService;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -114,5 +121,19 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
         return url;
     }
 
+
+    @Override
+    public PageResult<List<BiDateDownloadInfo>> downloadPage(GetDownloadPageDto dto) {
+        LambdaQueryWrapper<BiDateDownloadInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (!StringUtils.equals(dto.getSuperUserFlag(), YesOrNoEnum.YES.getKey())) {
+            lambdaQueryWrapper.in(BiDateDownloadInfo::getCreateUser, ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
+        }
+        if (!StringUtils.isNotBlank(dto.getStatus())) {
+            lambdaQueryWrapper.eq(BiDateDownloadInfo::getStatus, dto.getStatus());
+        }
+        lambdaQueryWrapper.orderByDesc(BiDateDownloadInfo::getCreateDate);
+        PageInfo<BiDateDownloadInfo> pageInfo = new PageInfo<>(this.list(lambdaQueryWrapper));
+        return new PageResult<>(pageInfo);
+    }
 
 }
