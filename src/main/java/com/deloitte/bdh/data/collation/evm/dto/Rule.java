@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Rule {
-    private int order;
     private String targetCode;
     private String targetName;
     private String expression;

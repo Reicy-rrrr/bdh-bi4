@@ -11,6 +11,8 @@ public enum TableMappingEnum {
     EVM_CAPANALYSIS_FUND("EVM_CAPANALYSIS_FUND", ReportCodeEnum.ZJB),
     EVM_CAPANALYSIS_STRUCT("EVM_CAPANALYSIS_STRUCT", ReportCodeEnum.ZCGCB),
 
+    EVM_CAPANALYSIS_AP("EVM_CAPANALYSIS_AP", ReportCodeEnum.DEFAULT),
+
     ;
     private String name;
     private ReportCodeEnum value;
@@ -33,6 +35,15 @@ public enum TableMappingEnum {
     public String getTableName(List<String> list) {
         for (String var : list) {
             if (var.toUpperCase().indexOf(this.getName()) >= 0) {
+                return var;
+            }
+        }
+        return null;
+    }
+
+    public static String getTableNameByEnum(List<String> list, TableMappingEnum tableMappingEnum) {
+        for (String var : list) {
+            if (var.toUpperCase().indexOf(tableMappingEnum.getName()) >= 0) {
                 return var;
             }
         }

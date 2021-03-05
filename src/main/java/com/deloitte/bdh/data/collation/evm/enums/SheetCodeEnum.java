@@ -7,8 +7,9 @@ public enum SheetCodeEnum {
     lrb("lrb", "利润表"),
     xjllb("xjllb", "现金流量表"),
     kmyeb("kmyeb", "科目余额表"),
-    yszkb("yszkb", "应收账款账龄表");
+    yszkb("yszkb", "应收账款账龄表"),
 
+    ;
     private String name;
 
     private String value;

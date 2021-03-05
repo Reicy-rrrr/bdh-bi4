@@ -9,10 +9,11 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
+import com.deloitte.bdh.common.util.ExcelUtils;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
+import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
 import com.deloitte.bdh.data.collation.evm.enums.TableMappingEnum;
 import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
@@ -21,6 +22,7 @@ import com.deloitte.bdh.data.collation.model.BiReport;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
 import com.deloitte.bdh.data.collation.service.BiReportService;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +33,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -54,6 +58,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
     private BiReportService reportService;
     @Autowired
     private EvmServiceImpl evmService;
+    @Autowired
+    protected DbHandler dbHandler;
     @Resource
     private LocaleMessageService localeMessageService;
 
@@ -82,13 +88,16 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
                         localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
-            //todo check
+            List<String> tables = new ArrayList<>(Arrays.asList(evmFile.getTables().split(",")));
+
+            //中间表处理
             doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), evmFile.getBatchId());
             doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), evmFile.getBatchId());
             doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), evmFile.getBatchId());
             doKmyeb(workbook.getSheet(SheetCodeEnum.kmyeb.getValue()), evmFile.getBatchId());
+            doYszkb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_AP),
+                    workbook.getSheet(SheetCodeEnum.yszkb.getValue()), evmFile.getBatchId());
 
-            List<String> tables = new ArrayList<>(Arrays.asList(evmFile.getTables().split(",")));
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             for (ImmutablePair<TableMappingEnum, String> pair : enums) {
                 evmService.choose(pair.left.getValue().getName(), pair.right);
@@ -146,7 +155,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 biReport.setTenantId(ThreadLocalHolder.getTenantId());
                 biReport.setColNo(String.valueOf(cell));
                 Cell temp = sheet.getRow(row).getCell(cell);
-                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                String tempValue = ExcelUtils.getNumericCellValueDefault(temp);
                 biReport.setCell2(tempValue);
                 if ("年报".equals(type)) {
                     biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
@@ -207,7 +216,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 biReport.setTenantId(ThreadLocalHolder.getTenantId());
                 biReport.setColNo(String.valueOf(cell));
                 Cell temp = sheet.getRow(row).getCell(cell);
-                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                String tempValue = ExcelUtils.getNumericCellValueDefault(temp);
                 biReport.setCell2(tempValue);
                 if ("年报".equals(type)) {
                     biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
@@ -266,7 +275,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 biReport.setTenantId(ThreadLocalHolder.getTenantId());
                 biReport.setColNo(String.valueOf(cell));
                 Cell temp = sheet.getRow(row).getCell(cell);
-                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                String tempValue = ExcelUtils.getNumericCellValueDefault(temp);
                 biReport.setCell2(tempValue);
                 if ("年报".equals(type)) {
                     biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
@@ -325,7 +334,7 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 biReport.setTenantId(ThreadLocalHolder.getTenantId());
                 biReport.setColNo(String.valueOf(cell));
                 Cell temp = sheet.getRow(row).getCell(cell);
-                String tempValue = null == temp ? "0" : temp.getNumericCellValue() + "";
+                String tempValue = ExcelUtils.getNumericCellValueDefault(temp);
                 biReport.setCell2(tempValue);
                 if ("年报".equals(type)) {
                     biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
@@ -339,6 +348,95 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
         reportService.saveBatch(list);
     }
 
+    private void doYszkb(String tableName, Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        //获取类型
+        Cell typeCell = sheet.getRow(0).getCell(4);
+        if (null == typeCell) {
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        String type = typeCell.getStringCellValue();
+        String date = DateUtils.formatStandardDateTime(new Date());
+
+        List<LinkedHashMap<String, Object>> all = Lists.newArrayList();
+        Map<String, BigDecimal> total360 = Maps.newHashMap();
+        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            String period = DateUtils.stampToDateOfYear(row.getCell(0).getDateCellValue());
+
+            LinkedHashMap<String, Object> map30 = Maps.newLinkedHashMap();
+            map30.put("type", type);
+            map30.put("PERIOD", period);
+            map30.put("PERIOD_DATE", DateUtils.formatStandardDate(row.getCell(0).getDateCellValue()));
+            map30.put("VENDOR_ID", row.getCell(1).getStringCellValue());
+            map30.put("VENDOR_NAME", row.getCell(2).getStringCellValue());
+            map30.put("SALE_CHANNEL", row.getCell(3).getStringCellValue());
+            map30.put("CYCLE_TIME", "<=30天");
+            map30.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(4)));
+            map30.put("CREATE_DATE", date);
+
+            LinkedHashMap<String, Object> map3060 = Maps.newLinkedHashMap(map30);
+            map3060.put("CYCLE_TIME", "30-60天");
+            map3060.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(5)));
+
+            LinkedHashMap<String, Object> map6090 = Maps.newLinkedHashMap(map30);
+            map6090.put("CYCLE_TIME", "60-90天");
+            map6090.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(6)));
+
+            LinkedHashMap<String, Object> map90180 = Maps.newLinkedHashMap(map30);
+            map90180.put("CYCLE_TIME", "90-180天");
+            map90180.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(7)));
+
+            LinkedHashMap<String, Object> map180365 = Maps.newLinkedHashMap(map30);
+            map180365.put("CYCLE_TIME", "180-365天");
+            map180365.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(8)));
+
+            LinkedHashMap<String, Object> map365 = Maps.newLinkedHashMap(map30);
+            map365.put("CYCLE_TIME", "一年以上");
+            map365.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(9)));
+            all.add(map30);
+            all.add(map3060);
+            all.add(map6090);
+            all.add(map90180);
+            all.add(map180365);
+            all.add(map365);
+
+            if (total360.containsKey(period)) {
+                total360.put(period, total360.get(period).add(new BigDecimal(ExcelUtils.getNumericCellValueDefault(row.getCell(9)))));
+            } else {
+                total360.put(period, new BigDecimal(ExcelUtils.getNumericCellValueDefault(row.getCell(9))));
+            }
+        }
+        //处理入库
+        process(all, tableName);
+
+        //生成 360以上数据
+        reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.yszkb.getName()));
+        List<BiReport> tempList = Lists.newArrayList();
+        for (Map.Entry<String, BigDecimal> entry : total360.entrySet()) {
+            BiReport biReport = new BiReport();
+            biReport.setBatchId(batchId);
+            biReport.setReportCode(SheetCodeEnum.yszkb.name());
+            biReport.setReportName(sheet.getSheetName());
+            biReport.setRowNo("0");
+            biReport.setIndexCode("YS_TOTAL");
+            biReport.setCell1("应收一年以上合计");
+            biReport.setTenantId(ThreadLocalHolder.getTenantId());
+            biReport.setColNo("0");
+            if ("年报".equals(type)) {
+                biReport.setPeriod(entry.getKey());
+            } else {
+                biReport.setPeriod(entry.getKey() + "-12-31");
+            }
+            biReport.setCell2(entry.getValue().setScale(5, BigDecimal.ROUND_HALF_UP).toString());
+            tempList.add(biReport);
+        }
+        reportService.saveBatch(tempList);
+    }
 
     private void processZcfzAvg(List<BiReport> tempList, String indexCode, BiReport biReport, int row, int cell, Sheet sheet) {
         if ("EVMB001".equals(indexCode)) {
@@ -497,6 +595,13 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                         .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
                 tempList.add(evmb078);
             }
+        }
+    }
+
+    private void process(List<LinkedHashMap<String, Object>> lines, String tableName) {
+        if (dbHandler.isTableExists(tableName)) {
+            dbHandler.truncateTable(tableName);
+            dbHandler.executeInsert(tableName, lines);
         }
     }
 

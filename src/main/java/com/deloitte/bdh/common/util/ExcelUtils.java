@@ -134,6 +134,10 @@ public class ExcelUtils {
         }
     }
 
+    public static String getNumericCellValueDefault(Cell cell) {
+        return null == cell ? "0" : cell.getNumericCellValue() + "";
+    }
+
     /**
      * 获取单元格值的字符串（非字符串时转换为字符串）
      *
