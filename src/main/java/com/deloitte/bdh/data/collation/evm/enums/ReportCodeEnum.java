@@ -9,7 +9,7 @@ import java.util.List;
 
 public enum ReportCodeEnum {
 
-    DEFAULT("DEFAULT", "资金表") {
+    DEFAULT("DEFAULT", "默认") {
         @Override
         public ImmutablePair<List<String>, List<Rule>> relySheets() {
             return null;
@@ -47,7 +47,7 @@ public enum ReportCodeEnum {
     ZJB("ZJB", "资金表") {
         @Override
         public ImmutablePair<List<String>, List<Rule>> relySheets() {
-            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.xjllb.getName());
+            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.xjllb.getName(), SheetCodeEnum.yszkb.getName());
             List<Rule> collusion = Lists.newArrayList(
                     new Rule("EVM0001", "资金总额", "{N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}")
                     , new Rule("EVM0002", "资金占总资产比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004})/{N#zcfzb.EVMB039}")
@@ -97,8 +97,8 @@ public enum ReportCodeEnum {
                     , new Rule("EVM0046", "应收占比", "{N#zcfzb.EVMB008}/{N#lrb.EVMP001}")
                     , new Rule("EVM0047", "应收账款净额", "{N#zcfzb.EVMB008}-{N#kmyeb.M020}")
                     , new Rule("EVM0048", "应收账款净额", "{N#zcfzb.EVMB008}-{N#kmyeb.M020}")
-                    , new Rule("EVM0049", "逾期应收账款余额", "11111")
-                    , new Rule("EVM0050", "逾期应收款占比", "11111/{N#zcfzb.EVMB008}")
+                    , new Rule("EVM0049", "逾期应收账款余额", "{N#yszkb.YS_TOTAL}")
+                    , new Rule("EVM0050", "逾期应收款占比", "{N#yszkb.YS_TOTAL}/{N#zcfzb.EVMB008}")
                     , new Rule("EVM0051", "应付账款余额", "{N#zcfzb.EVMB046}")
                     , new Rule("EVM0052", "应付账款周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB046_AVG}")
                     , new Rule("EVM0053", "应付账款周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB046_AVG})")
