@@ -60,7 +60,7 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
     @Override
     public void export(BiDateDownloadInfo info, BiDataSet dataSet) throws Exception {
         long begin = System.currentTimeMillis();
-        String zipFilePath = "/home/portal/t_" + ThreadLocalHolder.getTenantCode()
+        String zipFilePath = "/home/portal/bi_dataset/t_" + ThreadLocalHolder.getTenantCode()
                 + "/" + DateUtils.formatShortDate(new Date()) + "/" + dataSet.getCode() + "/";
         List<TableColumn> columns = dataSetService.getColumns(dataSet.getCode());
         Integer page = 1;
