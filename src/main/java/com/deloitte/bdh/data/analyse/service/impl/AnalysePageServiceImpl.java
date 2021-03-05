@@ -307,7 +307,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
 
         //替换content
-        content.put("page", insertPage);
+//        content.put("page", insertPage);
+        JSONObject page = content.getJSONObject("page");
+        replacePage(page, insertPage);
         for (int i = 0; i < childrenArr.size(); i++) {
             JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
             if (data.size() != 0) {
@@ -336,6 +338,22 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(insertPage, dto);
         return dto;
+    }
+
+    private void replacePage(JSONObject page, BiUiAnalysePage newPage){
+        page.put("id", newPage.getId());
+        page.put("code", newPage.getCode());
+        page.put("name", newPage.getName());
+        page.put("type", newPage.getType());
+        page.put("parentId", newPage.getParentId());
+        page.put("originPageId", newPage.getOriginPageId());
+        page.put("editId", newPage.getEditId());
+        page.put("publishId", newPage.getPublishId());
+        page.put("des", newPage.getDes());
+        page.put("isEdit", newPage.getIsEdit());
+        page.put("isPublic", newPage.getIsPublic());
+        page.put("deloitteFlag", newPage.getDeloitteFlag());
+        page.put("tenantId", newPage.getTenantId());
     }
 
     @Override
