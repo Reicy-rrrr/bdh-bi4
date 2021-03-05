@@ -135,7 +135,7 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
         if (!StringUtils.equals(dto.getSuperUserFlag(), YesOrNoEnum.YES.getKey())) {
             lambdaQueryWrapper.in(BiDateDownloadInfo::getCreateUser, ThreadLocalHolder.getOperator(), BiTenantConfigController.OPERATOR);
         }
-        if (!StringUtils.isNotBlank(dto.getStatus())) {
+        if (StringUtils.isNotBlank(dto.getStatus())) {
             lambdaQueryWrapper.eq(BiDateDownloadInfo::getStatus, dto.getStatus());
         }
         lambdaQueryWrapper.orderByDesc(BiDateDownloadInfo::getCreateDate);
