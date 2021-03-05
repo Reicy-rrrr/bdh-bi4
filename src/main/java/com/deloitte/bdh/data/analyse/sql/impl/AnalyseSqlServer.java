@@ -3,8 +3,10 @@ package com.deloitte.bdh.data.analyse.sql.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserData;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
@@ -237,7 +239,8 @@ public class AnalyseSqlServer extends AbstractRela {
             return dbSelector.executeQuery(dbContext);
         } catch (Exception e) {
             log.error("执行异常:", e);
-            throw new RuntimeException("执行SQL异常");
+            throw new BizException(ResourceMessageEnum.EXECUTE_SQL_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXECUTE_SQL_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 

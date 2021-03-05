@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.deloitte.bdh.common.constant.CommonConstant;
+import com.deloitte.bdh.data.analyse.enums.*;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.database.DbHandler;
@@ -43,10 +44,6 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
-import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
-import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageLink;
@@ -115,9 +112,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     private BiDataSetService dataSetService;
 
     @Resource
-    private FeignClientService feignClientService;
-
-    @Resource
     private AnalysePageLinkService linkService;
 
     @Resource
@@ -166,18 +160,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
-//            if (StringUtils.isNotBlank(page.getCreateUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getCreateUser())) {
-//                IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
-//                if (voc != null) {
-//                    dto.setCreateUserName(voc.getEmployeeName());
-//                }
-//            }
-//            if (StringUtils.isNotBlank(page.getModifiedUser()) && !StringUtils.equals(BiTenantConfigController.OPERATOR, page.getModifiedUser())) {
-//                IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
-//                if (vom != null) {
-//                    dto.setModifiedUserName(vom.getEmployeeName());
-//                }
-//            }
             pageDtoList.add(dto);
         });
         userResourceService.setPagePermission(pageDtoList, request.getData().getSuperUserFlag());
@@ -218,16 +200,19 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         CopySourceDto dto = new CopySourceDto();
         BiUiAnalysePage fromPage = this.getById(pageId);
         if (null == fromPage) {
-            throw new BizException("源报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getEditId());
         if (null == fromPageConfig) {
-            throw new BizException("请先编辑源报表");
+            throw new BizException(ResourceMessageEnum.PAGE_CONFIG_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_CONFIG_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         JSONObject content = (JSONObject) JSONObject.parse(fromPageConfig.getContent());
         JSONArray childrenArr = content.getJSONArray("children");
         if (null == childrenArr) {
-            throw new BizException("源报表未配置图表");
+            throw new BizException(ResourceMessageEnum.PAGE_NO_COMPONENT.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NO_COMPONENT.getMessage(), ThreadLocalHolder.getLang()));
         }
         List<String> originCodeList = Lists.newArrayList();
         List<String> linkPageId = Lists.newArrayList();
@@ -358,7 +343,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public void batchDelAnalysePage(BatchDeleteAnalyseDto request) {
         List<String> pageIds = request.getIds();
         if (CollectionUtils.isEmpty(pageIds)) {
-            throw new BizException("请选择要删除的报表");
+            throw new BizException(ResourceMessageEnum.DELETE_PAGE_SELECT.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DELETE_PAGE_SELECT.getMessage(), ThreadLocalHolder.getLang()));
         }
         //如果删除草稿箱的报表
         if (request.getType().equals(AnalyseConstants.PAGE_CONFIG_EDIT)) {
@@ -398,7 +384,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public AnalysePageDto updateAnalysePage(RetRequest<UpdateAnalysePageDto> request) {
         BiUiAnalysePage entity = this.getById(request.getData().getId());
         if (null == entity) {
-            throw new BizException("报表错误");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         checkBiUiAnalysePageByName(request.getData().getCode(), request.getData().getName(), entity.getTenantId(), entity.getId());
         entity.setName(request.getData().getName());
@@ -456,21 +443,18 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         BiUiAnalysePageConfig originConfig = configService.getById(request.getConfigId());
         BiUiAnalysePage originPage = getById(request.getPageId());
         if (originPage == null) {
-            throw new BizException("报表已经不存在了。");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String isPublic = request.getIsPublic();
         if (StringUtils.equals(request.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
             updatePage(request, originPage, originConfig, ShareTypeEnum.TRUE.getKey());
         } else {
-
             //获取公开状态s
             if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                 updatePage(request, originPage, originConfig, isPublic);
             } else {
-//                if (originPage.getParentId().equals(categoryId)) {
-//                    updatePage(request, originPage, originConfig, isPublic);
-//                } else {
                 List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
                         .eq(BiUiAnalysePage::getParentId, categoryId)
                         .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
@@ -517,7 +501,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 } else {
                     updatePage(request, originPage, originConfig, isPublic);
                 }
-//                }
             }
 
             //可见编辑权限
@@ -586,7 +569,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public void replaceDataSet(ReplaceDataSetDto dto) throws Exception {
         BiUiAnalysePage page = getById(dto.getPageId());
         if (null == page) {
-            throw new BizException("报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         List<String> configIdList = Lists.newArrayList();
         configIdList.add(page.getEditId());
@@ -599,12 +583,14 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             BiDataSet fromDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getCode, itemDto.getFromDataSetCode()));
             if (null == fromDataSet) {
-                throw new BizException("要替换的数据集不存在");
+                throw new BizException(ResourceMessageEnum.DATA_SET_NOT_EXIST.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
             }
             BiDataSet toDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getCode, itemDto.getToDataSetCode()));
             if (null == toDataSet) {
-                throw new BizException("被替换的数据集不存在");
+                throw new BizException(ResourceMessageEnum.DATA_SET_NOT_EXIST.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
             }
             List<TableColumn> fromFieldList = dataSetService.getColumns(fromDataSet.getCode());
             List<TableColumn> toFieldList = dataSetService.getColumns(toDataSet.getCode());
@@ -633,7 +619,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<String> result = Lists.newArrayList();
         BiUiAnalysePage page = this.getById(pageId);
         if (null == page) {
-            throw new BizException("报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiUiAnalysePageConfig config = configService.getById(page.getEditId());
         if (null == config) {
@@ -668,25 +655,18 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         for (TableColumn column : fromFieldList) {
             if (null == MapUtils.getObject(toMap, column.getName())) {
-                throw new BizException(column.getName() + "未找到对应字段");
+                throw new BizException(ResourceMessageEnum.FIELD_NOT_FOUND.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FIELD_NOT_FOUND.getMessage(), ThreadLocalHolder.getLang()), column.getName());
             }
             TableColumn fromColumn = MapUtils.getObject(toMap, column.getName());
             if (!org.apache.commons.lang.StringUtils.equals(column.getDataType(), fromColumn.getDataType())) {
-                throw new BizException(column.getName() + "字段类型不匹配");
+                throw new BizException(ResourceMessageEnum.FIELD_NOT_FOUND.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FIELD_NOT_FOUND.getMessage(), ThreadLocalHolder.getLang()), column.getName());
             }
         }
     }
 
     private void checkBiUiAnalysePageByName(String code, String name, String tenantId, String currentId) {
-//        query.eq(BiUiAnalysePage::getTenantId, tenantId);
-//        query.eq(BiUiAnalysePage::getName, name);
-//        if (currentId != null) {
-//            query.ne(BiUiAnalysePage::getId, currentId);
-//        }
-//        List<BiUiAnalysePage> nameList = list(query);
-//        if (CollectionUtils.isNotEmpty(nameList)) {
-//            throw new BizException("已存在相同报表名称");
-//        }
         if (StringUtils.isNotBlank(code)) {
             //字母和数字
             String regEx = "[A-Z,a-z,0-9,-]*";
@@ -714,15 +694,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
-//            IntactUserInfoVoCache voc = feignClientService.getIntactUserInfo(page.getCreateUser(), request.getLang());
-//            IntactUserInfoVoCache vom = feignClientService.getIntactUserInfo(page.getModifiedUser(), request.getLang());
             BeanUtils.copyProperties(page, dto);
-//            if (voc != null) {
-//                dto.setCreateUserName(voc.getEmployeeName());
-//            }
-//            if (vom != null) {
-//                dto.setModifiedUserName(vom.getEmployeeName());
-//            }
             pageDtoList.add(dto);
         });
         pageInfo.setList(pageDtoList);

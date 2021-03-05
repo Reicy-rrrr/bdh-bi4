@@ -4,12 +4,14 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.properties.BdhDataSourceProperties;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelService;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.PoolTypeEnum;
@@ -142,7 +144,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
             datasourceName = datasourceName.substring(1);
             DataSourceProperty dataSourceProperty = properties.getDatasource().get(datasourceName);
             if (null == dataSourceProperty) {
-                throw new RuntimeException("未找到该租户的数据库");
+                throw new BizException(ResourceMessageEnum.CONFIG_1.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.CONFIG_1.getMessage(), ThreadLocalHolder.getLang()));
             }
             String userName = dataSourceProperty.getUsername();
             String passWord = dataSourceProperty.getPassword();
@@ -171,7 +174,8 @@ public class BiTenantConfigServiceImpl extends AbstractService<BiTenantConfigMap
     private void checkTaskGroup() {
         if (null == jobService.getGroupByTenant()) {
             if (!jobService.saveGroup()) {
-                throw new RuntimeException("创建调度平台的租户编码失败");
+                throw new BizException(ResourceMessageEnum.CONFIG_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.CONFIG_2.getMessage(), ThreadLocalHolder.getLang()));
             }
         }
     }

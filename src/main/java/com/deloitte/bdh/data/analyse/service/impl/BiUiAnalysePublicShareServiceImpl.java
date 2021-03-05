@@ -5,11 +5,13 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.AesUtil;
 import com.deloitte.bdh.common.util.Md5Util;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePublicShareMapper;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.AnalysePublicShareDto;
@@ -51,7 +53,8 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
         lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         BiUiAnalysePublicShare share = getOne(lambdaQueryWrapper);
         if (null == share) {
-            throw new RuntimeException("未找到对应的目标对象:" + JsonUtil.readObjToJson(dto));
+            throw new BizException(ResourceMessageEnum.DATA_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if ("0".equals(dto.getType())) {
             share.setAddress("");
@@ -80,14 +83,6 @@ public class BiUiAnalysePublicShareServiceImpl extends AbstractService<BiUiAnaly
         //排除订阅分享数据
         List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
         lambdaQueryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
-
-//        if (null == share) {
-//            share = new BiUiAnalysePublicShare();
-//            share.setRefPageId(id);
-//            share.setType(ShareTypeEnum.ZERO.getKey());
-//            share.setTenantId(ThreadLocalHolder.getTenantId());
-//            save(share);
-//        }
         return getOne(lambdaQueryWrapper);
     }
 

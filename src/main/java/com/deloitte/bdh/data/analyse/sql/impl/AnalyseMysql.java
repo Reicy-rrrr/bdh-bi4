@@ -1,6 +1,9 @@
 package com.deloitte.bdh.data.analyse.sql.impl;
 
 
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import com.deloitte.bdh.data.collation.database.DbSelector;
@@ -52,7 +55,8 @@ public class AnalyseMysql extends AnalyseLocal {
             return dbSelector.executeQuery(dbContext);
         } catch (Exception e) {
             log.error("执行异常:", e);
-            throw new RuntimeException("执行SQL异常");
+            throw new BizException(ResourceMessageEnum.EXECUTE_SQL_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXECUTE_SQL_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 

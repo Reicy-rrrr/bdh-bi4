@@ -8,6 +8,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +90,9 @@ public class SyncServiceImpl implements SyncService {
     @Autowired
     private Producter producter;
 
+    @Resource
+    private LocaleMessageService localeMessageService;
+
     @Override
     public void sync() {
         syncToExecute();
@@ -130,7 +137,8 @@ public class SyncServiceImpl implements SyncService {
         try {
             if (5 < count) {
                 //判断已处理次数,超过5次则动作完成。
-                throw new RuntimeException("任务处理超时");
+                throw new BizException(ResourceMessageEnum.EXECUTE_OVER_TIME.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EXECUTE_OVER_TIME.getMessage(), ThreadLocalHolder.getLang()));
             }
             //组装数据 启动nifi 改变执行状态
             BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
@@ -327,7 +335,8 @@ public class SyncServiceImpl implements SyncService {
             if (!CollectionUtils.isEmpty(synclist)) {
                 for (BiEtlSyncPlan syncPlan : synclist) {
                     if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
-                        throw new RuntimeException("依赖的同步任务失败，任务名称：" + syncPlan.getName());
+                        throw new BizException(ResourceMessageEnum.SYNC_1.getCode(),
+                                localeMessageService.getMessage(ResourceMessageEnum.SYNC_1.getMessage(), ThreadLocalHolder.getLang()), syncPlan.getName());
                     }
                     //有任务正在运行中，直接返回待下次处理
                     if (null == syncPlan.getPlanResult()) {
@@ -404,7 +413,8 @@ public class SyncServiceImpl implements SyncService {
         try {
             if (10 < count) {
                 //判断已处理次数,超过10次则动作完成。
-                throw new RuntimeException("任务处理超时");
+                throw new BizException(ResourceMessageEnum.EXECUTE_OVER_TIME.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EXECUTE_OVER_TIME.getMessage(), ThreadLocalHolder.getLang()));
             }
             count++;
             //基于条件实时查询 localCount

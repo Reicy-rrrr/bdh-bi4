@@ -10,6 +10,7 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageConfigMapper;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
@@ -60,7 +61,8 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
     private AnalysePageConfigDto getPublishAnalysePageConfigByPageId(String pageId) {
         BiUiAnalysePage page = analysePageService.getById(pageId);
         if (page == null) {
-            throw new BizException("报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (StringUtils.isNotBlank(page.getPublishId())) {
             BiUiAnalysePageConfig config = getById(page.getPublishId());
@@ -74,7 +76,8 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
     private AnalysePageConfigDto getEditAnalysePageConfigByPageId(String pageId) {
         BiUiAnalysePage page = analysePageService.getById(pageId);
         if (page == null) {
-            throw new BizException("报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (StringUtils.isNotBlank(page.getEditId())) {
             BiUiAnalysePageConfig config = getById(page.getEditId());
@@ -88,11 +91,13 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
     @Override
     public AnalysePageConfigDto createAnalysePageConfig(RetRequest<CreateAnalysePageConfigsDto> request) {
         if (request.getData().getPageId() == null) {
-            throw new BizException("页面id不能为空");
+            throw new BizException(ResourceMessageEnum.PAGE_ID_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_ID_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiUiAnalysePage page = analysePageService.getById(request.getData().getPageId());
         if (page == null) {
-            throw new BizException("报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiUiAnalysePageConfig config = new BiUiAnalysePageConfig();
         BeanUtils.copyProperties(request.getData(), config);
@@ -120,12 +125,14 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         //获取该config用于获取该page
         BiUiAnalysePageConfig config = this.getById(request.getData().getId());
         if (null == config) {
-            throw new BizException("配置不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_CONFIG_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_CONFIG_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         //获取该page的edit config
         BiUiAnalysePage edit = analysePageService.getById(config.getPageId());
         if (null == edit) {
-            throw new BizException("报表不存在");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         edit.setIsEdit(YnTypeEnum.YES.getCode());
         analysePageService.updateById(edit);
@@ -141,11 +148,13 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
     public List<AnalysePageConfigDto> getAnalysePageConfigList(GetAnalysePageConfigDto data) {
         String pageId = data.getPageId();
         if (pageId == null) {
-            throw new BizException("页面id不能为空");
+            throw new BizException(ResourceMessageEnum.PAGE_ID_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_ID_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiUiAnalysePage page = analysePageService.getById(pageId);
         if (page == null) {
-            throw new BizException("页面id不正确");
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         LambdaQueryWrapper<BiUiAnalysePageConfig> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalysePageConfig::getPageId, pageId);

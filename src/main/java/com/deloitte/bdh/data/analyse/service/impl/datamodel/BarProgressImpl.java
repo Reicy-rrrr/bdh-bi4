@@ -2,20 +2,24 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Maps;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -95,13 +99,16 @@ public class BarProgressImpl extends AbstractDataService implements AnalyseDataS
     @Override
     protected void validate(DataModel dataModel) {
         if (CollectionUtils.isEmpty(dataModel.getX())) {
-            throw new BizException("度量不能为空");
+            throw new BizException(ResourceMessageEnum.DL_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dataModel.getY().size() > 1) {
-            throw new BizException("最多可放入一个度量");
+            throw new BizException(ResourceMessageEnum.DL_SIZE_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_SIZE_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (!StringUtils.equals(DataModelTypeEnum.DL.getCode(), dataModel.getX().get(0).getQuota())) {
-            throw new BizException("只可放入度量");
+            throw new BizException(ResourceMessageEnum.DL_ONLY.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_ONLY.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 }

@@ -2,6 +2,7 @@ package com.deloitte.bdh.data.analyse.sql;
 
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserDataService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.analyse.sql.dto.SqlContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,6 +14,9 @@ import java.util.Map;
 public abstract class AbstractAnalyseSql implements AnalyseSql {
     @Resource
     protected AnalyseUserDataService userDataService;
+
+    @Resource
+    protected LocaleMessageService localeMessageService;
 
     @Override
     final public Object process(SqlContext context) {

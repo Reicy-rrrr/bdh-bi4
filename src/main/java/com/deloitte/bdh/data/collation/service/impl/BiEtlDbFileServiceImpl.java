@@ -7,9 +7,11 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
+import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDbFileMapper;
 import com.deloitte.bdh.data.collation.model.BiEtlDbFile;
 import com.deloitte.bdh.data.collation.model.FilePreReadResult;
@@ -68,7 +70,8 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
         try {
             storedFileKey = aliyunOss.uploadFile(file.getInputStream(), filePath, finalName, file.getContentType());
         } catch (IOException e) {
-            throw new BizException("File upload error: 上传文件发生错误，请检查文件有效性！");
+            throw new BizException(ResourceMessageEnum.FILE_EFFECT_CHECK.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FILE_EFFECT_CHECK.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 预读文件内容
         FilePreReadResult readResult = fileReadService.preRead(file);
@@ -102,18 +105,21 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
         String fileId = deleteRequest.getData();
         if (StringUtils.isBlank(fileId)) {
             log.error("接受到的文件信息id为空，删除文件失败！");
-            throw new BizException("文件信息id不能为空！");
+            throw new BizException(ResourceMessageEnum.FILE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FILE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlDbFile dbFile = this.getById(fileId);
         if (dbFile == null) {
             log.error("根据id[{}]未查询到文件信息id，删除文件失败！", fileId);
-            throw new BizException("未查询到文件信息，错误的id！");
+            throw new BizException(ResourceMessageEnum.FILE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FILE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (dbFile.getReadFlag() == 0) {
             log.error("根据id[{}]查询到文件为已读状态，不允许删除，删除文件失败！", fileId);
-            throw new BizException("文件数据已经入库，不允许直接删除！");
+            throw new BizException(ResourceMessageEnum.FILE_DELETE_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FILE_DELETE_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 先删除文件信息，在删除ftp文件（防止删除失败可以回滚）
@@ -128,7 +134,8 @@ public class BiEtlDbFileServiceImpl extends AbstractService<BiEtlDbFileMapper, B
     public Boolean deleteByDbId(String dbId) {
         if (StringUtils.isBlank(dbId)) {
             log.error("接受到的数据源信息id[{}]为空，删除文件失败！", dbId);
-            throw new BizException("数据源信息id不能为空！");
+            throw new BizException(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         LambdaQueryWrapper<BiEtlDbFile> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.eq(BiEtlDbFile::getDbId, dbId);

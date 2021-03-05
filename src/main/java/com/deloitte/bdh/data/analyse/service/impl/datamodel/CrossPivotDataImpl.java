@@ -2,9 +2,11 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
@@ -13,6 +15,7 @@ import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataR
 import com.deloitte.bdh.data.analyse.model.datamodel.response.ListTree;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
 import com.deloitte.bdh.data.analyse.service.AnalyseModelFieldService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -221,10 +224,12 @@ public class CrossPivotDataImpl extends AbstractDataService implements AnalyseDa
             }
         }
         if (wd == 0) {
-            throw new BizException("请至少绑定一个维度字段");
+            throw new BizException(ResourceMessageEnum.WD_MUST_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.WD_MUST_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dl == 0) {
-            throw new BizException("请至少绑定一个度量字段");
+            throw new BizException(ResourceMessageEnum.DL_MUST_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_MUST_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 }

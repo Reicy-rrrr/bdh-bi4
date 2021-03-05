@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.ExcelUtils;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.ZipUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.database.po.TableData;
@@ -111,13 +113,16 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
     public String downLoad(String id) {
         BiDateDownloadInfo info = dateDownloadInfoMapper.selectById(id);
         if (null == info) {
-            throw new RuntimeException("下载失败:未找到该条导出记录");
+            throw new BizException(ResourceMessageEnum.DOWNLOAD_FAIL_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DOWNLOAD_FAIL_1.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (DownLoadTStatusEnum.ING.getKey().equalsIgnoreCase(info.getStatus())) {
-            throw new RuntimeException("下载失败:当前数据正在生成种");
+            throw new BizException(ResourceMessageEnum.DOWNLOAD_FAIL_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DOWNLOAD_FAIL_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (DownLoadTStatusEnum.FAIL.getKey().equalsIgnoreCase(info.getStatus())) {
-            throw new RuntimeException("下载失败:文件生成失败,请重新生成");
+            throw new BizException(ResourceMessageEnum.DOWNLOAD_FAIL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DOWNLOAD_FAIL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         String url = aliyunOss.getImgUrl(info.getPath(), info.getFileName());
         return url;

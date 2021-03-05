@@ -115,6 +115,9 @@ public class WebLogAspect {
             if (null != MapUtils.getString(params, "operator")) {
                 ThreadLocalHolder.set("operator", MapUtils.getString(params, "operator"));
             }
+            if (null != MapUtils.getString(params, "lang")) {
+                ThreadLocalHolder.set("lang", MapUtils.getString(params, "lang"));
+            }
         }
         if (StringUtils.isNotBlank(request.getHeader("internalFlag")) &&
                 StringUtils.equals(request.getHeader("internalFlag"), "1")) {

@@ -4,20 +4,24 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -207,10 +211,12 @@ public class ScatterDataImpl extends AbstractDataService implements AnalyseDataS
     @Override
     protected void validate(DataModel dataModel) {
         if (dataModel.getY().size() > 1) {
-            throw new BizException("Y轴最多可拖入1个字段");
+            throw new BizException(ResourceMessageEnum.Y_SIZE_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.Y_SIZE_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dataModel.getCategory().size() > 1) {
-            throw new BizException("颜色最多可拖入1个字段");
+            throw new BizException(ResourceMessageEnum.CATEGORY_SIZE_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.CATEGORY_SIZE_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 

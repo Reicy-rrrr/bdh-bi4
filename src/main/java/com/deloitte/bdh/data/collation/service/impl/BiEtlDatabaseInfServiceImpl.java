@@ -12,6 +12,7 @@ import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.dao.bi.BiEtlDatabaseInfMapper;
 import com.deloitte.bdh.data.collation.database.DbHandler;
@@ -151,18 +152,21 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         String fileId = dto.getFileId();
         if (StringUtils.isBlank(fileId)) {
             logger.error("保存文件型数据源失败，接收到的文件信息id为空！");
-            throw new BizException("保存文件型数据源失败，文件信息id不能为空！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_1.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlDbFile dbFile = biEtlDbFileService.getById(fileId);
         if (dbFile == null) {
             logger.error("保存文件型数据源失败，根据id[{}]未查询到文件信息！", fileId);
-            throw new BizException("保存文件型数据源失败，未查询到文件信息！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 如果文件状态为已读，则不允许在重复保存
         if (dbFile.getReadFlag() == 0) {
             logger.error("保存文件型数据源失败，根据id[{}]查询到文件已经读取过！", fileId);
-            throw new BizException("保存文件型数据源失败，文件已被读取过！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 初始化创建dto，调用创建数据源接口
@@ -210,35 +214,41 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         String dbId = dto.getDbId();
         if (StringUtils.isBlank(dbId)) {
             logger.error("追加文件型数据源失败，接收到的数据源id为空！");
-            throw new BizException("追加文件型数据源失败，数据源id不能为空！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_4.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 文件信息id
         String fileId = dto.getFileId();
         if (StringUtils.isBlank(fileId)) {
             logger.error("追加文件型数据源失败，接收到的文件信息id为空！");
-            throw new BizException("追加文件型数据源失败，文件信息id不能为空！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_5.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_5.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlDatabaseInf database = this.getById(dbId);
         if (database == null) {
             logger.error("未查询到数据源，错误的id[{}]", dbId);
-            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_6.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_6.getMessage(), ThreadLocalHolder.getLang()), dbId);
         }
         SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
         if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
             logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
-            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_7.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_7.getMessage(), ThreadLocalHolder.getLang()), dbId);
         }
 
         BiEtlDbFile dbFile = biEtlDbFileService.getById(fileId);
         if (dbFile == null) {
             logger.error("追加文件型数据源失败，根据id[{}]未查询到文件信息！", fileId);
-            throw new BizException("追加文件型数据源失败，未查询到文件信息！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_8.getMessage(), ThreadLocalHolder.getLang()), dbId);
         }
         // 如果文件状态为已读，则不允许在重复保存
         if (dbFile.getReadFlag() == 0) {
             logger.error("追加文件型数据源失败，根据id[{}]查询到文件已经读取过！", fileId);
-            throw new BizException("追加文件型数据源失败，文件已被读取过！");
+            throw new BizException(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_3.getMessage(), ThreadLocalHolder.getLang()), dbId);
         }
 
         // 获取已有表名称
@@ -260,7 +270,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         Map<String, TableField> importFields = Maps.newHashMap();
         // 校验追加文件中字段是否为历史导入文件的字段
         boolean validateFlag = true;
-        StringBuilder errorMsg = new StringBuilder("追加文件型数据源失败，导入文件中列： ");
+        StringBuilder errorMsg = new StringBuilder(localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_9.getMessage(), ThreadLocalHolder.getLang()));
         for (String importColumn : dto.getColumns().keySet()) {
             if (!tableFieldMap.containsKey(importColumn)) {
                 validateFlag = false;
@@ -274,7 +284,7 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             errorMsg.deleteCharAt(errorMsg.lastIndexOf("|"));
         }
 
-        errorMsg.append("在历史导入文件中不存在！");
+        errorMsg.append(localeMessageService.getMessage(ResourceMessageEnum.SAVE_FILE_SOURCE_FAIL_10.getMessage(), ThreadLocalHolder.getLang()));
         if (!validateFlag) {
             logger.error(errorMsg.toString());
             throw new BizException(errorMsg.toString());
@@ -299,35 +309,41 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         String dbId = dto.getDbId();
         if (StringUtils.isBlank(dbId)) {
             logger.error("重置文件型数据源失败，接收到的数据源id为空！");
-            throw new BizException("重置文件型数据源失败，数据源id不能为空！");
+            throw new BizException(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_1.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 文件信息id
         String fileId = dto.getFileId();
         if (StringUtils.isBlank(fileId)) {
             logger.error("重置文件型数据源失败，接收到的文件信息id为空！");
-            throw new BizException("重置文件型数据源失败，文件信息id不能为空！");
+            throw new BizException(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_2.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlDatabaseInf database = this.getById(dbId);
         if (database == null) {
             logger.error("未查询到数据源，错误的id[{}]", dbId);
-            throw new BizException("未查询到数据源，错误的id[{" + dbId + "}]");
+            throw new BizException(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         SourceTypeEnum sourceType = SourceTypeEnum.values(database.getType());
         if (SourceTypeEnum.File_Excel != sourceType && SourceTypeEnum.File_Csv != sourceType) {
             logger.error("该数据源不是文件型，数据源类型[{}]", sourceType.getTypeName());
-            throw new BizException("未查询到文件型数据源，错误的id[{" + dbId + "}]");
+            throw new BizException(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlDbFile dbFile = biEtlDbFileService.getById(fileId);
         if (dbFile == null) {
             logger.error("重置文件型数据源失败，根据id[{}]未查询到文件信息！", fileId);
-            throw new BizException("重置文件型数据源失败，未查询到文件信息！");
+            throw new BizException(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 如果文件状态为已读，则不允许在重复保存
         if (dbFile.getReadFlag() == 0) {
             logger.error("重置文件型数据源失败，根据id[{}]查询到文件已经读取过！", fileId);
-            throw new BizException("重置文件型数据源失败，文件已被读取过！");
+            throw new BizException(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.RESET_FILE_SOURCE_FAIL_4.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 删除已有表
@@ -370,7 +386,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (!effect.equals(inf.getEffect())) {
             if (!init && inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-                throw new RuntimeException("默认数据源请勿禁用");
+                throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
@@ -387,8 +404,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                                     .in(BiEtlModel::getCode, modelCodes));
                             if (CollectionUtils.isNotEmpty(models)) {
                                 List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
-                                throw new BizException("有模板正在进行ETL任务中,请待任务完成后再操作,模板名称:" + StringUtils.join(names, ","));
-
+                                throw new BizException(ResourceMessageEnum.TEMPLATE_IN_USE.getCode(),
+                                        localeMessageService.getMessage(ResourceMessageEnum.TEMPLATE_IN_USE.getMessage(), ThreadLocalHolder.getLang()),
+                                        StringUtils.join(names, ","));
                             }
                         }
                     }
@@ -403,8 +421,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                             List<BiEtlModel> models = modelService.list(new LambdaQueryWrapper<BiEtlModel>()
                                     .in(BiEtlModel::getCode, modelCodes));
                             List<String> names = models.stream().map(BiEtlModel::getName).collect(Collectors.toList());
-                            throw new BizException("有数据源正在进行同步任务中,请待同步完成后再操作,所属模板名称:" + StringUtils.join(names, ","));
-
+                            throw new BizException(ResourceMessageEnum.SOURCE_IN_USE.getCode(),
+                                    localeMessageService.getMessage(ResourceMessageEnum.SOURCE_IN_USE.getMessage(), ThreadLocalHolder.getLang()),
+                                    StringUtils.join(names, ","));
                         }
                     }
                 }
@@ -422,11 +441,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     public void delResource(String id) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(id);
         if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-            throw new RuntimeException("默认数据源请勿删除");
+            throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
-            throw new RuntimeException("启用状态下,不允许删除");
+            throw new BizException(ResourceMessageEnum.DELETE_LOCK_ENABLE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DELETE_LOCK_ENABLE.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 需要校验 该数据源是否已经被引用
@@ -434,7 +455,8 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
                 .eq(BiEtlMappingConfig::getRefSourceId, inf.getId())
         );
         if (CollectionUtils.isNotEmpty(configList)) {
-            throw new RuntimeException("该数据源已被引用,不允许删除");
+            throw new BizException(ResourceMessageEnum.DELETE_LOCK_SOURCE_IN_USE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DELETE_LOCK_SOURCE_IN_USE.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
@@ -457,10 +479,13 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     public BiEtlDatabaseInf updateResource(UpdateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf inf = biEtlDatabaseInfMapper.selectById(dto.getId());
         if (EffectEnum.ENABLE.getKey().equals(inf.getEffect())) {
-            throw new RuntimeException("启用中的数据源不允许修改");
+            throw new BizException(ResourceMessageEnum.UPDATE_LOCK_SOURCE_IN_USE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.UPDATE_LOCK_SOURCE_IN_USE.getMessage(), ThreadLocalHolder.getLang()));
+
         }
         if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-            throw new RuntimeException("默认数据源请勿修改");
+            throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (!SourceTypeEnum.File_Csv.getType().equals(inf.getType()) && !SourceTypeEnum.File_Excel.getType().equals(inf.getType())) {
             return updateResourceFromMysql(dto);
@@ -487,7 +512,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
             dbSelector.test(context);
         } catch (Exception e) {
             log.error("数据库连接失败：", e);
-            throw new BizException("连接失败");
+            throw new BizException(ResourceMessageEnum.CONNECT_FAIL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.CONNECT_FAIL.getMessage(), ThreadLocalHolder.getLang()));
+
         }
         return result;
     }
@@ -529,7 +556,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     private BiEtlDatabaseInf updateResourceFromMysql(UpdateResourcesDto dto) throws Exception {
         if (StringUtils.isAllBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
-            throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
+            throw new BizException(ResourceMessageEnum.CONFIG_SOURCE_PARAM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.CONFIG_SOURCE_PARAM_ERROR.getMessage(), ThreadLocalHolder.getLang()),
+                    JsonUtil.obj2String(dto));
         }
 
         testConnection(dto.getType(), dto.getAddress(), dto.getPort(), dto.getDbName(), dto.getDbUser(), dto.getDbPassword());
@@ -583,7 +612,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
     private BiEtlDatabaseInf updateResourceFromFile(UpdateResourcesDto dto) throws Exception {
         BiEtlDatabaseInf source = biEtlDatabaseInfMapper.selectById(dto.getId());
         if (source == null) {
-            throw new BizException("Datasource update error: 未查询到数据源信息！");
+            throw new BizException(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
+
         }
         // 文件型数据源只提供修改数据源名称和备注
         BiEtlDatabaseInf updateObj = new BiEtlDatabaseInf();
@@ -615,13 +646,16 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     private BiEtlDatabaseInf createResourceFromDB(CreateResourcesDto dto) {
         if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
-            throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
+            throw new BizException(ResourceMessageEnum.CONFIG_SOURCE_PARAM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.CONFIG_SOURCE_PARAM_ERROR.getMessage(), ThreadLocalHolder.getLang()),
+                    JsonUtil.obj2String(dto));
         }
         BiEtlDatabaseInf exitDb = biEtlDatabaseInfMapper.selectOne(new LambdaQueryWrapper<BiEtlDatabaseInf>()
                 .eq(BiEtlDatabaseInf::getName, dto.getName())
         );
         if (null != exitDb) {
-            throw new RuntimeException("数据源名字重复");
+            throw new BizException(ResourceMessageEnum.SOURCE_NAME_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SOURCE_NAME_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         testConnection(dto.getType(), dto.getAddress(), dto.getPort(), dto.getDbName(), dto.getDbUser(), dto.getDbPassword());
@@ -668,7 +702,9 @@ public class BiEtlDatabaseInfServiceImpl extends AbstractService<BiEtlDatabaseIn
 
     private BiEtlDatabaseInf createResourceFromHive(CreateResourcesDto dto) {
         if (StringUtils.isAnyBlank(dto.getDbName(), dto.getDbPassword(), dto.getDbUser(), dto.getPort())) {
-            throw new RuntimeException(String.format("配置数据源相关参数不全:%s", JsonUtil.obj2String(dto)));
+            throw new BizException(ResourceMessageEnum.CONFIG_SOURCE_PARAM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.CONFIG_SOURCE_PARAM_ERROR.getMessage(), ThreadLocalHolder.getLang()),
+                    JsonUtil.obj2String(dto));
         }
 
         BiEtlDatabaseInf inf = new BiEtlDatabaseInf();

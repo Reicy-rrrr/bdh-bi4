@@ -1,6 +1,9 @@
 package com.deloitte.bdh.data.collation.component;
 
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.enums.CalculateTypeEnum;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +11,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.lang.reflect.Method;
@@ -23,6 +27,9 @@ import java.util.regex.Pattern;
  */
 @Component
 public class ExpressionHandler {
+
+    @Resource
+    private LocaleMessageService localeMessageService;
     /**
      * 参数格式正则
      **/
@@ -123,12 +130,13 @@ public class ExpressionHandler {
         try {
             result = scriptEngine.eval(expression.replace(" ", "")).toString();
         } catch (Exception e) {
-            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_1.getMessage(), ThreadLocalHolder.getLang()));
         }
+
         if (!isNumeric(result)) {
-            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_1.getMessage(), ThreadLocalHolder.getLang()));
         }
-        return new ImmutablePair(Boolean.TRUE, "合法的四则运算");
+        return new ImmutablePair(Boolean.TRUE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_2.getMessage(), ThreadLocalHolder.getLang()));
     }
 
     /**
@@ -149,13 +157,13 @@ public class ExpressionHandler {
         try {
             result = scriptEngine.eval(finalExpression.replace(" ", "")).toString();
         } catch (Exception e) {
-            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_1.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (!isNumeric(result)) {
-            return new ImmutablePair(Boolean.FALSE, "不正确的运算表达式！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_1.getMessage(), ThreadLocalHolder.getLang()));
         }
-        return new ImmutablePair(Boolean.TRUE, "校验通过！");
+        return new ImmutablePair(Boolean.TRUE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_3.getMessage(), ThreadLocalHolder.getLang()));
     }
 
     /**
@@ -170,14 +178,14 @@ public class ExpressionHandler {
             queue = reverseToPost(expression);
         } catch (EmptyStackException e) {
             // 出现异常（括号不匹配），错误的表达式
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中()是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_4.getMessage(), ThreadLocalHolder.getLang()));
         } catch (Exception e) {
             // 出现异常，错误的表达式
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_5.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 后续队列为空，错误的表达式
         if (queue.isEmpty()) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式是否正确！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_5.getMessage(), ThreadLocalHolder.getLang()));
         }
         Pattern operatorPa = Pattern.compile(operator_regex);
         Pattern paramPa = Pattern.compile(param_regex);
@@ -202,9 +210,9 @@ public class ExpressionHandler {
         }
 
         if (!flag) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查是否存在支持的运算符或者函数！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_6.getMessage(), ThreadLocalHolder.getLang()));
         }
-        return new ImmutablePair(Boolean.TRUE, "校验通过！");
+        return new ImmutablePair(Boolean.TRUE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_3.getMessage(), ThreadLocalHolder.getLang()));
     }
 
     /**
@@ -216,11 +224,11 @@ public class ExpressionHandler {
     public Pair<Boolean, String> isFormula(String expression) {
         // 检查小括号是否匹配
         if (getSubStringCount(expression, parentheses.getLeft()) != getSubStringCount(expression, parentheses.getRight())) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中()是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_4.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 检查中括号是否匹配
         if (getSubStringCount(expression, square_brackets.getLeft()) != getSubStringCount(expression, square_brackets.getRight())) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中[]是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_7.getMessage(), ThreadLocalHolder.getLang()));
         }
         int ifCount = getSubStringCount(expression, "if");
         int ifNullCount = getSubStringCount(expression, "ifnull");
@@ -236,26 +244,26 @@ public class ExpressionHandler {
         int endCount = getSubStringCount(expression, "end");
         // 检查 if - else / case else  || if - end / case - end
         if (ifCount + caseCount != elseCount) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/else、case/else是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (ifCount + caseCount != endCount) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/end、case/end是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 检查 if - elseIf
         if (ifCount == 0 && elseIfCount > 0) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/elseif是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_10.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 检查 if - then / elseif - then / when - then
         if (ifCount + elseIfCount + whenCount != thenCount) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中if/then、elseif/then、when/then是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_11.getMessage(), ThreadLocalHolder.getLang()));
         }
         //
         if (caseCount == 0 && whenCount > 0 || caseCount > whenCount) {
-            return new ImmutablePair(Boolean.FALSE, "非法的运算表达式，请检查表达式中case/when是否匹配！");
+            return new ImmutablePair(Boolean.FALSE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_12.getMessage(), ThreadLocalHolder.getLang()));
         }
-        return new ImmutablePair(Boolean.TRUE, "校验通过！");
+        return new ImmutablePair(Boolean.TRUE, localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_3.getMessage(), ThreadLocalHolder.getLang()));
     }
 
     /**
@@ -506,7 +514,8 @@ public class ExpressionHandler {
             } else if (isLogicalOperator(temp)) {
                 // 逻辑运算表达式
                 if (resultQueue.isEmpty()) {
-                    throw new BizException("Component calculate error: 错误的逻辑表达式[" + temp + "]，请检查两侧是准确性！");
+                    throw new BizException(ResourceMessageEnum.EXPRESS_13.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_13.getMessage(), ThreadLocalHolder.getLang()), temp);
                 }
                 stack.push(temp);
             } else if (operator_separator.equals(temp)) {
@@ -642,7 +651,8 @@ public class ExpressionHandler {
                 methodName = logics.get(functionName);
             }
             if (StringUtils.isBlank(methodName)) {
-                throw new BizException("未知的方法[" + functionName + "]请检查表达式正确性！");
+                throw new BizException(ResourceMessageEnum.EXPRESS_14.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_14.getMessage(), ThreadLocalHolder.getLang()), functionName);
             }
             // 获取对应方法
             Method method = functionClazz.getDeclaredMethod(methodName, Stack.class);
@@ -651,7 +661,8 @@ public class ExpressionHandler {
             // 通过当前对象获取方法返回值
             result = (String) method.invoke(this, functionParamStack);
         } catch (Exception e) {
-            throw new BizException("方法[" + functionName + "]格式化错误，请检查参数正确性！", e);
+            throw new BizException(ResourceMessageEnum.EXPRESS_15.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_15.getMessage(), ThreadLocalHolder.getLang()), functionName);
         }
         return result;
     }
@@ -747,11 +758,13 @@ public class ExpressionHandler {
      */
     private String abs(Stack stack) {
         if (stack.isEmpty()) {
-            throw new BizException("Component calculate error: 计算绝对值错误，字段不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_16.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_16.getMessage(), ThreadLocalHolder.getLang()));
         }
         String absField = stack.pop().toString();
         if (StringUtils.isBlank(absField)) {
-            throw new BizException("Component calculate error: 计算绝对值错误，字段不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_16.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_16.getMessage(), ThreadLocalHolder.getLang()));
         }
         return "ABS(" + absField + ")";
     }
@@ -764,15 +777,18 @@ public class ExpressionHandler {
      */
     private String ceil(Stack stack) {
         if (stack.isEmpty()) {
-            throw new BizException("Component calculate error: 向上取整错误，字段不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_17.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_17.getMessage(), ThreadLocalHolder.getLang()));
         }
         String ceilField = stack.pop().toString();
         if (StringUtils.isBlank(ceilField)) {
-            throw new BizException("Component calculate error: 向上取整错误，字段不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_17.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_17.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (arrangerSelector == null) {
-            throw new BizException("Component calculate error: 向上取整错误，未知的数据源类型！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_18.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_18.getMessage(), ThreadLocalHolder.getLang()));
         }
         return arrangerSelector.calculateCeil(ceilField);
     }
@@ -785,7 +801,8 @@ public class ExpressionHandler {
      */
     private String max(Stack stack) {
         if (stack.isEmpty() || stack.size() < 2) {
-            throw new BizException("Component calculate error: 取最大值错误，字段个数不能小于2！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_19.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_19.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String maxField = stack.pop().toString();
@@ -824,7 +841,8 @@ public class ExpressionHandler {
 
     private String if_(Stack stack) {
         if (stack == null || stack.isEmpty()) {
-            throw new BizException("Component calculate error: if判断条件不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_20.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_20.getMessage(), ThreadLocalHolder.getLang()));
         }
         String condition = stack.pop().toString();
         return new StringBuilder().append(" CASE WHEN ").append(condition).append(" ").toString();
@@ -832,7 +850,8 @@ public class ExpressionHandler {
 
     private String elseif_(Stack stack) {
         if (stack == null || stack.isEmpty()) {
-            throw new BizException("Component calculate error: elseif判断条件不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_21.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_21.getMessage(), ThreadLocalHolder.getLang()));
         }
         String condition = stack.pop().toString();
         return new StringBuilder().append(" WHEN ").append(condition).append(" ").toString();
@@ -840,7 +859,8 @@ public class ExpressionHandler {
 
     private String case_(Stack stack) {
         if (stack == null || stack.isEmpty()) {
-            throw new BizException("Component calculate error: case内容不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_22.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_22.getMessage(), ThreadLocalHolder.getLang()));
         }
         String field = stack.pop().toString();
         return new StringBuilder().append(" CASE ").append(field).append(" ").toString();
@@ -848,7 +868,8 @@ public class ExpressionHandler {
 
     private String when_(Stack stack) {
         if (stack == null || stack.isEmpty()) {
-            throw new BizException("Component calculate error: when判断条件不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_23.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_23.getMessage(), ThreadLocalHolder.getLang()));
         }
         String condition = stack.pop().toString();
         if (!isNumeric(condition) && !isSqlStringValue(condition)) {
@@ -860,7 +881,8 @@ public class ExpressionHandler {
 
     private String then_(Stack stack) {
         if (stack == null || stack.isEmpty()) {
-            throw new BizException("Component calculate error: then处理逻辑不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_24.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_24.getMessage(), ThreadLocalHolder.getLang()));
         }
         String result = stack.pop().toString();
         if (!isNumeric(result) && !isSqlStringValue(result)) {
@@ -872,7 +894,8 @@ public class ExpressionHandler {
 
     private String else_(Stack stack) {
         if (stack == null || stack.isEmpty()) {
-            throw new BizException("Component calculate error: else处理逻辑不能为空！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_25.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_25.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String result = stack.pop().toString();
@@ -889,7 +912,8 @@ public class ExpressionHandler {
 
     private String and_(Stack stack) {
         if (stack == null || stack.size() < 2) {
-            throw new BizException("Component calculate error: and判断条件不能少于2个！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_26.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_26.getMessage(), ThreadLocalHolder.getLang()));
         }
         String condition1 = stack.pop().toString();
         String condition2 = stack.pop().toString();
@@ -898,7 +922,8 @@ public class ExpressionHandler {
 
     private String or_(Stack stack) {
         if (stack == null || stack.size() < 2) {
-            throw new BizException("Component calculate error: or判断条件不能少于2个！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_27.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_27.getMessage(), ThreadLocalHolder.getLang()));
         }
         String condition1 = stack.pop().toString();
         String condition2 = stack.pop().toString();
@@ -907,7 +932,8 @@ public class ExpressionHandler {
 
     private String ifnull_(Stack stack) {
         if (stack == null || stack.size() < 2) {
-            throw new BizException("Component calculate error: ifnull判断条件不能少于2个！");
+            throw new BizException(ResourceMessageEnum.EXPRESS_28.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXPRESS_28.getMessage(), ThreadLocalHolder.getLang()));
         }
         String field = stack.pop().toString();
         String value = stack.pop().toString();

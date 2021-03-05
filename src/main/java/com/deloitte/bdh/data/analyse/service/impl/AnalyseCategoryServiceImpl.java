@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,8 +124,6 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
                 selectCategoryDto.setCreateUserList(createUserList);
             }
             categoryDtoList = categoryMapper.selectCategory(selectCategoryDto);
-
-
             categoryDtoList.forEach(category -> categoryIds.add(category.getId()));
         }
         //设置文件夹权限
@@ -293,7 +292,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     //删除文件夹和批量删除文件夹公用方法
     private void delAnalyseCategories(List<String> ids, String tenantId) {
         if (CollectionUtils.isEmpty(ids)) {
-            throw new BizException("请选择要删除的文件夹");
+            throw new BizException(ResourceMessageEnum.NO_CATEGORY_SELECT.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.NO_CATEGORY_SELECT.getMessage(), ThreadLocalHolder.getLang()));
         }
         List<BiUiAnalyseCategory> categoryList = this.listByIds(ids);
         if (CollectionUtils.isNotEmpty(categoryList)) {
@@ -307,7 +307,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
             //删除前检查是否有下级文件
             List<BiUiAnalyseCategory> childList = getChildCategory(parentIdList, tenantId);
             if (CollectionUtils.isNotEmpty(childList)) {
-                throw new BizException("请先删除下级文件夹");
+                throw new BizException(ResourceMessageEnum.DELETE_SUB_FIRST.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DELETE_SUB_FIRST.getMessage(), ThreadLocalHolder.getLang()));
             }
             List<BiUiAnalysePage> childPageList = getChildPage(parentIdList, tenantId);
             if (CollectionUtils.isNotEmpty(childPageList)) {
@@ -323,7 +324,8 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 //                }
                 List<String> pageNameList = childPageList.stream().map(BiUiAnalysePage::getName).collect(Collectors.toList());
                 String message = StringUtils.join(pageNameList);
-                throw new BizException("文件夹下还存在报表：" + message + "，请先删除");
+                throw new BizException(ResourceMessageEnum.PAGE_EXIST_IN_CATEGORY.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.PAGE_EXIST_IN_CATEGORY.getMessage(), ThreadLocalHolder.getLang()), message);
             }
             //删除
             this.removeByIds(parentIdList);
@@ -366,7 +368,9 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
         }
         List<BiUiAnalyseCategory> categoryList = this.list(query);
         if (CollectionUtils.isNotEmpty(categoryList)) {
-            throw new BizException("存在相同名称文件夹");
+            String a = localeMessageService.getMessage(ResourceMessageEnum.EXIST_SAME_CATEGORY.getMessage(), ThreadLocalHolder.getLang());
+            throw new BizException(ResourceMessageEnum.EXIST_SAME_CATEGORY.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EXIST_SAME_CATEGORY.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 }

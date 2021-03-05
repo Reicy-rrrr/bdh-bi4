@@ -2,12 +2,12 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.date.DateUtils;
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
-import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
-import com.deloitte.bdh.data.analyse.enums.FormatTypeEnum;
-import com.deloitte.bdh.data.analyse.enums.WildcardEnum;
+import com.deloitte.bdh.data.analyse.enums.*;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataCondition;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
 import com.deloitte.bdh.data.analyse.sql.enums.MysqlFormatTypeEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
@@ -21,6 +21,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
         String sql = buildSql(dataModel);
         return execute(dataModel, sql, list -> {
@@ -190,7 +191,8 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
     @Override
     protected void validate(DataModel dataModel) {
         if (CollectionUtils.isEmpty(dataModel.getX())) {
-            throw new RuntimeException("字段列表不能为空");
+            throw new BizException(ResourceMessageEnum.X_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.X_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         //对度量和维度数量有校验
@@ -200,16 +202,19 @@ public class QuotaCoreDataImpl extends AbstractDataService implements AnalyseDat
                 .collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(wdFields)) {
-            throw new RuntimeException("核心指标图只能设置度量");
+            throw new BizException(ResourceMessageEnum.DL_ONLY.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_ONLY.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (CollectionUtils.isEmpty(dlFields)) {
-            throw new RuntimeException("核心指标图设置度量不能为空");
+            throw new BizException(ResourceMessageEnum.DL_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         //校验同比环比
         if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
             if (isOpen(dataModel) && StringUtils.isAnyBlank(getCoreDateKey(dataModel), getCoreDateValue(dataModel), getCoreDateType(dataModel))) {
-                throw new RuntimeException("核心指标图开启同比或环比后，请选择日期");
+                throw new BizException(ResourceMessageEnum.QUOTA_DATE_NO_CHOSE.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.QUOTA_DATE_NO_CHOSE.getMessage(), ThreadLocalHolder.getLang()));
             }
         }
         dataModel.setPage(null);

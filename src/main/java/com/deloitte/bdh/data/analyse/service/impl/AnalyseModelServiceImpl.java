@@ -26,9 +26,7 @@ import com.deloitte.bdh.data.analyse.model.resp.*;
 import com.deloitte.bdh.data.analyse.service.*;
 import com.deloitte.bdh.data.collation.database.po.TableColumn;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.model.request.DataSetTableInfo;
-import com.deloitte.bdh.data.collation.model.resp.DataSetTree;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -42,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

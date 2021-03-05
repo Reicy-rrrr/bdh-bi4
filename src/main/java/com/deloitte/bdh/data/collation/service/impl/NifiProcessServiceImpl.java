@@ -1,9 +1,13 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
 import com.deloitte.bdh.data.collation.enums.NifiEnum;
 import com.deloitte.bdh.data.collation.nifi.exception.NifiException;
@@ -15,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.codehaus.jackson.type.TypeReference;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +27,9 @@ import java.util.Map;
 @Service
 public class NifiProcessServiceImpl extends AbstractNifiProcess {
     private static final Logger logger = LoggerFactory.getLogger(NifiProcessServiceImpl.class);
+
+    @Resource
+    private LocaleMessageService localeMessageService;
 
     @Override
     public Map<String, Object> cluster() throws Exception {
@@ -36,7 +44,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
         logger.info("NifiProcessServiceImpl.getRootGroupInfo, URL:{} ", biProperties.getNifiUrl() + NifiEnum.ACCESS_TOKEN.getKey());
         String response = HttpClientUtil.get(NifiProcessUtil.assemblyUrl(biProperties.getNifiUrl(), NifiEnum.ROOT_GROUP_INFO.getKey()), super.setHeaderAuthorization(), null);
         if (StringUtil.isEmpty(response)) {
-            throw new NifiException("未获取到RootGroup相关信息");
+            throw new BizException(ResourceMessageEnum.ROOT_GROUP_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ROOT_GROUP_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
         return JsonUtil.string2Obj(response, new TypeReference<Map<String, Object>>() {
         });
@@ -63,7 +72,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.createProcessGroup.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -92,7 +102,9 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.getProcessGroupFull.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
+
         }
     }
 
@@ -116,7 +128,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.delProcessGroup.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -137,7 +150,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.updProcessGroup.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -174,7 +188,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.runState.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -191,7 +206,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.clearRequest.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -209,7 +225,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.terminate.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -262,7 +279,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.createControllerService.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -303,7 +321,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.createOtherControllerService.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -328,7 +347,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.runControllerService.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -365,7 +385,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.delControllerService.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -386,7 +407,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.updControllerService.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -409,7 +431,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
     @Override
     public Map<String, Object> getProcessor(String id) throws Exception {
         if (StringUtil.isEmpty(id)) {
-            throw new NifiException("NifiProcessServiceImpl.getProcessor.error : id不能为空");
+            throw new BizException(ResourceMessageEnum.ID_NULL_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ID_NULL_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String url = NifiProcessUtil.assemblyUrl(biProperties.getNifiUrl(), NifiEnum.PROCESSORS.getKey(), id);
@@ -518,7 +541,8 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.dropConnections.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -631,7 +655,9 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
             });
         } catch (Exception e) {
             logger.error("NifiProcessServiceImpl.createByTemplate.error:", e);
-            throw new RuntimeException("系统异常");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
+
         }
     }
 

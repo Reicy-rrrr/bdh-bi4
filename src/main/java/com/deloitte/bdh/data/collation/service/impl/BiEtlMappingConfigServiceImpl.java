@@ -4,6 +4,9 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.DbSelector;
 import com.deloitte.bdh.data.collation.database.dto.DbContext;
@@ -55,7 +58,8 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
         );
 
         if (CollectionUtils.isEmpty(mappingConfigs)) {
-            throw new RuntimeException("未关联数据源");
+            throw new BizException(ResourceMessageEnum.DATASOURCE_NO_REF.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_NO_REF.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         for (BiEtlMappingConfig s : mappingConfigs) {
@@ -77,16 +81,19 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
     private void validate(BiEtlMappingConfig config) throws Exception {
         BiEtlDatabaseInf databaseInf = databaseInfService.getById(config.getRefSourceId());
         if (null == databaseInf) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (!databaseInf.getEffect().equals(EffectEnum.ENABLE.getKey())) {
-            throw new RuntimeException("数据源状态为失效,数据源名称:" + databaseInf.getName());
+            throw new BizException(ResourceMessageEnum.DATASOURCE_NO_EFFECT.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_NO_EFFECT.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         List<BiEtlMappingField> recordFieldList = fieldService.list(new LambdaQueryWrapper<BiEtlMappingField>()
                 .eq(BiEtlMappingField::getRefCode, config.getCode()));
         if (CollectionUtils.isEmpty(recordFieldList)) {
-            throw new RuntimeException("未找到本地记录的字段信息,映射编码:" + config.getCode());
+            throw new BizException(ResourceMessageEnum.NO_FIELD_INFO.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.NO_FIELD_INFO.getMessage(), ThreadLocalHolder.getLang()), config.getCode());
         }
         List<String> recordFields = recordFieldList.stream().map(BiEtlMappingField::getFieldName).collect(Collectors.toList());
 
@@ -100,36 +107,45 @@ public class BiEtlMappingConfigServiceImpl extends AbstractService<BiEtlMappingC
                 dbContext.setDbId(config.getRefSourceId());
                 List<String> tables = dbSelector.getTables(dbContext);
                 if (CollectionUtils.isEmpty(tables)) {
-                    throw new RuntimeException("数据源发生变化,远程数据库没有获取到任何的表信息");
+                    throw new BizException(ResourceMessageEnum.DATASOURCE_CHANGE_1.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_CHANGE_1.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 if (!tables.contains(config.getFromTableName())) {
-                    throw new RuntimeException("数据源发生变化,远程数据库没有找到表" + config.getFromTableName());
+                    throw new BizException(ResourceMessageEnum.DATASOURCE_CHANGE_2.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_CHANGE_2.getMessage(), ThreadLocalHolder.getLang()),
+                            config.getFromTableName());
                 }
                 dbContext.setTableName(config.getFromTableName());
 
                 List<String> fromFields = dbSelector.getFields(dbContext);
                 if (CollectionUtils.isEmpty(fromFields)) {
-                    throw new RuntimeException("数据源发生变化,远程数据源的表字段没有读取到");
+                    throw new BizException(ResourceMessageEnum.DATASOURCE_CHANGE_3.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_CHANGE_3.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 diffFields = findDiffFields(recordFields, fromFields);
                 break;
             case 3:
                 if (!dbHandler.isTableExists(config.getFromTableName())) {
-                    throw new RuntimeException("数据源发生变化,本地库没有找到表" + config.getFromTableName());
+                    throw new BizException(ResourceMessageEnum.DATASOURCE_CHANGE_4.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_CHANGE_4.getMessage(), ThreadLocalHolder.getLang()),
+                            config.getFromTableName());
                 }
 
                 List<TableColumn> tableColumns = dbHandler.getColumns(config.getFromTableName());
                 if (CollectionUtils.isEmpty(tableColumns)) {
-                    throw new RuntimeException("数据源发生变化,本地数据源的表字段没有读取到");
+                    throw new BizException(ResourceMessageEnum.DATASOURCE_CHANGE_5.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_CHANGE_5.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 List<String> localFields = tableColumns.stream().map(TableColumn::getName).collect(Collectors.toList());
                 diffFields = findDiffFields(recordFields, localFields);
                 break;
             default:
-                throw new RuntimeException("未知的数据类型");
+                throw new BizException(ResourceMessageEnum.DATASOURCE_UNKNOWN.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_UNKNOWN.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (null != diffFields) {
-            throw new RuntimeException("数据源发生变化,本地配置的以下字段无法找到:" + diffFields);
+            throw new BizException(ResourceMessageEnum.DATASOURCE_CHANGE_6.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATASOURCE_CHANGE_6.getMessage(), ThreadLocalHolder.getLang()), diffFields);
         }
     }
 

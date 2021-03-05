@@ -1,6 +1,8 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.data.analyse.enums.PermittedActionEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.enums.ResourcesTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseUserResource;
 import com.deloitte.bdh.data.analyse.service.AnalyseUserResourceService;
@@ -256,10 +258,12 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public void reName(DataSetReNameDto dto) {
         BiDataSet dataSet = setMapper.selectById(dto.getId());
         if (null == dataSet) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.DATA_SET_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dataSet.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-            throw new RuntimeException("默认数据集请勿修改");
+            throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
         }
         String newTableDesc = dto.getToTableDesc();
         //别名有变化
@@ -275,7 +279,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                         .eq(BiComponentParams::getRefComponentCode, dataSet.getCode())
                 );
                 if (null == param) {
-                    throw new RuntimeException("未找到目标模型");
+                    throw new BizException(ResourceMessageEnum.TARGET_MODEL_NOT_EXIST.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.TARGET_MODEL_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 param.setParamValue(newTableDesc);
                 componentParamsService.updateById(param);
@@ -293,7 +298,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                         .eq(BiComponent::getCode, dataSet.getCode())
                 );
                 if (null == component) {
-                    throw new RuntimeException("未找到目标模型");
+                    throw new BizException(ResourceMessageEnum.TARGET_MODEL_NOT_EXIST.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.TARGET_MODEL_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 component.setComments(comments);
                 componentService.updateById(component);
@@ -424,7 +430,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 break;
             default:
                 if (StringUtils.isBlank(biDataSet.getRefSourceId())) {
-                    throw new RuntimeException("远程连接时未找到数据源目标对象");
+                    throw new BizException(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATA_SOURCE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 //远程查询
                 DbContext context = dbHandler.getDbContext(biDataSet.getRefSourceId());
@@ -447,7 +454,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public TableData getDataInfoPage(GetDataSetInfoDto dto) throws Exception {
         BiDataSet dataSet = setMapper.selectById(dto.getId());
         if (null == dataSet) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.DATA_SET_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         TableData tableData = new TableData();
@@ -463,7 +471,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 //判断是否在整理中
                 BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dataSet.getRefModelCode()));
                 if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
-                    throw new RuntimeException("该数据集正在数据整理同步中，暂无数据");
+                    throw new BizException(ResourceMessageEnum.DATA_SET_SYNC.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_SYNC.getMessage(), ThreadLocalHolder.getLang()));
                 }
             }
             String querySql = "SELECT * FROM " + dataSet.getTableName();
@@ -510,7 +519,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 //判断是否在整理中
                 BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dataSet.getRefModelCode()));
                 if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
-                    throw new RuntimeException("该数据集正在数据整理同步中，暂无数据");
+                    throw new BizException(ResourceMessageEnum.DATA_SET_SYNC.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_SYNC.getMessage(), ThreadLocalHolder.getLang()));
                 }
             }
             String querySql = "SELECT * FROM " + dataSet.getTableName();
@@ -529,7 +539,9 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
     public List<Map<String, Object>> getDataInfo(String id) throws Exception {
         BiDataSet dataSet = setMapper.selectById(id);
         if (null == dataSet) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.DATA_SET_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
+
         }
         String querySql = "SELECT * FROM " + dataSet.getTableName();
         List<Map<String, Object>> list;
@@ -543,7 +555,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 //判断是否在整理中
                 BiEtlModel model = modelService.getOne(new LambdaQueryWrapper<BiEtlModel>().eq(BiEtlModel::getCode, dataSet.getRefModelCode()));
                 if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus())) {
-                    throw new RuntimeException("该数据集正在数据整理同步中，暂无数据");
+                    throw new BizException(ResourceMessageEnum.DATA_SET_SYNC.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_SYNC.getMessage(), ThreadLocalHolder.getLang()));
                 }
             }
             list = dbHandler.executeQuery(querySql);
@@ -557,15 +570,18 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         BiDataSet dataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>().eq(BiDataSet::getCode, code));
         if (null != dataSet) {
             if (dataSet.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-                throw new RuntimeException("默认数据集请勿删除");
+                throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             if (StringUtils.isNotBlank(dataSet.getType())) {
                 if (!canDel && DataSetTypeEnum.MODEL.getKey().equals(dataSet.getType())) {
-                    throw new RuntimeException("数据整理的表，请在数据模型里面删除");
+                    throw new BizException(ResourceMessageEnum.DELETE_IN_MODEL.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DELETE_IN_MODEL.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 if (DataSetTypeEnum.DEFAULT.getKey().equals(dataSet.getType())) {
-                    throw new RuntimeException("初始化数据表，暂不允许删除");
+                    throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 if (DataSetTypeEnum.COPY.getKey().equals(dataSet.getType())) {
                     String deleteSql = "drop table " + dataSet.getTableName();
@@ -578,7 +594,8 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
                 int count = setMapper.selectCount(new LambdaQueryWrapper<BiDataSet>()
                         .eq(BiDataSet::getParentId, dataSet.getId()));
                 if (count > 0) {
-                    throw new RuntimeException("文件夹下包含文件，不允许删除");
+                    throw new BizException(ResourceMessageEnum.FILE_EXIST.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.FILE_EXIST.getMessage(), ThreadLocalHolder.getLang()));
                 }
             }
             setMapper.deleteById(dataSet.getId());

@@ -11,6 +11,8 @@ import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
 import com.deloitte.bdh.data.collation.evm.enums.TableMappingEnum;
 import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
@@ -52,6 +54,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
     private BiReportService reportService;
     @Autowired
     private EvmServiceImpl evmService;
+    @Resource
+    private LocaleMessageService localeMessageService;
 
     @Override
     public void consumer(KafkaMessage<BiEvmFile> message) {
@@ -68,13 +72,15 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
         try {
             bytes = IOUtils.toByteArray(fileStream);
         } catch (IOException e) {
-            throw new BizException("File read error: 读取文件错误！");
+            throw new BizException(ResourceMessageEnum.EVM_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_1.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
             if (workbook == null) {
                 log.error("读取Excel文件失败，上传文件内容为空!");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空!");
+                throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
             //todo check
             doZcfzb(workbook.getSheet(SheetCodeEnum.zcfzb.getValue()), evmFile.getBatchId());
@@ -89,18 +95,21 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             }
         } catch (IOException | InvalidFormatException e) {
             log.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
     private void doZcfzb(Sheet sheet, String batchId) {
         if (sheet == null) {
-            throw new BizException("读取Excel文件失败，上传文件内容不能为空!");
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
         if (null == typeCell) {
-            throw new BizException("未获取到报表期间类型");
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.zcfzb.getName()));
@@ -155,12 +164,14 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
     private void doLrb(Sheet sheet, String batchId) {
         if (sheet == null) {
-            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
         if (null == typeCell) {
-            throw new BizException("未获取到报表期间类型");
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
         }
         reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.lrb.getName()));
 
@@ -212,12 +223,14 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
     private void doXjllb(Sheet sheet, String batchId) {
         if (sheet == null) {
-            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(3);
         if (null == typeCell) {
-            throw new BizException("未获取到报表期间类型");
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
         }
         reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.xjllb.getName()));
 
@@ -269,12 +282,14 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
 
     private void doKmyeb(Sheet sheet, String batchId) {
         if (sheet == null) {
-            throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         //获取类型
         Cell typeCell = sheet.getRow(0).getCell(4);
         if (null == typeCell) {
-            throw new BizException("未获取到报表期间类型");
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
         }
         reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.kmyeb.getName()));
 

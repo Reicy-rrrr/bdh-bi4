@@ -154,7 +154,7 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
         queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
         queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, dto.getResourceType());
         queryWrapper.eq(BiUiAnalyseUserResource::getTenantId, ThreadLocalHolder.getTenantId());
-        queryWrapper.ne(BiUiAnalyseUserResource::getIsDefault, YesOrNoEnum.YES.getKey());
+        queryWrapper.isNull(BiUiAnalyseUserResource::getIsDefault);
         List<BiUiAnalyseUserResource> list = list(queryWrapper);
         List<String> viewUserList = Lists.newArrayList();
         List<String> editUserList = Lists.newArrayList();

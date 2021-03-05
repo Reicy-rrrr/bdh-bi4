@@ -5,6 +5,9 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.date.DateUtils;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ExcelUtils;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.database.po.TableField;
 import com.deloitte.bdh.data.collation.enums.DataTypeEnum;
@@ -30,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +62,9 @@ public class FileReadServiceImpl implements FileReadService {
     @Autowired
     private DbHandler dbHandler;
 
+    @Resource
+    private LocaleMessageService localeMessageService;
+
     @Override
     public FilePreReadResult preRead(MultipartFile file) {
         FilePreReadResult readResult = null;
@@ -77,7 +84,8 @@ public class FileReadServiceImpl implements FileReadService {
                 readResult = preReadExcel(file);
                 break;
             default:
-                throw new BizException("错误的文件类型，系统暂不支持！");
+                throw new BizException(ResourceMessageEnum.FILE_1.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_1.getMessage(), ThreadLocalHolder.getLang()));
         }
         return readResult;
     }
@@ -98,7 +106,8 @@ public class FileReadServiceImpl implements FileReadService {
                 readExcelIntoDb(bytes, tableName, columnTypes);
                 break;
             default:
-                throw new BizException("错误的文件类型，系统暂不支持！");
+                throw new BizException(ResourceMessageEnum.FILE_1.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_1.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -108,7 +117,8 @@ public class FileReadServiceImpl implements FileReadService {
         try {
             bytes = IOUtils.toByteArray(inputStream);
         } catch (IOException e) {
-            throw new BizException("File read error: 读取文件错误！");
+            throw new BizException(ResourceMessageEnum.EVM_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_1.getMessage(), ThreadLocalHolder.getLang()));
         }
         readIntoDB(bytes, fileType, columnTypes, tableName);
     }
@@ -127,20 +137,23 @@ public class FileReadServiceImpl implements FileReadService {
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             if (workbook == null) {
                 logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+                throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
             Sheet dataSheet = workbook.getSheetAt(0);
             // poi 行号从0开始
             if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
                 logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+                throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             Row headerRow = dataSheet.getRow(0);
             int lastCellNum = 0;
             if (headerRow == null || (lastCellNum = headerRow.getLastCellNum()) <= 1) {
                 logger.error("读取Excel文件失败，上传文件首行内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件首行内容不能为空！");
+                throw new BizException(ResourceMessageEnum.FILE_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_2.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             Map<Integer, String> fields = Maps.newHashMap();
@@ -152,12 +165,14 @@ public class FileReadServiceImpl implements FileReadService {
                 String field = ExcelUtils.getCellStringValue(cell);
                 if (StringUtils.isBlank(field)) {
                     logger.error("读取Excel文件失败，上传文件首行单元格[{}]内容为空！", cell.getAddress());
-                    throw new BizException("读取Excel文件失败，上传文件首行单元格[" + cell.getAddress() + "]内容为空！");
+                    throw new BizException(ResourceMessageEnum.FILE_3.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.FILE_3.getMessage(), ThreadLocalHolder.getLang()), cell.getAddress());
                 }
 
                 if (headers.contains(field)) {
                     logger.error("读取Excel文件失败，上传文件首行存在重复内容[{}]！", field);
-                    throw new BizException("读取Excel文件失败，上传文件首行存在重复内容[" + field + "]！");
+                    throw new BizException(ResourceMessageEnum.FILE_4.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.FILE_4.getMessage(), ThreadLocalHolder.getLang()), field);
                 } else {
                     headers.add(field);
                 }
@@ -200,10 +215,12 @@ public class FileReadServiceImpl implements FileReadService {
             readResult.setColumns(initColumnTypes(headers, dataTypes));
         } catch (IOException e) {
             logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         } catch (InvalidFormatException e) {
             logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         return readResult;
     }
@@ -224,7 +241,8 @@ public class FileReadServiceImpl implements FileReadService {
             String[] headerItems = csvReader.readNext();
             if (headerItems == null || headerItems.length == 0) {
                 logger.error("初始化JSON转换模板失败，上传文件首行内容为空！");
-                throw new BizException("初始化JSON转换模板失败，上传文件首行内容为空！");
+                throw new BizException(ResourceMessageEnum.FILE_5.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_5.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             Map<Integer, String> fields = Maps.newHashMap();
@@ -259,7 +277,8 @@ public class FileReadServiceImpl implements FileReadService {
             readResult.setColumns(initColumnTypes(headers, dataTypes));
         } catch (Exception e) {
             logger.error("读取Csv文件失败，程序运行错误！", e);
-            throw new BizException("读取Csv文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         return readResult;
     }
@@ -275,21 +294,25 @@ public class FileReadServiceImpl implements FileReadService {
         try (Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
             if (workbook == null) {
                 logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+                throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
             Sheet dataSheet = workbook.getSheetAt(0);
             // poi 行号从0开始
             if (dataSheet == null || (dataSheet.getLastRowNum()) <= 0) {
                 logger.error("读取Excel文件失败，上传文件内容为空！");
-                throw new BizException("读取Excel文件失败，上传文件内容不能为空！");
+                throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
             readSheetIntoDb(dataSheet, tableName, columns);
         } catch (IOException e) {
             logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         } catch (InvalidFormatException e) {
             logger.error("读取Excel文件失败，程序运行错误！", e);
-            throw new BizException("读取Excel文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -306,7 +329,8 @@ public class FileReadServiceImpl implements FileReadService {
         int lastCellNum = 0;
         if (headerRow == null || (lastCellNum = headerRow.getLastCellNum()) <= 1) {
             logger.error("读取Excel文件失败，上传文件首行内容为空！");
-            throw new BizException("读取Excel文件失败，上传文件首行内容不能为空！");
+            throw new BizException(ResourceMessageEnum.FILE_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FILE_2.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         List<Triple<String, String, DataTypeEnum>> mappings = Lists.newArrayList();
@@ -318,7 +342,8 @@ public class FileReadServiceImpl implements FileReadService {
             String field = ExcelUtils.getCellStringValue(cell);
             if (StringUtils.isBlank(field)) {
                 logger.error("读取Excel文件失败，上传文件首行单元格[{}]内容为空！", cell.getAddress());
-                throw new BizException("读取Excel文件失败，上传文件首行单元格[" + cell.getAddress() + "]内容为空！");
+                throw new BizException(ResourceMessageEnum.FILE_3.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_3.getMessage(), ThreadLocalHolder.getLang()), cell.getAddress());
             }
 
             TableField tableField = MapUtils.getObject(columns, field);
@@ -330,7 +355,8 @@ public class FileReadServiceImpl implements FileReadService {
         for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
             Row row = sheet.getRow(rowIndex);
             if (null == row) {
-                throw new BizException("数据落库失败，请检查上传的文件,存在空行");
+                throw new BizException(ResourceMessageEnum.FILE_6.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_6.getMessage(), ThreadLocalHolder.getLang()));
             }
             LinkedHashMap<String, Object> line = Maps.newLinkedHashMap();
             for (int cellIndex = 0; cellIndex < lastCellNum; cellIndex++) {
@@ -366,7 +392,8 @@ public class FileReadServiceImpl implements FileReadService {
             String[] headerItems = reader.readNext();
             if (headerItems == null || headerItems.length == 0) {
                 logger.error("读取CSV文件失败，上传文件首行内容为空！");
-                throw new BizException("读取CSV文件失败，上传文件首行内容为空！");
+                throw new BizException(ResourceMessageEnum.FILE_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.FILE_2.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             List<Triple<String, String, DataTypeEnum>> mappings = Lists.newArrayList();
@@ -397,7 +424,8 @@ public class FileReadServiceImpl implements FileReadService {
             }
         } catch (Exception e) {
             logger.error("读取Csv文件失败，程序运行错误！", e);
-            throw new BizException("读取Csv文件失败，程序运行错误！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -409,14 +437,16 @@ public class FileReadServiceImpl implements FileReadService {
      */
     private void checkFileFormat(MultipartFile importFile) {
         if (importFile == null) {
-            throw new BizException("上传文件不能为空！");
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String fileType = importFile.getContentType();
         String fileName = importFile.getOriginalFilename().toLowerCase();
         FileTypeEnum fileTypeEnum = FileTypeEnum.values(fileType);
         if (!fileName.endsWith(fileTypeEnum.getValue())) {
-            throw new BizException("文件类型与文件名称不匹配！");
+            throw new BizException(ResourceMessageEnum.FILE_7.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FILE_7.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 

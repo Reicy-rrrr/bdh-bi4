@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -157,6 +159,9 @@ public class EtlServiceImpl implements EtlService {
     
     @Autowired
     private Producter producter;
+
+    @Resource
+    private LocaleMessageService localeMessageService;
     
 
 
@@ -184,16 +189,19 @@ public class EtlServiceImpl implements EtlService {
     public BiComponent resourceJoin(ResourceComponentDto dto) throws Exception {
         BiEtlDatabaseInf biEtlDatabaseInf = databaseInfService.getById(dto.getSourceId());
         if (null == biEtlDatabaseInf) {
-            throw new RuntimeException("未找到目标数据源");
+            throw new BizException(ResourceMessageEnum.ETL_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_1.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
-            throw new RuntimeException("未找到目标模型");
+            throw new BizException(ResourceMessageEnum.ETL_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_2.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (EffectEnum.DISABLE.getKey().equals(biEtlDatabaseInf.getEffect())) {
-            throw new RuntimeException("数据源状态不合法");
+            throw new BizException(ResourceMessageEnum.ETL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (StringUtils.isBlank(dto.getComponentName())) {
@@ -249,16 +257,19 @@ public class EtlServiceImpl implements EtlService {
                     && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
                 component.setEffect(EffectEnum.DISABLE.getKey());
                 if (CollectionUtils.isEmpty(dto.getFields())) {
-                    throw new RuntimeException("同步时,所选字段不能为空");
+                    throw new BizException(ResourceMessageEnum.ETL_4.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.ETL_4.getMessage(), ThreadLocalHolder.getLang()));
                 }
 
                 if (StringUtils.isBlank(dto.getOffsetField())) {
-                    throw new RuntimeException("独立副本时，偏移字段不能为空");
+                    throw new BizException(ResourceMessageEnum.ETL_5.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.ETL_5.getMessage(), ThreadLocalHolder.getLang()));
                 }
 
                 Optional<TableField> field = dto.getFields().stream().filter(s -> s.getName().equals(dto.getOffsetField())).findAny();
                 if (!field.isPresent()) {
-                    throw new RuntimeException("同步时,偏移字段必须在同步的字段列表以内");
+                    throw new BizException(ResourceMessageEnum.ETL_6.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.ETL_6.getMessage(), ThreadLocalHolder.getLang()));
                 }
 
                 //同步都涉及 偏移字段，方便同步
@@ -310,7 +321,8 @@ public class EtlServiceImpl implements EtlService {
             fieldService.saveBatch(fields);
         } else {
             if (StringUtils.isBlank(dto.getBelongMappingCode())) {
-                throw new RuntimeException("非独立副本时,引用的表不能为空");
+                throw new BizException(ResourceMessageEnum.ETL_7.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.ETL_7.getMessage(), ThreadLocalHolder.getLang()));
             }
         }
 
@@ -334,20 +346,24 @@ public class EtlServiceImpl implements EtlService {
         BiComponent oldComponent = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getCode, dto.getComponentCode()));
         if (null == oldComponent) {
-            throw new RuntimeException("未找到目标组件");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, oldComponent.getRefModelCode()));
         if (null == model) {
-            throw new RuntimeException("未找到目标模型");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 校验当前组件未同步，且当前model 未运行
         if (componentService.isSync(oldComponent.getCode())) {
-            throw new RuntimeException("数据源组件当前正在同步中，不允许修改");
+            throw new BizException(ResourceMessageEnum.ETL_10.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_10.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (YesOrNoEnum.YES.getKey().equals(model.getSyncStatus()) || RunStatusEnum.RUNNING.getKey().equals(model.getStatus())) {
-            throw new RuntimeException("模型状态非法，正在运行中");
+            throw new BizException(ResourceMessageEnum.ETL_11.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_11.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 若只是删除了个别字段，或组件名字变更，不需要重构同步（直连和本地除外）
@@ -411,7 +427,8 @@ public class EtlServiceImpl implements EtlService {
         BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getCode, code));
         if (null == component) {
-            throw new RuntimeException("未找到目标组件");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
         resp.setEffect(component.getEffect());
         BiComponentParams dulicateParam = componentParamsService.getOne(new LambdaQueryWrapper<BiComponentParams>()
@@ -430,7 +447,8 @@ public class EtlServiceImpl implements EtlService {
         BiEtlMappingConfig config = configService.getOne(new LambdaQueryWrapper<BiEtlMappingConfig>()
                 .eq(BiEtlMappingConfig::getCode, component.getRefMappingCode()));
         if (null == config) {
-            throw new RuntimeException("未找到目标配置");
+            throw new BizException(ResourceMessageEnum.ETL_12.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_12.getMessage(), ThreadLocalHolder.getLang()));
         }
         //文件类型
         if (config.getType().equals(String.valueOf(SyncTypeEnum.LOCAL.getKey()))) {
@@ -446,7 +464,8 @@ public class EtlServiceImpl implements EtlService {
                 .orderByAsc(BiEtlSyncPlan::getCreateDate)
                 .last("limit 1"));
         if (null == syncPlan) {
-            throw new RuntimeException("未找到目标运行计划");
+            throw new BizException(ResourceMessageEnum.ETL_13.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_13.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         resp.setPlanStage(syncPlan.getPlanStage());
@@ -470,7 +489,8 @@ public class EtlServiceImpl implements EtlService {
     public BiComponent outCreate(OutComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
-            throw new RuntimeException("未找到目标 模型");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         //校验只能增加一个输出组件
@@ -479,7 +499,8 @@ public class EtlServiceImpl implements EtlService {
                 .eq(BiComponent::getType, ComponentTypeEnum.OUT.getKey())
         );
         if (num > 0) {
-            throw new RuntimeException("输出组件只能存在一个");
+            throw new BizException(ResourceMessageEnum.ETL_14.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_14.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String componentCode = GenerateCodeUtil.getComponent();
@@ -522,7 +543,8 @@ public class EtlServiceImpl implements EtlService {
         BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getCode, dto.getComponentCode()));
         if (null == component) {
-            throw new RuntimeException("EtlServiceImpl.component.update.error : 未找到目标");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 查询组件原始参数
@@ -588,7 +610,8 @@ public class EtlServiceImpl implements EtlService {
     public BiComponent joinCreate(JoinComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
-            throw new RuntimeException(" 未找到目标 模型");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 保存组件信息
@@ -634,7 +657,8 @@ public class EtlServiceImpl implements EtlService {
     public BiComponent groupCreate(GroupComponentDto dto) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
-            throw new RuntimeException("未找到目标 模型");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 保存组件信息
@@ -680,7 +704,8 @@ public class EtlServiceImpl implements EtlService {
     public BiComponent arrangeCreate(ArrangeComponentDto dto, ArrangeTypeEnum arrangeType) throws Exception {
         BiEtlModel biEtlModel = biEtlModelService.getById(dto.getModelId());
         if (null == biEtlModel) {
-            throw new RuntimeException("未找到目标 模型");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 保存组件信息
         BiComponent component = saveComponent(biEtlModel.getCode(), ComponentTypeEnum.ARRANGE, dto.getPosition());
@@ -721,7 +746,8 @@ public class EtlServiceImpl implements EtlService {
             this.handle(previewDto);
         } catch (Exception e) {
             log.error("arrangeUpdate.error: ", e);
-            throw new RuntimeException("编辑失败，当前操作影响后续组件，请检查后再修改");
+            throw new BizException(ResourceMessageEnum.ETL_15.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_15.getMessage(), ThreadLocalHolder.getLang()));
         }
         return component;
     }
@@ -731,7 +757,8 @@ public class EtlServiceImpl implements EtlService {
         String componentId = dto.getComponentId();
         BiComponent component = componentService.getById(componentId);
         if (component == null) {
-            throw new BizException("未找到组件信息！");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         ComponentResp vo = new ComponentResp();
@@ -797,13 +824,15 @@ public class EtlServiceImpl implements EtlService {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);
         if (model == null) {
-            throw new BizException("未找到模板信息！");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String componentId = dto.getComponentId();
         BiComponent component = componentService.getById(componentId);
         if (component == null) {
-            throw new BizException("未找到组件信息！");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String modelCode = model.getCode();
@@ -820,12 +849,14 @@ public class EtlServiceImpl implements EtlService {
                 .eq(BiComponent::getCode, code)
         );
         if (null == component) {
-            throw new RuntimeException("未找到目标 组件对象");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiEtlModel model = biEtlModelService.getOne(new LambdaQueryWrapper<BiEtlModel>()
                 .eq(BiEtlModel::getCode, component.getRefModelCode()));
         if (RunStatusEnum.RUNNING.getKey().equals(model.getStatus())) {
-            throw new RuntimeException("运行中的模板，不允许删除组件");
+            throw new BizException(ResourceMessageEnum.ETL_16.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_16.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         switch (ComponentTypeEnum.values(component.getType())) {
@@ -865,28 +896,33 @@ public class EtlServiceImpl implements EtlService {
         String modelId = dto.getModelId();
         BiEtlModel model = biEtlModelService.getById(modelId);
         if (model == null) {
-            throw new BizException("未找到模板信息！");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String componentId = dto.getComponentId();
         BiComponent component = componentService.getById(componentId);
         if (component == null) {
-            throw new BizException("未找到组件信息！");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         String formula = dto.getFormula();
         if (StringUtils.isBlank(formula)) {
-            throw new BizException("计算公式不能为空！");
+            throw new BizException(ResourceMessageEnum.ETL_17.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_17.getMessage(), ThreadLocalHolder.getLang()));
         }
         CalculateTypeEnum calculateType = expressionHandler.getCalculateType(formula);
         if (calculateType == null) {
-            throw new BizException("暂不支持的计算类型！");
+            throw new BizException(ResourceMessageEnum.ETL_18.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_18.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         Pair<Boolean, String> checkResult = null;
         if (CalculateTypeEnum.ORDINARY.equals(calculateType)) {
             if (formula.contains("%")) {
-                throw new BizException("非法的计算公式，暂不支持百分比[%]的计算！");
+                throw new BizException(ResourceMessageEnum.ETL_19.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.ETL_19.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             checkResult = expressionHandler.isParamArithmeticFormula(formula);
@@ -924,9 +960,10 @@ public class EtlServiceImpl implements EtlService {
             }
         }
         if (CollectionUtils.isNotEmpty(unknownFields)) {
-            throw new BizException("存在未知的字段，请检查！");
+            throw new BizException(ResourceMessageEnum.ETL_20.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_20.getMessage(), ThreadLocalHolder.getLang()));
         }
-        return "验证通过";
+        return localeMessageService.getMessage(ResourceMessageEnum.ETL_21.getMessage(), ThreadLocalHolder.getLang());
     }
 
     private List<BiComponentParams> transferToParams(String componentCode, String modelCode, Map<String, Object> source) {
@@ -994,7 +1031,8 @@ public class EtlServiceImpl implements EtlService {
                 break;
             case Hive:
             default:
-                throw new RuntimeException("暂不支持的类型");
+                throw new BizException(ResourceMessageEnum.ETL_22.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.ETL_22.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 
@@ -1218,12 +1256,14 @@ public class EtlServiceImpl implements EtlService {
     private ComponentModel handleComponent(String modelId, String componentId) {
         BiEtlModel model = biEtlModelService.getById(modelId);
         if (model == null) {
-            throw new BizException("未找到模板信息！");
+            throw new BizException(ResourceMessageEnum.ETL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiComponent component = componentService.getById(componentId);
         if (component == null) {
-            throw new BizException("未找到组件信息！");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         ComponentModel componentModel = biEtlModelHandleService.handleComponent(
@@ -1279,7 +1319,8 @@ public class EtlServiceImpl implements EtlService {
         BiComponent component = componentService.getOne(new LambdaQueryWrapper<BiComponent>()
                 .eq(BiComponent::getCode, componentCode));
         if (null == component) {
-            throw new RuntimeException("EtlServiceImpl.component.update.error : 未找到目标");
+            throw new BizException(ResourceMessageEnum.ETL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ETL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 删除已配置字段
         fieldService.remove(new LambdaQueryWrapper<BiEtlMappingField>()

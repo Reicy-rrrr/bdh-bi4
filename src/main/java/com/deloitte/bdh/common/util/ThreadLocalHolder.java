@@ -13,6 +13,11 @@ public final class ThreadLocalHolder {
         return threadLocal.get();
     }
 
+    public static String getLang() {
+        Map<String, Object> map = threadLocal.get();
+        return (String) map.get("lang");
+    }
+
     public static String getTenantId() {
         Map<String, Object> map = threadLocal.get();
         return (String) map.get("tenantId");

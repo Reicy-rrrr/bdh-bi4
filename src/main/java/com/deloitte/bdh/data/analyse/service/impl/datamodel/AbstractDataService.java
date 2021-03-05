@@ -5,6 +5,7 @@ import com.beust.jcommander.internal.Lists;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.analyse.sql.DataSourceSelection;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,8 @@ public abstract class AbstractDataService {
     @Resource
     protected DataSourceSelection sourceSelection;
 
+    @Resource
+    protected LocaleMessageService localeMessageService;
 
     protected abstract void validate(DataModel dataModel);
 

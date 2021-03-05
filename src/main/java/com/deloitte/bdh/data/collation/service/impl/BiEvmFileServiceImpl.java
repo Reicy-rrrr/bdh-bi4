@@ -11,6 +11,7 @@ import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEvmFile;
 import com.deloitte.bdh.data.collation.dao.bi.BiEvmFileMapper;
@@ -62,7 +63,8 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         try {
             storedFileKey = aliyunOss.uploadFile(file.getInputStream(), filePath, finalName, file.getContentType());
         } catch (IOException e) {
-            throw new BizException("File upload error: 上传文件发生错误，请检查文件有效性！");
+            throw new BizException(ResourceMessageEnum.EVM_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_3.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         // 发送消息去处理文件入库

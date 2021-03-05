@@ -2,12 +2,15 @@ package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,7 +39,8 @@ public class DataRangeDataImpl extends AbstractDataService implements AnalyseDat
         BiDataSet dataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
                 .eq(BiDataSet::getCode, dataModel.getTableName()));
         if (null == dataSet) {
-            throw new RuntimeException("未在数据集找到目标对象");
+            throw new BizException(ResourceMessageEnum.DATA_SET_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DATA_SET_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         String sql = "SELECT MIN(" + field.getId() + ") AS MIN, MAX(" + field.getId() + ") AS MAX FROM " + dataSet.getTableName();
         BaseComponentDataResponse response = execute(dataModel, sql);
@@ -58,10 +62,12 @@ public class DataRangeDataImpl extends AbstractDataService implements AnalyseDat
     @Override
     protected void validate(DataModel dataModel) {
         if (CollectionUtils.isEmpty(dataModel.getX())) {
-            throw new BizException("度量不能为空");
+            throw new BizException(ResourceMessageEnum.DL_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dataModel.getX().size() > 1) {
-            throw new BizException("度量数量只能为1");
+            throw new BizException(ResourceMessageEnum.DL_SIZE_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_SIZE_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
     }
 }

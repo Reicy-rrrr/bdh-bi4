@@ -4,6 +4,9 @@ import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.component.ComponentHandler;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,13 +63,18 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     @Autowired
     private ComponentHandler componentHandler;
 
+    @Resource
+    private LocaleMessageService localeMessageService;
+
     @Override
     public ComponentModel handleComponent(String modelCode, String componentCode) {
         if (StringUtils.isBlank(modelCode)) {
-            throw new BizException("模板code不能为空！");
+            throw new BizException(ResourceMessageEnum.TEMPLATE_CODE_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.TEMPLATE_CODE_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (StringUtils.isBlank(componentCode)) {
-            throw new BizException("组件code不能为空");
+            throw new BizException(ResourceMessageEnum.COMPONENT_CODE_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.COMPONENT_CODE_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 根据组件查询组件树
         BiComponentTree componentTree = biComponentService.selectTree(modelCode, componentCode);
@@ -80,7 +89,8 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     @Override
     public ComponentModel handleModel(String modelCode) {
         if (StringUtils.isBlank(modelCode)) {
-            throw new BizException("模板code不能为空！");
+            throw new BizException(ResourceMessageEnum.TEMPLATE_CODE_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.TEMPLATE_CODE_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         LambdaQueryWrapper<BiEtlModel> modelWrapper = new LambdaQueryWrapper();
@@ -88,7 +98,8 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         BiEtlModel model = biEtlModelService.getOne(modelWrapper);
         if (model == null) {
             log.error("根据模板code[{}]未查询到模板信息！", modelCode);
-            throw new BizException("未查询到模板信息！");
+            throw new BizException(ResourceMessageEnum.TEMPLATE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.TEMPLATE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         LambdaQueryWrapper<BiComponent> componentWrapper = new LambdaQueryWrapper();
@@ -97,12 +108,14 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         List<BiComponent> outComps = biComponentService.list(componentWrapper);
         if (CollectionUtils.isEmpty(outComps)) {
             log.error("根据模板code[{}]未查询到输出组件！", modelCode);
-            throw new BizException("模板未查询到输出组件信息！");
+            throw new BizException(ResourceMessageEnum.COMPONENT_OUTPUT_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.COMPONENT_OUTPUT_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (outComps.size() > 1) {
             log.error("根据模板code[{}]查询到多个输出组件信息！", modelCode);
-            throw new BizException("模板不允许有多个输出组件！");
+            throw new BizException(ResourceMessageEnum.MANY_COMPONENT_OUTPUT_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MANY_COMPONENT_OUTPUT_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
         // 根据模板查询组件树
         BiComponentTree componentTree = biComponentService.selectTree(model.getCode(), outComps.get(0).getCode());
@@ -117,7 +130,8 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     @Override
     public void handlePreviewSql(ComponentModel componentModel) {
         if (!componentModel.isHandled()) {
-            throw new BizException("当前组件还未处理，不支持预览sql！");
+            throw new BizException(ResourceMessageEnum.COMPONENT_UNDO_NO_SEE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.COMPONENT_UNDO_NO_SEE.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         ComponentTypeEnum type = componentModel.getTypeEnum();
@@ -156,7 +170,8 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     @Override
     public void handlePreviewNullSql(ComponentModel componentModel, List<String> nullFields) {
         if (!componentModel.isHandled()) {
-            throw new BizException("当前组件还未处理，不支持预览sql！");
+            throw new BizException(ResourceMessageEnum.COMPONENT_UNDO_NO_SEE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.COMPONENT_UNDO_NO_SEE.getMessage(), ThreadLocalHolder.getLang()));
         }
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(ComponentHandler.sql_key_select);
@@ -209,7 +224,8 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
     @Override
     public void handlePreviewFieldSql(ComponentModel componentModel, String field) {
         if (!componentModel.isHandled()) {
-            throw new BizException("当前组件还未处理，不支持预览sql！");
+            throw new BizException(ResourceMessageEnum.COMPONENT_UNDO_NO_SEE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.COMPONENT_UNDO_NO_SEE.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         StringBuilder sqlBuilder = new StringBuilder();
@@ -218,7 +234,8 @@ public class BiEtlModelHandleServiceImpl implements BiEtlModelHandleService {
         Map<String, FieldMappingModel> mappings = componentModel.getFieldMappings().stream().collect(Collectors.toMap(FieldMappingModel::getTempFieldName, mapping -> mapping));
         FieldMappingModel mapping = MapUtils.getObject(mappings, field);
         if (mapping == null) {
-            throw new BizException("组件字段值预览失败，不存在的字段！");
+            throw new BizException(ResourceMessageEnum.FIELD_NOT_FOUND.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.FIELD_NOT_FOUND.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         sqlBuilder.append(mapping.getTempFieldName());

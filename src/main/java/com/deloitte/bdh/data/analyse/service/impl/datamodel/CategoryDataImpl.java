@@ -1,16 +1,19 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.MaxMinDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
@@ -18,6 +21,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -195,29 +199,35 @@ public class CategoryDataImpl extends AbstractDataService implements AnalyseData
     @Override
     protected void validate(DataModel dataModel) {
         if (CollectionUtils.isEmpty(dataModel.getX())) {
-            throw new BizException("维度不能为空");
+            throw new BizException(ResourceMessageEnum.WD_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.WD_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (CollectionUtils.isEmpty(dataModel.getY()) && CollectionUtils.isEmpty(dataModel.getY2())) {
-            throw new BizException("度量不能为空");
+            throw new BizException(ResourceMessageEnum.DL_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
 
         } else {
             for (DataModelField field : dataModel.getY()) {
                 if (!AnalyseConstants.MENSURE_TYPE.contains(field.getDataType().toUpperCase())) {
-                    throw new BizException(field.getId() + "数据格式不正确");
+                    throw new BizException(ResourceMessageEnum.DATA_TYPE_ERROR.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATA_TYPE_ERROR.getMessage(), ThreadLocalHolder.getLang()), field.getId());
                 }
             }
         }
         if (CollectionUtils.isNotEmpty(dataModel.getY2())) {
             for (DataModelField field : dataModel.getY2()) {
                 if (!AnalyseConstants.MENSURE_TYPE.contains(field.getDataType().toUpperCase())) {
-                    throw new BizException(field.getId() + "数据格式不正确");
+                    throw new BizException(ResourceMessageEnum.DATA_TYPE_ERROR.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.DATA_TYPE_ERROR.getMessage(), ThreadLocalHolder.getLang()), field.getId());
+
                 }
             }
         }
         if (CollectionUtils.isNotEmpty(dataModel.getCategory())) {
             for (DataModelField field : dataModel.getCategory()) {
                 if (!StringUtils.equals(field.getQuota(), DataModelTypeEnum.WD.getCode())) {
-                    throw new BizException("图例只可放入维度");
+                    throw new BizException(ResourceMessageEnum.CATEGORY_ONLY_WD.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.CATEGORY_ONLY_WD.getMessage(), ThreadLocalHolder.getLang()));
                 }
             }
         }

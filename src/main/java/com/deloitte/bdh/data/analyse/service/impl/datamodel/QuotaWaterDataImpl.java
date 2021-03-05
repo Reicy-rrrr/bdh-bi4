@@ -1,20 +1,25 @@
 package com.deloitte.bdh.data.analyse.service.impl.datamodel;
 
 import com.beust.jcommander.internal.Lists;
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.CustomParamsConstants;
 import com.deloitte.bdh.data.analyse.enums.DataModelTypeEnum;
 import com.deloitte.bdh.data.analyse.enums.DataUnitEnum;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModel;
 import com.deloitte.bdh.data.analyse.model.datamodel.DataModelField;
 import com.deloitte.bdh.data.analyse.model.datamodel.request.ComponentDataRequest;
 import com.deloitte.bdh.data.analyse.model.datamodel.response.BaseComponentDataResponse;
 import com.deloitte.bdh.data.analyse.service.AnalyseDataService;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +30,7 @@ import java.util.stream.Collectors;
 public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDataService {
 
     @Override
-    public BaseComponentDataResponse handle(ComponentDataRequest request) throws Exception {
+    public BaseComponentDataResponse handle(ComponentDataRequest request) {
         DataModel dataModel = request.getDataConfig().getDataModel();
         return execute(request.getDataConfig().getDataModel(), buildSql(request.getDataConfig().getDataModel()), list -> {
             if (MapUtils.isNotEmpty(dataModel.getCustomParams())) {
@@ -59,7 +64,8 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
     @Override
     protected void validate(DataModel dataModel) {
         if (CollectionUtils.isEmpty(dataModel.getX())) {
-            throw new RuntimeException("字段列表不能为空");
+            throw new BizException(ResourceMessageEnum.X_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.X_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         //对度量和维度数量有校验
         List<DataModelField> dlFields = dataModel.getX().stream().filter(s -> s.getQuota().equals(DataModelTypeEnum.DL.getCode()))
@@ -68,13 +74,16 @@ public class QuotaWaterDataImpl extends AbstractDataService implements AnalyseDa
                 .collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(wdFields)) {
-            throw new RuntimeException("水波图只能设置度量");
+            throw new BizException(ResourceMessageEnum.DL_ONLY.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_ONLY.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (CollectionUtils.isEmpty(dlFields)) {
-            throw new RuntimeException("水波图设置度量不能为空");
+            throw new BizException(ResourceMessageEnum.DL_NOT_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_NOT_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dlFields.size() > 1) {
-            throw new RuntimeException("度量字段数量不能大于1");
+            throw new BizException(ResourceMessageEnum.DL_SIZE_ONE.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.DL_SIZE_ONE.getMessage(), ThreadLocalHolder.getLang()));
         }
         dataModel.setPage(null);
     }

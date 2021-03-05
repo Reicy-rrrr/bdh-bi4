@@ -2,8 +2,10 @@ package com.deloitte.bdh.data.collation.service.impl;
 
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.model.BiComponentConnection;
 import com.deloitte.bdh.data.collation.dao.bi.BiComponentConnectionMapper;
 import com.deloitte.bdh.data.collation.model.BiEtlModel;
@@ -29,17 +31,19 @@ import javax.annotation.Resource;
 public class BiComponentConnectionServiceImpl extends AbstractService<BiComponentConnectionMapper, BiComponentConnection> implements BiComponentConnectionService {
     @Resource
     private BiComponentConnectionMapper mapper;
-    @Autowired
+    @Resource
     private BiEtlModelService biEtlModelService;
 
     @Override
     public BiComponentConnection link(ComponentLinkDto dto) {
         BiEtlModel model = biEtlModelService.getById(dto.getModelId());
         if (null == model) {
-            throw new RuntimeException("EtlServiceImpl.link.error : 未找到目标 模板");
+            throw new BizException(ResourceMessageEnum.MODEL_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (dto.getFromComponentCode().equals(dto.getToComponentCode())) {
-            throw new RuntimeException("EtlServiceImpl.link.error : 连接目标不能指向自己");
+            throw new BizException(ResourceMessageEnum.TARGET_NOT_SELF.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.TARGET_NOT_SELF.getMessage(), ThreadLocalHolder.getLang()));
         }
         BiComponentConnection connection = new BiComponentConnection();
         connection.setCode(GenerateCodeUtil.genConnects());

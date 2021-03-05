@@ -6,6 +6,10 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.taskdefs.Sleep;
 import org.codehaus.jackson.type.TypeReference;
@@ -73,6 +77,9 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 
     @Autowired
     private Producter producter;
+
+    @Resource
+    private LocaleMessageService localeMessageService;
 	
 	@Override
 	public void BiEtlSyncPlan(KafkaMessage message) {
@@ -433,7 +440,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
             if (!CollectionUtils.isEmpty(synclist)) {
                 for (BiEtlSyncPlan syncPlan : synclist) {
                     if (PlanResultEnum.FAIL.getKey().equals(syncPlan.getPlanResult())) {
-                        throw new RuntimeException("依赖的同步任务失败，任务名称：" + syncPlan.getName());
+                        throw new BizException(ResourceMessageEnum.KAFKA_1.getCode(),
+                                localeMessageService.getMessage(ResourceMessageEnum.KAFKA_1.getMessage(), ThreadLocalHolder.getLang()), syncPlan.getName());
                     }
                     //有任务正在运行中，直接返回待下次处理
                     if (null == syncPlan.getPlanResult()) {

@@ -36,50 +36,6 @@ public class AnalyseModelFieldServiceImpl extends AbstractService<BiUiModelField
     BiUiModelFieldMapper biUiModelFieldMapper;
 
     @Override
-    public BiUiModelField getResource(String id) {
-        if (StringUtil.isEmpty(id)) {
-            throw new RuntimeException("查看单个resource 失败:id 不能为空");
-        }
-        return biUiModelFieldMapper.selectById(id);
-    }
-
-    @Override
-    public List<BiUiModelField> getTenantBiUiModelFields(String tenantId) {
-        {
-            if (StringUtil.isEmpty(tenantId)) {
-                throw new RuntimeException("租户id不能为空");
-            }
-            LambdaQueryWrapper<BiUiModelField> query = new LambdaQueryWrapper();
-            query.eq(BiUiModelField::getTenantId, tenantId);
-            return list(query);
-        }
-    }
-
-    @Override
-    public BiUiModelField createResource(CreateResourcesDto dto) throws Exception {
-        BiUiModelField entity = new BiUiModelField();
-        BeanUtils.copyProperties(dto, entity);
-        biUiModelFieldMapper.insert(entity);
-        return entity;
-    }
-
-    @Override
-    public void delResource(String id) throws Exception {
-//        BiUiModelField inf = biUiModelFieldMapper.selectById(id);
-        biUiModelFieldMapper.deleteById(id);
-    }
-
-    @Override
-    public BiUiModelField updateResource(UpdateResourcesDto dto) throws Exception {
-//        BiUiModelField inf = biUiModelFieldMapper.selectById(dto.getId());
-        BiUiModelField entity = new BiUiModelField();
-        BeanUtils.copyProperties(dto, entity);
-        entity.setModifiedDate(LocalDateTime.now());
-        biUiModelFieldMapper.updateById(entity);
-        return entity;
-    }
-
-    @Override
     public Map<String, List<String>> getTables(String tableName) {
         List<Map<String, Object>> list = biUiModelFieldMapper.selectTable(tableName);
         if (CollectionUtils.isNotEmpty(list)) {

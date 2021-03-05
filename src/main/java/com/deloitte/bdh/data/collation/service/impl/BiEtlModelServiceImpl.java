@@ -7,12 +7,14 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.cron.CronUtil;
+import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.common.util.NifiProcessUtil;
 import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.collation.component.model.ComponentModel;
 import com.deloitte.bdh.data.collation.component.model.FieldMappingModel;
 import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
@@ -160,10 +162,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         //此启用、停用不调用nifi，只是bi来控制，但操作状态前提是未运行状态
         BiEtlModel biEtlModel = biEtlModelMapper.selectById(dto.getId());
         if (YesOrNoEnum.YES.getKey().equals(biEtlModel.getSyncStatus())) {
-            throw new RuntimeException("当前正在执行同步任务，不允许启、停操作");
+            throw new BizException(ResourceMessageEnum.MODEL_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_1.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (RunStatusEnum.RUNNING.getKey().equals(biEtlModel.getStatus())) {
-            throw new RuntimeException("运行中的模板，不允许启、停操作");
+            throw new BizException(ResourceMessageEnum.MODEL_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_2.getMessage(), ThreadLocalHolder.getLang()));
         }
         biEtlModel.setEffect(dto.getEffect());
         biEtlModelMapper.updateById(biEtlModel);
@@ -175,12 +179,15 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     public void delModel(String id) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(id);
         if (inf == null) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.MODEL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (YesOrNoEnum.YES.getKey().equals(inf.getIsFile())) {
             if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-                throw new RuntimeException("默认文件夹请勿删除");
+                throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
+
             }
             //校验是否有子文件
             List<BiEtlModel> modelList = biEtlModelMapper.selectList(new LambdaQueryWrapper<BiEtlModel>()
@@ -188,11 +195,13 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                     .eq(BiEtlModel::getIsFile, YesOrNoEnum.NO)
             );
             if (CollectionUtils.isNotEmpty(modelList)) {
-                throw new RuntimeException("文件夹下有文件,请先删除子文件");
+                throw new BizException(ResourceMessageEnum.MODEL_4.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.MODEL_4.getMessage(), ThreadLocalHolder.getLang()));
             }
         } else {
             if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
-                throw new RuntimeException("运行状态下,不允许删除");
+                throw new BizException(ResourceMessageEnum.MODEL_5.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.MODEL_5.getMessage(), ThreadLocalHolder.getLang()));
             }
 
             //获取模板下的组件集合
@@ -226,13 +235,16 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
     public BiEtlModel updateModel(UpdateModelDto dto) throws Exception {
         BiEtlModel inf = biEtlModelMapper.selectById(dto.getId());
         if (inf == null) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.MODEL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (YesOrNoEnum.YES.getKey().equals(inf.getSyncStatus())) {
-            throw new RuntimeException("当前正在执行同步任务，不允许修改");
+            throw new BizException(ResourceMessageEnum.MODEL_1.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_1.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (RunStatusEnum.RUNNING.getKey().equals(inf.getStatus())) {
-            throw new RuntimeException("运行中的模型不允许修改");
+            throw new BizException(ResourceMessageEnum.MODEL_5.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_5.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (!StringUtil.isEmpty(dto.getName())) {
@@ -279,7 +291,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         } else {
             //默认文件夹不允许删除
             if (inf.getCreateUser().equals(BiTenantConfigController.OPERATOR)) {
-                throw new RuntimeException("默认文件夹请勿修改");
+                throw new BizException(ResourceMessageEnum.DEFAULT_DATA_LOCK.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.DEFAULT_DATA_LOCK.getMessage(), ThreadLocalHolder.getLang()));
             }
         }
 
@@ -293,10 +306,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 .eq(BiEtlModel::getCode, modelCode)
         );
         if (null == biEtlModel) {
-            throw new RuntimeException("未找到目标对象");
+            throw new BizException(ResourceMessageEnum.MODEL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
-            throw new RuntimeException("失效状态下无法发布");
+            throw new BizException(ResourceMessageEnum.MODEL_6.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_6.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         RunStatusEnum runStatusEnum = RunStatusEnum.getEnum(biEtlModel.getStatus());
@@ -307,7 +322,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                     .isNull(BiEtlSyncPlan::getPlanResult)
             );
             if (CollectionUtils.isNotEmpty(planList)) {
-                throw new RuntimeException("有任务正在执行,不允许停止");
+                throw new BizException(ResourceMessageEnum.MODEL_5.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.MODEL_5.getMessage(), ThreadLocalHolder.getLang()));
             }
             // 此时不会有待执行的执行计划，停止数据源组nifi 、停止与删除etl NIFI
             componentService.stopAndDelComponents(modelCode);
@@ -360,11 +376,13 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 .eq(BiEtlModel::getCode, modelCode)
         );
         if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
-            throw new RuntimeException("失效状态下无法发布");
+            throw new BizException(ResourceMessageEnum.MODEL_6.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_6.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (StringUtil.isEmpty(biEtlModel.getCronExpression())) {
-            throw new RuntimeException("请先配置模板调度时间");
+            throw new BizException(ResourceMessageEnum.MODEL_7.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_7.getMessage(), ThreadLocalHolder.getLang()));
         }
         //2：校验是否配置cron
         CronUtil.validate(biEtlModel.getCronExpression());
@@ -384,16 +402,20 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
         );
 
         if (null == biEtlModel) {
-            throw new RuntimeException("未找到目标模型");
+            throw new BizException(ResourceMessageEnum.MODEL_3.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_3.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (EffectEnum.DISABLE.getKey().equals(biEtlModel.getEffect())) {
-            throw new RuntimeException("失效状态下无法执行");
+            throw new BizException(ResourceMessageEnum.MODEL_6.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_6.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getValidate())) {
-            throw new RuntimeException("校验失败下无法执行");
+            throw new BizException(ResourceMessageEnum.MODEL_8.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_8.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (RunStatusEnum.STOP.getKey().equals(biEtlModel.getStatus())) {
-            throw new RuntimeException("模型未运行状态下无法执行");
+            throw new BizException(ResourceMessageEnum.MODEL_9.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_9.getMessage(), ThreadLocalHolder.getLang()));
         }
         //未执行任务才执行
         if (YesOrNoEnum.NO.getKey().equals(biEtlModel.getSyncStatus())) {
@@ -410,7 +432,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 .eq(BiEtlModel::getIsFile, YesOrNoEnum.YES.getKey())
         );
         if (null != model) {
-            throw new RuntimeException("文件夹名称已存在");
+            throw new BizException(ResourceMessageEnum.MODEL_10.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_10.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlModel inf = new BiEtlModel();
@@ -424,10 +447,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             query.put("code", dto.getParentCode());
             List<BiEtlModel> modelList = biEtlModelMapper.selectByMap(query);
             if (CollectionUtils.isEmpty(modelList)) {
-                throw new RuntimeException("未找到上级的文件夹信息");
+                throw new BizException(ResourceMessageEnum.MODEL_11.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.MODEL_11.getMessage(), ThreadLocalHolder.getLang()));
             }
             if (YesOrNoEnum.NO.getKey().equals(modelList.get(0).getIsFile())) {
-                throw new RuntimeException("只能在文件夹下面创建子文件");
+                throw new BizException(ResourceMessageEnum.MODEL_12.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.MODEL_12.getMessage(), ThreadLocalHolder.getLang()));
             }
         }
         inf.setName(dto.getName());
@@ -446,7 +471,8 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
                 .eq(BiEtlModel::getIsFile, YesOrNoEnum.NO.getKey())
         );
         if (null != model) {
-            throw new RuntimeException("模型名称已存在");
+            throw new BizException(ResourceMessageEnum.MODEL_13.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_13.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         BiEtlModel inf = new BiEtlModel();
@@ -456,10 +482,12 @@ public class BiEtlModelServiceImpl extends AbstractService<BiEtlModelMapper, BiE
             inf.setPosition(NifiProcessUtil.randPosition());
         }
         if ("0".equals(dto.getParentCode())) {
-            throw new RuntimeException("请在文件夹下创建ETL模板");
+            throw new BizException(ResourceMessageEnum.MODEL_14.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_14.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (StringUtil.isEmpty(dto.getCronExpression()) && StringUtil.isEmpty(dto.getCronData())) {
-            throw new RuntimeException("请配置调度时间");
+            throw new BizException(ResourceMessageEnum.MODEL_15.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.MODEL_15.getMessage(), ThreadLocalHolder.getLang()));
         }
 
         if (!StringUtil.isEmpty(dto.getCronExpression())) {

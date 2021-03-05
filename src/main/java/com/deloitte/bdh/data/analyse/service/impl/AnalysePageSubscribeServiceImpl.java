@@ -15,6 +15,7 @@ import com.deloitte.bdh.common.properties.OssProperties;
 import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalyseSubscribeMapper;
+import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseSubscribe;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
@@ -85,17 +86,12 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     private XxJobService jobService;
 
     @Resource
-    private ScreenshotUtil screenshotUtil;
-
-    @Resource
-    private EmailService emailService;
-
-    @Resource
     private AliyunOssUtil aliyunOssUtil;
 
-    @Autowired
+    @Resource
     private OssProperties ossProperties;
-    @Autowired
+
+    @Resource
     private Producter producter;
 
     private static SnowFlakeUtil idWorker = new SnowFlakeUtil(0, 0);
@@ -105,7 +101,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
     public void subscribe(SubscribeDto request) {
         CronUtil.validate(CronUtil.createCronExpression(request.getCronData()));
         if (StringUtils.equals("1", request.getStatus()) && CollectionUtils.isEmpty(request.getReceiver())) {
-            throw new BizException("收件人不能为空");
+            throw new BizException(ResourceMessageEnum.RECEIVER_NULL.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.RECEIVER_NULL.getMessage(), ThreadLocalHolder.getLang()));
         }
         //保存计划任务配置
         LambdaQueryWrapper<BiUiAnalyseSubscribe> queryWrapper = new LambdaQueryWrapper<>();
@@ -130,7 +127,6 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         //添加执行计划
         Map<String, String> params = Maps.newHashMap();
         params.put("pageId", subscribe.getPageId());
-//        params.put("modelCode", subscribe.getTaskId());
         params.put("tenantId", ThreadLocalHolder.getTenantId());
         params.put("operator", ThreadLocalHolder.getOperator());
         params.put("url", imgUrl);
@@ -143,7 +139,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                 jobService.stop(subscribe.getTaskId());
             }
         } catch (Exception e) {
-            throw new BizException("添加计划任务失败");
+            throw new BizException(ResourceMessageEnum.ADD_TASK_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.ADD_TASK_ERROR.getMessage(), ThreadLocalHolder.getLang()));
         }
 
     }
@@ -184,7 +181,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
         queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, pageId);
         BiUiAnalyseSubscribe subscribe = this.getOne(queryWrapper);
         if (null == subscribe) {
-            throw new BizException("目标数据不存在");
+            throw new BizException(ResourceMessageEnum.SUBSCRIBE_DATA_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SUBSCRIBE_DATA_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
         if (StringUtils.isNotBlank(subscribe.getReceiver())) {
             List<UserIdMailDto> receiveList = JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class);
@@ -211,7 +209,8 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                         subscribeLog.setFailMessage(e.getMessage());
                         subscribeLogService.save(subscribeLog);
                     }
-                    throw new BizException("截图失败：" + e.getMessage());
+                    throw new BizException(ResourceMessageEnum.SHOT_ERROR.getCode(),
+                            localeMessageService.getMessage(ResourceMessageEnum.SHOT_ERROR.getMessage(), ThreadLocalHolder.getLang()));
                 }
                 for (UserIdMailDto userIdMailDto : receiveList) {
                     //发邮件

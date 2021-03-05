@@ -8,6 +8,7 @@ import com.deloitte.bdh.common.util.StringUtil;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -21,6 +22,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public abstract class AbstractService<M extends Mapper<T>, T> extends ServiceImpl<M, T> implements Service<T> {
     @Resource
     protected AsyncTaskExecutor executor;
+
+    @Resource
+    protected LocaleMessageService localeMessageService;
 
     /**
      * 获取租户的主键信息
