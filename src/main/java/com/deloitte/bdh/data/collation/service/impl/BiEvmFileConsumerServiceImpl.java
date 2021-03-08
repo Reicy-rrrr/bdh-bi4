@@ -99,7 +99,13 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                     workbook.getSheet(SheetCodeEnum.yszkb.getValue()), evmFile.getBatchId());
             doYfzkb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_AP),
                     workbook.getSheet(SheetCodeEnum.yfzkb.getValue()), evmFile.getBatchId());
+            doChmxb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_INVENTORY),
+                    workbook.getSheet(SheetCodeEnum.chmxb.getValue()), evmFile.getBatchId());
 
+            doCkgl(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_IJ),
+                    workbook.getSheet(SheetCodeEnum.ckgl.getValue()), evmFile.getBatchId());
+
+            //三大报表处理
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             for (ImmutablePair<TableMappingEnum, String> pair : enums) {
                 evmService.choose(pair.left.getValue().getName(), pair.right);
@@ -528,6 +534,76 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             tempList.add(biReport);
         }
         reportService.saveBatch(tempList);
+    }
+
+
+    private void doChmxb(String tableName, Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        //获取类型
+        Cell typeCell = sheet.getRow(0).getCell(4);
+        if (null == typeCell) {
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        String type = typeCell.getStringCellValue();
+        String date = DateUtils.formatStandardDateTime(new Date());
+
+        List<LinkedHashMap<String, Object>> all = Lists.newArrayList();
+        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            String period = DateUtils.stampToDateOfYear(row.getCell(0).getDateCellValue());
+
+            LinkedHashMap<String, Object> map30 = Maps.newLinkedHashMap();
+            map30.put("type", type);
+            map30.put("PERIOD", period);
+            map30.put("PERIOD_DATE", DateUtils.formatStandardDate(row.getCell(0).getDateCellValue()));
+            map30.put("CLASS", row.getCell(1).getStringCellValue());
+            map30.put("INVENTORY_ID", row.getCell(2).getStringCellValue());
+            map30.put("INVENTORY_NAME", row.getCell(3).getStringCellValue());
+            map30.put("BEGINNING_VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(4)));
+            map30.put("ADD_VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(5)));
+            map30.put("OUT_VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(6)));
+            map30.put("ENDING_VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(7)));
+            map30.put("CREATE_DATE", date);
+            all.add(map30);
+        }
+        //处理入库
+        process(all, tableName);
+    }
+
+    private void doCkgl(String tableName, Sheet sheet, String batchId) {
+        if (sheet == null) {
+            throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        //获取类型
+        Cell typeCell = sheet.getRow(0).getCell(2);
+        if (null == typeCell) {
+            throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        String type = typeCell.getStringCellValue();
+        String date = DateUtils.formatStandardDateTime(new Date());
+
+        List<LinkedHashMap<String, Object>> all = Lists.newArrayList();
+        for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            String period = DateUtils.stampToDateOfYear(row.getCell(0).getDateCellValue());
+
+            LinkedHashMap<String, Object> map30 = Maps.newLinkedHashMap();
+            map30.put("type", type);
+            map30.put("PERIOD", period);
+            map30.put("PERIOD_DATE", DateUtils.formatStandardDate(row.getCell(0).getDateCellValue()));
+            map30.put("ITEM", row.getCell(1).getStringCellValue());
+            map30.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(2)));
+            map30.put("CREATE_DATE", date);
+            all.add(map30);
+        }
+        //处理入库
+        process(all, tableName);
     }
 
     private void processZcfzAvg(List<BiReport> tempList, String indexCode, BiReport biReport, int row, int cell, Sheet sheet) {

@@ -13,6 +13,8 @@ public enum TableMappingEnum {
 
     EVM_CAPANALYSIS_AR("EVM_CAPANALYSIS_AR", ReportCodeEnum.DEFAULT),
     EVM_CAPANALYSIS_AP("EVM_CAPANALYSIS_AP", ReportCodeEnum.DEFAULT),
+    EVM_CAPANALYSIS_INVENTORY("EVM_CAPANALYSIS_INVENTORY", ReportCodeEnum.DEFAULT),
+    EVM_CAPANALYSIS_IJ("EVM_CAPANALYSIS_IJ", ReportCodeEnum.DEFAULT),
 
     ;
     private String name;
