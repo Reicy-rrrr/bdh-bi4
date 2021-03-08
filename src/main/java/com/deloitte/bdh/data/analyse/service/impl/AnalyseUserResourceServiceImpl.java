@@ -4,6 +4,8 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
+import com.deloitte.bdh.common.client.FeignClientService;
+import com.deloitte.bdh.common.client.ManageTenantFeign;
 import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -53,6 +55,9 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
 
     @Resource
     private AnalyseCategoryOrgService orgService;
+
+    @Resource
+    private FeignClientService feignClientService;
 
     @Override
     public void saveResourcePermission(SaveResourcePermissionDto dto) {
@@ -150,12 +155,19 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
 
     @Override
     public ResourcePermissionDto getResourcePermission(GetResourcePermissionDto dto) {
+        ResourcePermissionDto result = new ResourcePermissionDto();
         LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
         queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, dto.getResourceType());
         queryWrapper.eq(BiUiAnalyseUserResource::getTenantId, ThreadLocalHolder.getTenantId());
         queryWrapper.isNull(BiUiAnalyseUserResource::getIsDefault);
         List<BiUiAnalyseUserResource> list = list(queryWrapper);
+        if (CollectionUtils.isEmpty(list) && StringUtils.equals(dto.getName(), "默认文件夹")) {
+            List<String> userList = feignClientService.selectTenantUserList();
+            result.setViewUserList(userList);
+            result.setEditUserList(userList);
+            return result;
+        }
         List<String> viewUserList = Lists.newArrayList();
         List<String> editUserList = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(list)) {
@@ -168,7 +180,6 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 }
             }
         }
-        ResourcePermissionDto result = new ResourcePermissionDto();
         result.setViewUserList(viewUserList);
         result.setEditUserList(editUserList);
         return result;

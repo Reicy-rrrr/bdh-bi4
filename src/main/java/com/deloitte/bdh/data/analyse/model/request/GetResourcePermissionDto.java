@@ -1,12 +1,10 @@
 package com.deloitte.bdh.data.analyse.model.request;
 
-import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Author:LIJUN
@@ -15,6 +13,9 @@ import java.util.List;
  */
 @Data
 public class GetResourcePermissionDto implements Serializable {
+
+    @ApiModelProperty(value = "名称")
+    private String name;
 
     @NotBlank
     @ApiModelProperty(value = "资源id，若是保存报表权限为page id，文件夹权限则为category id")
