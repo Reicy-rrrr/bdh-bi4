@@ -4,7 +4,7 @@ package com.deloitte.bdh.data.analyse.enums;
  * 国际化key常量类
  */
 public enum ResourceMessageEnum {
-
+	SUCCESS(0, "SUCCESS","成功"),
 	NO_CATEGORY_SELECT(1001, "NO_CATEGORY_SELECT","请选择要删除的文件夹"),
 	DELETE_SUB_FIRST(1002, "DELETE_SUB_FIRST","请先删除下级文件夹"),
 	PAGE_EXIST_IN_CATEGORY(1003, "PAGE_EXIST_IN_CATEGORY","文件夹下还存在报表：{}，请先删除"),
@@ -188,6 +188,9 @@ public enum ResourceMessageEnum {
 	EXPRESS_26(1182, "EXPRESS_26","and判断条件不能少于2个"),
 	EXPRESS_27(1183, "EXPRESS_27","or判断条件不能少于2个"),
 	EXPRESS_28(1184, "EXPRESS_28","ifnull判断条件不能少于2个"),
+	EXPRESS_29(1185, "EXPRESS_29","租户id不能为空"),
+	EXPRESS_30(1186, "EXPRESS_30","租户编码不能为空"),
+	EXPRESS_31(1187, "EXPRESS_31","操作人编码不能为空"),
 
 	;
 
