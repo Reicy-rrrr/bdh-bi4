@@ -38,4 +38,6 @@ public class CreateAnalysePageDto {
     @ApiModelProperty(value = "是否是德勤方案")
     private String deloitteFlag;
 
+    @ApiModelProperty(value = "是否有导航栏")
+    private String haveNav;
 }

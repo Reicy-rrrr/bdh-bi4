@@ -84,6 +84,9 @@ public class AnalysePageDto implements Serializable {
     @ApiModelProperty("public")
     private String isPublic;
 
+    @ApiModelProperty("public")
+    private String haveNav;
+
     @ApiModelProperty("DELOITTE_FLAG")
     private String deloitteFlag;
 
