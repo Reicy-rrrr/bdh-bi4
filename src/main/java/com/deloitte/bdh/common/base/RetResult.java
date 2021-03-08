@@ -27,6 +27,8 @@ public class RetResult<T> implements Serializable {
 	private boolean success;
 	@ApiModelProperty(value = "响应信息描述")
 	private String message;
+	@ApiModelProperty(value = "响应明细")
+	private String detail;
 	@ApiModelProperty(value = "请求业务id")
 	private String traceId;
 	@ApiModelProperty(value = "服务器信息")
@@ -121,6 +123,14 @@ public class RetResult<T> implements Serializable {
 
 	public void setTraceId(String traceId) {
 		this.traceId = traceId;
+	}
+
+	public String getDetail() {
+		return detail;
+	}
+
+	public void setDetail(String detail) {
+		this.detail = detail;
 	}
 
 	public String getHost() {
