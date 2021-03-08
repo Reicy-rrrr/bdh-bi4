@@ -72,7 +72,9 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
                 String fileName = dataSet.getTableDesc() + "_" + System.currentTimeMillis() + ".xls";
                 TableData data = dataSetService.getDataInfoPage(dataSet, page, pageSize);
                 more = data.isMore();
-                page++;
+                if (more) {
+                    page++;
+                }
                 List<Map<String, Object>> list = data.getRows();
                 InputStream inputStream = ExcelUtils.export(list, columns);
                 ExcelUtils.create(zipFilePath, fileName, inputStream);
@@ -86,18 +88,28 @@ public class BiDateDownloadInfoServiceImpl extends AbstractService<BiDateDownloa
         if (CollectionUtils.isEmpty(zipFiles)) {
             info.setStatus(DownLoadTStatusEnum.FAIL.getKey());
         } else {
-            String zipFileName = info.getName() + System.currentTimeMillis() + ".zip";
-            boolean success = ZipUtil.toZip(zipFilePath + zipFileName, zipFiles);
-            if (!success) {
-                info.setStatus(DownLoadTStatusEnum.FAIL.getKey());
+            String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/dataset/";
+            if (page > 1) {
+                String zipFileName = info.getName() + System.currentTimeMillis() + ".zip";
+                boolean success = ZipUtil.toZip(zipFilePath + zipFileName, zipFiles);
+                if (!success) {
+                    info.setStatus(DownLoadTStatusEnum.FAIL.getKey());
+                } else {
+                    String storedFileKey = aliyunOss.uploadFile2OSS(new FileInputStream(new File(zipFilePath + zipFileName)), filePath, zipFileName);
+                    info.setFileName(zipFileName);
+                    info.setPath(filePath);
+                    info.setStoreFileKey(storedFileKey);
+                    info.setStatus(DownLoadTStatusEnum.SUCCESS.getKey());
+                }
             } else {
-                String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/dataset/";
-                String storedFileKey = aliyunOss.uploadFile2OSS(new FileInputStream(new File(zipFilePath + zipFileName)), filePath, zipFileName);
-                info.setFileName(zipFileName);
+                String storedFileKey = aliyunOss.uploadFile2OSS(new FileInputStream(new File(zipFiles.get(0)))
+                        , filePath, zipFiles.get(0).substring(zipFiles.get(0).lastIndexOf("/") + 1));
+                info.setFileName(zipFiles.get(0).substring(zipFiles.get(0).lastIndexOf("/") + 1));
                 info.setPath(filePath);
                 info.setStoreFileKey(storedFileKey);
                 info.setStatus(DownLoadTStatusEnum.SUCCESS.getKey());
             }
+
         }
 
         //生成excel 再更新状态
