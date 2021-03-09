@@ -118,9 +118,9 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
                 resource.setTenantId(ThreadLocalHolder.getTenantId());
                 resource.setUserId(ThreadLocalHolder.getOperator());
                 resourceList.add(resource);
-                if (CollectionUtils.isNotEmpty(resourceList)) {
-                    this.saveBatch(resourceList);
-                }
+            }
+            if (CollectionUtils.isNotEmpty(resourceList)) {
+                this.saveBatch(resourceList);
             }
 
 
