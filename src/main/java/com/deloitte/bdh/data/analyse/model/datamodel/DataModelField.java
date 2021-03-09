@@ -54,4 +54,7 @@ public class DataModelField {
 
     @ApiModelProperty("是否需要group")
     private boolean needGroup = false;
+
+    @ApiModelProperty("对比值")
+    private Object contrastValue;
 }

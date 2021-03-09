@@ -25,4 +25,7 @@ public class BaseComponentDataResponse {
     private Long total;
 
     private String sql;
+
+    @ApiModelProperty(value = "对比值")
+    Map<String, Object> contrastValueMap;
 }

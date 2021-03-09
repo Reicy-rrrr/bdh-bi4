@@ -162,6 +162,22 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
                 extraMap.putAll(joinDataUnit(request, response));
             }
             response.setExtra(extraMap);
+
+            //返回对比map
+            List<DataModelField> x = request.getDataConfig().getDataModel().getX();
+            if (CollectionUtils.isNotEmpty(x)) {
+                Map<String, Object> map = Maps.newHashMap();
+                for (DataModelField field : x) {
+                    String key = StringUtils.isNotBlank(field.getAlias()) ? field.getAlias() : field.getId();
+                    Object value = field.getContrastValue();
+                    if (null != value && !"".equals(value)) {
+                        map.put(key, value);
+                    }
+                }
+                if (map.size() > 0) {
+                    response.setContrastValueMap(map);
+                }
+            }
         } catch (SQLException e) {
             log.error(e.getMessage());
             response.setRows(null);
