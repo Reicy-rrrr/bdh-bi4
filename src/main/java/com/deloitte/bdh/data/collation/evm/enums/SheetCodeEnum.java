@@ -11,6 +11,8 @@ public enum SheetCodeEnum {
     yfzkb("yfzkb", "应付账款明细表"),
     chmxb("chmxb", "存货明细表"),
     ckgl("ckgl", "仓库管理"),
+    jkb("jkb", "借款"),
+    gdzczjb("gdzczjb", "固定资产折旧表"),
 
     ;
     private String name;
