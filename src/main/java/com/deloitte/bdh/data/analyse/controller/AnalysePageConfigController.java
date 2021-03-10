@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.constant.CommonConstant;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageConfigDto;
@@ -37,6 +38,8 @@ import java.util.List;
 public class AnalysePageConfigController {
     @Resource
     AnalysePageConfigService biUiReportPageConfigService;
+    @Resource
+    private BiProperties biProperties;
 
     @ApiOperation(value = "查看单个页面配置详情", notes = "查看单个页面配置详情")
     @PostMapping("/getAnalysePageConfig")
@@ -45,7 +48,7 @@ public class AnalysePageConfigController {
             return RetResponse.makeOKRsp();
         }
         if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         }
         return RetResponse.makeOKRsp(biUiReportPageConfigService.getAnalysePageConfig(request));
     }

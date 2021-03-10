@@ -60,5 +60,8 @@ public class BiProperties {
 
     @Value("${evm.download.address}")
     private String evmDownLoadAddress;
+
+    @Value("${bdh.bi.inner.tenantCode}")
+    protected String innerTenantCode;
 }
 

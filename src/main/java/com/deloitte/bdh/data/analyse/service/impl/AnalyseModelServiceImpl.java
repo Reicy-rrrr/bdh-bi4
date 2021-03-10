@@ -8,6 +8,7 @@ import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -63,6 +64,8 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     private AnalyseCategoryService categoryService;
     @Resource
     private AnalysePageService pageService;
+    @Resource
+    private BiProperties biProperties;
 
     @Override
     public List<DataSetTableInfo> getAllTable(String superUserFlag) {
@@ -148,7 +151,7 @@ public class AnalyseModelServiceImpl implements AnalyseModelService {
     @Override
     public BaseComponentDataResponse getComponentData(ComponentDataRequest request) throws Exception {
         if (StringUtils.equals(request.getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         }
         String name = DataImplEnum.getImpl(request.getType(), request.getDataConfig().getTableType());
         BaseComponentDataResponse response = new BaseComponentDataResponse();

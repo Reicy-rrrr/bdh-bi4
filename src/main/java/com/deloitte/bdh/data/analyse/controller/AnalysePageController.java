@@ -1,11 +1,9 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
-import com.deloitte.bdh.common.constant.CommonConstant;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.analyse.enums.ShareTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -65,11 +63,14 @@ public class AnalysePageController {
     @Resource
     private BiDataSetService dataSetService;
 
+    @Resource
+    private BiProperties biProperties;
+
     @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
     @PostMapping("/getChildAnalysePageList")
     public RetResult<PageResult<AnalysePageDto>> getChildAnalysePageList(@RequestBody @Validated PageRequest<GetAnalysePageListDto> request) {
         if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         }
         return RetResponse.makeOKRsp(analysePageService.getChildAnalysePageList(request));
     }
@@ -78,7 +79,7 @@ public class AnalysePageController {
     @PostMapping("/getAnalysePage")
     public RetResult<AnalysePageDto> getAnalysePage(@RequestBody @Validated RetRequest<GetAnalysePageDto> request) {
         if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         }
         return RetResponse.makeOKRsp(analysePageService.getAnalysePage(request.getData().getPageId()));
     }
@@ -94,14 +95,14 @@ public class AnalysePageController {
     public RetResult<AnalysePageDto> copyDeloittePage(@RequestBody @Validated RetRequest<CopyDeloittePageDto> request) {
         String beginTenantCode = ThreadLocalHolder.getTenantCode();
         //切换到内部库
-        ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+        ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         CopySourceDto copySourceDto = analysePageService.getCopySourceData(request.getData().getFromPageId());
         List<String> uniqueCodeList = copySourceDto.getOriginCodeList().stream().distinct().collect(Collectors.toList());
         //创建数据集、复制表和数据
         Map<String, String> codeMap = Maps.newHashMap();
         for (String code : uniqueCodeList) {
             //切换到内部库
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
             Map<String, Object> map = analysePageService.buildNewDataSet(request.getData().getDataSetName(), request.getData().getDataSetCategoryId(), code);
 
             //切换到当前租户库
@@ -172,7 +173,7 @@ public class AnalysePageController {
     @PostMapping("/getChartComponent")
     public RetResult<PageResult<BiUiAnalysePageComponent>> getChartComponent(@RequestBody @Validated PageRequest<pageComponentDto> request) {
 
-        PageHelper.startPage(request.getPage(),request.getSize());
+        PageHelper.startPage(request.getPage(), request.getSize());
         List<BiUiAnalysePageComponent> list = biUiAnalysePageComponentService.getChartComponent(request.getData());
         PageInfo<BiUiAnalysePageComponent> info = new PageInfo(list);
         PageResult<BiUiAnalysePageComponent> result = new PageResult(info);
@@ -186,7 +187,7 @@ public class AnalysePageController {
     @PostMapping("/getUrl")
     public RetResult<BiUiAnalysePublicShare> getUrl(@RequestBody @Validated RetRequest<GetShareUrlDto> request) {
         if (StringUtils.equals(request.getData().getFromDeloitte(), YesOrNoEnum.YES.getKey())) {
-            ThreadLocalHolder.set("tenantCode", CommonConstant.INTERNAL_DATABASE);
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         }
 //        LambdaQueryWrapper<BiUiAnalysePublicShare> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 //        lambdaQueryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, request.getData().getPageId());
@@ -207,6 +208,41 @@ public class AnalysePageController {
     @PostMapping("/getUsedTableName")
     public RetResult<List<String>> getUsedTableName(@RequestBody @Validated RetRequest<String> request) {
         return RetResponse.makeOKRsp(analysePageService.getUsedTableName(request.getData()));
+    }
+
+
+    @ApiOperation(value = "分发德勤方案", notes = "分发德勤方案")
+    @PostMapping("/issueDeloittePage")
+    public RetResult<Void> issueDeloittePage(@RequestBody @Validated RetRequest<IssueDeloittePageDto> request) {
+        String beginTenantCode = ThreadLocalHolder.getTenantCode();
+        //内部租户判断
+        if (!ThreadLocalHolder.getTenantCode().equals(biProperties.getInnerTenantCode())) {
+            return RetResponse.makeErrRsp("非内部租户不能分发");
+        }
+        CopySourceDto copySourceDto = analysePageService.getCopySourceData(request.getData().getFromPageId());
+        List<String> uniqueCodeList = copySourceDto.getOriginCodeList().stream().distinct().collect(Collectors.toList());
+        //创建数据集、复制表和数据
+        Map<String, String> codeMap = Maps.newHashMap();
+        Map<String, IssueTenantDto> dtoMap = request.getData().getDtos();
+        for (Map.Entry<String, IssueTenantDto> entry : dtoMap.entrySet()) {
+            String tenantCode = entry.getKey();
+            IssueTenantDto tenantDto = entry.getValue();
+            for (String code : uniqueCodeList) {
+                //切换到内部库
+                ThreadLocalHolder.set("tenantCode", beginTenantCode);
+                Map<String, Object> map = analysePageService.buildNewDataSet(tenantDto.getDataSetName(), tenantDto.getDataSetCategoryId(), code);
+
+                //切换到当前租户库
+                ThreadLocalHolder.set("tenantCode", tenantCode);
+                analysePageService.saveNewTable(map);
+                codeMap.put(code, MapUtils.getString(map, "newCode"));
+            }
+            //切换到当前租户库
+            ThreadLocalHolder.set("tenantCode", tenantCode);
+            analysePageService.saveNewPage(tenantDto.getName(), tenantDto.getCategoryId(), request.getData().getFromPageId(),
+                    copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
+        }
+        return RetResponse.makeOKRsp();
     }
 
 }

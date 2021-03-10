@@ -77,5 +77,4 @@ public class CommonConstant {
      */
     public static final Integer MAX_COLUMN_SIZE = 100;
 
-    public static final String INTERNAL_DATABASE = "1001";
 }
