@@ -11,7 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.List;
 
 
-public class HanaBuildUtil extends RelaBaseBuildUtil{
+public class HanaBuildUtil extends RelaBaseBuildUtil {
     public static final List<String> MENSURE_DECIMAL_TYPE = Lists.newArrayList(
             HanaDataTypeEnum.BIGINT.getType().toUpperCase(),
             HanaDataTypeEnum.INTEGER.getType().toUpperCase(),
@@ -30,7 +30,7 @@ public class HanaBuildUtil extends RelaBaseBuildUtil{
     );
 
     public static final List<String> ESCAPE_CHARACTER = Lists.newArrayList(
-            "'", "_", "\"", "%");
+            "'", "\"", "%");
 
 
     public static String select(String tableName, String field, String quota, String aggregateType,

@@ -27,7 +27,7 @@ public class MysqlBuildUtil extends RelaBaseBuildUtil {
     );
 
     public static final List<String> ESCAPE_CHARACTER = Lists.newArrayList(
-            "'", "_", "\"", "%");
+            "'", "\"", "%");
 
 
     public static String select(String tableName, String field, String quota, String aggregateType,
