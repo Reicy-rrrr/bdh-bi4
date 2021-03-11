@@ -36,6 +36,7 @@ public class SyncConsumer implements InitializingBean {
 
     @Resource
     private BiEvmFileConsumerService evmFileConsumerService;
+
     @Resource
     private AsyncTaskExecutor executor;
 
@@ -69,8 +70,8 @@ public class SyncConsumer implements InitializingBean {
                     log.info(message.getMessageBodyString());
                     log.info("Receive message: {}", message);
                     KafkaMessage kafkaMessage = JSON.parseObject(message.getMessageBodyString(), KafkaMessage.class);
-                    log.info("uuid:" + kafkaMessage.getUuid() + "   message：" + kafkaMessage.toString());
-                    ThreadLocalHolder.async(kafkaMessage.getTenantCode(), kafkaMessage.getTenantId(), kafkaMessage.getOperator(), kafkaMessage::process);
+                    ThreadLocalHolder.async(kafkaMessage.getTenantCode(), kafkaMessage.getTenantId(), kafkaMessage.getOperator(), () -> {
+                    });
                     String beanName = kafkaMessage.getBeanName();
                     log.info("uuid:" + kafkaMessage.getUuid() + "   beanname：" + beanName);
                     switch (KafkaTypeEnum.valueOf(beanName)) {

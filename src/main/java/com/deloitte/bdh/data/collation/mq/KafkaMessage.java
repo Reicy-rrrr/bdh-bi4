@@ -3,7 +3,6 @@ package com.deloitte.bdh.data.collation.mq;
 import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.SpringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.service.Consumer;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,10 +46,6 @@ public class KafkaMessage<T> {
             throw new RuntimeException("消息体不能为空");
         }
         return JsonUtil.string2Obj(body, tClass);
-    }
-
-    public void process() {
-        SpringUtil.getBean(this.beanName, Consumer.class).invoke(this);
     }
 
     @Override
