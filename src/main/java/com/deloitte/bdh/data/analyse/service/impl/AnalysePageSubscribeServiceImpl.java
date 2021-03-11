@@ -4,6 +4,7 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.aliyun.mq.http.MQProducer;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -11,6 +12,7 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.mq.MessageProducer;
 import com.deloitte.bdh.common.properties.OssProperties;
 import com.deloitte.bdh.common.util.*;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -37,6 +39,7 @@ import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.Producter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -57,6 +60,7 @@ import java.util.UUID;
  * Date:15/12/2020
  * Description:
  */
+@Slf4j
 @Service
 @DS(DSConstant.BI_DB)
 public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyseSubscribeMapper, BiUiAnalyseSubscribe> implements AnalysePageSubscribeService {
@@ -93,6 +97,9 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
 
     @Resource
     private Producter producter;
+
+    @Resource
+    private MessageProducer messageProducer;
 
     private static SnowFlakeUtil idWorker = new SnowFlakeUtil(0, 0);
 
@@ -224,15 +231,15 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     emailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
                     emailDto.setParamMap(params);
                     emailDto.setPageId(pageId);
-                    
-                    KafkaEmailDto KafkaEmailDto = new KafkaEmailDto();
-                    KafkaEmailDto.setCcList(emailDto.getCcList());
-                    KafkaEmailDto.setEmail(userIdMailDto.getEmail());
-                    KafkaEmailDto.setPageId(pageId);
-                    KafkaEmailDto.setParamMap(params);
-                    KafkaEmailDto.setSubject(subscribe.getMailSubject());
-                    KafkaEmailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-                    KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),KafkaEmailDto,KafkaTypeEnum.Email.getType());
+
+//                    KafkaEmailDto KafkaEmailDto = new KafkaEmailDto();
+//                    KafkaEmailDto.setCcList(emailDto.getCcList());
+//                    KafkaEmailDto.setEmail(userIdMailDto.getEmail());
+//                    KafkaEmailDto.setPageId(pageId);
+//                    KafkaEmailDto.setParamMap(params);
+//                    KafkaEmailDto.setSubject(subscribe.getMailSubject());
+//                    KafkaEmailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+//                    KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),KafkaEmailDto,KafkaTypeEnum.Email.getType());
 
                     //执行记录
                     BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
@@ -242,8 +249,10 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
                     try {
 //                        emailService.sendEmail(emailDto, AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-                    	log.error("准备发送kafka 邮件信息");
-                    	producter.sendEmail(message);
+//                    	producter.sendEmail(message);
+                        String key = idWorker.nextId() + "";
+                        messageProducer.send(JSON.toJSONString(emailDto), key);
+                        log.info("send mq message success, message key: {}", key);
                         subscribeLog.setExecuteStatus("1");
                     } catch (Exception e) {
                         subscribeLog.setExecuteStatus("0");

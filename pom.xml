@@ -443,6 +443,13 @@
             <version>1.7.6</version>
         </dependency>
 
+        <!--RocketMQ-->
+        <dependency>
+            <groupId>com.aliyun.mq</groupId>
+            <artifactId>mq-http-sdk</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
         <!--OSS-->
         <dependency>
             <groupId>com.aliyun.oss</groupId>

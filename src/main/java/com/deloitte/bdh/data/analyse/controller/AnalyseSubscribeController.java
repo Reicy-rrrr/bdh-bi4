@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
+import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
@@ -55,6 +56,7 @@ public class AnalyseSubscribeController {
 
     @ApiOperation(value = "上传截图并发送邮件", notes = "上传截图并发送邮件")
     @PostMapping("/upload")
+    @NoInterceptor
     public RetResult<Void> execute(UploadDto dto, @RequestParam("file") MultipartFile file) {
         ThreadLocalHolder.set("tenantId", dto.getTenantId());
         ThreadLocalHolder.set("operator", dto.getOperator());
