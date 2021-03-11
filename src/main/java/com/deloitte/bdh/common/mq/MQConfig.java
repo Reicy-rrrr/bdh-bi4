@@ -26,8 +26,11 @@ public class MQConfig {
     @Value("${rocketmq.groupId}")
     private String groupId;
 
-    @Value("${rocketmq.tag}")
-    private String tag;
+    @Value("${rocketmq.tag.email}")
+    private String tagEmail;
+
+    @Value("${rocketmq.tag.sync}")
+    private String tagSync;
 
     @Value("${rocketmq.instanceId}")
     private String instanceId;
@@ -72,12 +75,20 @@ public class MQConfig {
         this.groupId = groupId;
     }
 
-    public String getTag() {
-        return tag;
+    public String getTagEmail() {
+        return tagEmail;
     }
 
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void setTagEmail(String tagEmail) {
+        this.tagEmail = tagEmail;
+    }
+
+    public String getTagSync() {
+        return tagSync;
+    }
+
+    public void setTagSync(String tagSync) {
+        this.tagSync = tagSync;
     }
 
     public String getInstanceId() {

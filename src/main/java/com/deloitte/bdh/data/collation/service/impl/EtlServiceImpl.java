@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.deloitte.bdh.common.mq.MessageProducer;
 import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -159,6 +160,9 @@ public class EtlServiceImpl implements EtlService {
     
     @Autowired
     private Producter producter;
+
+    @Resource
+    private MessageProducer messageProducer;
 
     @Resource
     private LocaleMessageService localeMessageService;
@@ -333,7 +337,7 @@ public class EtlServiceImpl implements EtlService {
         if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
                 && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
         	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planList,KafkaTypeEnum.Plan_start.getType());
-        	producter.send(message);
+        	messageProducer.sendSyncMessage(message);
         }
         
         

@@ -1,5 +1,7 @@
 package com.deloitte.bdh.common.mq;
 
+import com.deloitte.bdh.data.collation.mq.KafkaMessage;
+
 /**
  * Author:LIJUN
  * Date:10/03/2021
@@ -7,6 +9,8 @@ package com.deloitte.bdh.common.mq;
  */
 public interface MessageProducer {
 
-    void send(String body, String messageKey);
+    void sendEmailMessage(String body);
+
+    void sendSyncMessage(KafkaMessage message);
 
 }

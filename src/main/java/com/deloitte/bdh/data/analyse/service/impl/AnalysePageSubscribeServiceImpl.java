@@ -4,7 +4,6 @@ package com.deloitte.bdh.data.analyse.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.aliyun.mq.http.MQProducer;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.AbstractService;
@@ -23,7 +22,6 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalyseSubscribe;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseSubscribeLog;
 import com.deloitte.bdh.data.analyse.model.request.EmailDto;
-import com.deloitte.bdh.data.analyse.model.request.KafkaEmailDto;
 import com.deloitte.bdh.data.analyse.model.request.SubscribeDto;
 import com.deloitte.bdh.data.analyse.model.request.UserIdMailDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseSubscribeDto;
@@ -31,11 +29,7 @@ import com.deloitte.bdh.data.analyse.model.resp.AnalyseSubscribeLogDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeLogService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
-import com.deloitte.bdh.data.analyse.service.EmailService;
-import com.deloitte.bdh.data.analyse.utils.ScreenshotUtil;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
 import com.deloitte.bdh.data.collation.service.XxJobService;
-import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.service.Producter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -43,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +46,6 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Author:LIJUN
@@ -250,9 +242,7 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
                     try {
 //                        emailService.sendEmail(emailDto, AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
 //                    	producter.sendEmail(message);
-                        String key = idWorker.nextId() + "";
-                        messageProducer.send(JSON.toJSONString(emailDto), key);
-                        log.info("send mq message success, message key: {}", key);
+                        messageProducer.sendEmailMessage(JSON.toJSONString(emailDto));
                         subscribeLog.setExecuteStatus("1");
                     } catch (Exception e) {
                         subscribeLog.setExecuteStatus("0");

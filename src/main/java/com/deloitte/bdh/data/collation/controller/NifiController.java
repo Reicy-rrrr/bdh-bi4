@@ -179,46 +179,4 @@ public class NifiController {
         return RetResponse.makeOKRsp("ok");
     }
     
-    
-    @ApiOperation(value = "email", notes = "email")
-    @PostMapping("/email")
-    public RetResult<String> email(@RequestParam String email,
-			@RequestParam(required = false) List<String> ccList,
-			@RequestParam String subject,
-			@RequestParam String templateCode,
-			@RequestParam String userNameCn,
-			@RequestParam String userNameEn,
-			@RequestParam String contentCn,
-			@RequestParam String contentEn,
-			@RequestParam String tenantId,
-			@RequestParam String imgUrl,
-			@RequestParam String operator,
-			@RequestParam(required = false) MultipartFile attachmentFile) throws Exception {
-    	KafkaEmailDto dto = new KafkaEmailDto();
-    	dto.setEmail(email);
-    	dto.setTemplate(templateCode);
-    	dto.setSubject(subject);
-    	
-    	HashMap<String , Object> paramMap = new HashMap<>();
-    	paramMap.put("userName", "peng");
-    	paramMap.put("imgUrl", imgUrl);
-    	paramMap.put("accessUrl", "https://bidev.tax.deloitte.com.cn/analyseManage/share/publicReport/9q9tZBWtPYDjM8d7s77V1VjtVBQpO6xo000o9Hu8l0CgOtbV45Q419HfQ52ePkWLeHDqWGbVNBo15EjeDSBECguOhwO0O0OO0O0O");
-    	paramMap.put("userNameCn", userNameCn);
-    	paramMap.put("userNameEn", userNameEn);
-    	paramMap.put("contentCn", contentCn);
-    	paramMap.put("contentEn", contentEn);
-    	dto.setParamMap(paramMap);
-        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""), dto, "email");
-        message.setTenantId(tenantId);
-        message.setOperator(operator);
-        producter.sendEmail(message);
-        return RetResponse.makeOKRsp("ok");
-    }
-
-    @Autowired
-    private BiProperties biProperties;
-    @Autowired
-    private Producter producter;
-    @Autowired
-    private EvmServiceImpl evmService;
 }

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.mq.MessageProducer;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
@@ -89,6 +90,9 @@ public class SyncServiceImpl implements SyncService {
 
     @Autowired
     private Producter producter;
+
+    @Resource
+    private MessageProducer messageProducer;
 
     @Resource
     private LocaleMessageService localeMessageService;
@@ -597,10 +601,10 @@ public class SyncServiceImpl implements SyncService {
         modelService.updateById(model);
         if (YesOrNoEnum.NO.getKey().equals(isTrigger)) {
         	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
-            producter.send(message);
+            messageProducer.sendSyncMessage(message);
         }else {
         	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_checkMany_end.getType());
-            producter.send(message);
+            messageProducer.sendSyncMessage(message);
         }
         
         

@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import com.deloitte.bdh.common.exception.BizException;
+import com.deloitte.bdh.common.mq.MessageProducer;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
@@ -79,6 +80,9 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
     private Producter producter;
 
     @Resource
+    private MessageProducer messageProducer;
+
+    @Resource
     private LocaleMessageService localeMessageService;
 	
 	@Override
@@ -95,7 +99,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 			//发送kafka topic 消息 准备查询是否已执行完成
 			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
 //			producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
-			producter.send(message);
+            messageProducer.sendSyncMessage(message);
 		}
 		
 	}
@@ -280,7 +284,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-            		producter.send(message);
+                    messageProducer.sendSyncMessage(message);
         		}
         	}else {
         		int num = 0;
@@ -298,7 +302,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        			producter.send(message);
+                    messageProducer.sendSyncMessage(message);
         		}else {
         			message.setBeanName(KafkaTypeEnum.Plan_check_end.getType());
 //            		Producter.send(KafkaTypeEnum.Plan_check_end.getType(),message);
@@ -308,7 +312,7 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-        			producter.send(message);
+                    messageProducer.sendSyncMessage(message);
         		}
         	}
         }
@@ -539,8 +543,8 @@ public class KafkaBiPlanServiceImpl implements KafkaBiPlanService{
                 message.setBeanName(KafkaTypeEnum.Plan_checkMany_end.getType());
 //        		Producter.send(KafkaTypeEnum.Plan_checkMany_end.getType(),message);
                 Thread.sleep(60000);
-                
-                producter.send(message);
+
+                messageProducer.sendSyncMessage(message);
             } else {
                 //已同步完成
                 plan.setPlanResult(PlanResultEnum.SUCCESS.getKey());
