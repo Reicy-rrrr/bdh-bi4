@@ -233,6 +233,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         dto.setChildrenArr(childrenArr);
         dto.setLinkPageId(linkPageId);
         dto.setOriginCodeList(originCodeList);
+        dto.setPageName(fromPage.getName());
         return dto;
     }
 

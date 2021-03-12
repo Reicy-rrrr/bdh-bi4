@@ -622,6 +622,44 @@ public class BiDataSetServiceImpl extends AbstractService<BiDataSetMapper, BiDat
         }
     }
 
+    @Override
+    public String folderCreate(String folderName) {
+        BiDataSet set = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getCreateUser, ThreadLocalHolder.getOperator())
+                .eq(BiDataSet::getTableDesc, folderName));
+        if (null == set) {
+            set = new BiDataSet();
+            set.setTableName(folderName);
+            set.setTableDesc(folderName);
+            set.setParentId("0");
+            set.setCode(GenerateCodeUtil.generate());
+            set.setIsFile(YesOrNoEnum.YES.getKey());
+            set.setTenantId(ThreadLocalHolder.getTenantId());
+            setMapper.insert(set);
+        }
+        return set.getId();
+    }
+
+    @Override
+    public String createCopy(String parentFolderId, String tableName, String tableNameDesc) {
+        BiDataSet dataSet = setMapper.selectOne(new LambdaQueryWrapper<BiDataSet>()
+                .eq(BiDataSet::getTableName, tableName)
+                .eq(BiDataSet::getTableDesc, tableNameDesc));
+        if (null == dataSet) {
+            dataSet = new BiDataSet();
+            dataSet.setCode(GenerateCodeUtil.generate());
+            dataSet.setType(DataSetTypeEnum.COPY.getKey());
+            dataSet.setTableName(tableName);
+            dataSet.setTableDesc(tableNameDesc);
+            dataSet.setParentId(parentFolderId);
+            dataSet.setIsFile(YesOrNoEnum.NO.getKey());
+            dataSet.setTenantId(ThreadLocalHolder.getTenantId());
+            dataSet.setComments(tableNameDesc);
+            setMapper.insert(dataSet);
+        }
+        return dataSet.getCode();
+    }
+
 
     private BiEtlModel getModel(List<BiEtlModel> list, String code) {
         if (CollectionUtils.isNotEmpty(list)) {

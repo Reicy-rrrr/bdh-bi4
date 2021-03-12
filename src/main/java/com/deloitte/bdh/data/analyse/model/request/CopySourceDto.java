@@ -22,4 +22,6 @@ public class CopySourceDto {
 
     private List<String> linkPageId;
 
+    private String pageName;
+
 }

@@ -61,25 +61,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
     @Override
     public AnalyseCategoryDto createAnalyseCategory(RetRequest<CreateAnalyseCategoryDto> request) {
-        checkBiUiAnalyseCategoryByName(request.getData().getName(), ThreadLocalHolder.getTenantId(), null);
-//        BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
-//        if (parent == null) {
-//            throw new BizException("上级文件夹不存在");
-//        }
-//        //只可创建二级文件夹
-//        if (!StringUtils.equals(parent.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
-//            throw new BizException("当前层级不允许创建文件夹");
-//        }
-
-        BiUiAnalyseCategory category = new BiUiAnalyseCategory();
-        BeanUtils.copyProperties(request.getData(), category);
-//        创建的自定义文件夹都在我的分析下面
-//        BiUiAnalyseCategory customerTop = getCustomerTop(ThreadLocalHolder.getTenantId());
-        category.setTenantId(ThreadLocalHolder.getTenantId());
-        this.save(category);
-        AnalyseCategoryDto dto = new AnalyseCategoryDto();
-        BeanUtils.copyProperties(category, dto);
-        return dto;
+        return createAnalyseCategory(request.getData());
     }
 
     @Override
@@ -287,6 +269,29 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
         List<String> ids = request.getData().getIds();
         delAnalyseCategories(ids, ThreadLocalHolder.getTenantId());
+    }
+
+    @Override
+    public AnalyseCategoryDto createAnalyseCategory(CreateAnalyseCategoryDto categoryDto) {
+        checkBiUiAnalyseCategoryByName(categoryDto.getName(), ThreadLocalHolder.getTenantId(), null);
+//        BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
+//        if (parent == null) {
+//            throw new BizException("上级文件夹不存在");
+//        }
+//        //只可创建二级文件夹
+//        if (!StringUtils.equals(parent.getParentId(), AnalyseConstants.PARENT_ID_ZERO)) {
+//            throw new BizException("当前层级不允许创建文件夹");
+//        }
+
+        BiUiAnalyseCategory category = new BiUiAnalyseCategory();
+        BeanUtils.copyProperties(categoryDto, category);
+//        创建的自定义文件夹都在我的分析下面
+//        BiUiAnalyseCategory customerTop = getCustomerTop(ThreadLocalHolder.getTenantId());
+        category.setTenantId(ThreadLocalHolder.getTenantId());
+        this.save(category);
+        AnalyseCategoryDto dto = new AnalyseCategoryDto();
+        BeanUtils.copyProperties(category, dto);
+        return dto;
     }
 
     //删除文件夹和批量删除文件夹公用方法

@@ -50,4 +50,8 @@ public interface BiDataSetService extends Service<BiDataSet> {
 
     void delRelationByDbId(String id);
 
+    String folderCreate(String folderName);
+
+    String createCopy(String parentFolderId, String tableName, String tableNameDesc);
+
 }

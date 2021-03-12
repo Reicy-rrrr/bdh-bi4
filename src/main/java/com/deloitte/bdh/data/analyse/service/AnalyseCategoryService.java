@@ -40,4 +40,12 @@ public interface AnalyseCategoryService extends Service<BiUiAnalyseCategory> {
     List<AnalyseCategoryTree> getTree(RetRequest<GetAnalyseCategoryDto> request);
 
     void batchDelAnalyseCategories(RetRequest<BatchDeleteAnalyseDto> request);
+
+    /**
+     * 创建文件夹
+     * @param request
+     * @return
+     */
+    AnalyseCategoryDto createAnalyseCategory(CreateAnalyseCategoryDto categoryDto);
+
 }

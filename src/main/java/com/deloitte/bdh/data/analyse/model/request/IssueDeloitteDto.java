@@ -5,7 +5,6 @@ import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.validation.constraints.NotNull;
-import java.util.Map;
 
 /**
  * Author:LIJUN
@@ -13,7 +12,7 @@ import java.util.Map;
  * Description:
  */
 @Data
-public class IssueDeloittePageDto {
+public class IssueDeloitteDto {
 
 
     @ApiModelProperty(value = "源PageId", required = true)
@@ -21,6 +20,12 @@ public class IssueDeloittePageDto {
     private String fromPageId;
 
     @NotBlank
-    @ApiModelProperty(value = "租户列表")
-    private Map<String, IssueTenantDto> dtos;
+    @ApiModelProperty(value = "租户编码集合")
+    private String tenantCodes;
+
+    @ApiModelProperty(value = "文件夹名称", required = true)
+    private String categoryName;
+
+    @ApiModelProperty(value = "狗", required = true)
+    private boolean withData;
 }
