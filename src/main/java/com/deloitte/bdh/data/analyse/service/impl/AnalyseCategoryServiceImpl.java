@@ -67,7 +67,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
     @Override
     public AnalyseCategoryDto updateAnalyseCategory(RetRequest<UpdateAnalyseCategoryDto> request) {
         BiUiAnalyseCategory entity = this.getById(request.getData().getId());
-        checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId());
+        checkBiUiAnalyseCategoryByName(request.getData().getName(), entity.getTenantId(), entity.getId(), entity.getType());
         entity.setName(request.getData().getName());
         entity.setDes(request.getData().getDes());
         this.updateById(entity);
@@ -273,7 +273,7 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 
     @Override
     public AnalyseCategoryDto createAnalyseCategory(CreateAnalyseCategoryDto categoryDto) {
-        checkBiUiAnalyseCategoryByName(categoryDto.getName(), ThreadLocalHolder.getTenantId(), null);
+        checkBiUiAnalyseCategoryByName(categoryDto.getName(), ThreadLocalHolder.getTenantId(), null, categoryDto.getType());
 //        BiUiAnalyseCategory parent = this.getById(request.getData().getParentId());
 //        if (parent == null) {
 //            throw new BizException("上级文件夹不存在");
@@ -364,10 +364,12 @@ public class AnalyseCategoryServiceImpl extends AbstractService<BiUiAnalyseCateg
 //        return getOne(query);
 //    }
 
-    private void checkBiUiAnalyseCategoryByName(String name, String tenantId, String currentId) {
+    private void checkBiUiAnalyseCategoryByName(String name, String tenantId, String currentId, String type) {
         LambdaQueryWrapper<BiUiAnalyseCategory> query = new LambdaQueryWrapper<>();
         query.eq(BiUiAnalyseCategory::getTenantId, tenantId);
         query.eq(BiUiAnalyseCategory::getName, name);
+        query.eq(BiUiAnalyseCategory::getType, type);
+
         if (StringUtils.isNotBlank(currentId)) {
             query.ne(BiUiAnalyseCategory::getId, currentId);
         }
