@@ -31,7 +31,7 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.enums.BiProcessorsTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
+import com.deloitte.bdh.data.collation.enums.MqTypeEnum;
 import com.deloitte.bdh.data.collation.enums.PlanResultEnum;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
@@ -59,7 +59,6 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelHandleService;
 import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
-import com.deloitte.bdh.data.collation.service.Producter;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -87,13 +86,8 @@ public class SyncServiceImpl implements SyncService {
     private BiEtlModelHandleService modelHandleService;
     @Autowired
     private Transfer transfer;
-
-    @Autowired
-    private Producter producter;
-
     @Resource
     private MessageProducer messageProducer;
-
     @Resource
     private LocaleMessageService localeMessageService;
 
@@ -586,28 +580,27 @@ public class SyncServiceImpl implements SyncService {
         //执行
         List<KafkaSyncDto> planMessage = Lists.newArrayList();
         runPlans.forEach(s -> {
-        	KafkaSyncDto kfs = new KafkaSyncDto();
-        	BiEtlSyncPlan bsp = syncPlanService.createPlan(s);
-        	kfs.setCode(bsp.getCode());
-        	kfs.setGroupCode(bsp.getGroupCode());
-        	kfs.setType("model");
-        	planMessage.add(kfs);
-        }
+                    KafkaSyncDto kfs = new KafkaSyncDto();
+                    BiEtlSyncPlan bsp = syncPlanService.createPlan(s);
+                    kfs.setCode(bsp.getCode());
+                    kfs.setGroupCode(bsp.getGroupCode());
+                    kfs.setType("model");
+                    planMessage.add(kfs);
+                }
         );
 
-        
+
         //状态变为正在同步中
         model.setSyncStatus(YesOrNoEnum.YES.getKey());
         modelService.updateById(model);
         if (YesOrNoEnum.NO.getKey().equals(isTrigger)) {
-        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_start.getType());
-            messageProducer.sendSyncMessage(message);
-        }else {
-        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planMessage,KafkaTypeEnum.Plan_checkMany_end.getType());
-            messageProducer.sendSyncMessage(message);
+            KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-", ""), planMessage, MqTypeEnum.Plan_start.getType());
+            messageProducer.sendSyncMessage(message, 1);
+        } else {
+            KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-", ""), planMessage, MqTypeEnum.Plan_checkMany_end.getType());
+            messageProducer.sendSyncMessage(message, 1);
         }
-        
-        
-        
+
+
     }
 }

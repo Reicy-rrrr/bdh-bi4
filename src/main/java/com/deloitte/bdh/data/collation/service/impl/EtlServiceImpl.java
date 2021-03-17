@@ -52,7 +52,7 @@ import com.deloitte.bdh.data.collation.enums.CalculateOperatorEnum;
 import com.deloitte.bdh.data.collation.enums.CalculateTypeEnum;
 import com.deloitte.bdh.data.collation.enums.ComponentTypeEnum;
 import com.deloitte.bdh.data.collation.enums.EffectEnum;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
+import com.deloitte.bdh.data.collation.enums.MqTypeEnum;
 import com.deloitte.bdh.data.collation.enums.PlanResultEnum;
 import com.deloitte.bdh.data.collation.enums.PlanStageEnum;
 import com.deloitte.bdh.data.collation.enums.RunStatusEnum;
@@ -108,7 +108,6 @@ import com.deloitte.bdh.data.collation.service.BiEtlModelService;
 import com.deloitte.bdh.data.collation.service.BiEtlSyncPlanService;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import com.deloitte.bdh.data.collation.service.BiTenantConfigService;
-import com.deloitte.bdh.data.collation.service.Producter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -157,16 +156,10 @@ public class EtlServiceImpl implements EtlService {
     private ExpressionHandler expressionHandler;
     @Autowired
     private BiDataSetService dataSetService;
-    
-    @Autowired
-    private Producter producter;
-
     @Resource
     private MessageProducer messageProducer;
-
     @Resource
     private LocaleMessageService localeMessageService;
-    
 
 
     @Override
@@ -226,7 +219,7 @@ public class EtlServiceImpl implements EtlService {
 
         Map<String, Object> params = Maps.newHashMap();
         params.put(ComponentCons.DULICATE, YesOrNoEnum.getEnum(dto.getDuplicate()).getKey());
-        List<KafkaSyncDto> planList = new ArrayList<KafkaSyncDto>();
+        List<KafkaSyncDto> planList = new ArrayList<>();
         //判断是独立副本
         if (YesOrNoEnum.YES.getKey().equals(dto.getDuplicate())) {
             //设置过滤条件
@@ -255,7 +248,7 @@ public class EtlServiceImpl implements EtlService {
             mappingConfig.setToTableName(dto.getTableName());
             mappingConfig.setTenantId(ThreadLocalHolder.getTenantId());
 
-            
+
             //非直连且非本地
             if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
                     && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
@@ -306,14 +299,13 @@ public class EtlServiceImpl implements EtlService {
 
                 //step2.1.4 生成同步的第一次的调度计划
                 BiEtlSyncPlan synecPlan = syncPlanService.createPlan(runPlan);
+
                 KafkaSyncDto kfs = new KafkaSyncDto();
-                
                 kfs.setCode(synecPlan.getCode());
                 kfs.setGroupCode(synecPlan.getGroupCode());
                 kfs.setType("group");
-                
-                
                 planList.add(kfs);
+
                 //step2.1.5 关联组件与processors
                 params.put(ComponentCons.REF_PROCESSORS_CDOE, processorsCode);
             }
@@ -336,11 +328,11 @@ public class EtlServiceImpl implements EtlService {
         componentService.save(component);
         if (!SyncTypeEnum.DIRECT.getKey().equals(dto.getSyncType())
                 && !SyncTypeEnum.LOCAL.getKey().equals(dto.getSyncType())) {
-        	KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),planList,KafkaTypeEnum.Plan_start.getType());
-        	messageProducer.sendSyncMessage(message);
+            KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-", ""), planList, MqTypeEnum.Plan_start.getType());
+            messageProducer.sendSyncMessage(message, 1);
         }
-        
-        
+
+
         return component;
     }
 

@@ -13,4 +13,6 @@ public interface MessageProducer {
 
     void sendSyncMessage(KafkaMessage message);
 
+    void sendSyncMessage(KafkaMessage message,int delayTime);
+
 }

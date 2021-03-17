@@ -4,25 +4,17 @@ package com.deloitte.bdh.data.collation.controller;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
-import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.GetIpAndPortUtil;
-import com.deloitte.bdh.data.analyse.model.request.KafkaEmailDto;
-import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
 import com.deloitte.bdh.data.collation.service.NifiProcessService;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
-import com.deloitte.bdh.data.collation.service.Producter;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 
 @RestController

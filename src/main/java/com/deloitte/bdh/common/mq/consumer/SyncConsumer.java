@@ -5,10 +5,9 @@ import com.aliyun.mq.http.MQConsumer;
 import com.aliyun.mq.http.common.AckMessageException;
 import com.aliyun.mq.http.model.Message;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
+import com.deloitte.bdh.data.collation.enums.MqTypeEnum;
 import com.deloitte.bdh.data.collation.mq.KafkaMessage;
-import com.deloitte.bdh.data.collation.service.BiEvmFileConsumerService;
-import com.deloitte.bdh.data.collation.service.KafkaBiPlanService;
+import com.deloitte.bdh.data.collation.service.MqBiPlanService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Author:LIJUN
@@ -32,10 +30,7 @@ public class SyncConsumer implements InitializingBean {
     private MQConsumer consumer;
 
     @Resource
-    private KafkaBiPlanService kafkaBiPlanService;
-
-    @Resource
-    private BiEvmFileConsumerService evmFileConsumerService;
+    private MqBiPlanService mqBiPlanService;
 
     @Resource
     private AsyncTaskExecutor executor;
@@ -74,25 +69,21 @@ public class SyncConsumer implements InitializingBean {
                     });
                     String beanName = kafkaMessage.getBeanName();
                     log.info("uuid:" + kafkaMessage.getUuid() + "   beanname：" + beanName);
-                    switch (KafkaTypeEnum.valueOf(beanName)) {
+                    switch (MqTypeEnum.valueOf(beanName)) {
                         case Plan_start:
                             log.info("uuid:" + kafkaMessage.getUuid() + " Plan_start body:" + kafkaMessage.getBody() + " start");
-                            kafkaBiPlanService.BiEtlSyncPlan(kafkaMessage);
+                            mqBiPlanService.biEtlSyncPlan(kafkaMessage);
                             log.info("uuid:" + kafkaMessage.getUuid() + " Plan_start  end");
                             break;
                         case Plan_check_end:
                             log.info("uuid:" + kafkaMessage.getUuid() + " Plan_check_end body:" + kafkaMessage.getBody() + " start");
-                            kafkaBiPlanService.BiEtlSyncManyPlan(kafkaMessage);
+                            mqBiPlanService.biEtlSyncManyPlan(kafkaMessage);
                             log.info("uuid:" + kafkaMessage.getUuid() + " Plan_check_end  end");
                             break;
                         case Plan_checkMany_end:
                             log.info("uuid:" + kafkaMessage.getUuid() + " Plan_checkMany_end body:" + kafkaMessage.getBody() + " start");
-                            kafkaBiPlanService.BiEtlSyncManyEndPlan(kafkaMessage);
+                            mqBiPlanService.biEtlSyncManyEndPlan(kafkaMessage);
                             log.info("uuid:" + kafkaMessage.getUuid() + " Plan_checkMany_end  end");
-                            break;
-
-                        case EVM_FILE:
-                            evmFileConsumerService.consumer(kafkaMessage);
                             break;
                         default:
                             log.error("uuid:" + kafkaMessage.getUuid() + " default：not catch beaname ");

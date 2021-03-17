@@ -30,7 +30,6 @@ import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeLogService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeService;
 import com.deloitte.bdh.data.analyse.service.BiUiAnalysePublicShareService;
 import com.deloitte.bdh.data.collation.service.XxJobService;
-import com.deloitte.bdh.data.collation.service.Producter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -86,9 +85,6 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
 
     @Resource
     private OssProperties ossProperties;
-
-    @Resource
-    private Producter producter;
 
     @Resource
     private MessageProducer messageProducer;

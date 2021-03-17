@@ -7,12 +7,11 @@ import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.AliyunOssUtil;
 import com.deloitte.bdh.common.util.GenerateCodeUtil;
-import com.deloitte.bdh.common.util.JsonUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
-import com.deloitte.bdh.data.collation.enums.KafkaTypeEnum;
+import com.deloitte.bdh.data.collation.enums.MqTypeEnum;
 import com.deloitte.bdh.data.collation.model.BiEvmFile;
 import com.deloitte.bdh.data.collation.dao.bi.BiEvmFileMapper;
 import com.deloitte.bdh.data.collation.model.request.BiEtlDbFileUploadDto;
@@ -83,7 +82,7 @@ public class BiEvmFileServiceImpl extends AbstractService<BiEvmFileMapper, BiEvm
         fileMapper.insert(biEvmFile);
 
         biEvmFile.setCreateDate(null);
-        KafkaMessage<BiEvmFile> message = new KafkaMessage<>(UUID.randomUUID().toString().replaceAll("-", ""), biEvmFile, KafkaTypeEnum.EVM_FILE.getType());
+        KafkaMessage<BiEvmFile> message = new KafkaMessage<>(UUID.randomUUID().toString().replaceAll("-", ""), biEvmFile, MqTypeEnum.EVM_FILE.getType());
         ThreadLocalHolder.async(() -> consumerService.consumer(message));
     }
 }
