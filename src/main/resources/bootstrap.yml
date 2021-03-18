@@ -2,13 +2,13 @@ spring:
   profiles:
     active: dev
   application:
-    name: bi
+    name: bdh-bi
   cloud:
     nacos:
       server-addr: 10.81.128.50:8848
       config:
         refresh-enabled: true
-        group: bi
+        group: bdh-bi
         shared-configs[0]:
           data-id: custom-common.properties
           refresh: true
