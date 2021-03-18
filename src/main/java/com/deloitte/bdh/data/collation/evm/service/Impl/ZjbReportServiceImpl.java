@@ -54,6 +54,7 @@ public class ZjbReportServiceImpl extends AbstractReport {
                     out.put("type", type);
                     out.put("PERIOD", periodTemp);
                     out.put("PERIOD_DATE", periodDate);
+                    out.put("INDEX_TYPE", rule.getType());
                     out.put("INDEX_CODE", rule.getTargetCode());
                     out.put("INDEX_NAME", rule.getTargetName());
                     out.put("INDEX_VALUE", RuleParseUtil.value(rule.getExpression(), map, period));
