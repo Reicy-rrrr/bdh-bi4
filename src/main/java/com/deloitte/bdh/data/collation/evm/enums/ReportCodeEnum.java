@@ -78,7 +78,7 @@ public enum ReportCodeEnum {
                     , new Rule("EVM0027", "非流动负债", "{N#zcfzb.EVMB057}+{N#zcfzb.EVMB058}", "债务结构")
                     , new Rule("EVM0028", "流动比率", "{N#zcfzb.EVMB017}/{N#zcfzb.EVMB055}", "短期偿债能力")
                     , new Rule("EVM0029", "速动比率", "({N#zcfzb.EVMB017}-{N#zcfzb.EVMB012})/{N#zcfzb.EVMB055}", "短期偿债能力")
-                    , new Rule("EVM0030", "现金比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}+{N#zcfzb.EVMB005})/{N#zcfzb.EVMB056}", "短期偿债能力")
+                    , new Rule("EVM0030", "现金比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}+{N#zcfzb.EVMB005})/{N#zcfzb.EVMB055}", "短期偿债能力")
                     , new Rule("EVM0031", "流动资产合计", "{N#zcfzb.EVMB017}", "短期偿债能力")
                     , new Rule("EVM0032", "流动负债合计", "{N#zcfzb.EVMB055}", "短期偿债能力")
                     , new Rule("EVM0033", "资产负债率", "{N#zcfzb.EVMB068}/{N#zcfzb.EVMB039}", "长期偿债能力")
