@@ -35,10 +35,11 @@ spring:
   profiles: dev
   cloud:
     nacos:
+      server-addr: 10.81.128.50:9095
       discovery:
-        namespace: 4ca94aea-b5b1-486f-80da-debf7d622bdc
+        namespace: 4a55ffe2-cc9f-4610-b996-897f05a694c5
       config:
-        namespace: 4ca94aea-b5b1-486f-80da-debf7d622bdc
+        namespace: 4a55ffe2-cc9f-4610-b996-897f05a694c5
 
 ---
 # uat
