@@ -252,6 +252,12 @@ public class AnalyseHana extends AbstractRela {
         for (String value : valueList) {
             for (String escape : HanaBuildUtil.ESCAPE_CHARACTER) {
                 if (value.contains(escape)) {
+                    if ((WildcardEnum.EQ.getCode().equalsIgnoreCase(symbol)
+                            || WildcardEnum.IN.getCode().equalsIgnoreCase(symbol)
+                            || WildcardEnum.NOT_IN.getCode().equalsIgnoreCase(symbol)
+                    ) && value.contains("%")) {
+                        continue;
+                    }
                     value = value.replace(escape, "'" + escape);
                 }
             }

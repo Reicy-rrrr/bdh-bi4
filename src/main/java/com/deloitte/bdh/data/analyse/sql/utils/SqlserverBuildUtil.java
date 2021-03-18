@@ -11,7 +11,7 @@ import org.apache.commons.lang.StringUtils;
 import java.util.List;
 
 
-public class SqlserverBuildUtil extends RelaBaseBuildUtil{
+public class SqlserverBuildUtil extends RelaBaseBuildUtil {
 
     public static final List<String> MENSURE_DECIMAL_TYPE = Lists.newArrayList(
             SQLServerDataTypeEnum.FLOAT.getType().toUpperCase(),
@@ -28,7 +28,7 @@ public class SqlserverBuildUtil extends RelaBaseBuildUtil{
     );
 
     public static final List<String> ESCAPE_CHARACTER = Lists.newArrayList(
-            "'");
+            "'", "%", "\"");
 
     public static String select(String tableName, String field, String quota, String aggregateType,
                                 String formatType, String dataType, String dataUnit, Integer precision, String alias, String defaultValue) {
