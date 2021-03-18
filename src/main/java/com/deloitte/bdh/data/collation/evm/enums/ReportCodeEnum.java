@@ -47,7 +47,7 @@ public enum ReportCodeEnum {
     ZJB("ZJB", "资金表") {
         @Override
         public ImmutablePair<List<String>, List<Rule>> relySheets() {
-            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.xjllb.getName(), SheetCodeEnum.yszkb.getName());
+            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.xjllb.getName(), SheetCodeEnum.yszkb.getName(), SheetCodeEnum.kmyeb.getName());
             List<Rule> collusion = Lists.newArrayList(
                     new Rule("EVM0001", "资金总额", "{N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}")
                     , new Rule("EVM0002", "资金占总资产比率", "({N#zcfzb.EVMB003}+{N#zcfzb.EVMB004})/{N#zcfzb.EVMB039}")
