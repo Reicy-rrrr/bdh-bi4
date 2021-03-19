@@ -154,6 +154,17 @@ public class AnalyseUserResourceServiceImpl extends AbstractService<BiUiAnalyseU
     }
 
     @Override
+    public void delResourcePermission(SaveResourcePermissionDto dto) {
+        if (null != dto) {
+            //删除之前的配置
+            LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BiUiAnalyseUserResource::getResourceType, dto.getResourceType());
+            queryWrapper.eq(BiUiAnalyseUserResource::getResourceId, dto.getId());
+            this.remove(queryWrapper);
+        }
+    }
+
+    @Override
     public ResourcePermissionDto getResourcePermission(GetResourcePermissionDto dto) {
         ResourcePermissionDto result = new ResourcePermissionDto();
         LambdaQueryWrapper<BiUiAnalyseUserResource> queryWrapper = new LambdaQueryWrapper<>();

@@ -55,4 +55,16 @@ public class AnalyseUserDataServiceImpl extends AbstractService<BiUiAnalyseUserD
             }
         }
     }
+
+    @Override
+    public void delDataPermission(List<PermissionItemDto> itemDtoList, String pageId) {
+        if (CollectionUtils.isNotEmpty(itemDtoList)) {
+            for (PermissionItemDto itemDto : itemDtoList) {
+                LambdaQueryWrapper<BiUiAnalyseUserData> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(BiUiAnalyseUserData::getPageId, pageId);
+                queryWrapper.eq(BiUiAnalyseUserData::getComponentId, itemDto.getComponentId());
+                this.remove(queryWrapper);
+            }
+        }
+    }
 }

@@ -9,16 +9,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
-import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.data.analyse.enums.*;
 import com.deloitte.bdh.data.analyse.model.request.*;
-import com.deloitte.bdh.data.collation.controller.BiTenantConfigController;
 import com.deloitte.bdh.data.collation.database.DbHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +28,6 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.PageRequest;
 import com.deloitte.bdh.common.base.PageResult;
 import com.deloitte.bdh.common.base.RetRequest;
-import com.deloitte.bdh.common.client.FeignClientService;
-import com.deloitte.bdh.common.client.dto.IntactUserInfoVoCache;
 import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.json.JsonUtil;
@@ -43,7 +38,6 @@ import com.deloitte.bdh.common.util.StringUtil;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
 import com.deloitte.bdh.data.analyse.dao.bi.BiUiAnalysePageMapper;
-import com.deloitte.bdh.data.analyse.dao.bi.BiUiDemoMapper;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageLink;
@@ -525,9 +519,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
                 //可见编辑权限
                 userResourceService.saveResourcePermission(permissionDto);
-
                 //数据权限
                 userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
+            } else {
+                //删除之前的配置
+                userResourceService.delResourcePermission(permissionDto);
+                userDataService.delDataPermission(request.getPermissionItemDtoList(), request.getPageId());
             }
         }
         //生成链接

@@ -15,4 +15,6 @@ public interface AnalyseUserDataService extends Service<BiUiAnalyseUserData> {
 
     void saveDataPermission(List<PermissionItemDto> itemDtoList, String pageId);
 
+    void delDataPermission(List<PermissionItemDto> itemDtoList, String pageId);
+
 }

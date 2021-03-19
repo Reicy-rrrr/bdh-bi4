@@ -20,6 +20,8 @@ public interface AnalyseUserResourceService extends Service<BiUiAnalyseUserResou
 
     void saveResourcePermission(SaveResourcePermissionDto dto);
 
+    void delResourcePermission(SaveResourcePermissionDto dto);
+
     ResourcePermissionDto getResourcePermission(GetResourcePermissionDto dto);
 
     OrganizationPermissionDto getCategoryOrganization(String categoryId);
