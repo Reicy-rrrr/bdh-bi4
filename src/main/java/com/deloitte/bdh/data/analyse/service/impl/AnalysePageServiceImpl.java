@@ -196,7 +196,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
-    public CopySourceDto getCopySourceData(String pageId){
+    public CopySourceDto getCopySourceData(String pageId) {
         CopySourceDto dto = new CopySourceDto();
         BiUiAnalysePage fromPage = this.getById(pageId);
         if (null == fromPage) {
@@ -341,7 +341,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return dto;
     }
 
-    private void replacePage(JSONObject page, BiUiAnalysePage newPage){
+    private void replacePage(JSONObject page, BiUiAnalysePage newPage) {
         page.put("id", newPage.getId());
         page.put("code", newPage.getCode());
         page.put("name", newPage.getName());
@@ -522,11 +522,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 }
             }
 
-            //可见编辑权限
-            userResourceService.saveResourcePermission(permissionDto);
+            if (isPublic.equals(ShareTypeEnum.FALSE.getKey())) {
+                //可见编辑权限
+                userResourceService.saveResourcePermission(permissionDto);
 
-            //数据权限
-            userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
+                //数据权限
+                userDataService.saveDataPermission(request.getPermissionItemDtoList(), request.getPageId());
+            }
         }
         //生成链接
         setAccessUrl(pageId, request.getPassword(), isPublic);
@@ -581,7 +583,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getModifiedDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
-        return getAnalysePageDtoPageResult(pageList,request);
+        return getAnalysePageDtoPageResult(pageList, request);
     }
 
     @Override
