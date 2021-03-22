@@ -926,6 +926,21 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             }
         }
 
+        //处理应付账款
+        if ("EVMB046".equals(indexCode)) {
+            BiReport evmb078 = new BiReport();
+            BeanUtils.copyProperties(biReport, evmb078);
+            evmb078.setIndexCode("EVMB046_AVG");
+            evmb078.setCell1("平均应付账款");
+            if (2 < cell) {
+                Cell lastTemp = sheet.getRow(row).getCell(cell - 1);
+                String lastTempValue = null == lastTemp ? "0" : lastTemp.getNumericCellValue() + "";
+                evmb078.setCell2((new BigDecimal(lastTempValue).add(new BigDecimal(biReport.getCell2())))
+                        .divide(new BigDecimal("2"), 5, BigDecimal.ROUND_HALF_UP).toString());
+                tempList.add(evmb078);
+            }
+        }
+
         if ("EVMB055".equals(indexCode)) {
             BiReport evmb078 = new BiReport();
             BeanUtils.copyProperties(biReport, evmb078);
@@ -954,6 +969,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 tempList.add(evmb078);
             }
         }
+
+
     }
 
     private void process(List<LinkedHashMap<String, Object>> lines, String tableName) {
