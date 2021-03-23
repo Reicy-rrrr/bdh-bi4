@@ -50,6 +50,9 @@ public class BiProperties {
     private String evmDownLoadAddress;
 
     @Value("${bdh.bi.inner.tenantCode}")
-    protected String innerTenantCode;
+    private String innerTenantCode;
+
+    @Value("${bdh.bi.outer.tenantCodes}")
+    private String outerTenantCodes;
 }
 

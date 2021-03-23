@@ -1,6 +1,7 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
+import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.*;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -220,4 +223,14 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(issueService.issueDeloittePage(request.getData()));
     }
 
+    @ApiOperation(value = "获取租户列表", notes = "获取租户列表")
+    @PostMapping("/getTenantCodes")
+    @NoInterceptor
+    public RetResult<List<String>> getTenantCodes(@RequestBody @Validated RetRequest<Void> request) {
+        String outerTenantCodes = biProperties.getOuterTenantCodes();
+        if (StringUtils.isNotBlank(outerTenantCodes)) {
+            return RetResponse.makeOKRsp(new ArrayList<>(Arrays.asList(outerTenantCodes.split(","))));
+        }
+        return RetResponse.makeOKRsp();
+    }
 }
