@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -130,6 +131,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
      * 保存-只能修改edit的config
      */
     @Override
+    @Transactional
     public AnalysePageConfigDto updateAnalysePageConfig(RetRequest<UpdateAnalysePageConfigsDto> request) {
 
         //获取该config用于获取该page
@@ -157,8 +159,9 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, config.getPageId());
         BiUiAnalyseSubscribe subscribe = subscribeService.getOne(queryWrapper);
         if(null != subscribe) {
+        	log.error("@2@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+subscribe.toString());
         	subscribe.setStatus("0");
-        	subscribeService.saveOrUpdate(subscribe);
+        	subscribeService.updateById(subscribe);
         	
         	try {
                 jobService.stop(subscribe.getTaskId());
