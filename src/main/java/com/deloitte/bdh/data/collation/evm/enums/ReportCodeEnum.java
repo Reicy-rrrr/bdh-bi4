@@ -105,7 +105,7 @@ public enum ReportCodeEnum {
                     , new Rule("EVM0054", "库存余额", "{N#zcfzb.EVMB012}", "库存")
                     , new Rule("EVM0055", "库存周转率", "{N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG}", "库存")
                     , new Rule("EVM0056", "库存周转天数", "360/({N#lrb.EVMP002}/{N#zcfzb.EVMB012_AVG})", "库存")
-                    , new Rule("EVM0057", "存货资产占比", "{N#zcfzb.EVMP012}/{N#zcfzb.EVMB039}", "库存")
+                    , new Rule("EVM0057", "存货资产占比", "{N#zcfzb.EVMB012}/{N#zcfzb.EVMB039}", "库存")
 
             );
             return new ImmutablePair<>(relySheets, collusion);
