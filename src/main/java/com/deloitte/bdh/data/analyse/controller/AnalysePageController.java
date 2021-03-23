@@ -1,8 +1,9 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
-import com.deloitte.bdh.common.annotation.NoInterceptor;
 import com.deloitte.bdh.common.base.*;
+import com.deloitte.bdh.common.client.FeignClientService;
+import com.deloitte.bdh.common.client.dto.TenantBasicVo;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
@@ -23,6 +24,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -32,8 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -71,6 +71,9 @@ public class AnalysePageController {
 
     @Resource
     private IssueService issueService;
+
+    @Resource
+    private FeignClientService feignClientService;
 
     @ApiOperation(value = "查询文件夹下的页面", notes = "查询文件夹下的页面")
     @PostMapping("/getChildAnalysePageList")
@@ -225,12 +228,11 @@ public class AnalysePageController {
 
     @ApiOperation(value = "获取租户列表", notes = "获取租户列表")
     @PostMapping("/getTenantCodes")
-    @NoInterceptor
-    public RetResult<List<String>> getTenantCodes(@RequestBody @Validated RetRequest<Void> request) {
-        String outerTenantCodes = biProperties.getOuterTenantCodes();
-        if (StringUtils.isNotBlank(outerTenantCodes)) {
-            return RetResponse.makeOKRsp(new ArrayList<>(Arrays.asList(outerTenantCodes.split(","))));
+    public RetResult<List<TenantBasicVo>> getTenantCodes(@RequestBody @Validated RetRequest<String> request) {
+        List<TenantBasicVo> list = feignClientService.queryTenantList(request.getData());
+        if (CollectionUtils.isNotEmpty(list)) {
+            list.removeIf(tenantBasicVo -> null != tenantBasicVo.getTenantCode() && tenantBasicVo.getTenantCode().equals(biProperties.getInnerTenantCode()));
         }
-        return RetResponse.makeOKRsp();
+        return RetResponse.makeOKRsp(list);
     }
 }

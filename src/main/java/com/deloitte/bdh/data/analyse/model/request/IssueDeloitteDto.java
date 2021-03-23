@@ -26,6 +26,6 @@ public class IssueDeloitteDto {
     @ApiModelProperty(value = "文件夹名称", required = true)
     private String categoryName;
 
-    @ApiModelProperty(value = "狗", required = true)
+    @ApiModelProperty(value = "是否带表结构（evm需要，其他的暂时不需要）", required = true)
     private boolean withData;
 }

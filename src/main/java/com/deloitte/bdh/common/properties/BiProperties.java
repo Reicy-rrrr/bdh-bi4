@@ -52,7 +52,5 @@ public class BiProperties {
     @Value("${bdh.bi.inner.tenantCode}")
     private String innerTenantCode;
 
-    @Value("${bdh.bi.outer.tenantCodes}")
-    private String outerTenantCodes;
 }
 
