@@ -26,6 +26,9 @@ import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeService;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.service.XxJobService;
 import com.google.common.collect.Lists;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,7 @@ import java.util.List;
  */
 @Service
 @DS(DSConstant.BI_DB)
+@Slf4j
 public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePageConfigMapper, BiUiAnalysePageConfig> implements AnalysePageConfigService {
 
     @Resource
