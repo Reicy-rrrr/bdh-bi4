@@ -6,6 +6,7 @@ import com.deloitte.bdh.common.base.AbstractService;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.constant.CommonConstant;
 import com.deloitte.bdh.common.constant.DSConstant;
+import com.deloitte.bdh.common.cron.CronUtil;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
@@ -14,13 +15,16 @@ import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageConfig;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalyseSubscribe;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.request.GetAnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.request.UpdateAnalysePageConfigsDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.service.AnalysePageConfigService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
+import com.deloitte.bdh.data.analyse.service.AnalysePageSubscribeService;
 import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
+import com.deloitte.bdh.data.collation.service.XxJobService;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -43,6 +47,12 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
 
     @Resource
     AnalysePageService analysePageService;
+    
+    @Resource
+    private AnalysePageSubscribeService subscribeService;
+    
+    @Resource
+    private XxJobService jobService;
 
     @Override
     public AnalysePageConfigDto getAnalysePageConfig(RetRequest<GetAnalysePageConfigDto> request) {
@@ -141,6 +151,24 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         this.updateById(update);
         AnalysePageConfigDto dto = new AnalysePageConfigDto();
         BeanUtils.copyProperties(update, dto);
+        
+        //停掉job数据内容
+        LambdaQueryWrapper<BiUiAnalyseSubscribe> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, config.getPageId());
+        BiUiAnalyseSubscribe subscribe = subscribeService.getOne(queryWrapper);
+        if(null != subscribe) {
+        	subscribe.setStatus("0");
+        	subscribeService.saveOrUpdate(subscribe);
+        	
+        	try {
+                jobService.stop(subscribe.getTaskId());
+                
+            } catch (Exception e) {
+                throw new BizException(ResourceMessageEnum.ADD_TASK_ERROR.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.ADD_TASK_ERROR.getMessage(), ThreadLocalHolder.getLang()));
+            }
+        }
+        
         return dto;
     }
 

@@ -179,76 +179,79 @@ public class AnalysePageSubscribeServiceImpl extends AbstractService<BiUiAnalyse
             throw new BizException(ResourceMessageEnum.SUBSCRIBE_DATA_NOT_EXIST.getCode(),
                     localeMessageService.getMessage(ResourceMessageEnum.SUBSCRIBE_DATA_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
-        if (StringUtils.isNotBlank(subscribe.getReceiver())) {
-            List<UserIdMailDto> receiveList = JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class);
-            if (CollectionUtils.isNotEmpty(receiveList)) {
-                String imgUrl;
-                try {
-                    String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
-                    String name = aliyunOssUtil.uploadFile2Oss(filePath, file);
-                    imgUrl = aliyunOssUtil.getImgUrl(filePath, name);
-                    // 对于在内网上传的文件需要把内网地址换为外网地址
-                    if (imgUrl.contains(ossProperties.getTargetEndpoint())) {
-                        imgUrl = imgUrl.replace(ossProperties.getTargetEndpoint(), ossProperties.getReplacementEndpoint());
+        if("1".equals(subscribe.getStatus())) {
+        	if (StringUtils.isNotBlank(subscribe.getReceiver())) {
+                List<UserIdMailDto> receiveList = JSONArray.parseArray(subscribe.getReceiver(), UserIdMailDto.class);
+                if (CollectionUtils.isNotEmpty(receiveList)) {
+                    String imgUrl;
+                    try {
+                        String filePath = AnalyseConstants.DOCUMENT_DIR + ThreadLocalHolder.getTenantCode() + "/bi/subscribe/";
+                        String name = aliyunOssUtil.uploadFile2Oss(filePath, file);
+                        imgUrl = aliyunOssUtil.getImgUrl(filePath, name);
+                        // 对于在内网上传的文件需要把内网地址换为外网地址
+                        if (imgUrl.contains(ossProperties.getTargetEndpoint())) {
+                            imgUrl = imgUrl.replace(ossProperties.getTargetEndpoint(), ossProperties.getReplacementEndpoint());
+                        }
+//                        imgUrl = screenshotUtil.fullScreen(subscribe.getImgUrl());
+                    } catch (Exception e) {
+                        for (UserIdMailDto userIdMailDto : receiveList) {
+                            //执行记录
+                            BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
+                            subscribeLog.setCron(CronUtil.createCronExpression(subscribe.getCronData()));
+                            subscribeLog.setCronDesc(CronUtil.createDescription(subscribe.getCronData()));
+                            subscribeLog.setPageId(subscribe.getPageId());
+                            subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
+                            subscribeLog.setExecuteStatus("0");
+                            subscribeLog.setFailMessage(e.getMessage());
+                            subscribeLogService.save(subscribeLog);
+                        }
+                        throw new BizException(ResourceMessageEnum.SHOT_ERROR.getCode(),
+                                localeMessageService.getMessage(ResourceMessageEnum.SHOT_ERROR.getMessage(), ThreadLocalHolder.getLang()));
                     }
-//                    imgUrl = screenshotUtil.fullScreen(subscribe.getImgUrl());
-                } catch (Exception e) {
                     for (UserIdMailDto userIdMailDto : receiveList) {
+                        //发邮件
+                        HashMap<String, Object> params = Maps.newHashMap();
+                        params.put("userName", userIdMailDto.getUserName());
+                        params.put("imgUrl", imgUrl);
+                        params.put("accessUrl", subscribe.getAccessUrl());
+                        EmailDto emailDto = new EmailDto();
+                        emailDto.setEmail(userIdMailDto.getEmail());
+                        emailDto.setSubject(subscribe.getMailSubject());
+                        emailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+                        emailDto.setParamMap(params);
+                        emailDto.setPageId(pageId);
+
+//                        KafkaEmailDto KafkaEmailDto = new KafkaEmailDto();
+//                        KafkaEmailDto.setCcList(emailDto.getCcList());
+//                        KafkaEmailDto.setEmail(userIdMailDto.getEmail());
+//                        KafkaEmailDto.setPageId(pageId);
+//                        KafkaEmailDto.setParamMap(params);
+//                        KafkaEmailDto.setSubject(subscribe.getMailSubject());
+//                        KafkaEmailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+//                        KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),KafkaEmailDto,KafkaTypeEnum.Email.getType());
+
                         //执行记录
                         BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
                         subscribeLog.setCron(CronUtil.createCronExpression(subscribe.getCronData()));
                         subscribeLog.setCronDesc(CronUtil.createDescription(subscribe.getCronData()));
                         subscribeLog.setPageId(subscribe.getPageId());
                         subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
-                        subscribeLog.setExecuteStatus("0");
-                        subscribeLog.setFailMessage(e.getMessage());
-                        subscribeLogService.save(subscribeLog);
-                    }
-                    throw new BizException(ResourceMessageEnum.SHOT_ERROR.getCode(),
-                            localeMessageService.getMessage(ResourceMessageEnum.SHOT_ERROR.getMessage(), ThreadLocalHolder.getLang()));
-                }
-                for (UserIdMailDto userIdMailDto : receiveList) {
-                    //发邮件
-                    HashMap<String, Object> params = Maps.newHashMap();
-                    params.put("userName", userIdMailDto.getUserName());
-                    params.put("imgUrl", imgUrl);
-                    params.put("accessUrl", subscribe.getAccessUrl());
-                    EmailDto emailDto = new EmailDto();
-                    emailDto.setEmail(userIdMailDto.getEmail());
-                    emailDto.setSubject(subscribe.getMailSubject());
-                    emailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-                    emailDto.setParamMap(params);
-                    emailDto.setPageId(pageId);
-
-//                    KafkaEmailDto KafkaEmailDto = new KafkaEmailDto();
-//                    KafkaEmailDto.setCcList(emailDto.getCcList());
-//                    KafkaEmailDto.setEmail(userIdMailDto.getEmail());
-//                    KafkaEmailDto.setPageId(pageId);
-//                    KafkaEmailDto.setParamMap(params);
-//                    KafkaEmailDto.setSubject(subscribe.getMailSubject());
-//                    KafkaEmailDto.setTemplate(AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-//                    KafkaMessage message = new KafkaMessage(UUID.randomUUID().toString().replaceAll("-",""),KafkaEmailDto,KafkaTypeEnum.Email.getType());
-
-                    //执行记录
-                    BiUiAnalyseSubscribeLog subscribeLog = new BiUiAnalyseSubscribeLog();
-                    subscribeLog.setCron(CronUtil.createCronExpression(subscribe.getCronData()));
-                    subscribeLog.setCronDesc(CronUtil.createDescription(subscribe.getCronData()));
-                    subscribeLog.setPageId(subscribe.getPageId());
-                    subscribeLog.setReceiver(JSON.toJSONString(userIdMailDto));
-                    try {
-//                        emailService.sendEmail(emailDto, AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
-//                    	producter.sendEmail(message);
-                        messageProducer.sendEmailMessage(JSON.toJSONString(emailDto));
-                        subscribeLog.setExecuteStatus("1");
-                    } catch (Exception e) {
-                        subscribeLog.setExecuteStatus("0");
-                        subscribeLog.setFailMessage(e.getMessage());
-                    } finally {
-                        subscribeLogService.save(subscribeLog);
+                        try {
+//                            emailService.sendEmail(emailDto, AnalyseConstants.EMAIL_TEMPLATE_SUBSCRIBE);
+//                        	producter.sendEmail(message);
+                            messageProducer.sendEmailMessage(JSON.toJSONString(emailDto));
+                            subscribeLog.setExecuteStatus("1");
+                        } catch (Exception e) {
+                            subscribeLog.setExecuteStatus("0");
+                            subscribeLog.setFailMessage(e.getMessage());
+                        } finally {
+                            subscribeLogService.save(subscribeLog);
+                        }
                     }
                 }
             }
         }
+        
     }
 
     private String getAccessUrl(SubscribeDto request) {
