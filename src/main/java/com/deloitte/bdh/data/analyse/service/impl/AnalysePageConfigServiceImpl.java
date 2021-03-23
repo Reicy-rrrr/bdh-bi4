@@ -169,7 +169,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         	subscribeService.updateById(subscribe);
         	
         	try {
-                jobService.stop(subscribe.getTaskId());
+//                jobService.stop(subscribe.getTaskId());
                 
             } catch (Exception e) {
                 throw new BizException(ResourceMessageEnum.ADD_TASK_ERROR.getCode(),
