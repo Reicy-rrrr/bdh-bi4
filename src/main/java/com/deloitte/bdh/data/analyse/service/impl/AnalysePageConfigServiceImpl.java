@@ -163,8 +163,9 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         queryWrapper.eq(BiUiAnalyseSubscribe::getPageId, config.getPageId());
         BiUiAnalyseSubscribe subscribe = subscribeService.getOne(queryWrapper);
         if(null != subscribe) {
-        	log.error("@2@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+subscribe.toString());
+        	
         	subscribe.setStatus("0");
+        	log.error("@2@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+subscribe.toString());
         	subscribeService.updateById(subscribe);
         	
         	try {
