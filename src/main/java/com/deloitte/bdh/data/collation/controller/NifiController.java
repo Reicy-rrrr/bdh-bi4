@@ -1,27 +1,17 @@
 package com.deloitte.bdh.data.collation.controller;
 
 
-import com.alibaba.fastjson.JSON;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResponse;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.mq.MessageProducer;
-import com.deloitte.bdh.common.util.GetIpAndPortUtil;
 import com.deloitte.bdh.data.collation.service.NifiProcessService;
-import com.google.common.collect.Maps;
-import com.deloitte.bdh.data.analyse.constants.AnalyseConstants;
-import com.deloitte.bdh.data.analyse.model.request.EmailDto;
-import com.deloitte.bdh.data.collation.mq.KafkaMessage;
 import com.deloitte.bdh.data.collation.nifi.template.servie.Transfer;
 import com.deloitte.bdh.data.collation.service.BiProcessorsService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -169,47 +159,10 @@ public class NifiController {
         return RetResponse.makeOKRsp(nifiProcessService.getProcessGroupFull(request.getData()));
     }
 
-    @ApiOperation(value = "getIp", notes = "getIp")
-    @PostMapping("/getIp")
-    public RetResult<String> getIp() throws Exception {
-        return RetResponse.makeOKRsp(GetIpAndPortUtil.getIpAndPort());
+    @ApiOperation(value = "getTemplate", notes = "getTemplate")
+    @GetMapping("/getTemplate")
+    public RetResult<String> getTemplate() throws Exception {
+        return RetResponse.makeOKRsp(nifiProcessService.getTemplate());
     }
 
-    @ApiOperation(value = "getTime", notes = "getTime")
-    @PostMapping("/getTime")
-    public RetResult<String> getTime(@RequestBody @Validated RetRequest<String> request) throws Exception {
-        return RetResponse.makeOKRsp("ok");
-    }
-    
-	@ApiOperation(value = "email", notes = "email")
-	@PostMapping("/email")
-	public RetResult<String> email(@RequestParam String email, @RequestParam(required = false) List<String> ccList,
-			@RequestParam String subject, @RequestParam String templateCode, @RequestParam String userNameCn,
-			@RequestParam String userNameEn, @RequestParam String contentCn, @RequestParam String contentEn,
-			@RequestParam String tenantId, @RequestParam String imgUrl, @RequestParam String operator,
-			@RequestParam(required = false) MultipartFile attachmentFile) throws Exception {
-
-		EmailDto emailDto = new EmailDto();
-		emailDto.setEmail(email);
-		emailDto.setSubject(subject);
-		emailDto.setTemplate(templateCode);
-
-		HashMap<String, Object> paramMap = new HashMap<>();
-		paramMap.put("userName", "peng");
-		paramMap.put("imgUrl", imgUrl);
-		paramMap.put("accessUrl",
-				"https://bidev.tax.deloitte.com.cn/analyseManage/share/publicReport/9q9tZBWtPYDjM8d7s77V1VjtVBQpO6xo000o9Hu8l0CgOtbV45Q419HfQ52ePkWLeHDqWGbVNBo15EjeDSBECguOhwO0O0OO0O0O");
-		paramMap.put("userNameCn", userNameCn);
-		paramMap.put("userNameEn", userNameEn);
-		paramMap.put("contentCn", contentCn);
-		paramMap.put("contentEn", contentEn);
-		emailDto.setParamMap(paramMap);
-		messageProducer.sendEmailMessage(JSON.toJSONString(emailDto));
-
-		return RetResponse.makeOKRsp("ok");
-	}
-	
-	@Resource
-    private MessageProducer messageProducer;
-    
 }

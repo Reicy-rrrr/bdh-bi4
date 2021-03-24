@@ -222,4 +222,11 @@ public interface NifiProcessService {
      */
     Map<String, Object> createByTemplate(String id, String json);
 
+    /**
+     * function:getTemplate
+     *
+     * @return String
+     */
+    String getTemplate() throws Exception;
+
 }

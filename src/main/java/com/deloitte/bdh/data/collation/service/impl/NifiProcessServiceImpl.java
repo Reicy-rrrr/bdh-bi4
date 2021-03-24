@@ -1,5 +1,7 @@
 package com.deloitte.bdh.data.collation.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.deloitte.bdh.common.exception.BizException;
 import com.deloitte.bdh.common.http.HttpClientUtil;
 import com.deloitte.bdh.common.util.JsonUtil;
@@ -659,6 +661,33 @@ public class NifiProcessServiceImpl extends AbstractNifiProcess {
                     localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
 
         }
+    }
+
+    @Override
+    public String getTemplate() throws Exception {
+        logger.info("NifiProcessServiceImpl.cluster, URL:{}", biProperties.getNifiUrl() + NifiEnum.TEMLATES.getKey());
+        String response = HttpClientUtil.get(biProperties.getNifiUrl() + NifiEnum.TEMLATES.getKey(), super.setHeaderAuthorization(), null);
+        Object jsonObject = JSONObject.parse(response);
+        if (null == jsonObject) {
+            logger.error("未读取到模板信息");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        Object jsonArray = ((JSONObject) jsonObject).get("templates");
+        if (null == jsonArray) {
+            logger.error("未读取到模板列表信息");
+            throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        for (Object object : (JSONArray) jsonArray) {
+            JSONObject template = (JSONObject) ((JSONObject) object).get("template");
+            if (template.getString("name").equalsIgnoreCase("bi_template_important")) {
+                return template.getString("id");
+            }
+        }
+        logger.error("未找到初始化模板");
+        throw new BizException(ResourceMessageEnum.SYSTEM_ERROR.getCode(),
+                localeMessageService.getMessage(ResourceMessageEnum.SYSTEM_ERROR.getMessage(), ThreadLocalHolder.getLang()));
     }
 
 

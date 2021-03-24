@@ -25,9 +25,6 @@ public class BiProperties {
     @Value("${nifi.transfer.expiredTime}")
     protected String expiredTime;
 
-    @Value("${nifi.template.mapping}")
-    private String mapping;
-
     @Value("${xxjob.transfer.url}")
     private String xxjobUrl;
 

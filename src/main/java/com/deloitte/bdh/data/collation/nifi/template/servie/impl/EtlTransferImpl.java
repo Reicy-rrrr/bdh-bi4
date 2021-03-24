@@ -26,7 +26,7 @@ public class EtlTransferImpl extends AbstractTransfer {
         String tempJson = TemplateConfig.get(TemplateEnum.valueOf(templateType));
 
         //获取配置
-        String templateId = super.getTemplateId(templateType);
+        String templateId = nifiProcessService.getTemplate();
         Template param = params.params();
         param.setDttTemplateId(templateId);
         param.setDttModelGroupId(modelGroupId);

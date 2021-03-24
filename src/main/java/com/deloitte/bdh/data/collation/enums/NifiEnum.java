@@ -124,6 +124,10 @@ public enum NifiEnum {
      */
     CREATE_BY_TEMPLATE("/nifi-api/process-groups/" + NifiProcessUtil.TEMP + "/template-instance", "基于模板创建"),
 
+    /**
+     * 从NIFI获取templates
+     */
+    TEMLATES("/nifi-api/flow/templates", "从NIFI获取templates"),
     ;
 
     private String key;
