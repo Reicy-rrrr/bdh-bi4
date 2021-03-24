@@ -165,11 +165,11 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         if(null != subscribe) {
         	
         	subscribe.setStatus("0");
-        	log.error("@2@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+subscribe.toString());
+        	log.info("Prepare to modify the task content of the draft :"+subscribe.toString());
         	subscribeService.updateById(subscribe);
         	
         	try {
-//                jobService.stop(subscribe.getTaskId());
+                jobService.stop(subscribe.getTaskId());
                 
             } catch (Exception e) {
                 throw new BizException(ResourceMessageEnum.ADD_TASK_ERROR.getCode(),
