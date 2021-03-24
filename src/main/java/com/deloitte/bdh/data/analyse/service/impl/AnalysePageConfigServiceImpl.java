@@ -165,7 +165,7 @@ public class AnalysePageConfigServiceImpl extends AbstractService<BiUiAnalysePag
         if(null != subscribe) {
         	
         	subscribe.setStatus("0");
-//        	log.error("@2@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+subscribe.toString());
+        	log.error("@2@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"+subscribe.toString());
         	subscribeService.updateById(subscribe);
         	
         	try {
