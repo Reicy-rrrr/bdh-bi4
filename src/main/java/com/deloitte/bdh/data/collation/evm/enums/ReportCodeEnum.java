@@ -19,7 +19,7 @@ public enum ReportCodeEnum {
     ZCXLZTSPB("ZCXLZTSPB", "资产效率整体水平表") {
         @Override
         public ImmutablePair<List<String>, List<Rule>> relySheets() {
-            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName());
+            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.kmyeb.getName(),SheetCodeEnum.yszkb.getName());
             List<Rule> collusion = Lists.newArrayList(
                     new Rule("EVM0001", "总资产", "{N#zcfzb.EVMB039}")
                     , new Rule("EVM0002", "资产负债率", "{N#zcfzb.EVMB068}/{N#zcfzb.EVMB039}")
@@ -30,15 +30,30 @@ public enum ReportCodeEnum {
                     , new Rule("EVM0007", "净资产", "{N#zcfzb.EVMB080}")
                     , new Rule("EVM0008", "净资产收益率", "{N#lrb.EVMP024}/{N#zcfzb.EVMB080_AVG}")
                     , new Rule("EVM0009", "应收账款", "{N#zcfzb.EVMB008}")
-                    , new Rule("EVM0010", "逾期应收账款", "{N#zcfzb.EVMB080}+111111")
+                    , new Rule("EVM0010", "逾期应收账款", "{N#yszkb.YS_TOTAL}")
                     , new Rule("EVM0011", "应收账款周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB008_AVG}")
                     , new Rule("EVM0012", "总资产周转率 （次数）", "{N#lrb.EVMP001}/{N#zcfzb.EVMB039_AVG}")
                     , new Rule("EVM0013", "总资产周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB039_AVG})")
                     , new Rule("EVM0014", "固定资产", "{N#zcfzb.EVMB027}")
-                    , new Rule("EVM0015", "原值", "1+1")
-                    , new Rule("EVM0016", "累计折旧", "1+1")
+                    , new Rule("EVM0015", "原值", "{N#kmyeb.M051}+{N#kmyeb.M052}")
+                    , new Rule("EVM0016", "累计折旧", "{N#kmyeb.M052}")
                     , new Rule("EVM0017", "固定资产周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB027_AVG}")
                     , new Rule("EVM0018", "固定资产周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB027_AVG})")
+                    , new Rule("EVM0019", "现金及现金等价物", "{N#zcfzb.EVMB003}+{N#zcfzb.EVMB004}")
+                    , new Rule("EVM0020", "以公允价值计量且其变动计入当期损益的金融资产", "{N#zcfzb.EVMB005}+{N#zcfzb.EVMB006}")
+                    , new Rule("EVM0022", "预付款项", "{N#zcfzb.EVMB010}")
+                    , new Rule("EVM0023", "其他应收款", "{N#zcfzb.EVMB011}")
+                    , new Rule("EVM0025", "其他流动资产", "{N#zcfzb.EVMB016}")
+                    , new Rule("EVM0026", "其他", "{N#zcfzb.EVMB005}+{N#zcfzb.EVMB006}+{N#zcfzb.EVMB008}+{N#zcfzb.EVMB010}+{N#zcfzb.EVMB011}+{N#zcfzb.EVMB012}+{N#zcfzb.EVMB016}")
+                    , new Rule("EVM0027", "固定资产成新率", "{N#zcfzb.EVMB027}/({N#kmyeb.M051}+{N#kmyeb.M052})")
+                    , new Rule("EVM0028", "每百元固定资产收入", "{N#lrb.EVMP001}/{N#zcfzb.EVMB027}")
+                    , new Rule("EVM0029", "每百元固定资产利润", "{N#lrb.EVMP027}/{N#zcfzb.EVMB028}")
+                    , new Rule("EVM0030", "流动资产期末余额", "{N#zcfzb.EVMB017}")
+                    , new Rule("EVM0031", "流动资产周转率", "{N#lrb.EVMP001}/{N#zcfzb.EVMB017_AVG}")
+                    , new Rule("EVM0032", "流动资产周转天数", "360/({N#lrb.EVMP001}/{N#zcfzb.EVMB017_AVG})")
+                    , new Rule("EVM0033", "两金规模", "{N#zcfzb.EVMB008}+{N#zcfzb.EVMB0012}")
+
+
             );
             return new ImmutablePair<>(relySheets, collusion);
         }
