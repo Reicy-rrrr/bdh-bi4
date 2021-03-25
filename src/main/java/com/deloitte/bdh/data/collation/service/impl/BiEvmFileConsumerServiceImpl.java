@@ -95,14 +95,14 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
             doLrb(workbook.getSheet(SheetCodeEnum.lrb.getValue()), evmFile.getBatchId());
             doXjllb(workbook.getSheet(SheetCodeEnum.xjllb.getValue()), evmFile.getBatchId());
             doKmyeb(workbook.getSheet(SheetCodeEnum.kmyeb.getValue()), evmFile.getBatchId());
+            doCkgl(workbook.getSheet(SheetCodeEnum.ckgl.getValue()), evmFile.getBatchId());
+
             doYszkb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_AR),
                     workbook.getSheet(SheetCodeEnum.yszkb.getValue()), evmFile.getBatchId());
             doYfzkb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_AP),
                     workbook.getSheet(SheetCodeEnum.yfzkb.getValue()), evmFile.getBatchId());
             doChmxb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_INVENTORY),
                     workbook.getSheet(SheetCodeEnum.chmxb.getValue()), evmFile.getBatchId());
-            doCkgl(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_IJ),
-                    workbook.getSheet(SheetCodeEnum.ckgl.getValue()), evmFile.getBatchId());
             doGdzczjb(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_DEPRECIATION),
                     workbook.getSheet(SheetCodeEnum.gdzczjb.getValue()), evmFile.getBatchId());
             doJkbSum(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_LOAN_SUM),
@@ -614,40 +614,64 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
         }
     }
 
-    private void doCkgl(String tableName, Sheet sheet, String batchId) {
+    private void doCkgl(Sheet sheet, String batchId) {
         try {
             if (sheet == null) {
                 throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
                         localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
             }
             //获取类型
-            Cell typeCell = sheet.getRow(0).getCell(2);
+            Cell typeCell = sheet.getRow(0).getCell(3);
             if (null == typeCell) {
                 throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
                         localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
             }
-            String type = typeCell.getStringCellValue();
-            String date = DateUtils.formatStandardDateTime(new Date());
+            reportService.remove(new LambdaQueryWrapper<BiReport>().eq(BiReport::getReportCode, SheetCodeEnum.ckgl.getName()));
 
-            List<LinkedHashMap<String, Object>> all = Lists.newArrayList();
-            for (int i = 2; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (null == row || null == row.getCell(0)) {
+            //获取期间列数
+            String type = typeCell.getStringCellValue();
+            int colNums = sheet.getRow(1).getLastCellNum();
+
+            //循环
+            List<BiReport> list = Lists.newArrayList();
+
+            for (int row = 2; row <= sheet.getLastRowNum() + 1; row++) {
+                List<BiReport> tempList = Lists.newArrayList();
+                Row indexRow = sheet.getRow(row);
+                if (null == indexRow) {
                     continue;
                 }
-                String period = DateUtils.stampToDateOfYear(row.getCell(0).getDateCellValue());
-
-                LinkedHashMap<String, Object> map30 = Maps.newLinkedHashMap();
-                map30.put("type", type);
-                map30.put("PERIOD", period);
-                map30.put("PERIOD_DATE", DateUtils.formatStandardDate(row.getCell(0).getDateCellValue()));
-                map30.put("ITEM", row.getCell(1).getStringCellValue());
-                map30.put("VALUE", ExcelUtils.getNumericCellValueDefault(row.getCell(2)));
-                map30.put("CREATE_DATE", date);
-                all.add(map30);
+                Cell indexCell = indexRow.getCell(0);
+                if (null == indexCell) {
+                    continue;
+                }
+                String indexCode = indexCell.getStringCellValue();
+                if (StringUtils.isBlank(indexCode)) {
+                    continue;
+                }
+                for (int cell = 2; cell < colNums; cell++) {
+                    BiReport biReport = new BiReport();
+                    biReport.setBatchId(batchId);
+                    biReport.setReportCode(SheetCodeEnum.ckgl.name());
+                    biReport.setReportName(sheet.getSheetName());
+                    biReport.setRowNo(String.valueOf(row));
+                    biReport.setIndexCode(indexCode);
+                    biReport.setCell1(sheet.getRow(row).getCell(1).getStringCellValue());
+                    biReport.setTenantId(ThreadLocalHolder.getTenantId());
+                    biReport.setColNo(String.valueOf(cell));
+                    Cell temp = sheet.getRow(row).getCell(cell);
+                    String tempValue = ExcelUtils.getNumericCellValueDefault(temp);
+                    biReport.setCell2(tempValue);
+                    if ("年报".equals(type)) {
+                        biReport.setPeriod(DateUtils.stampToDateOfYear(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                    } else {
+                        biReport.setPeriod(DateUtils.formatStandardDate(sheet.getRow(1).getCell(cell).getDateCellValue()));
+                    }
+                    tempList.add(biReport);
+                }
+                list.addAll(tempList);
             }
-            //处理入库
-            process(all, tableName);
+            reportService.saveBatch(list);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

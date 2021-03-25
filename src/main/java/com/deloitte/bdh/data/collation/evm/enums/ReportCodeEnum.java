@@ -19,7 +19,7 @@ public enum ReportCodeEnum {
     ZCXLZTSPB("ZCXLZTSPB", "资产效率整体水平表") {
         @Override
         public ImmutablePair<List<String>, List<Rule>> relySheets() {
-            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.kmyeb.getName(),SheetCodeEnum.yszkb.getName());
+            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.lrb.getName(), SheetCodeEnum.kmyeb.getName(), SheetCodeEnum.yszkb.getName());
             List<Rule> collusion = Lists.newArrayList(
                     new Rule("EVM0001", "总资产", "{N#zcfzb.EVMB039}")
                     , new Rule("EVM0002", "资产负债率", "{N#zcfzb.EVMB068}/{N#zcfzb.EVMB039}")
@@ -216,6 +216,23 @@ public enum ReportCodeEnum {
 
             );
 
+            return new ImmutablePair<>(relySheets, collusion);
+        }
+    },
+
+    CKGL("CKGL", "仓库管理") {
+        @Override
+        public ImmutablePair<List<String>, List<Rule>> relySheets() {
+            List<String> relySheets = Lists.newArrayList(SheetCodeEnum.zcfzb.getName(), SheetCodeEnum.ckgl.getName());
+            List<Rule> collusion = Lists.newArrayList(
+                    new Rule("EVM0001", "仓库成本", "{N#ckgl.WH001}")
+                    , new Rule("EVM0002", "仓库维修费用", "{N#ckgl.WH002}")
+                    , new Rule("EVM0003", "单位库存成本", "{N#ckgl.WH001}/{N#zcfzb.EVMB012_AVG}")
+                    , new Rule("EVM0004", "单位仓库维修费用", "{N#ckgl.WH002}/{N#zcfzb.EVMB012_AVG}")
+                    , new Rule("EVM0005", "仓库安全事件报告率", "{N#ckgl.WH004}/{N#ckgl.WH003}")
+                    , new Rule("EVM0006", "仓库安全事件解决率", "{N#ckgl.WH005}/{N#ckgl.WH003}")
+
+            );
             return new ImmutablePair<>(relySheets, collusion);
         }
     },
