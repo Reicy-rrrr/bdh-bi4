@@ -14,6 +14,7 @@ import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.ResourceMessageEnum;
 import com.deloitte.bdh.data.analyse.service.impl.LocaleMessageService;
 import com.deloitte.bdh.data.collation.database.DbHandler;
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.evm.enums.SheetCodeEnum;
 import com.deloitte.bdh.data.collation.evm.enums.TableMappingEnum;
 import com.deloitte.bdh.data.collation.evm.service.EvmServiceImpl;
@@ -109,6 +110,8 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                     workbook.getSheet(SheetCodeEnum.jkb.getValue()), evmFile.getBatchId());
             doJkbCycle(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_LOAN_CYCLE),
                     workbook.getSheet(SheetCodeEnum.jkb.getValue()), evmFile.getBatchId());
+            doJtzjgl(TableMappingEnum.getTableNameByEnum(tables, TableMappingEnum.EVM_CAPANALYSIS_CAPITAL),
+                    workbook.getSheet(SheetCodeEnum.jtzjgl.getValue()), evmFile.getBatchId());
             //三大报表处理
             List<ImmutablePair<TableMappingEnum, String>> enums = TableMappingEnum.get(tables);
             for (ImmutablePair<TableMappingEnum, String> pair : enums) {
@@ -813,6 +816,92 @@ public class BiEvmFileConsumerServiceImpl implements BiEvmFileConsumerService {
                 all.add(map360);
             }
             //处理入库
+            process(all, tableName);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+
+    private void doJtzjgl(String tableName, Sheet sheet, String batchId) {
+        try {
+            if (sheet == null) {
+                throw new BizException(ResourceMessageEnum.EVM_2.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_2.getMessage(), ThreadLocalHolder.getLang()));
+            }
+            //获取类型
+            Cell typeCell = sheet.getRow(0).getCell(4);
+            if (null == typeCell) {
+                throw new BizException(ResourceMessageEnum.EVM_4.getCode(),
+                        localeMessageService.getMessage(ResourceMessageEnum.EVM_4.getMessage(), ThreadLocalHolder.getLang()));
+            }
+            String type = typeCell.getStringCellValue();
+            String date = DateUtils.formatStandardDateTime(new Date());
+
+            Map<String, Map<String, Map<String, Object>>> map = Maps.newHashMap();
+            for (int i = 2; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (null == row || null == row.getCell(0)) {
+                    continue;
+                }
+                String period = DateUtils.stampToDateOfYear(row.getCell(0).getDateCellValue());
+                String code = row.getCell(1).getStringCellValue();
+                String d = ExcelUtils.getNumericCellValueDefault(row.getCell(3));
+                String e = ExcelUtils.getNumericCellValueDefault(row.getCell(4));
+                Cell cellF = row.getCell(5);
+                BigDecimal f = null == cellF ? BigDecimal.ZERO : YesOrNoEnum.YES.getvalue().equals(cellF.getStringCellValue()) ? BigDecimal.ONE : BigDecimal.ZERO;
+                Cell cellG = row.getCell(6);
+                BigDecimal g = null == cellG ? BigDecimal.ZERO : YesOrNoEnum.YES.getvalue().equals(cellG.getStringCellValue()) ? BigDecimal.ONE : BigDecimal.ZERO;
+                Map<String, Object> codeMap = Maps.newHashMap();
+                codeMap.put("a", DateUtils.formatStandardDate(row.getCell(0).getDateCellValue()));
+                codeMap.put("d", d);
+                codeMap.put("e", e);
+                codeMap.put("f", f);
+                codeMap.put("g", g);
+
+                if (map.containsKey(period)) {
+                    Map<String, Map<String, Object>> inner = map.get(period);
+                    inner.put(code, codeMap);
+                } else {
+                    Map<String, Map<String, Object>> inner = Maps.newHashMap();
+                    inner.put(code, codeMap);
+                    map.put(period, inner);
+                }
+            }
+
+            //处理入库
+            List<LinkedHashMap<String, Object>> all = Lists.newArrayList();
+            for (Map.Entry<String, Map<String, Map<String, Object>>> periodMap : map.entrySet()) {
+                String period = periodMap.getKey();
+                Map<String, Map<String, Object>> codeMaps = periodMap.getValue();
+                //公司总数
+                int totalCode = codeMaps.size();
+                if (0 == totalCode) {
+                    continue;
+                }
+                BigDecimal sumD = BigDecimal.ZERO;
+                BigDecimal sumE = BigDecimal.ZERO;
+                BigDecimal sumF = BigDecimal.ZERO;
+                BigDecimal sumG = BigDecimal.ZERO;
+                String periodDate = null;
+                for (Map.Entry<String, Map<String, Object>> codeMap : codeMaps.entrySet()) {
+                    Map<String, Object> inner = codeMap.getValue();
+                    sumD = sumD.add(new BigDecimal((String) inner.get("d")));
+                    sumE = sumE.add(new BigDecimal((String) inner.get("e")));
+                    sumF = sumF.add((BigDecimal) inner.get("f"));
+                    sumG = sumG.add((BigDecimal) inner.get("g"));
+                    periodDate = (String) inner.get("a");
+                }
+                LinkedHashMap<String, Object> result = Maps.newLinkedHashMap();
+                result.put("type", type);
+                result.put("PERIOD", period);
+                result.put("PERIOD_DATE", periodDate);
+                result.put("CONCENTRATION", sumD.divide(sumE, 5, BigDecimal.ROUND_HALF_UP));
+                result.put("ACCRACY", sumF.divide(new BigDecimal(totalCode), 5, BigDecimal.ROUND_HALF_UP));
+                result.put("PROMPTNESS", sumG.divide(new BigDecimal(totalCode), 5, BigDecimal.ROUND_HALF_UP));
+                result.put("CREATE_DATE", date);
+                all.add(result);
+            }
             process(all, tableName);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

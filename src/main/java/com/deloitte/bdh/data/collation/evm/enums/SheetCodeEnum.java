@@ -13,6 +13,7 @@ public enum SheetCodeEnum {
     ckgl("ckgl", "仓库管理"),
     jkb("jkb", "借款"),
     gdzczjb("gdzczjb", "固定资产折旧表"),
+    jtzjgl("jtzjgl", "集团资金管理"),
 
     ;
     private String name;
