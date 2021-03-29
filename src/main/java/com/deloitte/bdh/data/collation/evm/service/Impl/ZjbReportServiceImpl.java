@@ -62,6 +62,9 @@ public class ZjbReportServiceImpl extends AbstractReport {
                     out.put("INVENTORY_TURNOVER", null);
                     out.put("INVENTORY_DAY", null);
                     out.put("INVENTORY_ASSETS", null);
+                    out.put("TOTAL_ASSETS", null);
+                    out.put("TOTAL_LIABILITIES", null);
+                    out.put("ASSET_LIABILITIES_RATIO", null);
 
                     if ("EVM0055".equals(rule.getTargetCode())) {
                         out.put("INVENTORY_TURNOVER", out.get("INDEX_VALUE"));
@@ -71,6 +74,15 @@ public class ZjbReportServiceImpl extends AbstractReport {
                     }
                     if ("EVM0057".equals(rule.getTargetCode())) {
                         out.put("INVENTORY_ASSETS", out.get("INDEX_VALUE"));
+                    }
+                    if ("EVM0001".equals(rule.getTargetCode())) {
+                        out.put("TOTAL_ASSETS", out.get("INDEX_VALUE"));
+                    }
+                    if ("EVM0037".equals(rule.getTargetCode())) {
+                        out.put("TOTAL_LIABILITIES", out.get("INDEX_VALUE"));
+                    }
+                    if ("EVM0033".equals(rule.getTargetCode())) {
+                        out.put("ASSET_LIABILITIES_RATIO", out.get("INDEX_VALUE"));
                     }
                     //todo 环比值
                     out.put("CHAIN_VALUE", "0");
