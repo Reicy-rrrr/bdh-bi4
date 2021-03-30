@@ -86,12 +86,13 @@ public class BiUiAnalysePublicShareController {
         LambdaQueryWrapper<BiUiAnalysePublicShare> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BiUiAnalysePublicShare::getRefPageId, MapUtils.getString(result, "refPageId"));
         if (StringUtils.equals(request.getData().getDecryptType(), "0")) {
-            List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
+            List<String> typeList = Lists.newArrayList(ShareTypeEnum.ONE.getKey(), ShareTypeEnum.TWO.getKey());
             queryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         } else if (StringUtils.equals(request.getData().getDecryptType(), "1")) {
             queryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FOUR.getKey());
         } else if (StringUtils.equals(request.getData().getDecryptType(), "2")) {
-            queryWrapper.eq(BiUiAnalysePublicShare::getType, ShareTypeEnum.FIVE.getKey());
+            List<String> typeList = Lists.newArrayList(ShareTypeEnum.ZERO.getKey(), ShareTypeEnum.FIVE.getKey());
+            queryWrapper.in(BiUiAnalysePublicShare::getType, typeList);
         }
         //正常只有一条数据，为防止脏数据影响，用list取
         List<BiUiAnalysePublicShare> share = shareService.list(queryWrapper);
