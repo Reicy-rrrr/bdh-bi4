@@ -110,4 +110,7 @@ public class AnalysePageDto implements Serializable {
     
 //    @ApiModelProperty(value = "MODIFIED_USER_NAME")
 //    private String modifiedUserName;
+
+    @ApiModelProperty("hasChild")
+    private String hasChild;
 }
