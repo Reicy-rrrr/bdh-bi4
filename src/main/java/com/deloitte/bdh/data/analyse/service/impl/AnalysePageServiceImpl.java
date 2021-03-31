@@ -154,9 +154,13 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageList.forEach(page -> {
             AnalysePageDto dto = new AnalysePageDto();
             BeanUtils.copyProperties(page, dto);
-            List<BiUiAnalysePage> childList = list(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getParentId, dto.getId()));
+            List<BiUiAnalysePage> childList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                    .eq(BiUiAnalysePage::getParentId, dto.getId())
+                    .eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode()));
             if (CollectionUtils.isNotEmpty(childList)) {
                 dto.setHasChild(YesOrNoEnum.YES.getKey());
+            } else {
+                dto.setHasChild(YesOrNoEnum.NO.getKey());
             }
             pageDtoList.add(dto);
         });
