@@ -1,11 +1,13 @@
 package com.deloitte.bdh.data.analyse.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.deloitte.bdh.common.base.*;
 import com.deloitte.bdh.common.client.FeignClientService;
 import com.deloitte.bdh.common.client.dto.TenantBasicVo;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
 import com.deloitte.bdh.data.analyse.model.request.*;
@@ -21,11 +23,9 @@ import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Maps;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Author:LIJUN
@@ -101,29 +100,8 @@ public class AnalysePageController {
 
     @ApiOperation(value = "复制德勤方案", notes = "复制德勤方案")
     @PostMapping("/copyDeloittePage")
-    public RetResult<AnalysePageDto> copyDeloittePage(@RequestBody @Validated RetRequest<CopyDeloittePageDto> request) {
-        String beginTenantCode = ThreadLocalHolder.getTenantCode();
-        //切换到内部库
-        ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
-        CopySourceDto copySourceDto = analysePageService.getCopySourceData(request.getData().getFromPageId());
-        List<String> uniqueCodeList = copySourceDto.getOriginCodeList().stream().distinct().collect(Collectors.toList());
-        //创建数据集、复制表和数据
-        Map<String, String> codeMap = Maps.newHashMap();
-        for (String code : uniqueCodeList) {
-            //切换到内部库
-            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
-            Map<String, Object> map = analysePageService.buildNewDataSet(request.getData().getDataSetName(), request.getData().getDataSetCategoryId(), code);
-
-            //切换到当前租户库
-            ThreadLocalHolder.set("tenantCode", beginTenantCode);
-            analysePageService.saveNewTable(map);
-            codeMap.put(code, MapUtils.getString(map, "newCode"));
-        }
-        //切换到当前租户库
-        ThreadLocalHolder.set("tenantCode", beginTenantCode);
-        AnalysePageDto dto = analysePageService.saveNewPage(request.getData().getName(), request.getData().getCategoryId(), request.getData().getFromPageId(),
-                copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
-        return RetResponse.makeOKRsp(dto);
+    public RetResult<Map<String, String>> copyDeloittePage(@RequestBody @Validated RetRequest<CopyDeloittePageDto> request) {
+        return RetResponse.makeOKRsp(issueService.copyDeloittePage(request.getData()));
     }
 
     @ApiOperation(value = "批量删除页面", notes = "批量删除页面")
@@ -233,6 +211,24 @@ public class AnalysePageController {
         if (CollectionUtils.isNotEmpty(list)) {
             list.removeIf(tenantBasicVo -> null != tenantBasicVo.getTenantCode() && tenantBasicVo.getTenantCode().equals(biProperties.getInnerTenantCode()));
         }
+        return RetResponse.makeOKRsp(list);
+    }
+
+    @ApiOperation(value = "德勤方案下获取该层级下的报表集合", notes = "德勤方案下获取报表的层级下的报表")
+    @PostMapping("/getPageListForDeloitte")
+    public RetResult<List<AnalysePageDto>> getPageListForDeloitte(@RequestBody @Validated RetRequest<String> request) {
+        String pageId = request.getData();
+        boolean parentId = true;
+        do {
+            BiUiAnalysePage page = analysePageService.getOne(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getParentId, pageId));
+            if (null == page) {
+                parentId = false;
+            } else {
+                pageId = page.getId();
+            }
+        } while (parentId);
+        List<AnalysePageDto> list = analysePageService.getPageWithChildren(pageId);
+        list.removeIf(var -> request.getData().contains(var.getId()));
         return RetResponse.makeOKRsp(list);
     }
 }

@@ -19,7 +19,7 @@
         <result column="CREATE_DATE" property="createDate"/>
         <result column="MODIFIED_DATE" property="modifiedDate"/>
         <result column="MODIFIED_USER" property="modifiedUser"/>
-        
+
     </resultMap>
 
     <select id="selectPublishedPage" resultMap="BaseResultMap">
@@ -84,4 +84,43 @@
         ORDER BY t1.CREATE_DATE DESC
     </select>
 
+
+    <select id="getPageWithChildren" resultMap="BaseResultMap">
+       SELECT
+        t1.ID,
+        t1.`CODE`,
+        t1.`NAME`,
+        t1.DES,
+        t1.TYPE,
+        t1.ICON,
+        t1.CATEGORY_ID,
+        t1.EDIT_ID,
+        t1.PUBLISH_ID,
+        t1.IS_PUBLIC,
+        t1.HAVE_NAV,
+        t1.CREATE_USER,
+        t1.CREATE_DATE,
+        t1.MODIFIED_DATE,
+        t1.MODIFIED_USER
+        FROM
+            (
+        SELECT
+            rd.*
+        FROM
+            ( SELECT * FROM bi_ui_analyse_page WHERE CATEGORY_ID IS NOT NULL ) rd,
+            ( SELECT @pid := #{rootPageId} ) pd
+        WHERE
+            FIND_IN_SET( CATEGORY_ID, @pid ) > 0
+            AND @pid := concat( @pid, ',', id ) UNION
+        SELECT
+            *
+        FROM
+            bi_ui_analyse_page
+        WHERE
+            FIND_IN_SET( id, @pid ) > 0
+            ) t1
+            WHERE t1.IS_EDIT ='N'
+        ORDER BY
+            t1.ID
+    </select>
 </mapper>

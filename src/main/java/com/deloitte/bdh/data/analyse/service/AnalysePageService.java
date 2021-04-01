@@ -10,7 +10,6 @@ import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageConfigDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
-import com.deloitte.bdh.data.collation.model.BiDataSet;
 
 import java.util.List;
 import java.util.Map;
@@ -86,10 +85,11 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
 
     /**
      * 替换数据集
+     *
      * @param dto
      * @return
      */
-    void replaceDataSet (ReplaceDataSetDto dto) throws Exception;
+    void replaceDataSet(ReplaceDataSetDto dto) throws Exception;
 
     /**
      * 获取报表使用的表
@@ -98,4 +98,12 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     List<String> getUsedTableName(String pageId);
+
+    /**
+     * 获取所有分层page(不好含草稿箱的)
+     *
+     * @param pageId
+     * @return
+     */
+    List<AnalysePageDto> getPageWithChildren(String pageId);
 }

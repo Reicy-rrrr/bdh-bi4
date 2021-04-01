@@ -1,15 +1,19 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.beust.jcommander.internal.Lists;
+import com.beust.jcommander.internal.Sets;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalyseCategory;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
+import com.deloitte.bdh.data.analyse.model.request.CopyDeloittePageDto;
 import com.deloitte.bdh.data.analyse.model.request.CopySourceDto;
 import com.deloitte.bdh.data.analyse.model.request.CreateAnalyseCategoryDto;
 import com.deloitte.bdh.data.analyse.model.request.IssueDeloitteDto;
 import com.deloitte.bdh.data.analyse.model.resp.AnalyseCategoryDto;
+import com.deloitte.bdh.data.analyse.model.resp.AnalysePageDto;
 import com.deloitte.bdh.data.analyse.service.AnalyseCategoryService;
 import com.deloitte.bdh.data.analyse.service.AnalysePageService;
 import com.deloitte.bdh.data.analyse.service.IssueService;
@@ -18,15 +22,18 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import com.deloitte.bdh.data.collation.model.BiDataSet;
 import com.deloitte.bdh.data.collation.service.BiDataSetService;
 import com.google.common.collect.Maps;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +49,45 @@ public class IssueServiceImpl implements IssueService {
     @Resource
     private DbHandler dbHandler;
 
+
+    @Override
+    public Map<String, String> copyDeloittePage(CopyDeloittePageDto dto) {
+        String beginTenantCode = ThreadLocalHolder.getTenantCode();
+        //切换到内部库
+        ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
+        //获取所有层级下的子pageId
+        List<AnalysePageDto> analysePageDtoList = analysePageService.getPageWithChildren(dto.getFromPageId());
+        List<CopySourceDto> copySourceDtoList = Lists.newArrayList();
+        Set<String> uniqueCodeAll = Sets.newHashSet();
+        for (AnalysePageDto analysePageDto : analysePageDtoList) {
+            CopySourceDto copySourceDto = analysePageService.getCopySourceData(analysePageDto.getId());
+            if (CollectionUtils.isNotEmpty(copySourceDto.getOriginCodeList())) {
+                Set<String> uniqueCodeList = new HashSet<>(copySourceDto.getOriginCodeList());
+                uniqueCodeAll.addAll(uniqueCodeList);
+            }
+            copySourceDtoList.add(copySourceDto);
+        }
+
+        //创建数据集、复制表和数据
+        Map<String, String> newCodeMap = Maps.newHashMap();
+        for (String code : uniqueCodeAll) {
+            //切换到内部库
+            ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
+            Map<String, Object> map = analysePageService.buildNewDataSet(dto.getDataSetName(), dto.getDataSetCategoryId(), code);
+
+            //切换到当前租户库
+            ThreadLocalHolder.set("tenantCode", beginTenantCode);
+            analysePageService.saveNewTable(map);
+            newCodeMap.put(code, MapUtils.getString(map, "newCode"));
+        }
+        //切换到当前租户库
+        ThreadLocalHolder.set("tenantCode", beginTenantCode);
+        for (CopySourceDto copySourceDto : copySourceDtoList) {
+            analysePageService.saveNewPage(dto.getName(), dto.getCategoryId(), dto.getFromPageId(),
+                    copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), newCodeMap);
+        }
+        return null;
+    }
 
     @Override
     public Map<String, String> issueDeloittePage(IssueDeloitteDto dto) {

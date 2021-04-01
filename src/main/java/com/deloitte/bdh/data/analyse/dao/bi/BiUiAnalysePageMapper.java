@@ -20,4 +20,6 @@ public interface BiUiAnalysePageMapper extends Mapper<BiUiAnalysePage> {
 
     List<AnalysePageDto> selectPublishedPage(@Param("queryDto") SelectPublishedPageDto queryDto);
 
+    List<AnalysePageDto> getPageWithChildren(@Param("rootPageId") String pageId);
+
 }

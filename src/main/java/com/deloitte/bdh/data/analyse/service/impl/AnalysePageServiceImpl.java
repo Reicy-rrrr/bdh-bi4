@@ -15,6 +15,8 @@ import com.deloitte.bdh.data.collation.database.DbHandler;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -201,10 +203,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     public CopySourceDto getCopySourceData(String pageId) {
         CopySourceDto dto = new CopySourceDto();
         BiUiAnalysePage fromPage = this.getById(pageId);
-        if (null == fromPage) {
-            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
-                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
-        }
         BiUiAnalysePageConfig fromPageConfig = configService.getById(fromPage.getEditId());
         if (null == fromPageConfig) {
             throw new BizException(ResourceMessageEnum.PAGE_CONFIG_NOT_EXIST.getCode(),
@@ -220,8 +218,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         List<String> linkPageId = Lists.newArrayList();
         for (int i = 0; i < childrenArr.size(); i++) {
             JSONObject data = childrenArr.getJSONObject(i).getJSONObject("data");
+            String type = childrenArr.getJSONObject(i).getString("type");
+
             JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
-            if (data.size() != 0) {
+            if (!"Text".equalsIgnoreCase(type) && !"Image".equalsIgnoreCase(type) && data.size() != 0) {
                 originCodeList.add(data.getString("tableCode"));
             }
             if (mutual.size() != 0) {
@@ -309,8 +309,21 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             linkService.saveBatch(linkList);
         }
 
+        //保存关联关系
+        Map<String, Object> map = Maps.newHashMap();
+        map.put("newPageId", insertPage.getId());
+        map.put("oldLinkPageId", linkPageId);
+        Map<String, Map<String, Object>> linkTempMap = ThreadLocalHolder.get("linkTempMap");
+        if (null == linkTempMap) {
+            Map<String, Map<String, Object>> linkRela = Maps.newHashMap();
+            linkRela.put(fromPageId, map);
+            ThreadLocalHolder.set("linkTempMap", linkRela);
+        } else {
+            linkTempMap.put(fromPageId, map);
+            ThreadLocalHolder.set("linkTempMap", linkTempMap);
+        }
+
         //替换content
-//        content.put("page", insertPage);
         JSONObject page = content.getJSONObject("page");
         replacePage(page, insertPage);
         for (int i = 0; i < childrenArr.size(); i++) {
@@ -673,6 +686,16 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         return result;
     }
 
+    @Override
+    public List<AnalysePageDto> getPageWithChildren(String pageId) {
+        BiUiAnalysePage fromPage = this.getById(pageId);
+        if (null == fromPage) {
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        return this.analysePageMapper.getPageWithChildren(pageId);
+    }
+
     private void validReplaceField(List<TableColumn> fromFieldList, List<TableColumn> toFieldList) {
         Map<String, TableColumn> toMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(toFieldList)) {
@@ -728,44 +751,108 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     private void replaceLinkId(String categoryId, String oldPageId, String newPageId) {
-        LambdaQueryWrapper<BiUiAnalysePageLink> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BiUiAnalysePageLink::getRefPageId, oldPageId);
-        List<BiUiAnalysePageLink> linkList = linkService.list(queryWrapper);
+        //替换上游
+        List<Pair<String, String>> pairList = getLinkTempFather(oldPageId);
+        if (CollectionUtils.isNotEmpty(pairList)) {
+            for (Pair<String, String> pair : pairList) {
+                BiUiAnalysePageLink pageLink = linkService.getOne(new LambdaQueryWrapper<BiUiAnalysePageLink>()
+                        .eq(BiUiAnalysePageLink::getRefPageId, oldPageId)
+                        .eq(BiUiAnalysePageLink::getPageId, pair.getRight()));
+                if (null != pageLink) {
+                    BiUiAnalysePage uiAnalysePage = this.getById(pageLink.getPageId());
+                    List<String> configIdList = Lists.newArrayList();
+                    configIdList.add(uiAnalysePage.getEditId());
+                    configIdList.add(uiAnalysePage.getPublishId());
+                    List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
+                    if (CollectionUtils.isNotEmpty(configList)) {
+                        for (BiUiAnalysePageConfig config : configList) {
+                            JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
+                            JSONArray childrenArr = content.getJSONArray("children");
+                            for (int i = 0; i < childrenArr.size(); i++) {
+                                JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
+                                if (mutual.size() != 0) {
+                                    JSONArray jumpReport = mutual.getJSONArray("jumpReport");
+                                    if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
+                                        if (StringUtils.equals(jumpReport.getString(1), oldPageId)) {
+                                            jumpReport.set(0, categoryId);
+                                            jumpReport.set(1, newPageId);
+                                        }
+                                    }
+                                }
+                            }
+                            config.setContent(content.toJSONString());
+                            configService.saveOrUpdate(config);
+                        }
+                    }
+                    //替换之后更新关联关系
+                    pageLink.setRefPageId(newPageId);
+                    linkService.saveOrUpdate(pageLink);
+                }
+            }
+        }
+
+        //替换自己
+        List<BiUiAnalysePageLink> linkList = linkService.list(new LambdaQueryWrapper<BiUiAnalysePageLink>()
+                .eq(BiUiAnalysePageLink::getPageId, newPageId));
         if (CollectionUtils.isNotEmpty(linkList)) {
-            List<String> pageIdList = Lists.newArrayList();
-            linkList.addAll(linkList);
-            List<BiUiAnalysePage> pageList = listByIds(pageIdList);
-            List<String> configIdList = Lists.newArrayList();
-            //编辑版本和发布版本都替换
-            pageList.forEach(page -> {
-                configIdList.add(page.getEditId());
-                configIdList.add(page.getPublishId());
-            });
-            List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
-            if (CollectionUtils.isNotEmpty(configList)) {
-                for (BiUiAnalysePageConfig config : configList) {
-                    JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
-                    JSONArray childrenArr = content.getJSONArray("children");
-                    for (int i = 0; i < childrenArr.size(); i++) {
-                        JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
-                        if (mutual.size() != 0) {
-                            JSONArray jumpReport = mutual.getJSONArray("jumpReport");
-                            if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
-                                if (StringUtils.equals(jumpReport.getString(1), oldPageId)) {
-                                    jumpReport.set(0, categoryId);
-                                    jumpReport.set(1, newPageId);
+            for (BiUiAnalysePageLink pageLink : linkList) {
+                String newlinkedPageId = getLinkTempChild(newPageId);
+                if (null == newlinkedPageId) {
+                    continue;
+                }
+                BiUiAnalysePage newLinkedPage = this.getById(newlinkedPageId);
+                BiUiAnalysePage uiAnalysePage = this.getById(pageLink.getPageId());
+                List<String> configIdList = Lists.newArrayList();
+                configIdList.add(uiAnalysePage.getEditId());
+                configIdList.add(uiAnalysePage.getPublishId());
+                List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
+                if (CollectionUtils.isNotEmpty(configList)) {
+                    for (BiUiAnalysePageConfig config : configList) {
+                        JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
+                        JSONArray childrenArr = content.getJSONArray("children");
+                        for (int i = 0; i < childrenArr.size(); i++) {
+                            JSONObject mutual = childrenArr.getJSONObject(i).getJSONObject("mutual");
+                            if (mutual.size() != 0) {
+                                JSONArray jumpReport = mutual.getJSONArray("jumpReport");
+                                if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
+                                    if (StringUtils.equals(jumpReport.getString(1), oldPageId)) {
+                                        jumpReport.set(0, newLinkedPage.getParentId());
+                                        jumpReport.set(1, newlinkedPageId);
+                                    }
                                 }
                             }
                         }
+                        config.setContent(content.toJSONString());
+                        configService.saveOrUpdate(config);
                     }
-                    config.setContent(content.toJSONString());
-                    configService.saveOrUpdate(config);
                 }
+                //替换之后更新关联关系
+                pageLink.setRefPageId(newlinkedPageId);
+                linkService.saveOrUpdate(pageLink);
             }
-            //替换之后更新关联关系
-            linkList.forEach(link -> link.setRefPageId(newPageId));
-            linkService.saveOrUpdateBatch(linkList);
         }
     }
 
+    private List<Pair<String, String>> getLinkTempFather(String linkedPageId) {
+        Map<String, Map<String, Object>> linkTempMap = ThreadLocalHolder.get("linkTempMap");
+        List<Pair<String, String>> list = Lists.newArrayList();
+        for (Map.Entry<String, Map<String, Object>> outMap : linkTempMap.entrySet()) {
+            String oldFromPageId = outMap.getKey();
+            String newFromPageId = (String) outMap.getValue().get("newPageId");
+            List<String> linkList = (List<String>) outMap.getValue().get("oldLinkPageId");
+            if (CollectionUtils.isNotEmpty(linkList) && linkList.contains(linkedPageId)) {
+                Pair<String, String> pair = new ImmutablePair(oldFromPageId, newFromPageId);
+                list.add(pair);
+            }
+        }
+        return list;
+    }
+
+    private String getLinkTempChild(String linkPageId) {
+        Map<String, Map<String, Object>> linkTempMap = ThreadLocalHolder.get("linkTempMap");
+        if (linkTempMap.containsKey(linkPageId)) {
+            return (String) linkTempMap.get(linkPageId).get("newPageId");
+        }
+        return null;
+    }
 }
