@@ -7,6 +7,7 @@ import com.deloitte.bdh.common.client.FeignClientService;
 import com.deloitte.bdh.common.client.dto.TenantBasicVo;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
+import com.deloitte.bdh.data.analyse.enums.YnTypeEnum;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePage;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePageComponent;
 import com.deloitte.bdh.data.analyse.model.BiUiAnalysePublicShare;
@@ -184,6 +185,12 @@ public class AnalysePageController {
         return RetResponse.makeOKRsp(share);
     }
 
+    @ApiOperation(value = "获取报表下所有的数据集编码", notes = "获取报表下所有的数据集编码")
+    @PostMapping("/getDataCodesByPage")
+    public RetResult<List<String>> getDataCodesByPage(@RequestBody @Validated RetRequest<String> request) throws Exception {
+        return RetResponse.makeOKRsp(analysePageService.getDataCodesByPage(request.getData()));
+    }
+
     @ApiOperation(value = "替换数据集", notes = "替换数据集")
     @PostMapping("/replace")
     public RetResult<Void> replaceDateSet(@RequestBody @Validated RetRequest<ReplaceDataSetDto> request) throws Exception {
@@ -216,19 +223,14 @@ public class AnalysePageController {
 
     @ApiOperation(value = "德勤方案下获取该层级下的报表集合", notes = "德勤方案下获取报表的层级下的报表")
     @PostMapping("/getPageListForDeloitte")
-    public RetResult<List<AnalysePageDto>> getPageListForDeloitte(@RequestBody @Validated RetRequest<String> request) {
+    public RetResult<List<BiUiAnalysePage>> getPageListForDeloitte(@RequestBody @Validated RetRequest<String> request) {
         String pageId = request.getData();
-        boolean parentId = true;
-        do {
-            BiUiAnalysePage page = analysePageService.getOne(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getParentId, pageId));
-            if (null == page) {
-                parentId = false;
-            } else {
-                pageId = page.getId();
-            }
-        } while (parentId);
-        List<AnalysePageDto> list = analysePageService.getPageWithChildren(pageId);
-        list.removeIf(var -> request.getData().contains(var.getId()));
+        BiUiAnalysePage page = analysePageService.getById(pageId);
+        List<BiUiAnalysePage> list = analysePageService.list(new LambdaQueryWrapper<BiUiAnalysePage>()
+                .eq(BiUiAnalysePage::getGroupId, page.getGroupId())
+                .eq(BiUiAnalysePage::getIsEdit, YnTypeEnum.NO.getCode())
+                .ne(BiUiAnalysePage::getId, page.getId())
+                .orderByAsc(BiUiAnalysePage::getId));
         return RetResponse.makeOKRsp(list);
     }
 }

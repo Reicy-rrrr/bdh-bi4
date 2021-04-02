@@ -193,6 +193,15 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         entity.setCode(GenerateCodeUtil.generate());
         entity.setTenantId(ThreadLocalHolder.getTenantId());
         entity.setIsEdit(YnTypeEnum.YES.getCode());
+        if (YesOrNoEnum.YES.getKey().equals(entity.getDeloitteFlag())) {
+            BiUiAnalysePage parentPage = this.getById(entity.getParentId());
+            if (null == parentPage) {
+                //当前为顶层
+                entity.setGroupId(GenerateCodeUtil.generate());
+            } else {
+                entity.setGroupId(parentPage.getGroupId());
+            }
+        }
         this.save(entity);
         AnalysePageDto dto = new AnalysePageDto();
         BeanUtils.copyProperties(entity, dto);
@@ -279,9 +288,8 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
     }
 
     @Override
-    @Transactional
-    public AnalysePageDto saveNewPage(String name, String categoryId, String fromPageId, List<String> linkPageId,
-                                      JSONObject content, JSONArray childrenArr, Map<String, String> codeMap) {
+    public String saveNewPage(String groupId, String name, String categoryId, String fromPageId, List<String> linkPageId,
+                              JSONObject content, JSONArray childrenArr, Map<String, String> codeMap) {
         //复制page
         BiUiAnalysePage insertPage = new BiUiAnalysePage();
         insertPage.setType("dashboard");
@@ -293,6 +301,11 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         insertPage.setTenantId(ThreadLocalHolder.getTenantId());
         insertPage.setDeloitteFlag(YesOrNoEnum.NO.getKey());
         insertPage.setOriginPageId(null);
+        insertPage.setGroupId(groupId);
+        if (null == groupId) {
+            insertPage.setGroupId(GenerateCodeUtil.generate());
+            groupId = insertPage.getGroupId();
+        }
         this.save(insertPage);
 
         //添加跳转关系
@@ -350,10 +363,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
 
         //替换跳转到此报表的链接
         replaceLinkId(categoryId, fromPageId, insertPage.getId());
-
-        AnalysePageDto dto = new AnalysePageDto();
-        BeanUtils.copyProperties(insertPage, dto);
-        return dto;
+        return groupId;
     }
 
     private void replacePage(JSONObject page, BiUiAnalysePage newPage) {
@@ -602,6 +612,24 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         pageLambdaQueryWrapper.orderByDesc(BiUiAnalysePage::getModifiedDate);
         List<BiUiAnalysePage> pageList = this.list(pageLambdaQueryWrapper);
         return getAnalysePageDtoPageResult(pageList, request);
+    }
+
+    @Override
+    public List<String> getDataCodesByPage(String pageId) throws Exception {
+        BiUiAnalysePage page = getById(pageId);
+        if (null == page) {
+            throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
+                    localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
+        }
+        //判断当前page是否有层级
+        if (null == page.getGroupId()) {
+            //没有层级
+            CopySourceDto dto=this.getCopySourceData(pageId);
+            return dto.getOriginCodeList();
+        }else {
+            //有层级则看是否
+        }
+        return null;
     }
 
     @Override

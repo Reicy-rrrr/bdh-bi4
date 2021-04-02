@@ -1,5 +1,6 @@
 package com.deloitte.bdh.data.analyse.model.request;
 
+import com.deloitte.bdh.data.collation.enums.YesOrNoEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -36,7 +37,7 @@ public class CreateAnalysePageDto {
     private String icon;
 
     @ApiModelProperty(value = "是否是德勤方案")
-    private String deloitteFlag;
+    private String deloitteFlag = YesOrNoEnum.NO.getKey();
 
     @ApiModelProperty(value = "是否有导航栏")
     private String haveNav;

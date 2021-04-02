@@ -8,11 +8,11 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- *
+ * 
  * </p>
  *
- * @author bo.wang
- * @since 2020-10-19
+ * @author lw
+ * @since 2021-04-01
  */
 @Data
 @TableName("BI_UI_ANALYSE_PAGE")
@@ -85,6 +85,11 @@ public class BiUiAnalysePage implements Serializable {
 
     @TableField("IS_PUBLIC")
     private String isPublic;
+    /**
+     * 层级组ID
+     */
+    @TableField("GROUP_ID")
+    private String groupId;
 
     @TableField("IP")
     private String ip;

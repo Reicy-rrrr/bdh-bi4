@@ -10,11 +10,11 @@ import java.util.List;
 
 /**
  * <p>
- * Mapper 接口
+ *  Mapper 接口
  * </p>
  *
- * @author bo.wang
- * @since 2020-10-19
+ * @author lw
+ * @since 2021-04-01
  */
 public interface BiUiAnalysePageMapper extends Mapper<BiUiAnalysePage> {
 

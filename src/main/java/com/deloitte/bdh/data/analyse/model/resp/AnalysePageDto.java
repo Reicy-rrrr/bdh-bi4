@@ -113,4 +113,7 @@ public class AnalysePageDto implements Serializable {
 
     @ApiModelProperty("hasChild")
     private String hasChild;
+
+    @ApiModelProperty("groupId")
+    private String groupId;
 }

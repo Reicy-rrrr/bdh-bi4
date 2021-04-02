@@ -42,8 +42,8 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
     /**
      * @return
      */
-    AnalysePageDto saveNewPage(String name, String categoryId, String fromPageId, List<String> linkPageId,
-                               JSONObject content, JSONArray childrenArr, Map<String, String> codeMap);
+    String saveNewPage(String groupId, String name, String categoryId, String fromPageId, List<String> linkPageId,
+                       JSONObject content, JSONArray childrenArr, Map<String, String> codeMap);
 
     CopySourceDto getCopySourceData(String pageId);
 
@@ -82,6 +82,14 @@ public interface AnalysePageService extends Service<BiUiAnalysePage> {
      * @return
      */
     PageResult<AnalysePageDto> getAnalysePageDrafts(PageRequest<AnalyseNameDto> request);
+
+    /**
+     * 获取报表下所有的数据集编码
+     *
+     * @param pageId
+     * @return
+     */
+    List<String> getDataCodesByPage(String pageId) throws Exception;
 
     /**
      * 替换数据集

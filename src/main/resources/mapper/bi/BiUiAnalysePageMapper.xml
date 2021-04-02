@@ -15,6 +15,8 @@
         <result column="DELOITTE_FLAG" property="deloitteFlag"/>
         <result column="IS_PUBLIC" property="isPublic"/>
         <result column="HAVE_NAV" property="haveNav"/>
+        <result column="GROUP_ID" property="groupId"/>
+
         <result column="CREATE_USER" property="createUser"/>
         <result column="CREATE_DATE" property="createDate"/>
         <result column="MODIFIED_DATE" property="modifiedDate"/>
@@ -35,6 +37,7 @@
         t1.PUBLISH_ID,
         t1.IS_PUBLIC,
         t1.HAVE_NAV,
+        t1.GROUP_ID,
         t1.CREATE_USER,
         t1.CREATE_DATE,
         t1.MODIFIED_DATE,
@@ -98,6 +101,7 @@
         t1.PUBLISH_ID,
         t1.IS_PUBLIC,
         t1.HAVE_NAV,
+        t1.GROUP_ID,
         t1.CREATE_USER,
         t1.CREATE_DATE,
         t1.MODIFIED_DATE,

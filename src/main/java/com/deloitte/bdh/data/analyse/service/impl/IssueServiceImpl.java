@@ -26,6 +26,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -51,13 +52,14 @@ public class IssueServiceImpl implements IssueService {
 
 
     @Override
+    @Transactional
     public Map<String, String> copyDeloittePage(CopyDeloittePageDto dto) {
         String beginTenantCode = ThreadLocalHolder.getTenantCode();
         //切换到内部库
         ThreadLocalHolder.set("tenantCode", biProperties.getInnerTenantCode());
         //获取所有层级下的子pageId
         List<AnalysePageDto> analysePageDtoList = analysePageService.getPageWithChildren(dto.getFromPageId());
-        List<CopySourceDto> copySourceDtoList = Lists.newArrayList();
+        List<CopySourceDto> copySourceDtoList = Lists.newLinkedList();
         Set<String> uniqueCodeAll = Sets.newHashSet();
         for (AnalysePageDto analysePageDto : analysePageDtoList) {
             CopySourceDto copySourceDto = analysePageService.getCopySourceData(analysePageDto.getId());
@@ -82,8 +84,9 @@ public class IssueServiceImpl implements IssueService {
         }
         //切换到当前租户库
         ThreadLocalHolder.set("tenantCode", beginTenantCode);
+        String groupId = null;
         for (CopySourceDto copySourceDto : copySourceDtoList) {
-            analysePageService.saveNewPage(dto.getName(), dto.getCategoryId(), dto.getFromPageId(),
+            groupId = analysePageService.saveNewPage(groupId, dto.getName(), dto.getCategoryId(), dto.getFromPageId(),
                     copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), newCodeMap);
         }
         return null;
@@ -135,7 +138,7 @@ public class IssueServiceImpl implements IssueService {
                 if (hasIssue >= 1) {
                     throw new RuntimeException("已发布过");
                 }
-                analysePageService.saveNewPage(copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
+                analysePageService.saveNewPage(null, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
                         copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 result.put(tenantCode, "success");
             } catch (Exception e) {
@@ -172,7 +175,7 @@ public class IssueServiceImpl implements IssueService {
                 if (hasIssue >= 1) {
                     throw new RuntimeException("已发布过");
                 }
-                analysePageService.saveNewPage(copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
+                analysePageService.saveNewPage(null, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
                         copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 result.put(tenantCode, "success");
             } catch (Exception e) {
