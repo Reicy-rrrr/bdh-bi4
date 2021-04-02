@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author lw
@@ -96,6 +96,9 @@ public class BiUiAnalysePage implements Serializable {
 
     @TableField("DELOITTE_FLAG")
     private String deloitteFlag;
+
+    @TableField("ROOT_FLAG")
+    private String rootFlag;
 
     @TableField("TENANT_ID")
     private String tenantId;

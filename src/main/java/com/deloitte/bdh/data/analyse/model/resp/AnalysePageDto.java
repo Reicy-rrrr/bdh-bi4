@@ -116,4 +116,7 @@ public class AnalysePageDto implements Serializable {
 
     @ApiModelProperty("groupId")
     private String groupId;
+
+    @ApiModelProperty("rootFlag")
+    private String rootFlag;
 }

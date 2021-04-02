@@ -1,14 +1,18 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import com.beust.jcommander.internal.Sets;
 import com.deloitte.bdh.data.analyse.enums.*;
 import com.deloitte.bdh.data.analyse.model.request.*;
 import com.deloitte.bdh.data.collation.database.DbHandler;
@@ -198,6 +202,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             if (null == parentPage) {
                 //当前为顶层
                 entity.setGroupId(GenerateCodeUtil.generate());
+                entity.setRootFlag(YesOrNoEnum.YES.getKey());
             } else {
                 entity.setGroupId(parentPage.getGroupId());
             }
@@ -304,6 +309,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         insertPage.setGroupId(groupId);
         if (null == groupId) {
             insertPage.setGroupId(GenerateCodeUtil.generate());
+            insertPage.setRootFlag(YesOrNoEnum.YES.getKey());
             groupId = insertPage.getGroupId();
         }
         this.save(insertPage);
@@ -624,12 +630,26 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         //判断当前page是否有层级
         if (null == page.getGroupId()) {
             //没有层级
-            CopySourceDto dto=this.getCopySourceData(pageId);
+            CopySourceDto dto = this.getCopySourceData(pageId);
             return dto.getOriginCodeList();
-        }else {
-            //有层级则看是否
+        } else {
+            //是否是顶层
+            if (YesOrNoEnum.YES.getKey().equals(page.getRootFlag())) {
+                List<AnalysePageDto> analysePageDtoList = this.getPageWithChildren(pageId);
+                Set<String> uniqueCodeAll = Sets.newHashSet();
+                for (AnalysePageDto analysePageDto : analysePageDtoList) {
+                    CopySourceDto copySourceDto = this.getCopySourceData(analysePageDto.getId());
+                    if (CollectionUtils.isNotEmpty(copySourceDto.getOriginCodeList())) {
+                        Set<String> uniqueCodeList = new HashSet<>(copySourceDto.getOriginCodeList());
+                        uniqueCodeAll.addAll(uniqueCodeList);
+                    }
+                }
+                return new ArrayList<>(uniqueCodeAll);
+            } else {
+                CopySourceDto dto = this.getCopySourceData(pageId);
+                return dto.getOriginCodeList();
+            }
         }
-        return null;
     }
 
     @Override
@@ -639,13 +659,26 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             throw new BizException(ResourceMessageEnum.PAGE_NOT_EXIST.getCode(),
                     localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
+
         List<String> configIdList = Lists.newArrayList();
-        configIdList.add(page.getEditId());
-        if (StringUtils.isNotBlank(page.getPublishId())) {
-            configIdList.add(page.getPublishId());
+
+        //是否是顶层
+        if (YesOrNoEnum.YES.getKey().equals(page.getRootFlag())) {
+            List<AnalysePageDto> analysePageDtoList = this.getPageWithChildren(dto.getPageId());
+            for (AnalysePageDto analysePageDto : analysePageDtoList) {
+                configIdList.add(analysePageDto.getEditId());
+                if (StringUtils.isNotBlank(analysePageDto.getPublishId())) {
+                    configIdList.add(analysePageDto.getPublishId());
+                }
+            }
+        } else {
+            configIdList.add(page.getEditId());
+            if (StringUtils.isNotBlank(page.getPublishId())) {
+                configIdList.add(page.getPublishId());
+            }
         }
+
         //校验数据集字段类型
-        List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
         for (ReplaceItemDto itemDto : dto.getReplaceItemDtoList()) {
             BiDataSet fromDataSet = dataSetService.getOne(new LambdaQueryWrapper<BiDataSet>()
                     .eq(BiDataSet::getCode, itemDto.getFromDataSetCode()));
@@ -665,7 +698,9 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         }
         Map<String, ReplaceItemDto> itemDtoMap = dto.getReplaceItemDtoList().stream().collect(
                 Collectors.toMap(ReplaceItemDto::getFromDataSetCode, a -> a, (k1, k2) -> k1));
+
         //替换数据
+        List<BiUiAnalysePageConfig> configList = configService.listByIds(configIdList);
         for (BiUiAnalysePageConfig config : configList) {
             JSONObject content = (JSONObject) JSONObject.parse(config.getContent());
             JSONArray childrenArr = content.getJSONArray("children");

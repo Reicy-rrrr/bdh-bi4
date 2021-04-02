@@ -16,6 +16,7 @@
         <result column="IS_PUBLIC" property="isPublic"/>
         <result column="HAVE_NAV" property="haveNav"/>
         <result column="GROUP_ID" property="groupId"/>
+        <result column="ROOT_FLAG" property="rootFlag" />
 
         <result column="CREATE_USER" property="createUser"/>
         <result column="CREATE_DATE" property="createDate"/>
@@ -38,6 +39,7 @@
         t1.IS_PUBLIC,
         t1.HAVE_NAV,
         t1.GROUP_ID,
+        t1.ROOT_FLAG,
         t1.CREATE_USER,
         t1.CREATE_DATE,
         t1.MODIFIED_DATE,
@@ -102,6 +104,7 @@
         t1.IS_PUBLIC,
         t1.HAVE_NAV,
         t1.GROUP_ID,
+        t1.ROOT_FLAG,
         t1.CREATE_USER,
         t1.CREATE_DATE,
         t1.MODIFIED_DATE,

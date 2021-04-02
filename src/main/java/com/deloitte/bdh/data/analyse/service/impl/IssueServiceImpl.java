@@ -35,7 +35,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class IssueServiceImpl implements IssueService {
@@ -106,16 +105,26 @@ public class IssueServiceImpl implements IssueService {
     }
 
     private Map<String, String> issueWithData(IssueDeloitteDto dto) {
-        //获取当前报表的信息
-        CopySourceDto copySourceDto = analysePageService.getCopySourceData(dto.getFromPageId());
+        List<AnalysePageDto> analysePageDtoList = analysePageService.getPageWithChildren(dto.getFromPageId());
+        List<CopySourceDto> copySourceDtoList = Lists.newLinkedList();
+        Set<String> uniqueCodeAll = Sets.newHashSet();
+        for (AnalysePageDto analysePageDto : analysePageDtoList) {
+            CopySourceDto copySourceDto = analysePageService.getCopySourceData(analysePageDto.getId());
+            if (CollectionUtils.isNotEmpty(copySourceDto.getOriginCodeList())) {
+                Set<String> uniqueCodeList = new HashSet<>(copySourceDto.getOriginCodeList());
+                uniqueCodeAll.addAll(uniqueCodeList);
+            }
+            copySourceDtoList.add(copySourceDto);
+        }
+
         //所有数据集
-        List<String> uniqueCodeList = copySourceDto.getOriginCodeList().stream().distinct().collect(Collectors.toList());
-        List<BiDataSet> dataSetList = dataSetService.list(new LambdaQueryWrapper<BiDataSet>().in(BiDataSet::getCode, uniqueCodeList));
+        List<BiDataSet> dataSetList = dataSetService.list(new LambdaQueryWrapper<BiDataSet>().in(BiDataSet::getCode, uniqueCodeAll));
 
         //循环处理租户
         ThreadLocalHolder.set("operator", BiTenantConfigController.OPERATOR);
         Map<String, String> result = Maps.newHashMap();
         for (String tenantCode : dto.getTenantCodes().split(",")) {
+
             try {
                 Map<String, String> codeMap = Maps.newHashMap();
                 for (BiDataSet dataSet : dataSetList) {
@@ -133,27 +142,39 @@ public class IssueServiceImpl implements IssueService {
                 //切换到当前租户库,创建分析的文件夹
                 ThreadLocalHolder.set("tenantCode", tenantCode);
                 AnalyseCategoryDto analyseCategory = buildCategoryIssue(dto.getCategoryName());
-                //检查是否已分发过该报表
-                int hasIssue = analysePageService.count(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getName, copySourceDto.getPageName()));
-                if (hasIssue >= 1) {
-                    throw new RuntimeException("已发布过");
+                String groupId = null;
+                for (CopySourceDto copySourceDto : copySourceDtoList) {
+                    //检查是否已分发过该报表
+                    int hasIssue = analysePageService.count(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getName, copySourceDto.getPageName()));
+                    if (hasIssue >= 1) {
+                        continue;
+                    }
+                    groupId = analysePageService.saveNewPage(groupId, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
+                            copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 }
-                analysePageService.saveNewPage(null, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
-                        copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 result.put(tenantCode, "success");
             } catch (Exception e) {
                 result.put(tenantCode, e.getMessage());
             }
+
         }
         return result;
     }
 
     private Map<String, String> issueNoData(IssueDeloitteDto dto) {
-        //获取当前报表的信息
-        CopySourceDto copySourceDto = analysePageService.getCopySourceData(dto.getFromPageId());
-        //所有数据集
-        List<String> uniqueCodeList = copySourceDto.getOriginCodeList().stream().distinct().collect(Collectors.toList());
-        List<BiDataSet> dataSetList = dataSetService.list(new LambdaQueryWrapper<BiDataSet>().in(BiDataSet::getCode, uniqueCodeList));
+        List<AnalysePageDto> analysePageDtoList = analysePageService.getPageWithChildren(dto.getFromPageId());
+        List<CopySourceDto> copySourceDtoList = Lists.newLinkedList();
+        Set<String> uniqueCodeAll = Sets.newHashSet();
+        for (AnalysePageDto analysePageDto : analysePageDtoList) {
+            CopySourceDto copySourceDto = analysePageService.getCopySourceData(analysePageDto.getId());
+            if (CollectionUtils.isNotEmpty(copySourceDto.getOriginCodeList())) {
+                Set<String> uniqueCodeList = new HashSet<>(copySourceDto.getOriginCodeList());
+                uniqueCodeAll.addAll(uniqueCodeList);
+            }
+            copySourceDtoList.add(copySourceDto);
+        }
+
+        List<BiDataSet> dataSetList = dataSetService.list(new LambdaQueryWrapper<BiDataSet>().in(BiDataSet::getCode, uniqueCodeAll));
 
         //循环处理租户
         Map<String, String> result = Maps.newHashMap();
@@ -170,13 +191,16 @@ public class IssueServiceImpl implements IssueService {
                 }
                 //创建分析的文件夹
                 AnalyseCategoryDto analyseCategory = buildCategoryIssue(dto.getCategoryName());
-                //检查是否已分发过该报表
-                int hasIssue = analysePageService.count(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getName, copySourceDto.getPageName()));
-                if (hasIssue >= 1) {
-                    throw new RuntimeException("已发布过");
+                String groupId = null;
+                for (CopySourceDto copySourceDto : copySourceDtoList) {
+                    //检查是否已分发过该报表
+                    int hasIssue = analysePageService.count(new LambdaQueryWrapper<BiUiAnalysePage>().eq(BiUiAnalysePage::getName, copySourceDto.getPageName()));
+                    if (hasIssue >= 1) {
+                        continue;
+                    }
+                    groupId = analysePageService.saveNewPage(groupId, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
+                            copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 }
-                analysePageService.saveNewPage(null, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
-                        copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 result.put(tenantCode, "success");
             } catch (Exception e) {
                 result.put(tenantCode, e.getMessage());
