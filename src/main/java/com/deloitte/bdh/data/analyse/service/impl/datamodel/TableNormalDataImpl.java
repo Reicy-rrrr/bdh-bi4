@@ -70,6 +70,9 @@ public class TableNormalDataImpl extends AbstractDataService implements AnalyseD
         List<Map<String, Object>> newRows = Lists.newArrayList();
         for (Map<String, Object> row : rows) {
             Map<String, Object> newRow = Maps.newHashMap();
+            if (null == row) {
+                continue;
+            }
             newRow.putAll(row);
             //设置精度和数据单位
             for (Map.Entry<String, Object> entry : row.entrySet()) {
