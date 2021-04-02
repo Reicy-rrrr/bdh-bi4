@@ -80,11 +80,11 @@ spring:
   profiles: hktest
   cloud:
     nacos:
-      server-addr: 10.240.32.68:8848
+      server-addr: 10.240.32.60:8848
       discovery:
-        namespace: c2b05136-7923-46db-bebb-b3bc8690464c
+        namespace: 2356da09-bbb2-4de9-bc9d-ad81a5412945
       config:
-        namespace: c2b05136-7923-46db-bebb-b3bc8690464c
+        namespace: 2356da09-bbb2-4de9-bc9d-ad81a5412945
 
 ---
 # hkprod
@@ -92,9 +92,9 @@ spring:
   profiles: hkprod
   cloud:
     nacos:
-      server-addr: 10.240.32.68:8848
+      server-addr: 10.240.32.60:8848
       discovery:
-        namespace: ea321df0-d151-42d4-a566-31fa9844074b
+        namespace: 10766ec2-e1e4-4a41-9457-b85b03f6d9bb
       config:
-        namespace: ea321df0-d151-42d4-a566-31fa9844074b
+        namespace: 10766ec2-e1e4-4a41-9457-b85b03f6d9bb
 
