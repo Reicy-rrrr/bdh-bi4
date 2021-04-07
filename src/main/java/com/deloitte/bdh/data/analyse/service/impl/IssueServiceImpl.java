@@ -88,7 +88,7 @@ public class IssueServiceImpl implements IssueService {
         ThreadLocalHolder.set("tenantCode", beginTenantCode);
         String groupId = null;
         for (CopySourceDto copySourceDto : copySourceDtoList) {
-            groupId = analysePageService.saveNewPage(groupId, dto.getName(), dto.getCategoryId(), copySourceDto.getPageId(),
+            groupId = analysePageService.saveNewPage(groupId, dto.getName() + "(" + copySourceDto.getPageName() + ")", dto.getCategoryId(), copySourceDto.getPageId(),
                     copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), newCodeMap);
         }
         return null;
