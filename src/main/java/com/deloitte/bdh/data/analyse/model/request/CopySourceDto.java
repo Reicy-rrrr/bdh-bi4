@@ -14,6 +14,8 @@ import java.util.List;
 @Data
 public class CopySourceDto {
 
+    private String pageId;
+
     private JSONObject content;
 
     private JSONArray childrenArr;

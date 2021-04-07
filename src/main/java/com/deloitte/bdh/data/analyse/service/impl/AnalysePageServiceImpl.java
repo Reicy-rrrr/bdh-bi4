@@ -245,6 +245,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 }
             }
         }
+        dto.setPageId(pageId);
         dto.setContent(content);
         dto.setChildrenArr(childrenArr);
         dto.setLinkPageId(linkPageId);
@@ -870,7 +871,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 .eq(BiUiAnalysePageLink::getPageId, newPageId));
         if (CollectionUtils.isNotEmpty(linkList)) {
             for (BiUiAnalysePageLink pageLink : linkList) {
-                String newlinkedPageId = getLinkTempChild(newPageId);
+                String newlinkedPageId = getLinkTempChild(pageLink.getRefPageId());
                 if (null == newlinkedPageId) {
                     continue;
                 }
@@ -889,9 +890,10 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                             if (mutual.size() != 0) {
                                 JSONArray jumpReport = mutual.getJSONArray("jumpReport");
                                 if (jumpReport.size() != 0 && StringUtils.isNotBlank(jumpReport.getString(1))) {
-                                    if (StringUtils.equals(jumpReport.getString(1), oldPageId)) {
+                                    String temp = getLinkTempChild(jumpReport.getString(1));
+                                    if (null != temp) {
                                         jumpReport.set(0, newLinkedPage.getParentId());
-                                        jumpReport.set(1, newlinkedPageId);
+                                        jumpReport.set(1, temp);
                                     }
                                 }
                             }

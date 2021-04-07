@@ -1,8 +1,10 @@
 package com.deloitte.bdh.data.analyse.service.impl;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.beust.jcommander.internal.Lists;
 import com.beust.jcommander.internal.Sets;
+import com.deloitte.bdh.common.constant.DSConstant;
 import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.data.analyse.enums.CategoryTypeEnum;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
+@DS(DSConstant.BI_DB)
 public class IssueServiceImpl implements IssueService {
     @Resource
     private BiProperties biProperties;
@@ -85,7 +88,7 @@ public class IssueServiceImpl implements IssueService {
         ThreadLocalHolder.set("tenantCode", beginTenantCode);
         String groupId = null;
         for (CopySourceDto copySourceDto : copySourceDtoList) {
-            groupId = analysePageService.saveNewPage(groupId, dto.getName(), dto.getCategoryId(), dto.getFromPageId(),
+            groupId = analysePageService.saveNewPage(groupId, dto.getName(), dto.getCategoryId(), copySourceDto.getPageId(),
                     copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), newCodeMap);
         }
         return null;
@@ -149,7 +152,7 @@ public class IssueServiceImpl implements IssueService {
                     if (hasIssue >= 1) {
                         continue;
                     }
-                    groupId = analysePageService.saveNewPage(groupId, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
+                    groupId = analysePageService.saveNewPage(groupId, copySourceDto.getPageName(), analyseCategory.getId(), copySourceDto.getPageId(),
                             copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 }
                 result.put(tenantCode, "success");
@@ -198,7 +201,7 @@ public class IssueServiceImpl implements IssueService {
                     if (hasIssue >= 1) {
                         continue;
                     }
-                    groupId = analysePageService.saveNewPage(groupId, copySourceDto.getPageName(), analyseCategory.getId(), dto.getFromPageId(),
+                    groupId = analysePageService.saveNewPage(groupId, copySourceDto.getPageName(), analyseCategory.getId(), copySourceDto.getPageId(),
                             copySourceDto.getLinkPageId(), copySourceDto.getContent(), copySourceDto.getChildrenArr(), codeMap);
                 }
                 result.put(tenantCode, "success");
