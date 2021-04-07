@@ -543,8 +543,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 newPage.setEditId(newEditConfig.getId());
                 newPage.setParentId(categoryId);
                 newPage.setIsEdit(YnTypeEnum.NO.getCode());
-                //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
-                newPage.setCode(originPage.getCode());
+                newPage.setCode(GenerateCodeUtil.generate());
                 if (StringUtils.isNotBlank(isPublic)) {
                     if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                         newPage.setIsPublic(YesOrNoEnum.YES.getKey());
