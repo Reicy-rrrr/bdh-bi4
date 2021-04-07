@@ -507,9 +507,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 updatePage(request, originPage, originConfig, isPublic);
             } else {
                 //非第一次 且 变更文件夹，则创建新报表
-                BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                BiUiAnalysePageConfig newEditConfig = new BiUiAnalysePageConfig();
+                BiUiAnalysePageConfig newPublicConfig = new BiUiAnalysePageConfig();
+
                 if (originConfig != null) {
-                    BeanUtils.copyProperties(originConfig, newConfig);
+                    BeanUtils.copyProperties(originConfig, newEditConfig);
+                    BeanUtils.copyProperties(originConfig, newPublicConfig);
 
                     // 获取报表发布配置再赋值编辑配置
                     BiUiAnalysePageConfig originPublicConfig = configService.getById(originPage.getPublishId());
@@ -518,18 +521,26 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                     originPage.setIsEdit(YnTypeEnum.NO.getCode());
                     this.updateById(originPage);
                 }
-                newConfig.setId(null);
-                newConfig.setPageId(null);
-                newConfig.setContent(request.getContent());
-                newConfig.setTenantId(ThreadLocalHolder.getTenantId());
-                configService.save(newConfig);
+                newEditConfig.setId(null);
+                newEditConfig.setPageId(null);
+                newEditConfig.setContent(request.getContent());
+                newEditConfig.setTenantId(ThreadLocalHolder.getTenantId());
+                configService.save(newEditConfig);
+
+                newPublicConfig.setId(null);
+                newPublicConfig.setPageId(null);
+                newPublicConfig.setContent(request.getContent());
+                newPublicConfig.setTenantId(ThreadLocalHolder.getTenantId());
+                configService.save(newPublicConfig);
+
                 //新建page
                 BiUiAnalysePage newPage = new BiUiAnalysePage();
                 BeanUtils.copyProperties(originPage, newPage);
                 newPage.setId(null);
                 newPage.setRootFlag(YesOrNoEnum.NO.getKey());
                 newPage.setGroupId(null);
-                newPage.setPublishId(newConfig.getId());
+                newPage.setPublishId(newPublicConfig.getId());
+                newPage.setEditId(newEditConfig.getId());
                 newPage.setParentId(categoryId);
                 newPage.setIsEdit(YnTypeEnum.NO.getCode());
                 //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
@@ -543,9 +554,12 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 }
                 save(newPage);
                 String newPageId = newPage.getId();
+
                 //保存pageId到config
-                newConfig.setPageId(newPageId);
-                configService.updateById(newConfig);
+                newPublicConfig.setPageId(newPageId);
+                configService.updateById(newPublicConfig);
+                newEditConfig.setPageId(newPageId);
+                configService.updateById(newEditConfig);
                 //把新的pageId传给权限操作
                 if (null != permissionDto) {
                     pageId = newPageId;
