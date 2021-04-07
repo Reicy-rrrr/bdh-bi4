@@ -544,6 +544,7 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                 newPage.setParentId(categoryId);
                 newPage.setIsEdit(YnTypeEnum.NO.getCode());
                 newPage.setCode(GenerateCodeUtil.generate());
+                newPage.setOriginPageId(null);
                 if (StringUtils.isNotBlank(isPublic)) {
                     if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
                         newPage.setIsPublic(YesOrNoEnum.YES.getKey());
