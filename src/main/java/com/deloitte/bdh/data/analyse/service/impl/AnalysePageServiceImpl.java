@@ -305,7 +305,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         insertPage.setIsEdit(YnTypeEnum.NO.getCode());
         insertPage.setTenantId(ThreadLocalHolder.getTenantId());
         insertPage.setDeloitteFlag(YesOrNoEnum.NO.getKey());
-        insertPage.setOriginPageId(null);
         insertPage.setGroupId(groupId);
         if (null == groupId) {
             insertPage.setGroupId(GenerateCodeUtil.generate());
@@ -378,7 +377,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
         page.put("name", newPage.getName());
         page.put("type", newPage.getType());
         page.put("parentId", newPage.getParentId());
-        page.put("originPageId", newPage.getOriginPageId());
         page.put("editId", newPage.getEditId());
         page.put("publishId", newPage.getPublishId());
         page.put("des", newPage.getDes());
@@ -497,59 +495,61 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
                     localeMessageService.getMessage(ResourceMessageEnum.PAGE_NOT_EXIST.getMessage(), ThreadLocalHolder.getLang()));
         }
 
+        //是否公开
         String isPublic = request.getIsPublic();
         if (StringUtils.equals(request.getDeloitteFlag(), YesOrNoEnum.YES.getKey())) {
+            //德勤方案默认公开发布
             updatePage(request, originPage, originConfig, ShareTypeEnum.TRUE.getKey());
         } else {
-            //获取公开状态s
-            if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+            // 判断文件夹id 是否变更
+            if (null == originPage.getParentId() || originPage.getParentId().equals(categoryId)) {
+                //第一次发布 或 未变更文件夹，则修改原始报表为最新版本
                 updatePage(request, originPage, originConfig, isPublic);
             } else {
-                List<BiUiAnalysePage> allPageList = list(new LambdaQueryWrapper<BiUiAnalysePage>()
-                        .eq(BiUiAnalysePage::getParentId, categoryId)
-                        .eq(BiUiAnalysePage::getOriginPageId, originPage.getOriginPageId()));
-                if (CollectionUtils.isEmpty(allPageList) && StringUtils.isNotBlank(originPage.getParentId())) {
-                    //新建config
-                    BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
-                    if (originConfig != null) {
-                        BeanUtils.copyProperties(originConfig, newConfig);
-                        originConfig.setContent(request.getContent());
-                        configService.updateById(originConfig);
+                //非第一次 且 变更文件夹，则创建新报表
+                BiUiAnalysePageConfig newConfig = new BiUiAnalysePageConfig();
+                if (originConfig != null) {
+                    BeanUtils.copyProperties(originConfig, newConfig);
+
+                    // 获取报表发布配置再赋值编辑配置
+                    BiUiAnalysePageConfig originPublicConfig = configService.getById(originPage.getPublishId());
+                    originConfig.setContent(originPublicConfig.getContent());
+                    configService.updateById(originConfig);
+                    originPage.setIsEdit(YnTypeEnum.NO.getCode());
+                    this.updateById(originPage);
+                }
+                newConfig.setId(null);
+                newConfig.setPageId(null);
+                newConfig.setContent(request.getContent());
+                newConfig.setTenantId(ThreadLocalHolder.getTenantId());
+                configService.save(newConfig);
+                //新建page
+                BiUiAnalysePage newPage = new BiUiAnalysePage();
+                BeanUtils.copyProperties(originPage, newPage);
+                newPage.setId(null);
+                newPage.setRootFlag(YesOrNoEnum.NO.getKey());
+                newPage.setGroupId(null);
+                newPage.setPublishId(newConfig.getId());
+                newPage.setParentId(categoryId);
+                newPage.setIsEdit(YnTypeEnum.NO.getCode());
+                //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
+                newPage.setCode(originPage.getCode());
+                if (StringUtils.isNotBlank(isPublic)) {
+                    if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
+                        newPage.setIsPublic(YesOrNoEnum.YES.getKey());
+                    } else {
+                        newPage.setIsPublic(YesOrNoEnum.NO.getKey());
                     }
-                    newConfig.setId(null);
-                    newConfig.setPageId(null);
-                    newConfig.setContent(request.getContent());
-                    newConfig.setTenantId(ThreadLocalHolder.getTenantId());
-                    configService.save(newConfig);
-                    //新建page
-                    BiUiAnalysePage newPage = new BiUiAnalysePage();
-                    BeanUtils.copyProperties(originPage, newPage);
-                    newPage.setId(null);
-                    newPage.setPublishId(newConfig.getId());
-                    newPage.setParentId(categoryId);
-                    newPage.setIsEdit(YnTypeEnum.NO.getCode());
-                    newPage.setOriginPageId(originPage.getId());
-                    //便于在发布切换文件夹时找到不同版本报表的权限，不同版本code必须设置成一样
-                    newPage.setCode(originPage.getCode());
-                    if (StringUtils.isNotBlank(isPublic)) {
-                        if (isPublic.equals(ShareTypeEnum.TRUE.getKey())) {
-                            newPage.setIsPublic(YesOrNoEnum.YES.getKey());
-                        } else {
-                            newPage.setIsPublic(YesOrNoEnum.NO.getKey());
-                        }
-                    }
-                    save(newPage);
-                    String newPageId = newPage.getId();
-                    //保存pageId到config
-                    newConfig.setPageId(newPageId);
-                    configService.updateById(newConfig);
-                    //把新的pageId传给权限操作
-                    if (null != permissionDto) {
-                        pageId = newPageId;
-                        permissionDto.setId(newPageId);
-                    }
-                } else {
-                    updatePage(request, originPage, originConfig, isPublic);
+                }
+                save(newPage);
+                String newPageId = newPage.getId();
+                //保存pageId到config
+                newConfig.setPageId(newPageId);
+                configService.updateById(newConfig);
+                //把新的pageId传给权限操作
+                if (null != permissionDto) {
+                    pageId = newPageId;
+                    permissionDto.setId(newPageId);
                 }
             }
 
@@ -593,9 +593,6 @@ public class AnalysePageServiceImpl extends AbstractService<BiUiAnalysePageMappe
             }
         }
         originPage.setPublishId(newConfig.getId());
-        if (StringUtils.isEmpty(originPage.getOriginPageId())) {
-            originPage.setOriginPageId(originPage.getId());
-        }
         originPage.setParentId(dto.getCategoryId());
         originPage.setIsEdit(YnTypeEnum.NO.getCode());
         updateById(originPage);
