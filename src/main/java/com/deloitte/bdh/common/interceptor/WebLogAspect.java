@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSON;
 import com.deloitte.bdh.common.base.RetRequest;
 import com.deloitte.bdh.common.base.RetResult;
 import com.deloitte.bdh.common.json.JsonUtil;
+import com.deloitte.bdh.common.properties.BiProperties;
 import com.deloitte.bdh.common.util.ThreadLocalHolder;
 import com.deloitte.bdh.common.util.UUIDUtil;
 
 import java.util.Arrays;
 import java.util.Map;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import com.deloitte.bdh.common.util.UserInfoUtil;
@@ -36,6 +38,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class WebLogAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(WebLogAspect.class);
+    @Resource
+    private BiProperties properties;
 
     @Pointcut("execution(public * com.deloitte.bdh..controller.*.*(..))"
             + "&& !@annotation(com.deloitte.bdh.common.annotation.NoLog)"
@@ -95,7 +99,6 @@ public class WebLogAspect {
         if (joinPoint.getArgs().length > 0) {
 
 
-
             Map<String, Object> params;
             Object args = joinPoint.getArgs()[0];
             if (args instanceof Map) {
@@ -121,7 +124,7 @@ public class WebLogAspect {
         }
         if (StringUtils.isNotBlank(request.getHeader("internalFlag")) &&
                 StringUtils.equals(request.getHeader("internalFlag"), "1")) {
-            ThreadLocalHolder.set("tenantCode", "1001");
+            ThreadLocalHolder.set("tenantCode", properties.getInnerTenantCode());
         }
     }
 
