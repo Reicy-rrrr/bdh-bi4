@@ -159,7 +159,7 @@ public class IssueServiceImpl implements IssueService {
             } catch (Exception e) {
                 result.put(tenantCode, e.getMessage());
             }
-
+            ThreadLocalHolder.remove("linkTempMap");
         }
         return result;
     }
@@ -208,6 +208,7 @@ public class IssueServiceImpl implements IssueService {
             } catch (Exception e) {
                 result.put(tenantCode, e.getMessage());
             }
+            ThreadLocalHolder.remove("linkTempMap");
         }
         return result;
     }
