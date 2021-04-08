@@ -11,22 +11,26 @@ import lombok.NoArgsConstructor;
 public class Rule {
     private String targetCode;
     private String targetName;
+    private String targetEnglishName;
     private String expression;
     private String type;
 
     public Rule() {
     }
 
-    public Rule(String targetCode, String targetName, String expression) {
+    public Rule(String targetCode, String targetName, String targetEnglishName, String expression) {
         this.targetCode = targetCode;
         this.targetName = targetName;
+        this.targetEnglishName = targetEnglishName;
         this.expression = expression;
     }
 
-    public Rule(String targetCode, String targetName, String expression, String type) {
+    public Rule(String targetCode, String targetName, String targetEnglishName, String expression, String type) {
         this.targetCode = targetCode;
         this.targetName = targetName;
+        this.targetEnglishName = targetEnglishName;
         this.expression = expression;
         this.type = type;
     }
+
 }

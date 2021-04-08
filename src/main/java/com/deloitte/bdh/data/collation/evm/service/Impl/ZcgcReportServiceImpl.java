@@ -58,6 +58,7 @@ public class ZcgcReportServiceImpl extends AbstractReport {
                     out.put("PERIOD_DATE", periodDate);
                     out.put("INDEX_CODE", rule.getTargetCode());
                     out.put("INDEX_NAME", rule.getTargetName());
+                    out.put("INDEX_ENNAME", rule.getTargetEnglishName());
                     out.put("INDEX_VALUE", RuleParseUtil.value(rule.getExpression(), map, period));
                     out.put("CREATE_DATE", date);
                     out.put("VALUE1", setValue(EVMB080, MapUtils.getString(out, "INDEX_VALUE")));

@@ -50,6 +50,7 @@ public class CkglReportServiceImpl extends AbstractReport {
                     out.put("PERIOD", periodTemp);
                     out.put("PERIOD_DATE", periodDate);
                     out.put("Item", rule.getTargetName());
+                    out.put("ItemEN",rule.getTargetEnglishName());
                     out.put("value", RuleParseUtil.value(rule.getExpression(), map, period));
                     out.put("CREATE_DATE", date);
                     out.put("unitcost", null);
